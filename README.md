@@ -16,11 +16,11 @@
 ```bash
 Server IP: 3000
 Frontend Port: 5173
-Docker Network: paperGrader-net
-Docker Volume: paperGrader-data
-Frontend container name: paperGrader_frontend
-Backend container name: paperGrader_backend
-Database container name: paperGrader_db
+Docker Network: papergrader-net
+Docker Volume: papergrader-data
+Frontend container name: papergrader_frontend
+Backend container name: papergrader_backend
+Database container name: papergrader_db
 ```
 
 ## Docs
