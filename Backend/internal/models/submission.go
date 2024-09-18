@@ -8,12 +8,19 @@ import (
 )
 
 type Submission struct {
-	SubmissionID     int       `gorm:"primaryKey;autoIncrement"`
+	SubmissionID     uuid.UUID `gorm:"primaryKey"`
 	UserID           uuid.UUID `gorm:"not null"`
-	AssignmentID     string    `gorm:"not null"`
-	SubmissionFileID string    `gorm:"not null"`
+	AssignmentID     uuid.UUID `gorm:"not null"`
+	SubmissionFileID uuid.UUID `gorm:"not null"`
 	SubmittedAt      time.Time `gorm:"not null"`
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 	DeletedAt        gorm.DeletedAt `gorm:"index"`
+}
+
+func (submission *Submission) BeforeCreate(tx *gorm.DB) (err error) {
+	if submission.SubmissionID == uuid.Nil {
+		submission.SubmissionID = uuid.New()
+	}
+	return
 }

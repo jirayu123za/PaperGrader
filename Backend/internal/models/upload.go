@@ -8,10 +8,17 @@ import (
 )
 
 type Upload struct {
-	UploadID         string    `gorm:"primaryKey;autoIncrement"`
+	UploadID         uuid.UUID `gorm:"primaryKey"`
 	UserID           uuid.UUID `gorm:"not null"`
-	AssignmentFileID string    `gorm:"not null"`
+	AssignmentFileID uuid.UUID `gorm:"not null"`
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 	DeletedAt        gorm.DeletedAt `gorm:"index"`
+}
+
+func (upload *Upload) BeforeCreate(tx *gorm.DB) (err error) {
+	if upload.UploadID == uuid.Nil {
+		upload.UploadID = uuid.New()
+	}
+	return
 }
