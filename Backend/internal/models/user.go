@@ -10,11 +10,12 @@ import (
 type User struct {
 	UserID          uuid.UUID `gorm:"primaryKey" json:"user_id"`
 	GroupID         uint      `gorm:"not null" json:"group_id"`
-	UserName        string    `gorm:"type:varchar(50);not null" json:"user_name"`
-	Password        string    `gorm:"type:varchar(255);not null" json:"password"`
 	FirstName       string    `gorm:"type:varchar(50)" json:"first_name"`
 	LastName        string    `gorm:"type:varchar(50)" json:"last_name"`
 	Email           string    `gorm:"type:varchar(50);not null" json:"email"`
+	BirthDate       time.Time `json:"birth_date"`
+	University      string    `gorm:"type:varchar(50)" json:"university"`
+	ProfileImageURL string    `gorm:"type:varchar(255)" json:"profile_image_url"`
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 	DeletedAt       gorm.DeletedAt   `gorm:"index"`
