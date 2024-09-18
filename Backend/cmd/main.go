@@ -49,7 +49,7 @@ func main() {
 
 	oauthRepo := adapters.NewOAuthRepository()
 	oauthService := services.NewOAuthService(oauthRepo)
-	oauthHandler := adapters.NewHttpOAuthHandler(oauthService)
+	oauthHandler := adapters.NewHttpOAuthHandler(oauthService, userService)
 
 	// Routes
 	api := app.Group("/")

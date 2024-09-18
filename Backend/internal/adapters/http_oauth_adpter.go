@@ -10,12 +10,14 @@ import (
 
 // Primary adapter
 type HttpOAuthHandler struct {
-	services services.OAuthService
+	services    services.OAuthService
+	userService services.UserService
 }
 
-func NewHttpOAuthHandler(services services.OAuthService) *HttpOAuthHandler {
+func NewHttpOAuthHandler(services services.OAuthService, userService services.UserService) *HttpOAuthHandler {
 	return &HttpOAuthHandler{
-		services: services,
+		services:    services,
+		userService: userService,
 	}
 }
 
@@ -73,7 +75,39 @@ func (h *HttpOAuthHandler) GetGoogleCallBack(c *fiber.Ctx) error {
 		})
 	}
 
-	jwtToken, err := h.services.GenerateGoogleJWT(userInfo)
+	// Check if the user already exists in the database or create a new one
+	user, err := h.userService.SignUpOrSignInUser(userInfo)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to process user signup/login",
+			"error":   err,
+		})
+	}
+
+	if user == nil {
+		// User does not exist, return user info to pre-fill the sign up form
+		jwtToken, err := h.services.GenerateGoogleJWT(userInfo)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to generate JWT",
+				"error":   err,
+			})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"message":  "New User logged in via Google OAuth2",
+			"userInfo": userInfo,
+			"jwtToken": jwtToken,
+		})
+
+		/*
+			redirectURL := "http://localhost:5173/signup?token=" + jwtToken
+			return c.Redirect(redirectURL, fiber.StatusTemporaryRedirect)
+
+		*/
+	}
+
+	jwtToken, err := h.services.GenerateUserJWT(user.UserID, user.GroupID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to generate JWT",
@@ -81,17 +115,31 @@ func (h *HttpOAuthHandler) GetGoogleCallBack(c *fiber.Ctx) error {
 		})
 	}
 
-	// Check if the user already exists in the database
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message":  "User is logged in by Google OAuth2",
-		"token":    token,
-		"jwtToken": jwtToken,
-		"user":     userInfo,
+	// Set JWT as a secure cookie
+	c.Cookie(&fiber.Cookie{
+		Name:     "user_token",
+		Value:    jwtToken,
+		Expires:  time.Now().Add(time.Hour * 1),
+		HTTPOnly: true,
+		Secure:   true,
 	})
 
 	/*
-		redirectURL := "http://localhost:5173/signup?token=" + jwtToken
-		return c.Redirect(redirectURL, fiber.StatusTemporaryRedirect)
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"message":  "User is logged in by Google OAuth2",
+			"token":    token,
+			"jwtToken": jwtToken,
+			"user":     userInfo,
+		})
+	*/
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "User logged in via Google OAuth2",
+		"user":    user,
+	})
+
+	/*
+		redirectURL := "http://localhost:5173/dashboard"
+		return c.Redirect(http://localhost:5173/dashboard)
 
 	*/
 }

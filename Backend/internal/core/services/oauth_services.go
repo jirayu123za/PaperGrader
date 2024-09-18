@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 )
 
@@ -17,6 +18,7 @@ type OAuthService interface {
 	GetGoogleToken(code string) (*oauth2.Token, error)
 	GetGoogleUserInfo(accessToken string) (*models.GoogleUserInfo, error)
 	GenerateGoogleJWT(googleUser *models.GoogleUserInfo) (string, error)
+	GenerateUserJWT(userID uuid.UUID, groupID uint) (string, error)
 }
 
 type OAuthServiceImpl struct {
@@ -56,6 +58,20 @@ func (s *OAuthServiceImpl) GenerateGoogleJWT(googleUser *models.GoogleUserInfo) 
 		"firstName": googleUser.FirstName,
 		"lastName":  googleUser.LastName,
 		"exp":       time.Now().Add(time.Hour * 1).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(jwtSecret))
+}
+
+func (s *OAuthServiceImpl) GenerateUserJWT(userID uuid.UUID, groupID uint) (string, error) {
+	config.LoadEnv()
+	jwtSecret := os.Getenv("JWT_SECRET")
+
+	claims := jwt.MapClaims{
+		"user_id":  userID.String(),
+		"group_id": groupID,
+		"exp":      time.Now().Add(time.Hour * 1).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
