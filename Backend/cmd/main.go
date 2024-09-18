@@ -35,9 +35,17 @@ func main() {
 		log.Fatalf("Failed to connect to MinIO: %v", err)
 	}
 
+	// Connect to postgres database
+	db := database.ConnectPostgres(true)
+	//database.ConnectPostgres(true)
+
 	fileRepo := adapters.NewMinIOFileRepository(minioClient, os.Getenv("MINIO_BUCKET_NAME"))
 	fileService := services.NewFileService(fileRepo)
 	fileHandler := adapters.NewHttpFileHandler(fileService)
+
+	userRepo := adapters.NewGormUserRepository(db)
+	userService := services.NewUserService(userRepo)
+	userHandler := adapters.NewHttpUserHandler(userService)
 
 	oauthRepo := adapters.NewOAuthRepository()
 	oauthService := services.NewOAuthService(oauthRepo)
@@ -58,9 +66,8 @@ func main() {
 	apiGroup.Get("/google", oauthHandler.GetGoogleLoginURL)
 	apiGroup.Get("/google/callback", oauthHandler.GetGoogleCallBack)
 
-	// Connect to postgres database
-	//db := database.ConnectPostgres(true)
-	database.ConnectPostgres(true)
+	apiGroup.Post("/user", userHandler.CreateUser)
+	apiGroup.Get("/user/:googleID", userHandler.GetUserByID)
 
 	if err := app.Listen(":" + port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)

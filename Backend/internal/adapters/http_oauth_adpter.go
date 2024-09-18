@@ -81,6 +81,7 @@ func (h *HttpOAuthHandler) GetGoogleCallBack(c *fiber.Ctx) error {
 		})
 	}
 
+	// Check if the user already exists in the database
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":  "User is logged in by Google OAuth2",
 		"token":    token,
