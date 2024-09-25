@@ -3,7 +3,8 @@ import { useEmailStore, useFirstNameStore, useLastNameStore } from '../store/use
 import { useUniversityStore } from '../store/useUniversityStore';
 import { Modal, Button, TextInput, Select } from '@mantine/core';
 import { useFetchUniversity } from '../hooks/useFetchUniversities';
-import {jwtDecode} from 'jwt-decode';
+import { useCreateUser } from '../hooks/useCreateUser'; 
+import { jwtDecode } from 'jwt-decode';
 
 interface SignUpProps {
   opened: boolean;
@@ -13,11 +14,13 @@ interface SignUpProps {
 export default function SignUp({ opened, onClose }: SignUpProps) {
   const [role, setRole] = useState('Instructor');
   const [studentID, setStudentID] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const { email, setEmail } = useEmailStore();
   const { firstName, setFirstName } = useFirstNameStore();
   const { lastName, setLastName } = useLastNameStore();
   const { universities, setUniversities } = useUniversityStore();
   const { data: universityData, isSuccess: universitySuccess } = useFetchUniversity();
+  const createUserMutation = useCreateUser(); // เรียกใช้ useCreateUser
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -43,6 +46,30 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
       setUniversities(universityData);
     }
   }, [universityData, universitySuccess, setUniversities]);
+
+  // ฟังก์ชันสำหรับจัดการการสมัครสมาชิก
+  const handleSubmit = async () => {
+    const formData = {
+      email,
+      firstName,
+      lastName,
+      university: universities.find((uni) => uni.university_name === "Your University Name")?.university_id || "", 
+      role,
+      studentID: role === 'Student' ? studentID : '',
+      dateOfBirth,
+    };
+
+    // เรียกใช้ mutation เพื่อส่งข้อมูล
+    createUserMutation.mutate(formData, {
+      onSuccess: () => {
+        console.log("User created successfully");
+        onClose(); // ปิด Modal หลังจากสร้างผู้ใช้เสร็จ
+      },
+      onError: (error) => {
+        console.error("Error creating user:", error);
+      },
+    });
+  };
 
   return (
     <>
@@ -87,25 +114,24 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
             readOnly
             className="mb-2"
           />
-        <div className="flex space-x-6 mb-2">
-          <TextInput
-            label="First name"
-            placeholder="Enter your first name"
-            value={firstName}
-            onChange={(event) => setFirstName(event.currentTarget.value)}
-            required
-            className="flex-1"
-          />
+          <div className="flex space-x-6 mb-2">
+            <TextInput
+              label="First name"
+              placeholder="Enter your first name"
+              value={firstName}
+              onChange={(event) => setFirstName(event.currentTarget.value)}
+              required
+              className="flex-1"
+            />
 
-          <TextInput
-            label="Last name"
-            placeholder="Enter your last name"
-            value={lastName}
-            onChange={(event) => setLastName(event.currentTarget.value)}
-            required
-            className="flex-1"
-          />
-          
+            <TextInput
+              label="Last name"
+              placeholder="Enter your last name"
+              value={lastName}
+              onChange={(event) => setLastName(event.currentTarget.value)}
+              required
+              className="flex-1"
+            />
           </div>
 
           {role === 'Student' && (
@@ -125,27 +151,28 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
               label="Date of Birth"
               placeholder="Select your date of birth"
               type="date"
+              value={dateOfBirth}
+              onChange={(event) => setDateOfBirth(event.currentTarget.value)} // อัพเดท state เมื่อมีการเปลี่ยนแปลง
             />
           </div>
 
           <Select
             label="University"
             placeholder="Select your University"
-            data={universities?.map((universities) => ({
-              value: universities.university_id,
-              label: universities.university_name,
+            data={universities?.map((university) => ({
+              value: university.university_id,
+              label: university.university_name,
             })) || []}
             searchable
             required
             className="mb-2"
           />
-          </div>
 
           <div className="flex justify-center">
-            <Button className="bg-[#b7410e] w-full">{`Sign up as an ${role}`}</Button>
+            <Button className="bg-[#b7410e] w-full" onClick={handleSubmit}>{`Sign up as an ${role}`}</Button>
           </div>
+        </div>
       </Modal>
     </>
   );
 }
-
