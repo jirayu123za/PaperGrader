@@ -1,5 +1,7 @@
+import React from 'react';
 import { Modal, Button } from '@mantine/core';
 import Image from 'next/image';
+import { useGoogleLogin } from '../hooks/useGoogleLogin'; // import custom hook
 
 interface SignUpProps {
   opened: boolean;
@@ -7,12 +9,18 @@ interface SignUpProps {
 }
 
 export default function SignUp({ opened, onClose }: SignUpProps) {
+  const { loginWithGoogle, loading, error } = useGoogleLogin(); // ใช้ custom hook ที่สร้างไว้
+
+  const handleGoogleClick = () => {
+    loginWithGoogle(); // เรียกใช้งานฟังก์ชัน loginWithGoogle
+  };
+
   return (
     <Modal
       opened={opened}
       onClose={onClose}
-      title={null} // ตั้งค่า title เป็น null เพื่อไม่ให้แสดงหัวเรื่อง
-      withCloseButton={false} // ตั้งค่าไม่ให้แสดงปุ่มปิด
+      title={null}
+      withCloseButton={false}
       centered
       overlayProps={{
         color: 'rgba(0, 0, 0, 0.5)',
@@ -21,9 +29,9 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
       styles={{
         content: {
           backgroundColor: '#f5f5dc',
-          hight: '500px',
-          width: '400px', // ปรับขนาดความกว้างของ modal
-          padding: '20px', // เพิ่ม padding ภายใน modal
+          height: '240px',
+          width: '400px',
+          padding: '20px',
         },
       }}
     >
@@ -34,8 +42,8 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
           style={{
             backgroundColor: '#9b59b6',
             color: '#fffffe',
-            height: '60px',  // ปรับขนาดความสูงของปุ่ม
-            width: '200px',   // ปรับขนาดความกว้างของปุ่ม
+            height: '60px',
+            width: '200px',
           }}
           radius="lg"
         >
@@ -51,14 +59,15 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
 
         {/* ปุ่ม Google สี Default */}
         <Button
-          className="rounded-full flex items-center justify-center text-lg  "
+          className="rounded-full flex items-center justify-center text-lg"
           style={{
             backgroundColor: '#3457D5',
             color: '#fffffe',
-            height: '60px',  // ปรับขนาดความสูงของปุ่ม
-            width: '200px',   // ปรับขนาดความกว้างของปุ่ม
+            height: '60px',
+            width: '200px',
           }}
           radius="lg"
+          onClick={handleGoogleClick} // เรียกใช้งานเมื่อคลิกปุ่ม Google
         >
           <Image
             src="/icon/GoogleIcon.png"
@@ -67,10 +76,11 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
             height={28}
             className="mr-2 text-lg"
           />
-          <span>Google</span> 
+          <span>Google</span>
         </Button>
 
-
+        {/* แสดงข้อความ error ถ้ามี */}
+        {error && <div className="text-red-500 mt-2">{error}</div>}
       </div>
     </Modal>
   );
