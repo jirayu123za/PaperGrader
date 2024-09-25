@@ -57,7 +57,7 @@ func (h *HttpFileHandler) CreateFile(c *fiber.Ctx) error {
 }
 
 func (h *HttpFileHandler) GetFileByID(c *fiber.Ctx) error {
-	fileName := c.Params("name")
+	fileName := c.Query("name")
 
 	decodedFileName, err := url.PathUnescape(fileName)
 	if err != nil {
@@ -95,4 +95,25 @@ func (h *HttpFileHandler) UpdateFile(c *fiber.Ctx) error {
 
 func (h *HttpFileHandler) DeleteFile(c *fiber.Ctx) error {
 	return nil
+}
+
+func (h *HttpFileHandler) GetFileURL(c *fiber.Ctx) error {
+	fileName := c.Query("name")
+	if fileName == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "File name is required",
+		})
+	}
+
+	fileURL, err := h.services.GetFileURL(fileName)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error":   "File not found",
+			"message": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"file_url": fileURL,
+	})
 }

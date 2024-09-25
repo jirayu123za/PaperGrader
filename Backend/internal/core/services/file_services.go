@@ -14,6 +14,8 @@ type FileService interface {
 	GetFileByID(fileName string) (*models.File, error)
 	UpdateFile(file *models.File) error
 	Delete(file *models.File) error
+
+	GetFileURL(fileName string) (string, error)
 }
 
 type FileServiceImpl struct {
@@ -65,4 +67,8 @@ func (s *FileServiceImpl) Delete(file *models.File) error {
 		return err
 	}
 	return nil
+}
+
+func (s *FileServiceImpl) GetFileURL(fileName string) (string, error) {
+	return s.repo.FindFileURL(fileName)
 }

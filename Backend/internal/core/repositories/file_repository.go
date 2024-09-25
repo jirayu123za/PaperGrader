@@ -10,4 +10,6 @@ type FileRepository interface {
 	FindFileByID(fileName string) (*models.File, error)
 	UpdateFile(file *models.File) error
 	RemoveFile(file *models.File) error
+
+	FindFileURL(fileName string) (string, error)
 }

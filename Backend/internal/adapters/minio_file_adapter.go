@@ -4,7 +4,9 @@ import (
 	"context"
 	"io"
 	"log"
+	"net/url"
 	"paperGrader/internal/models"
+	"time"
 
 	"github.com/minio/minio-go/v7"
 )
@@ -68,4 +70,15 @@ func (r *MinIOFileRepository) RemoveFile(file *models.File) error {
 		return err
 	}
 	return nil
+}
+
+func (r *MinIOFileRepository) FindFileURL(fileName string) (string, error) {
+	ctx := context.Background()
+	reqParams := make(url.Values)
+	presignedURL, err := r.client.PresignedGetObject(ctx, r.bucketName, fileName, time.Hour, reqParams)
+	if err != nil {
+		log.Printf("Failed to generate presigned URL: %v", err)
+		return "", err
+	}
+	return presignedURL.String(), nil
 }
