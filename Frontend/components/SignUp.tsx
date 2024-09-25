@@ -68,7 +68,6 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
           }}
           radius="lg"
           onClick={handleGoogleClick} // เรียกใช้งานเมื่อคลิกปุ่ม Google
-          disabled={loading} // ปิดการใช้งานปุ่มเมื่อกำลังโหลด
         >
           <Image
             src="/icon/GoogleIcon.png"
@@ -77,7 +76,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
             height={28}
             className="mr-2 text-lg"
           />
-          <span>{loading ? 'Logging in...' : 'Google'}</span> {/* แสดงข้อความ loading */}
+          <span>Google</span>
         </Button>
 
         {/* แสดงข้อความ error ถ้ามี */}
