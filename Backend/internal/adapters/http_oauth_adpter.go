@@ -94,17 +94,17 @@ func (h *HttpOAuthHandler) GetGoogleCallBack(c *fiber.Ctx) error {
 			})
 		}
 
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"message":  "New User logged in via Google OAuth2",
-			"userInfo": userInfo,
-			"jwtToken": jwtToken,
-		})
-
 		/*
-			redirectURL := "http://localhost:5173/signup?token=" + jwtToken
-			return c.Redirect(redirectURL, fiber.StatusTemporaryRedirect)
-
+			return c.Status(fiber.StatusOK).JSON(fiber.Map{
+				"message":  "New User logged in via Google OAuth2",
+				"userInfo": userInfo,
+				"jwtToken": jwtToken,
+			})
 		*/
+
+		redirectURL := "http://localhost:5173/?token=" + jwtToken
+		return c.Redirect(redirectURL, fiber.StatusTemporaryRedirect)
+
 	}
 
 	jwtToken, err := h.services.GenerateUserJWT(user.UserID, user.GroupID)
