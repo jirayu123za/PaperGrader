@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useEmailStore } from '../store/useUserStore'; // Zustand store สำหรับ email
+import { useAuthStore } from '../store/useAuthStore'; // Zustand store สำหรับข้อมูลการเข้าสู่ระบบ
 import { useSchoolStore } from '../store/useSchoolStore'; // Zustand store สำหรับ school
-import { Modal, Button, TextInput, Select } from '@mantine/core';
-import { useFetchEmails } from '../hooks/useFetchEmails'; // Custom Hook สำหรับดึงข้อมูล email
+import { Modal, Button, TextInput, Select, Notification } from '@mantine/core'; // เพิ่ม Notification หากต้องการแสดงข้อความ
 import { useFetchSchools } from '../hooks/useFetchSchools'; // Custom Hook สำหรับดึงข้อมูล school
 
 interface SignUpProps {
@@ -11,19 +10,15 @@ interface SignUpProps {
 }
 
 export default function SignUp({ opened, onClose }: SignUpProps) {
-  const [role, setRole] = useState('Instructor');
-  const { email, setEmails } = useEmailStore();
+  const [role, setRole] = useState<'Instructor' | 'Student'>('Instructor');
+  const email = useAuthStore((state) => state.email) || ''; // ดึง email จาก Auth store ที่เก็บไว้หลังจาก login สำเร็จ และใช้ '' แทน null
   const { schools, setSchools } = useSchoolStore();
   const [studentID, setStudentID] = useState(''); // State สำหรับ StudentID
-
-  // ดึงข้อมูล email
-  const { data: emailData, isSuccess: emailSuccess } = useFetchEmails();
-
-  useEffect(() => {
-    if (emailSuccess && emailData) {
-      setEmails(emailData);
-    }
-  }, [emailData, emailSuccess, setEmails]);
+  const [firstName, setFirstName] = useState(''); // State สำหรับ FirstName
+  const [lastName, setLastName] = useState(''); // State สำหรับ LastName
+  const [dateOfBirth, setDateOfBirth] = useState(''); // State สำหรับ Date of Birth
+  const [university, setUniversity] = useState<string | null>(null); // แก้ไขให้รองรับทั้ง string และ null
+  const [error, setError] = useState<string | null>(null); // State สำหรับจัดการ Error message
 
   // ดึงข้อมูลโรงเรียน
   const { data: schoolData, isSuccess: schoolSuccess } = useFetchSchools();
@@ -34,8 +29,29 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
     }
   }, [schoolData, schoolSuccess, setSchools]);
 
-  const userId = "1";
-  const user = email.find((user) => user.user_id === userId);
+  // ฟังก์ชันสำหรับการตรวจสอบและส่งข้อมูล
+  const handleSignUp = () => {
+    // ตรวจสอบว่า field ที่จำเป็นต้องมีข้อมูลถูกกรอกครบถ้วนหรือไม่
+    if (!firstName || !lastName || !dateOfBirth || !university || (role === 'Student' && !studentID)) {
+      setError('Please fill in all required fields.');
+      return;
+    }
+
+    // ส่งข้อมูลไปยัง backend หรือทำ action ที่ต้องการ
+    console.log({
+      email,
+      firstName,
+      lastName,
+      dateOfBirth,
+      university,
+      studentID: role === 'Student' ? studentID : undefined, // ถ้า role เป็น Student ถึงจะส่ง studentID
+      role,
+    });
+
+    // หากส่งข้อมูลสำเร็จ ให้ reset error และปิด modal
+    setError(null);
+    onClose();
+  };
 
   return (
     <>
@@ -77,7 +93,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
           {/* แสดง email ในฟิลแต่ไม่ให้แก้ไข */}
           <TextInput
             label="Email"
-            value={user?.email || ''}
+            value={email}
             readOnly
             className="mb-2"
           />
@@ -86,12 +102,16 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
             <TextInput
               label="First name"
               placeholder="Enter your first name"
+              value={firstName}
+              onChange={(event) => setFirstName(event.currentTarget.value)}
               required
               className="flex-1"
             />
             <TextInput
               label="Last name"
               placeholder="Enter your last name"
+              value={lastName}
+              onChange={(event) => setLastName(event.currentTarget.value)}
               required
               className="flex-1"
             />
@@ -115,6 +135,8 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
               label="Date of Birth"
               placeholder="Select your date of birth"
               type="date"
+              value={dateOfBirth}
+              onChange={(event) => setDateOfBirth(event.currentTarget.value)}
             />
           </div>
 
@@ -129,11 +151,22 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
             searchable  // ทำให้ช่องนี้สามารถพิมพ์ค้นหาได้
             required
             className="mb-2"
+            value={university}
+            onChange={(value) => setUniversity(value)} // ปรับให้รองรับการเปลี่ยนค่าได้ทั้ง string และ null
           />
+
+          {/* แสดง error message */}
+          {error && (
+            <Notification color="red" onClose={() => setError(null)}>
+              {error}
+            </Notification>
+          )}
 
           {/* ปรับปุ่ม Sign up ให้อยู่ตรงกลาง */}
           <div className="flex justify-center">
-            <Button className="bg-[#b7410e] w-full">{`Sign up as an ${role}`}</Button>
+            <Button className="bg-[#b7410e] w-full" onClick={handleSignUp}>
+              {`Sign up as an ${role}`}
+            </Button>
           </div>
         </div>
       </Modal>
