@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
-import { useCourseStore } from '../store/useCourseStore'; // นำเข้า store สำหรับ course
-import CreateAssignmentModal from '../components/CreateAssignment'; // นำเข้า component สำหรับ Modal
+import { useCourseStore } from '../store/useCourseStore'; 
+import CreateAssignmentModal from '../components/CreateAssignment'; 
+
 
 const INSDashBoard = () => {
   // ดึงข้อมูลจาก store
-  const selectedCourseId = useCourseStore((state) => state.selectedCourseId); // ดึง selectedCourseId จาก store
+  const selectedCourseId = useCourseStore((state) => state.selectedCourseId); 
   const selectedCourse = useCourseStore((state) =>
     state.courses.find((course) => course.course_Id === selectedCourseId)
-  ); // หา course ที่ถูกเลือกจาก course array ใน store
+  ); 
 
   // สร้าง state สำหรับควบคุมการแสดงผลของ modal
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // ฟังก์ชันสำหรับเปิด modal
+
   const openModal = () => setIsModalOpen(true);
-  // ฟังก์ชันสำหรับปิด modal
   const closeModal = () => setIsModalOpen(false);
 
   return (

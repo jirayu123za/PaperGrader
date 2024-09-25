@@ -120,8 +120,8 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
 
           {/* Dropdown ที่มีฟังก์ชันค้นหา */}
           <Select
-            label="School"
-            placeholder="Select your school"
+            label="University"
+            placeholder="Select your University"
             data={schools?.map((school) => ({
               value: school.id,  // ใช้ 'id' เป็น value
               label: school.school,  // ใช้ 'school' เป็น label

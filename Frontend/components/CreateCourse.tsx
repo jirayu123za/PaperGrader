@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Button, TextInput, Select, Checkbox } from '@mantine/core';
+import { useFetchSchools } from '../hooks/useFetchSchools';
+import { useSchoolStore } from '../store/useSchoolStore';
+
 
 interface CreateCourseModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+
 
 const CreateCourse: React.FC<CreateCourseModalProps> = ({ isOpen, onClose }) => {
   const [courseNumber, setCourseNumber] = useState('');
@@ -12,9 +17,17 @@ const CreateCourse: React.FC<CreateCourseModalProps> = ({ isOpen, onClose }) => 
   const [courseDescription, setCourseDescription] = useState('');
   const [term, setTerm] = useState('');
   const [year, setYear] = useState('');
-  const [school, setSchool] = useState('Turnitin University');
-  const [department, setDepartment] = useState('');
+  const { schools, setSchools } = useSchoolStore();
   const [entryCode, setEntryCode] = useState(false);
+
+
+  const { data: schoolData, isSuccess: schoolSuccess } = useFetchSchools();
+
+  useEffect(() => {
+    if (schoolSuccess && schoolData) {
+      setSchools(schoolData);
+    }
+  }, [schoolData, schoolSuccess, setSchools]);
 
   const handleCreateCourse = () => {
     console.log({
@@ -23,8 +36,7 @@ const CreateCourse: React.FC<CreateCourseModalProps> = ({ isOpen, onClose }) => 
       courseDescription,
       term,
       year,
-      school,
-      department,
+      schools,
       entryCode,
     });
     onClose(); // ปิด Modal หลังจากสร้าง Course
@@ -65,7 +77,7 @@ const CreateCourse: React.FC<CreateCourseModalProps> = ({ isOpen, onClose }) => 
           <Select
             label="Term"
             placeholder="Select term"
-            data={['Spring', 'Summer', 'Fall']}
+            data={['1', '2', '3']}
             value={term}
             onChange={(value) => setTerm(value!)}
             required
@@ -81,21 +93,18 @@ const CreateCourse: React.FC<CreateCourseModalProps> = ({ isOpen, onClose }) => 
             className="w-full"
           />
         </div>
-        <TextInput
-          label="School"
-          value={school}
-          disabled
-          className="mt-4"
-        />
         <Select
-          label="Department"
-          placeholder="Please select"
-          data={['Computer Science', 'Mathematics', 'Physics']}
-          value={department}
-          onChange={(value) => setDepartment(value!)}
+          label="University"
+          placeholder="Select your University"
+          data={schools?.map((school) => ({
+            value: school.id,  // ใช้ 'id' เป็น value
+            label: school.school,  // ใช้ 'school' เป็น label
+          })) || []}  // ถ้า schools ยังไม่ถูกดึงมาก็ให้เป็น array ว่าง
+          searchable  // ทำให้ช่องนี้สามารถพิมพ์ค้นหาได้
           required
-          className="mt-4"
+          className="mb-2"
         />
+
         <Checkbox
           label="Allow students to enroll via course entry code"
           checked={entryCode}

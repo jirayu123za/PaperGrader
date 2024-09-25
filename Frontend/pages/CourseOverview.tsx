@@ -3,7 +3,7 @@ import React from 'react';
 import { useFetchCourses } from '../hooks/useFetchCourse'; // Import custom hook
 import { useCourseStore } from '../store/useCourseStore'; // Import Zustand store
 import CourseCard from '../components/CourseCard'; // Import CourseCard component
-import LeftMain from '../components/LeftMain'; // Import LeftMain component
+
 
 const CourseOverview = () => {
   const { data: courses, isLoading, error } = useFetchCourses(); // ดึงข้อมูล courses ทั้งหมด
@@ -14,7 +14,7 @@ const CourseOverview = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <LeftMain /> {/* แสดง LeftMain ที่ฝั่งซ้าย */}
+
       <div className="flex-grow p-8">
         <h1 className="text-3xl font-bold mb-8">Courses Overview</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

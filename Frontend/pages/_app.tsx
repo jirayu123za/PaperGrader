@@ -5,6 +5,7 @@ import { ModalsProvider } from '@mantine/modals';
 import { AppProps } from 'next/app';
 import Head from 'next/head';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ export default function App({ Component, pageProps }: AppProps) {
       <MantineProvider theme={{}}>
         <ModalsProvider> 
           <Component {...pageProps} />
+          <ReactQueryDevtools initialIsOpen={false} />
         </ModalsProvider>
       </MantineProvider>
       </QueryClientProvider>

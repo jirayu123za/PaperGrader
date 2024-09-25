@@ -1,8 +1,8 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-import { useCourseStore } from '../store/useCourseStore'; 
-import INTAssignment from '../components/INSAssignment'; 
-import LeftMain from '../components/LeftMain'; 
+import { useCourseStore } from '../../../store/useCourseStore'; 
+import INTAssignment from '../../../components/INSAssignment'; 
+import LeftMain from '../../../components/LeftMain'; 
 
 const Assignment = () => {
   const router = useRouter();

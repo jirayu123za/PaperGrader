@@ -23,7 +23,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
   const handleSelectCourse = () => {
     if (course) {
       setSelectedCourseId(course.course_Id);
-      router.push('/Dashboard');
+      router.push(`/courses/${course.course_Id}`);
     }
   };
 
