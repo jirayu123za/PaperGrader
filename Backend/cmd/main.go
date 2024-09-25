@@ -55,6 +55,10 @@ func main() {
 	universityService := services.NewUniversityService(universityRepo)
 	universityHandler := adapters.NewHttpUniversityHandler(universityService)
 
+	userGroupRepo := adapters.NewGormUserGroupRepository(db)
+	userGroupService := services.NewUserGroupService(userGroupRepo)
+	userGroupHandler := adapters.NewHttpUserGroupHandler(userGroupService)
+
 	// Routes
 	api := app.Group("/")
 	apiGroup := api.Group("/api")
@@ -80,6 +84,12 @@ func main() {
 	apiGroup.Get("/university", universityHandler.GetUniversityByID)
 	apiGroup.Put("/university", universityHandler.UpdateUniversity)
 	apiGroup.Delete("/university", universityHandler.DeleteUniversity)
+
+	apiGroup.Post("/userGroup", userGroupHandler.CreateUserGroup)
+	apiGroup.Get("/userGroup", userGroupHandler.GetUserGroupByID)
+	apiGroup.Get("/userGroups", userGroupHandler.GetUserGroups)
+	apiGroup.Put("/userGroup", userGroupHandler.UpdateUserGroup)
+	apiGroup.Delete("/userGroup", userGroupHandler.DeleteUserGroup)
 
 	if err := app.Listen(":" + port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
