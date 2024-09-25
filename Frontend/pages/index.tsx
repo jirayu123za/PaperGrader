@@ -1,13 +1,22 @@
+import { useEffect } from 'react';
 import { Button } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import SignUp from '../components/SignUp';
 import SignIn from '../components/SignIn';
-import { useModalStore } from '../store/useModalStore'; // Import useModalStore
 
 export default function LandingPage() {
+  const [SignInOpened, { open: openSignIn, close: closeSignIn }] = useDisclosure(false);
   const [signUpOpened, { open: openSignUp, close: closeSignUp }] = useDisclosure(false);
-  const isSignInOpen = useModalStore((state) => state.isSignInOpen); // ใช้ Zustand Store สำหรับ SignIn
-  const closeSignIn = useModalStore((state) => state.closeSignIn); // ฟังก์ชันปิด SignIn modal
+
+  // ตรวจสอบ token ใน URL เมื่อหน้าเว็บโหลด
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+
+    if (token) {
+      openSignUp(); 
+    }
+  }, [openSignUp]);
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-[#f5f5dc]">
@@ -17,8 +26,9 @@ export default function LandingPage() {
           <a href="#" className="text-gray-700">Get start</a>
           <a href="#" className="text-gray-700">Get demo</a>
         </nav>
-        <div className="flex space-x-4">
+        <div className="flex space-x-4 ">
           <Button className="bg-[#b7410e] text-[#fffffe]" onClick={openSignUp}>Sign Up</Button>
+          <Button className="bg-[#b7410e] text-[#fffffe]" onClick={openSignIn}>Sign In</Button>
         </div>
       </header>
 
@@ -52,8 +62,8 @@ export default function LandingPage() {
         copyright © 2024 company name
       </div>
 
-      {/* คอมโพเนนต์ SignIn และ SignUp */}
-      <SignIn opened={isSignInOpen} onClose={closeSignIn} />
+      {/* คอมโพเนนต์ Login Popup */}
+      <SignIn opened={SignInOpened} onClose={closeSignIn} />
       <SignUp opened={signUpOpened} onClose={closeSignUp} />
     </div>
   );
