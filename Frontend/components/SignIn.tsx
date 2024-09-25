@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useEmailStore, useFirstNameStore, useLastNameStore } from '../store/useUserStore';
-import { useSchoolStore } from '../store/useSchoolStore';
+import { useUniversityStore } from '../store/useUniversityStore';
 import { Modal, Button, TextInput, Select } from '@mantine/core';
-import { useFetchSchools } from '../hooks/useFetchSchools';
+import { useFetchUniversity } from '../hooks/useFetchUniversities';
 import {jwtDecode} from 'jwt-decode';
 
 interface SignUpProps {
@@ -12,12 +12,12 @@ interface SignUpProps {
 
 export default function SignUp({ opened, onClose }: SignUpProps) {
   const [role, setRole] = useState('Instructor');
+  const [studentID, setStudentID] = useState('');
   const { email, setEmail } = useEmailStore();
   const { firstName, setFirstName } = useFirstNameStore();
   const { lastName, setLastName } = useLastNameStore();
-  const { schools, setSchools } = useSchoolStore();
-  const [studentID, setStudentID] = useState('');
-  const { data: schoolData, isSuccess: schoolSuccess } = useFetchSchools();
+  const { universities, setUniversities } = useUniversityStore();
+  const { data: universityData, isSuccess: universitySuccess } = useFetchUniversity();
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -39,10 +39,10 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
   }, []);
 
   useEffect(() => {
-    if (schoolSuccess && schoolData) {
-      setSchools(schoolData);
+    if (universitySuccess && universityData) {
+      setUniversities(universityData);
     }
-  }, [schoolData, schoolSuccess, setSchools]);
+  }, [universityData, universitySuccess, setUniversities]);
 
   return (
     <>
@@ -131,9 +131,9 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
           <Select
             label="University"
             placeholder="Select your University"
-            data={schools?.map((school) => ({
-              value: school.id,
-              label: school.school,
+            data={universities?.map((universities) => ({
+              value: universities.university_id,
+              label: universities.university_name,
             })) || []}
             searchable
             required

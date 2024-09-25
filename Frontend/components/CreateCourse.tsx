@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Button, TextInput, Select, Checkbox } from '@mantine/core';
-import { useFetchSchools } from '../hooks/useFetchSchools';
-import { useSchoolStore } from '../store/useSchoolStore';
+import { useFetchSchools } from '../hooks/useFetchUniversities';
+import { useSchoolStore } from '../store/useUniversityStore';
 
 
 interface CreateCourseModalProps {
