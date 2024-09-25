@@ -75,7 +75,7 @@ func (h *HttpOAuthHandler) GetGoogleCallBack(c *fiber.Ctx) error {
 		})
 	}
 
-	// Check if the user already exists in the database or create a new one
+	// Check if the user already exists in the database
 	user, err := h.userService.SignUpOrSignInUser(userInfo)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -119,7 +119,7 @@ func (h *HttpOAuthHandler) GetGoogleCallBack(c *fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:     "user_token",
 		Value:    jwtToken,
-		Expires:  time.Now().Add(time.Hour * 1),
+		Expires:  time.Now().Add(time.Hour * 1), // add more expires time 3hrs
 		HTTPOnly: true,
 		Secure:   true,
 	})
