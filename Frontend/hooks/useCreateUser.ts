@@ -3,18 +3,21 @@ import { useUserStore } from '../store/usecreatestore';
 import axios from 'axios';
 
 interface CreateUserParams {
+  google_id: string;
+  group_id: number;
+  first_name: string;
+  last_name: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  birth_date?: string;
+  student_id?: string;
   university: string;
-  role: string;
-  studentID?: string;
-  dateOfBirth?: string;
 }
 
 // ฟังก์ชันสำหรับการสร้างผู้ใช้ใหม่
 const createUser = async (userData: CreateUserParams): Promise<any> => {
-  const response = await axios.post('/api/CreateUser', userData);
+  console.log('userData:', userData);
+  
+  const response = await axios.post('/api/api/user', userData);
   return response.data;
 };
 

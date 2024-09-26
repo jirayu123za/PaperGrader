@@ -1,37 +1,37 @@
 import create from 'zustand';
 
-// Define the interface for email state
-interface EmailState {
+// Define the interface for the combined state
+interface UserState {
   email: string;
   setEmail: (email: string) => void;
+  first_name: string;
+  setFirstName: (first_name: string) => void;
+  last_name: string;
+  setLastName: (last_name: string) => void;
+  birth_date: string;
+  setBirthDate: (birth_date: string) => void;
+  student_id: string;
+  setStudentID: (student_id: string) => void;
+  selectedUniversity: string;
+  setSelectedUniversity: (selectedUniversity: string) => void;
+  google_id: string;
+  setGoogleId: (id: string) => void;
 }
 
-// Define the interface for first name state
-interface FirstNameState {
-  firstName: string;
-  setFirstName: (firstName: string) => void;
-}
-
-// Define the interface for last name state
-interface LastNameState {
-  lastName: string;
-  setLastName: (lastName: string) => void;
-}
-
-// Create the email store
-export const useEmailStore = create<EmailState>((set) => ({
+// Create a combined store for all user information
+export const useUserStore = create<UserState>((set) => ({
   email: '',
   setEmail: (email) => set(() => ({ email })),
-}));
-
-// Create the first name store
-export const useFirstNameStore = create<FirstNameState>((set) => ({
-  firstName: '',
-  setFirstName: (firstName) => set(() => ({ firstName })),
-}));
-
-// Create the last name store
-export const useLastNameStore = create<LastNameState>((set) => ({
-  lastName: '',
-  setLastName: (lastName) => set(() => ({ lastName })),
+  first_name: '',
+  setFirstName: (first_name) => set(() => ({ first_name })),
+  last_name: '',
+  setLastName: (last_name) => set(() => ({ last_name })),
+  birth_date: '',
+  setBirthDate: (birth_date) => set(() => ({ birth_date })),
+  student_id: '',
+  setStudentID: (student_id) => set(() => ({ student_id })),
+  selectedUniversity: '',
+  setSelectedUniversity: (selectedUniversity) => set(() => ({ selectedUniversity })),
+  google_id: '',
+  setGoogleId: (id) => set(() => ({ google_id: id })),
 }));

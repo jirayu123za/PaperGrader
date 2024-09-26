@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useEmailStore, useFirstNameStore, useLastNameStore } from '../store/useUserStore';
+import { useUserStore } from '../store/useUserStore';
 import { useUniversityStore } from '../store/useUniversityStore';
 import { Modal, Button, TextInput, Select } from '@mantine/core';
 import { useFetchUniversity } from '../hooks/useFetchUniversities';
@@ -12,15 +12,20 @@ interface SignUpProps {
 }
 
 export default function SignUp({ opened, onClose }: SignUpProps) {
-  const [role, setRole] = useState('Instructor');
-  const [studentID, setStudentID] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState('');
-  const { email, setEmail } = useEmailStore();
-  const { firstName, setFirstName } = useFirstNameStore();
-  const { lastName, setLastName } = useLastNameStore();
+  const [ role, setRole ] = useState('Instructor');
+  const {
+    email, setEmail,
+    first_name, setFirstName,
+    last_name, setLastName,
+    birth_date, setBirthDate,
+    student_id, setStudentID,
+    selectedUniversity, setSelectedUniversity,
+    google_id, setGoogleId,
+  } = useUserStore();
+  
   const { universities, setUniversities } = useUniversityStore();
   const { data: universityData, isSuccess: universitySuccess } = useFetchUniversity();
-  const createUserMutation = useCreateUser(); // เรียกใช้ useCreateUser
+  const createUserMutation = useCreateUser();
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -32,6 +37,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
         setEmail((decodedUser as { email?: string }).email || "");
         setFirstName((decodedUser as { firstName?: string }).firstName || "");
         setLastName((decodedUser as { lastName?: string }).lastName || "");
+        setGoogleId((decodedUser as { googleID?: string }).googleID || "");
         console.log("Decoded User:", decodedUser);
       } catch (error) {
         console.error("Failed to decode token:", error);
@@ -47,23 +53,22 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
     }
   }, [universityData, universitySuccess, setUniversities]);
 
-  // ฟังก์ชันสำหรับจัดการการสมัครสมาชิก
   const handleSubmit = async () => {
     const formData = {
+      google_id,
+      group_id: role === 'Instructor' ? 1 : 2,
+      first_name,
+      last_name,      
       email,
-      firstName,
-      lastName,
-      university: universities.find((uni) => uni.university_name === "Your University Name")?.university_id || "", 
-      role,
-      studentID: role === 'Student' ? studentID : '',
-      dateOfBirth,
+      birth_date,
+      student_id: role === 'Student' ? student_id : '',      
+      university: selectedUniversity, 
     };
 
-    // เรียกใช้ mutation เพื่อส่งข้อมูล
     createUserMutation.mutate(formData, {
       onSuccess: () => {
         console.log("User created successfully");
-        onClose(); // ปิด Modal หลังจากสร้างผู้ใช้เสร็จ
+        onClose();
       },
       onError: (error) => {
         console.error("Error creating user:", error);
@@ -118,7 +123,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
             <TextInput
               label="First name"
               placeholder="Enter your first name"
-              value={firstName}
+              value={first_name}
               onChange={(event) => setFirstName(event.currentTarget.value)}
               required
               className="flex-1"
@@ -127,7 +132,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
             <TextInput
               label="Last name"
               placeholder="Enter your last name"
-              value={lastName}
+              value={last_name}
               onChange={(event) => setLastName(event.currentTarget.value)}
               required
               className="flex-1"
@@ -139,7 +144,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
               <TextInput
                 label="Student ID"
                 placeholder="Enter your Student ID"
-                value={studentID}
+                value={student_id}
                 onChange={(event) => setStudentID(event.currentTarget.value)}
                 required
               />
@@ -151,8 +156,8 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
               label="Date of Birth"
               placeholder="Select your date of birth"
               type="date"
-              value={dateOfBirth}
-              onChange={(event) => setDateOfBirth(event.currentTarget.value)} // อัพเดท state เมื่อมีการเปลี่ยนแปลง
+              value={birth_date}
+              onChange={(event) => setBirthDate(event.currentTarget.value)}
             />
           </div>
 
@@ -160,12 +165,13 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
             label="University"
             placeholder="Select your University"
             data={universities?.map((university) => ({
-              value: university.university_id,
+              value: university.university_name,
               label: university.university_name,
             })) || []}
             searchable
             required
             className="mb-2"
+            onChange={(value) => setSelectedUniversity(value ?? '')}
           />
 
           <div className="flex justify-center">
