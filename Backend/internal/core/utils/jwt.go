@@ -31,7 +31,7 @@ func GetUserIDFromJWT(c *fiber.Ctx) (uuid.UUID, error) {
 		return uuid.UUID{}, fmt.Errorf("failed to parse JWT claims")
 	}
 
-	userIDStr, ok := (*claims)["userID"].(string)
+	userIDStr, ok := (*claims)["user_id"].(string)
 	if !ok {
 		return uuid.UUID{}, fmt.Errorf("userID not found in JWT claims")
 	}
