@@ -1,5 +1,6 @@
-import create from 'zustand';
-import { persist } from 'zustand/middleware';
+import create, { StateCreator } from 'zustand';
+import { persist, PersistOptions } from 'zustand/middleware';
+import axios from 'axios';
 
 // สร้าง interface ของ course ให้รองรับข้อมูลที่ดึงมา
 interface Course {
@@ -12,18 +13,24 @@ interface Course {
 interface CourseStore {
   courses: Course[];
   setCourses: (courses: Course[]) => void;
-  selectedCourseId: string | null; // เก็บค่า course_Id ที่ถูกเลือก
-  setSelectedCourseId: (courseId: string) => void; // ฟังก์ชันสำหรับตั้งค่า course_Id ที่ถูกเลือก
+  selectedCourseId: string | null;
+  setSelectedCourseId: (courseId: string | null) => void;
 }
 
-// ใช้ persist middleware ในการเก็บ state ลงใน localStorage
+// กำหนดประเภทของ PersistOptions
+type MyPersist = (
+  config: StateCreator<CourseStore>,
+  options: PersistOptions<CourseStore>
+) => StateCreator<CourseStore>;
+
+// ใช้ with `persist` middleware
 export const useCourseStore = create<CourseStore>(
-  persist(
+  (persist as MyPersist)(
     (set) => ({
-      courses: [],
-      setCourses: (courses) => set({ courses }),
-      selectedCourseId: null, // กำหนดค่าเริ่มต้นเป็น null
-      setSelectedCourseId: (courseId) => set({ selectedCourseId: courseId }),
+      courses: [], // state เก็บข้อมูลคอร์สทั้งหมด
+      setCourses: (courses) => set({ courses }), // ฟังก์ชันสำหรับตั้งค่าคอร์ส
+      selectedCourseId: null, // state เก็บ id ของคอร์สที่ถูกเลือก
+      setSelectedCourseId: (courseId) => set({ selectedCourseId: courseId }), // ฟังก์ชันสำหรับตั้งค่า id ของคอร์สที่ถูกเลือก
     }),
     {
       name: 'course-storage', // ชื่อของ key ใน localStorage

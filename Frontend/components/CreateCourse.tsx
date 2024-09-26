@@ -1,45 +1,55 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Modal, Button, TextInput, Select, Checkbox } from '@mantine/core';
-import { useFetchSchools } from '../hooks/useFetchUniversities';
-import { useSchoolStore } from '../store/useUniversityStore';
-
+import { useCreateCourseStore } from '../store/useCreateCourseStore'; // นำเข้า Zustand store
+import { useCreateCourse } from '../hooks/UseCreateCourse'; // นำเข้า React Query hook
+import YearPicker from './YearPicker'; // นำเข้า YearPicker Component
 
 interface CreateCourseModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-
-
 const CreateCourse: React.FC<CreateCourseModalProps> = ({ isOpen, onClose }) => {
-  const [courseNumber, setCourseNumber] = useState('');
-  const [courseName, setCourseName] = useState('');
-  const [courseDescription, setCourseDescription] = useState('');
-  const [term, setTerm] = useState('');
-  const [year, setYear] = useState('');
-  const { schools, setSchools } = useSchoolStore();
-  const [entryCode, setEntryCode] = useState(false);
+  const {
+    courseNumber,
+    setCourseNumber,
+    courseName,
+    setCourseName,
+    courseDescription,
+    setCourseDescription,
+    term,
+    setTerm,
+    year,
+    setYear,
+    entryCode,
+    setEntryCode,
+    resetForm,
+  } = useCreateCourseStore(); // ดึง state และ functions จาก Zustand store
 
-
-  const { data: schoolData, isSuccess: schoolSuccess } = useFetchSchools();
-
-  useEffect(() => {
-    if (schoolSuccess && schoolData) {
-      setSchools(schoolData);
-    }
-  }, [schoolData, schoolSuccess, setSchools]);
+  // ดึงค่า mutate จากผลลัพธ์ของ useMutation
+  const { mutate } = useCreateCourse(); // ใช้ React Query custom hook
 
   const handleCreateCourse = () => {
-    console.log({
+    const courseData = {
       courseNumber,
       courseName,
       courseDescription,
       term,
       year,
-      schools,
       entryCode,
+    };
+
+    // เรียกใช้ mutation เพื่อสร้างคอร์สใหม่
+    mutate(courseData, {
+      onSuccess: () => {
+        console.log('Course created successfully');
+        resetForm(); // รีเซ็ตฟอร์มหลังจากสร้างคอร์สสำเร็จ
+        onClose(); // ปิด Modal หลังจากสร้างคอร์สเสร็จ
+      },
+      onError: (error) => {
+        console.error('Error creating course:', error);
+      },
     });
-    onClose(); // ปิด Modal หลังจากสร้าง Course
   };
 
   return (
@@ -83,27 +93,11 @@ const CreateCourse: React.FC<CreateCourseModalProps> = ({ isOpen, onClose }) => 
             required
             className="w-full"
           />
-          <Select
-            label="Year"
-            placeholder="Select year"
-            data={['2023', '2024', '2025']}
+          <YearPicker
             value={year}
-            onChange={(value) => setYear(value!)}
-            required
-            className="w-full"
+            onChange={setYear} // เชื่อมโยงกับ Zustand Store
           />
         </div>
-        <Select
-          label="University"
-          placeholder="Select your University"
-          data={schools?.map((school) => ({
-            value: school.id,  // ใช้ 'id' เป็น value
-            label: school.school,  // ใช้ 'school' เป็น label
-          })) || []}  // ถ้า schools ยังไม่ถูกดึงมาก็ให้เป็น array ว่าง
-          searchable  // ทำให้ช่องนี้สามารถพิมพ์ค้นหาได้
-          required
-          className="mb-2"
-        />
 
         <Checkbox
           label="Allow students to enroll via course entry code"
@@ -112,11 +106,7 @@ const CreateCourse: React.FC<CreateCourseModalProps> = ({ isOpen, onClose }) => 
           className="mt-4"
         />
         <div className="flex justify-end mt-4">
-          <Button
-            variant="default"
-            onClick={onClose}
-            className="mr-2"
-          >
+          <Button variant="default" onClick={onClose} className="mr-2">
             Cancel
           </Button>
           <Button onClick={handleCreateCourse}>
