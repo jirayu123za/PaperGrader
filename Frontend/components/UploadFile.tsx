@@ -1,66 +1,39 @@
-import React, { useCallback } from 'react';
-import { useFileStore } from '../store/FileStore';
-import { useUploadFile } from '../hooks/UploadFile';
+import React from 'react';
+import { useFileStore } from '../store/FileStore'; // ตรวจสอบ path ของการนำเข้าให้ถูกต้อง
+import { Button } from '@mantine/core';
 
-const UploadFile = () => {
-  const { setFile } = useFileStore();
-  const { mutate: uploadFile } = useUploadFile();
+const UploadFile: React.FC = () => {
+  // เรียกใช้ state และฟังก์ชันจาก FileStore
+  const { setTemplateFile, templateFile } = useFileStore();
 
+  // ฟังก์ชันจัดการการเปลี่ยนแปลงของไฟล์
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setFile(file);
+    if (event.currentTarget.files) {
+      setTemplateFile(event.currentTarget.files[0]);
     }
-  };
-
-  const handleUpload = () => {
-    uploadFile(); // ทำการอัปโหลดไฟล์
-  };
-  
-  const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    const file = event.dataTransfer.files?.[0];
-    if (file) {
-      setFile(file);
-    }
-  }, [setFile]);
-
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
   };
 
   return (
-    <div className="relative flex flex-col items-center justify-center h-screen bg-[#f5f5dc]">
-
-      {/* Drop files area */}
-      <div
-        className="border-dashed border-2 border-gray-400 rounded-md w-2/3 h-[40vh] flex items-center justify-center bg-white text-gray-700 mb-4"
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
+    <div className="flex items-center gap-4"> {/* ใช้ flex และ gap สำหรับจัดเรียงและเพิ่มระยะห่าง */}
+      {/* แสดงชื่อไฟล์ที่ถูกเลือกอยู่ทางซ้าย */}
+      {templateFile && (
+        <p className="text-sm text-gray-700">Selected file: {templateFile.name}</p>
+      )}
+      {/* ปุ่มสำหรับเลือกไฟล์อยู่ทางขวา */}
+      <input
+        type="file"
+        id="fileInput"
+        accept=".pdf"
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
+      <Button
+        onClick={() => document.getElementById('fileInput')?.click()}
+        variant="default"
+        size="xs"
       >
-        Drop files area
-      </div>
-
-      {/* Button and description in the center */}
-      <div className="flex flex-col items-center bg-[#edf4e0] p-4 rounded-md shadow-md absolute top-4 right-4">
-        <p className="text-center text-gray-700 mb-2">
-          Drop file anywhere on the page or select file using the button
-        </p>
-        <label className="bg-[#b7410e] text-white px-4 py-2 rounded-md cursor-pointer">
-          SELECT PDF FILES
-          <input
-            type="file"
-            onChange={handleFileChange}
-            className="hidden"
-            accept=".pdf"
-          />
-        </label>
-      </div>
-
-      {/* Invisible button for handling upload */}
-      <button onClick={handleUpload} className="hidden">
-        Upload
-      </button>
+        Select PDF
+      </Button>
     </div>
   );
 };
