@@ -13,8 +13,8 @@ type Assignment struct {
 	AssignmentName string    `gorm:"type:varchar(255);not null" json:"assignment_name"`
 	//AssignmentDescription string           `gorm:"type:varchar(255)" json:"assignment_description"`
 	SubmissBy       string           `gorm:"type:varchar(50)" json:"submiss_by"`
-	LateSubmiss     bool             `gorm:"not null" json:"late_submiss"`
-	GroupSubmiss    bool             `gorm:"not null" json:"group_submiss"`
+	LateSubmiss     bool             `gorm:"type:boolean;not null" json:"late_submiss"`
+	GroupSubmiss    bool             `gorm:"type:boolean;not null" json:"group_submiss"`
 	ReleaseDate     time.Time        `gorm:"not null" json:"release_date"`
 	DueDate         time.Time        `gorm:"not null" json:"due_date"`
 	AssignmentFiles []AssignmentFile `gorm:"foreignKey:AssignmentID"`
