@@ -47,8 +47,11 @@ func ConnectPostgres(migrate bool) *gorm.DB {
 				&models.Enrollment{},
 				&models.InstructorList{},
 				&models.Submission{},
-				&models.Upload{})
+				&models.Upload{}),
+				&models.University{}
+			)
 		*/
+
 		err := db.AutoMigrate(
 			&models.UserGroup{},
 			&models.User{},
