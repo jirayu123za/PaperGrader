@@ -45,11 +45,12 @@ func main() {
 
 	userRepo := adapters.NewGormUserRepository(db)
 	userService := services.NewUserService(userRepo)
-	userHandler := adapters.NewHttpUserHandler(userService)
 
 	oauthRepo := adapters.NewOAuthRepository()
 	oauthService := services.NewOAuthService(oauthRepo)
 	oauthHandler := adapters.NewHttpOAuthHandler(oauthService, userService)
+
+	userHandler := adapters.NewHttpUserHandler(userService, oauthService)
 
 	universityRepo := adapters.NewGormUniversityRepository(db)
 	universityService := services.NewUniversityService(universityRepo)

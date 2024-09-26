@@ -3,18 +3,21 @@ package adapters
 import (
 	"paperGrader/internal/core/services"
 	"paperGrader/internal/models"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 // Primary adapter
 type HttpUserHandler struct {
-	services services.UserService
+	services     services.UserService
+	oauthService services.OAuthService
 }
 
-func NewHttpUserHandler(services services.UserService) *HttpUserHandler {
+func NewHttpUserHandler(services services.UserService, oauthService services.OAuthService) *HttpUserHandler {
 	return &HttpUserHandler{
-		services: services,
+		services:     services,
+		oauthService: oauthService,
 	}
 }
 
@@ -28,6 +31,22 @@ func (h *HttpUserHandler) CreateUser(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create user"})
 	}
+
+	jwtToken, err := h.oauthService.GenerateUserJWT(user.UserID, user.GroupID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to generate JWT",
+			"error":   err,
+		})
+	}
+
+	c.Cookie(&fiber.Cookie{
+		Name:     "user_token",
+		Value:    jwtToken,
+		Expires:  time.Now().Add(time.Hour * 1),
+		HTTPOnly: true,
+		Secure:   true,
+	})
 
 	return c.Status(fiber.StatusCreated).JSON(user)
 }
