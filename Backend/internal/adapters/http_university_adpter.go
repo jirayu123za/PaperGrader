@@ -65,7 +65,15 @@ func (h *HttpUniversityHandler) GetUniversities(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(universities)
+	var response []map[string]string
+	for _, university := range universities {
+		response = append(response, map[string]string{
+			"university_id":   university.UniversityID.String(),
+			"university_name": university.UniversityName,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response)
 }
 
 func (h *HttpUniversityHandler) UpdateUniversity(c *fiber.Ctx) error {
