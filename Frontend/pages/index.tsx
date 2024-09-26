@@ -14,9 +14,9 @@ export default function LandingPage() {
     const token = urlParams.get('token');
 
     if (token) {
-      openSignUp(); 
+      openSignIn(); 
     }
-  }, [openSignUp]);
+  }, [openSignIn]);
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-[#f5f5dc]">
@@ -28,7 +28,7 @@ export default function LandingPage() {
         </nav>
         <div className="flex space-x-4 ">
           <Button className="bg-[#b7410e] text-[#fffffe]" onClick={openSignUp}>Sign Up</Button>
-          <Button className="bg-[#b7410e] text-[#fffffe]" onClick={openSignIn}>Sign In</Button>
+
         </div>
       </header>
 
@@ -63,7 +63,6 @@ export default function LandingPage() {
       </div>
 
       {/* คอมโพเนนต์ Login Popup */}
-      <SignIn opened={SignInOpened} onClose={closeSignIn} />
       <SignUp opened={signUpOpened} onClose={closeSignUp} />
     </div>
   );

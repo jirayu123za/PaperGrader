@@ -12,7 +12,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
   const { loginWithGoogle, loading, error } = useGoogleLogin(); // ใช้ custom hook ที่สร้างไว้
 
   const handleGoogleClick = () => {
-    loginWithGoogle(); // เรียกใช้งานฟังก์ชัน loginWithGoogle
+    loginWithGoogle(); 
   };
 
   return (
