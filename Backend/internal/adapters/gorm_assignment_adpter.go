@@ -60,9 +60,14 @@ func (r *GormAssignmentRepository) ModifyAssignment(assignment *models.Assignmen
 	if result := r.db.Find(&existingAssignment, "assignment_id = ?", assignment.AssignmentID); result.Error != nil {
 		return result.Error
 	}
+
 	existingAssignment.AssignmentName = assignment.AssignmentName
-	existingAssignment.AssignmentDescription = assignment.AssignmentDescription
+	//existingAssignment.AssignmentDescription = Assignment.AssignmentDescription
+	existingAssignment.SubmissBy = assignment.SubmissBy
+	existingAssignment.ReleaseDate = assignment.ReleaseDate
 	existingAssignment.DueDate = assignment.DueDate
+	existingAssignment.LateSubmiss = assignment.LateSubmiss
+	existingAssignment.GroupSubmiss = assignment.GroupSubmiss
 
 	if result := r.db.Save(&existingAssignment); result.Error != nil {
 		return result.Error
