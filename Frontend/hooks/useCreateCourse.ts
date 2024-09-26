@@ -5,41 +5,40 @@ import { useCreateCourseStore } from '../store/useCreateCourseStore';
 
 // Interface สำหรับการสร้างคอร์ส
 interface CreateCourseParams {
-  courseNumber: string;
-  courseName: string;
-  courseDescription?: string;
+  course_code: string;
+  course_name: string;
+  course_description?: string;
   term: string;
   year: string;
-  entryCode: boolean;
+  entry_code: boolean;
 }
 
 // ฟังก์ชันสำหรับสร้างคอร์สใหม่
 const createCourse = async (courseData: CreateCourseParams): Promise<any> => {
-  const response = await axios.post('/api/CreateCourse', courseData);
-  return response.data; // ค่าที่ถูก return จาก API จะถูกใช้ใน onSuccess หรือ mutateResult
+  console.log('courseData:', courseData);
+
+  const response = await axios.post('/api/api/course', courseData);
+  return response.data;
 };
 
 // Custom Hook สำหรับการสร้างคอร์ส
 export const useCreateCourse = (): UseMutationResult<
-  any, // Return type ของ mutation หลังจากการสร้างคอร์ส
-  Error, // ประเภทของ Error
-  CreateCourseParams, // ประเภทของข้อมูลที่ส่งเข้าไปใน mutation
-  unknown // ประเภทของ Context หากไม่ใช้สามารถตั้งเป็น unknown ได้
+  any,
+  Error,
+  CreateCourseParams,
+  unknown
 > => {
   const resetForm = useCreateCourseStore((state) => state.resetForm);
 
   return useMutation({
-    mutationFn: createCourse, // ใช้ mutationFn เพื่อระบุฟังก์ชันที่จะถูกเรียกเมื่อมีการเรียกใช้ mutation
+    mutationFn: createCourse,
     onSuccess: () => {
-      // เมื่อสร้างคอร์สสำเร็จ ให้ทำการ reset ฟอร์ม
       resetForm();
     },
     onError: (error: Error) => {
-      // จัดการข้อผิดพลาดที่นี่
       console.error("Error creating course:", error);
     },
     onSettled: () => {
-      // จะทำงานเมื่อเสร็จสิ้นการทำงาน (ไม่ว่าจะสำเร็จหรือเกิดข้อผิดพลาด)
       resetForm();
     },
   });

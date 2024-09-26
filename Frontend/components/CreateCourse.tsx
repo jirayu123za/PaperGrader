@@ -1,8 +1,8 @@
 import React from 'react';
 import { Modal, Button, TextInput, Select, Checkbox } from '@mantine/core';
-import { useCreateCourseStore } from '../store/useCreateCourseStore'; // นำเข้า Zustand store
-import { useCreateCourse } from '../hooks/UseCreateCourse'; // นำเข้า React Query hook
-import YearPicker from './YearPicker'; // นำเข้า YearPicker Component
+import { useCreateCourseStore } from '../store/useCreateCourseStore';
+import { useCreateCourse } from '../hooks/useCreateCourse';
+import YearPicker from './YearPicker';
 
 interface CreateCourseModalProps {
   isOpen: boolean;
@@ -11,40 +11,40 @@ interface CreateCourseModalProps {
 
 const CreateCourse: React.FC<CreateCourseModalProps> = ({ isOpen, onClose }) => {
   const {
-    courseNumber,
+    course_code,
     setCourseNumber,
-    courseName,
+    course_name,
     setCourseName,
-    courseDescription,
+    course_description,
     setCourseDescription,
     term,
     setTerm,
     year,
     setYear,
-    entryCode,
+    entry_code,
     setEntryCode,
     resetForm,
-  } = useCreateCourseStore(); // ดึง state และ functions จาก Zustand store
+  } = useCreateCourseStore();
 
   // ดึงค่า mutate จากผลลัพธ์ของ useMutation
-  const { mutate } = useCreateCourse(); // ใช้ React Query custom hook
+  const { mutate } = useCreateCourse();
 
-  const handleCreateCourse = () => {
+  const handleCreateCourse = async () => {
     const courseData = {
-      courseNumber,
-      courseName,
-      courseDescription,
+      course_code,
+      course_name,
+      course_description,
       term,
       year,
-      entryCode,
+      entry_code,
     };
 
     // เรียกใช้ mutation เพื่อสร้างคอร์สใหม่
     mutate(courseData, {
       onSuccess: () => {
         console.log('Course created successfully');
-        resetForm(); // รีเซ็ตฟอร์มหลังจากสร้างคอร์สสำเร็จ
-        onClose(); // ปิด Modal หลังจากสร้างคอร์สเสร็จ
+        resetForm();
+        onClose();
       },
       onError: (error) => {
         console.error('Error creating course:', error);
@@ -64,14 +64,14 @@ const CreateCourse: React.FC<CreateCourseModalProps> = ({ isOpen, onClose }) => 
         <TextInput
           label="Course Number"
           placeholder="eg. Econ 101"
-          value={courseNumber}
+          value={course_code}
           onChange={(event) => setCourseNumber(event.currentTarget.value)}
           required
         />
         <TextInput
           label="Course Name"
           placeholder="eg. Introduction to Macroeconomics"
-          value={courseName}
+          value={course_name}
           onChange={(event) => setCourseName(event.currentTarget.value)}
           required
           className="mt-4"
@@ -79,7 +79,7 @@ const CreateCourse: React.FC<CreateCourseModalProps> = ({ isOpen, onClose }) => 
         <TextInput
           label="Course Description"
           placeholder="Course description"
-          value={courseDescription}
+          value={course_description}
           onChange={(event) => setCourseDescription(event.currentTarget.value)}
           className="mt-4"
         />
@@ -95,13 +95,13 @@ const CreateCourse: React.FC<CreateCourseModalProps> = ({ isOpen, onClose }) => 
           />
           <YearPicker
             value={year}
-            onChange={setYear} // เชื่อมโยงกับ Zustand Store
+            onChange={setYear}
           />
         </div>
 
         <Checkbox
           label="Allow students to enroll via course entry code"
-          checked={entryCode}
+          checked={entry_code}
           onChange={(event) => setEntryCode(event.currentTarget.checked)}
           className="mt-4"
         />
