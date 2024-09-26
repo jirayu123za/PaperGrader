@@ -14,7 +14,7 @@ func GetUserIDFromJWT(c *fiber.Ctx) (uuid.UUID, error) {
 	config.LoadEnv()
 	jwtSecret := os.Getenv("JWT_SECRET")
 
-	userToken := c.Cookies("jwt-token")
+	userToken := c.Cookies("user_token")
 	if userToken == "" {
 		return uuid.UUID{}, fmt.Errorf("JWT token is missing")
 	}
