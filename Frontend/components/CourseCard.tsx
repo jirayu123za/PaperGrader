@@ -5,7 +5,7 @@ import { useCourseStore } from '../store/useCourseStore';
 import CreateCourse from './CreateCourse'; // Import CreateCourseModal component
 
 interface Course {
-  course_Id: string;
+  course_id: string;
   course_name: string;
 }
 
@@ -22,8 +22,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
 
   const handleSelectCourse = () => {
     if (course) {
-      setSelectedCourseId(course.course_Id);
-      router.push(`/courses/${course.course_Id}`);
+      setSelectedCourseId(course.course_id);
+      router.push(`/courses/${course.course_id}`);
     }
   };
 

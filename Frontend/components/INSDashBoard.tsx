@@ -7,7 +7,7 @@ const INSDashBoard = () => {
   // ดึงข้อมูลจาก store
   const selectedCourseId = useCourseStore((state) => state.selectedCourseId); 
   const selectedCourse = useCourseStore((state) =>
-    state.courses.find((course) => course.course_Id === selectedCourseId)
+    state.courses.find((course) => course.course_id === selectedCourseId)
   ); 
 
   // สร้าง state สำหรับควบคุมการแสดงผลของ modal
@@ -33,7 +33,7 @@ const INSDashBoard = () => {
       <div className="flex justify-between items-start mb-8">
         <div className="w-1/2">
           <h2 className="text-lg font-semibold mb-2">DESCRIPTION</h2>
-          <p className="text-gray-700">คำอธิบายคอร์สต่างๆ สามารถใส่ข้อมูลเพิ่มเติมได้</p>
+          <p className="text-gray-700">{selectedCourse ? selectedCourse.course_description : 'No description available.'}</p>
         </div>
         <div className="w-1/2">
           <h2 className="text-lg font-semibold mb-2">THINGS TO DO</h2>

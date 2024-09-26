@@ -11,7 +11,7 @@ const CourseOverview = () => {
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading courses: {error.message}</div>;
-
+    
   return (
     <div className="flex min-h-screen bg-gray-50">
 
@@ -20,7 +20,7 @@ const CourseOverview = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <CourseCard /> {/* Card สำหรับ Create a new course */}
           {courses.map((course :any) => (
-            <CourseCard key={course.course_Id} course={course} /> // แสดง CourseCard สำหรับแต่ละ course
+            <CourseCard key={course.course_id} course={course} /> // แสดง CourseCard สำหรับแต่ละ course
           ))}
         </div>
       </div>

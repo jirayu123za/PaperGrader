@@ -22,7 +22,7 @@ export default function LeftMain() {
     setIsCollapsed(!isCollapsed);
   };
 
-  const selectedCourse = courses.find((course) => course.course_Id === selectedCourseId);
+  const selectedCourse = courses.find((course) => course.course_id === selectedCourseId);
 
   return (
     <div className={`h-screen flex flex-col justify-between border-r border-gray-300 ${isCollapsed ? 'w-16 p-4' : 'w-64 p-6'} bg-gray-100`}>
