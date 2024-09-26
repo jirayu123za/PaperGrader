@@ -132,14 +132,15 @@ func (h *HttpOAuthHandler) GetGoogleCallBack(c *fiber.Ctx) error {
 			"user":     userInfo,
 		})
 	*/
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "User logged in via Google OAuth2",
-		"user":    user,
-	})
-
 	/*
-		redirectURL := "http://localhost:5173/dashboard"
-		return c.Redirect(http://localhost:5173/dashboard)
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"message": "User logged in via Google OAuth2",
+			"user":    user,
+		})
 
 	*/
+
+	redirectURL := "http://localhost:5173/CourseOverview"
+	return c.Redirect(redirectURL, fiber.StatusTemporaryRedirect)
+
 }
