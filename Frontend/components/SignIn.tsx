@@ -5,6 +5,7 @@ import { Modal, Button, TextInput, Select } from '@mantine/core';
 import { useFetchUniversity } from '../hooks/useFetchUniversities';
 import { useCreateUser } from '../hooks/useCreateUser'; 
 import { jwtDecode } from 'jwt-decode';
+import { useRouter } from 'next/router';
 
 interface SignUpProps {
   opened: boolean;
@@ -26,6 +27,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
   const { universities, setUniversities } = useUniversityStore();
   const { data: universityData, isSuccess: universitySuccess } = useFetchUniversity();
   const createUserMutation = useCreateUser();
+  const router = useRouter();
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -69,6 +71,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
       onSuccess: () => {
         console.log("User created successfully");
         onClose();
+        router.push("/CourseOverview");
       },
       onError: (error) => {
         console.error("Error creating user:", error);
