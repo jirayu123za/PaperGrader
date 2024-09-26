@@ -28,7 +28,6 @@ export default function LandingPage() {
         </nav>
         <div className="flex space-x-4 ">
           <Button className="bg-[#b7410e] text-[#fffffe]" onClick={openSignUp}>Sign Up</Button>
-
         </div>
       </header>
 
@@ -63,6 +62,7 @@ export default function LandingPage() {
       </div>
 
       {/* คอมโพเนนต์ Login Popup */}
+      <SignIn opened={SignInOpened} onClose={closeSignIn} />
       <SignUp opened={signUpOpened} onClose={closeSignUp} />
     </div>
   );
