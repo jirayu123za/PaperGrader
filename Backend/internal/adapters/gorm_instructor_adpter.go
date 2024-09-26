@@ -34,8 +34,11 @@ func (r *GormInstructorRepository) AddAssignment(CourseID uuid.UUID, assignment 
 
 func (r *GormInstructorRepository) FindCoursesByUserID(UserID uuid.UUID) ([]*models.Course, error) {
 	var courses []*models.Course
-	if result := r.db.Find(&courses, "user_id = ?", UserID); result.Error != nil {
-		return nil, result.Error
+	if err := r.db.
+		Joins("JOIN instructor_lists ON instructor_lists.course_id = courses.course_id").
+		Where("instructor_lists.user_id = ?", UserID).
+		Find(&courses).Error; err != nil {
+		return nil, err
 	}
 	return courses, nil
 }
