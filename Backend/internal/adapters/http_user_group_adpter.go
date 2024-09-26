@@ -72,9 +72,18 @@ func (h *HttpUserGroupHandler) GetUserGroups(c *fiber.Ctx) error {
 		})
 	}
 
+	var response []map[string]interface{}
+	for _, userGroup := range userGroups {
+		response = append(response, map[string]interface{}{
+			"group_id":   strconv.FormatUint(uint64(userGroup.GroupID), 10),
+			"group_name": userGroup.GroupName,
+			"Users":      userGroup.Users,
+		})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":    "User groups found",
-		"userGroups": userGroups,
+		"userGroups": response,
 	})
 }
 
