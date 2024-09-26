@@ -67,6 +67,10 @@ func main() {
 	assignmentService := services.NewAssignmentService(assignmentRepo, courseRepo)
 	assignmentHandler := adapters.NewHttpAssignmentHandler(assignmentService)
 
+	instructorRepo := adapters.NewGormInstructorRepository(db)
+	instructorService := services.NewInstructorService(instructorRepo, courseRepo)
+	instructorHandler := adapters.NewHttpInstructorHandler(instructorService)
+
 	// Routes
 	api := app.Group("/")
 	apiGroup := api.Group("/api")
@@ -117,6 +121,11 @@ func main() {
 	apiGroup.Get("/assignment/course", assignmentHandler.GetAssignmentsByCourseID)
 	apiGroup.Put("/assignment", assignmentHandler.UpdateAssignment)
 	apiGroup.Delete("/assignment", assignmentHandler.DeleteAssignment)
+
+	apiGroup.Post("/instructor", instructorHandler.CreateAssignment)
+	apiGroup.Get("/instructor/assignments", instructorHandler.GetAssignmentsByCourseID)
+	apiGroup.Get("/instructor/courses", instructorHandler.GetCoursesByUserID)
+	apiGroup.Get("/instructor/assignments/active", instructorHandler.GetActiveAssignmentsByCourseID)
 
 	if err := app.Listen(":" + port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)

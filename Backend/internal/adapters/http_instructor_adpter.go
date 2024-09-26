@@ -1,0 +1,126 @@
+package adapters
+
+import (
+	"paperGrader/internal/core/services"
+	"paperGrader/internal/core/utils"
+	"paperGrader/internal/models"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+)
+
+// Primary adapters
+type HttpInstructorHandler struct {
+	services services.InstructorService
+}
+
+func NewHttpInstructorHandler(services services.InstructorService) *HttpInstructorHandler {
+	return &HttpInstructorHandler{
+		services: services,
+	}
+}
+
+func (h *HttpInstructorHandler) CreateAssignment(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	var assignment models.Assignment
+	if err := c.BodyParser(&assignment); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Failed to parse request body",
+			"error":   err.Error(),
+		})
+	}
+
+	if err := h.services.CreateAssignment(courseID, &assignment); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to create assignment",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message":    "Assignment is created",
+		"assignment": assignment,
+	})
+}
+
+func (h *HttpInstructorHandler) GetCoursesByUserID(c *fiber.Ctx) error {
+	userID, err := utils.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid user_id in JWT",
+			"error":   err.Error(),
+		})
+	}
+
+	courses, err := h.services.GetCoursesByUserID(userID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get courses",
+			"error":   err.Error(),
+		})
+	}
+
+	// Modify the response to only return ...
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Courses are retrieved",
+		"courses": courses,
+	})
+}
+
+func (h *HttpInstructorHandler) GetAssignmentsByCourseID(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	assignments, err := h.services.GetAssignmentsByCourseID(courseID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get assignments",
+			"error":   err.Error(),
+		})
+	}
+
+	// Modify the response to only return ...
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":     "Assignments are retrieved",
+		"assignments": assignments,
+	})
+}
+
+func (h *HttpInstructorHandler) GetActiveAssignmentsByCourseID(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	activeAssignments, err := h.services.GetActiveAssignmentsByCourseID(courseID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get active assignments",
+			"error":   err.Error(),
+		})
+	}
+
+	// Modify the response to only return ...
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":            "Active assignments are retrieved",
+		"active_assignments": activeAssignments,
+	})
+}
