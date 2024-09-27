@@ -124,3 +124,35 @@ func (h *HttpInstructorHandler) GetActiveAssignmentsByCourseID(c *fiber.Ctx) err
 		"active_assignments": activeAssignments,
 	})
 }
+
+func (h *HttpInstructorHandler) GetInstructorsNameByCourseID(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	instructors, err := h.services.GetInstructorsNameByCourseID(courseID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get instructors",
+			"error":   err.Error(),
+		})
+	}
+
+	var response []map[string]interface{}
+	for _, ins := range instructors {
+		response = append(response, map[string]interface{}{
+			"instructor_name": ins.FirstName + " " + ins.LastName,
+		})
+	}
+
+	// Modify the response to only return ...
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":     "Instructors are retrieved",
+		"instructors": response,
+	})
+}

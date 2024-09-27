@@ -13,6 +13,7 @@ type InstructorService interface {
 	GetCoursesByUserID(UserID uuid.UUID) ([]*models.Course, error)
 	GetAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error)
 	GetActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error)
+	GetInstructorsNameByCourseID(CourseID uuid.UUID) ([]*models.User, error)
 }
 
 type InstructorServiceImpl struct {
@@ -62,4 +63,12 @@ func (s *InstructorServiceImpl) GetActiveAssignmentsByCourseID(CourseID uuid.UUI
 		return nil, err
 	}
 	return activeAssignments, nil
+}
+
+func (s *InstructorServiceImpl) GetInstructorsNameByCourseID(CourseID uuid.UUID) ([]*models.User, error) {
+	instructors, err := s.repo.FindInstructorsNameByCourseID(CourseID)
+	if err != nil {
+		return nil, err
+	}
+	return instructors, nil
 }

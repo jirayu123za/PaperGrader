@@ -58,3 +58,14 @@ func (r *GormInstructorRepository) FindActiveAssignmentsByCourseID(CourseID uuid
 	}
 	return nil, nil
 }
+
+func (r *GormInstructorRepository) FindInstructorsNameByCourseID(CourseID uuid.UUID) ([]*models.User, error) {
+	var instructors []*models.User
+	if err := r.db.
+		Joins("JOIN instructor_lists ON instructor_lists.user_id = users.user_id").
+		Where("instructor_lists.course_id = ?", CourseID).
+		Find(&instructors).Error; err != nil {
+		return nil, err
+	}
+	return instructors, nil
+}

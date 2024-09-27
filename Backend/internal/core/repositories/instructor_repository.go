@@ -18,4 +18,5 @@ type InstructorRepository interface {
 	FindCoursesByUserID(UserID uuid.UUID) ([]*models.Course, error)
 	FindAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error)
 	FindActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error)
+	FindInstructorsNameByCourseID(CourseID uuid.UUID) ([]*models.User, error)
 }
