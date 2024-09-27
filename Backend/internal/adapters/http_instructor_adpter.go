@@ -133,10 +133,26 @@ func (h *HttpInstructorHandler) GetActiveAssignmentsByCourseID(c *fiber.Ctx) err
 		})
 	}
 
+	var response []map[string]interface{}
+	for _, activeAssignment := range activeAssignments {
+
+		releaseDate := activeAssignment.ReleaseDate.Format("02-01-2006")
+		dueDate := activeAssignment.DueDate.Format("02-01-2006")
+		cutOffDate := activeAssignment.CutOffDate.Format("02-01-2006")
+
+		response = append(response, map[string]interface{}{
+			"assignment_id":           activeAssignment.AssignmentID,
+			"assignment_name":         activeAssignment.AssignmentName,
+			"assignment_release_date": releaseDate,
+			"assignment_due_date":     dueDate,
+			"assignment_cut_off_date": cutOffDate,
+		})
+	}
+
 	// Modify the response to only return ...
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":            "Active assignments are retrieved",
-		"active_assignments": activeAssignments,
+		"active_assignments": response,
 	})
 }
 
