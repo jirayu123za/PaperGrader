@@ -11,6 +11,7 @@ interface AssignmentData {
   releaseDate: string;
   dueDate: string;
   allowLateSubmission: boolean;
+  cutOffDate: string; // เพิ่ม cutOffDate
 }
 
 // ฟังก์ชันสำหรับสร้าง Assignment ใหม่
@@ -24,6 +25,11 @@ const createAssignment = async (assignmentData: AssignmentData) => {
   formData.append('releaseDate', assignmentData.releaseDate);
   formData.append('dueDate', assignmentData.dueDate);
   formData.append('allowLateSubmission', String(assignmentData.allowLateSubmission));
+  
+  // เพิ่ม cutOffDate ถ้ามีการอนุญาต late submissions
+  if (assignmentData.allowLateSubmission) {
+    formData.append('cutOffDate', assignmentData.cutOffDate);
+  }
 
   const response = await axios.post('/api/assignments', formData, {
     headers: {

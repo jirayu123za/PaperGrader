@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Modal, Button, TextInput, RadioGroup, Radio, Checkbox } from '@mantine/core';
 import { useAssignmentStore } from '../store/AssignmentStore'; // นำเข้า Zustand store
 import { useCreateAssignment } from '../hooks/useCreateAssignment'; // นำเข้า Custom Hook
@@ -22,6 +22,8 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
     setDueDate,
     allowLateSubmission,
     setAllowLateSubmission,
+    cutOffDate,
+    setCutOffDate, // ใช้ setter ของ cutOffDate
   } = useAssignmentStore(); // ดึง state และ functions จาก Zustand store
 
   const { templateFile } = useFileStore(); // ใช้ useFileStore สำหรับจัดการ state ของไฟล์
@@ -35,6 +37,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
       releaseDate,
       dueDate,
       allowLateSubmission,
+      cutOffDate: allowLateSubmission ? cutOffDate : '', // ส่ง cutOffDate เมื่ออนุญาตให้ส่งล่าช้า
     };
 
     // เรียกใช้ mutation เพื่อสร้าง assignment ใหม่
@@ -108,6 +111,17 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
           checked={allowLateSubmission}
           onChange={(event) => setAllowLateSubmission(event.currentTarget.checked)}
         />
+        {/* แสดง Cut off Date ถ้ามีการเลือก Allow late submissions */}
+        {allowLateSubmission && (
+          <TextInput
+            label="Cut off Date"
+            placeholder="Select cut off date"
+            type="date"
+            value={cutOffDate}
+            onChange={(event) => setCutOffDate(event.currentTarget.value)}
+            className="mt-4"
+          />
+        )}
         <div className="flex justify-end mt-6">
           <Button onClick={handleCreateAssignment}>
             Create Assignment
