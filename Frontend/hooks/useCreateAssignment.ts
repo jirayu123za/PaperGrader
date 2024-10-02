@@ -16,16 +16,19 @@ interface AssignmentData {
 // ฟังก์ชันสำหรับสร้าง Assignment ใหม่
 const createAssignment = async (assignmentData: AssignmentData) => {
   const formData = new FormData();
+
   formData.append('assignmentName', assignmentData.assignmentName);
+
   if (assignmentData.templateFile) {
     formData.append('templateFile', assignmentData.templateFile);
   }
+
   formData.append('uploadBy', assignmentData.uploadBy);
   formData.append('releaseDate', assignmentData.releaseDate);
   formData.append('dueDate', assignmentData.dueDate);
   formData.append('allowLateSubmission', String(assignmentData.allowLateSubmission));
 
-  const response = await axios.post('/api/assignments', formData, {
+  const response = await axios.post('/api/api/assignment', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -33,17 +36,16 @@ const createAssignment = async (assignmentData: AssignmentData) => {
   return response.data;
 };
 
-// Custom Hook สำหรับการสร้าง Assignment โดยใช้ mutationFn
 export const useCreateAssignment = () => {
   const reset = useAssignmentStore((state) => state.reset);
 
   return useMutation({
-    mutationFn: createAssignment, // ใช้ mutationFn ระบุฟังก์ชันที่ต้องการใช้เมื่อมีการเรียกใช้งาน
+    mutationFn: createAssignment,
     onSuccess: () => {
-      reset(); // รีเซ็ต state หลังจากสร้างสำเร็จ
+      reset();
     },
     onError: (error: any) => {
-      console.error("Error creating assignment:", error); // จัดการข้อผิดพลาดที่นี่
+      console.error("Error creating assignment:", error);
     },
   });
 };
