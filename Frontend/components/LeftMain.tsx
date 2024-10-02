@@ -61,16 +61,21 @@ export default function LeftMain() {
               {!isCollapsed && <span>Dashboard</span>}
             </button>
           </Link>
+
           <Link href={selectedCourseId ? `/courses/${selectedCourseId}/Assignment` : '#'} passHref>
             <button className="flex items-center space-x-2 hover:text-teal-700" disabled={!selectedCourseId}>
               <FaFileAlt />
               {!isCollapsed && <span>Assignments</span>}
             </button>
           </Link>
+
+          <Link href={selectedCourseId ? `/courses/${selectedCourseId}/ManageRoster` : '#'} passHref>
           <button className="flex items-center space-x-2 hover:text-teal-700" disabled={!selectedCourseId}>
             <FaUsers />
             {!isCollapsed && <span>Roster</span>}
           </button>
+          </Link>
+
           <button className="flex items-center space-x-2 hover:text-teal-700" disabled={!selectedCourseId}>
             <IoStatsChart />
             {!isCollapsed && <span>Statistic</span>}

@@ -63,9 +63,10 @@ const CreateCourse: React.FC<CreateCourseModalProps> = ({ isOpen, onClose }) => 
       <div>
         <TextInput
           label="Course Number"
-          placeholder="eg. Econ 101"
+          placeholder="eg. 261214 "
           value={course_code}
           onChange={(event) => setCourseNumber(event.currentTarget.value)}
+          type="number"
           required
         />
         <TextInput
@@ -85,8 +86,8 @@ const CreateCourse: React.FC<CreateCourseModalProps> = ({ isOpen, onClose }) => 
         />
         <div className="flex gap-4 mt-4">
           <Select
-            label="Term"
-            placeholder="Select term"
+            label="Semester"
+            placeholder="Select semester"
             data={['1', '2', '3']}
             value={term}
             onChange={(value) => setTerm(value!)}

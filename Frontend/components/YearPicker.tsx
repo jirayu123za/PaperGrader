@@ -12,13 +12,13 @@ const YearPicker: React.FC<YearPickerProps> = ({ value, onChange }) => {
 
   return (
     <Select
-      label="Year"
-      placeholder="Select year"
+      label="Academia year"
+      placeholder="Select Academia year"
       data={yearOptions}
       value={value}
       onChange={(value) => {
         if (value) {
-          onChange(value); // เรียกใช้ onChange เฉพาะเมื่อ value ไม่ใช่ null
+          onChange(value);
         }
       }}
       required
