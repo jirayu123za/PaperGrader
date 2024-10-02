@@ -4,15 +4,12 @@ import CreateAssignmentModal from '../components/CreateAssignment';
 
 
 const INSDashBoard = () => {
-  // ดึงข้อมูลจาก store
   const selectedCourseId = useCourseStore((state) => state.selectedCourseId); 
   const selectedCourse = useCourseStore((state) =>
     state.courses.find((course) => course.course_id === selectedCourseId)
   ); 
 
-  // สร้าง state สำหรับควบคุมการแสดงผลของ modal
   const [isModalOpen, setIsModalOpen] = useState(false);
-
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -26,7 +23,6 @@ const INSDashBoard = () => {
             {selectedCourse ? `${selectedCourse.course_name} ${selectedCourse.semester}` : 'No Course Selected'}
           </h1>
         </div>
-
       </div>
 
       {/* Section สำหรับ DESCRIPTION และ THINGS TO DO */}
@@ -50,7 +46,7 @@ const INSDashBoard = () => {
           <h2 className="text-xl font-semibold">Active Assignments</h2>
           <button
             className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-300"
-            onClick={openModal} // เปิด Modal เมื่อคลิกปุ่มนี้
+            onClick={openModal}
           >
             Create Assignment
           </button>
