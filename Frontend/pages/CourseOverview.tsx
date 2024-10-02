@@ -12,6 +12,7 @@ const CourseOverview = () => {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading courses: {error.message}</div>;
     
+
   return (
     <div className="flex min-h-screen bg-gray-50">
 
