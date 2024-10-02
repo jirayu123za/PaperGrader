@@ -5,8 +5,8 @@ interface FileStoreState {
   setFiles: (files: File[]) => void;
   addFile: (file: File) => void;
   removeFile: (fileName: string) => void;
-  templateFile: File | null; // เพิ่ม templateFile
-  setTemplateFile: (file: File | null) => void; // เพิ่ม setTemplateFile
+  templateFile: File | null;
+  setTemplateFile: (file: File | null) => void;
 }
 
 export const useFileStore = create<FileStoreState>((set) => ({
@@ -20,6 +20,6 @@ export const useFileStore = create<FileStoreState>((set) => ({
     set((state) => ({
       files: state.files.filter((file) => file.name !== fileName),
     })),
-  templateFile: null, // กำหนดค่าเริ่มต้นให้ templateFile
-  setTemplateFile: (file) => set({ templateFile: file }), // ฟังก์ชันสำหรับตั้งค่า templateFile
+  templateFile: null,
+  setTemplateFile: (file) => set({ templateFile: file }),
 }));

@@ -12,17 +12,19 @@ interface CreateAssignmentModalProps {
 
 const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, onClose }) => {
   const {
-    assignmentName,
+    assignment_name,
     setAssignmentName,
-    uploadBy,
+    submiss_by,
     setUploadBy,
-    releaseDate,
+    release_date,
     setReleaseDate,
-    dueDate,
+    due_date,
     setDueDate,
-    allowLateSubmission,
+    group_submiss,
+    setGroupSubmiss,
     setAllowLateSubmission,
-    cutOffDate,
+    late_submiss,
+    cut_off_date,
     setCutOffDate,
   } = useAssignmentStore();
 
@@ -31,13 +33,14 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
 
   const handleCreateAssignment = () => {
     const assignmentData = {
-      assignmentName,
+      assignment_name,
       templateFile,
-      uploadBy,
-      releaseDate,
-      dueDate,
-      allowLateSubmission,
-      cutOffDate: allowLateSubmission ? cutOffDate : '',
+      submiss_by,
+      release_date,
+      due_date,
+      group_submiss,
+      late_submiss,
+      cut_off_date: late_submiss ? cut_off_date : '',
     };
 
     console.log('assignmentData:', assignmentData);
@@ -65,7 +68,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
         <TextInput
           label="Assignment Name"
           placeholder="Name your assignment"
-          value={assignmentName}
+          value={assignment_name}
           onChange={(event) => setAssignmentName(event.currentTarget.value)}
           required
           className="mb-4"
@@ -77,20 +80,20 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
         </div>
         <div className="mt-4">
           <p className="text-sm text-gray-500 mb-1">Who will upload submissions?</p>
-          <RadioGroup value={uploadBy} onChange={setUploadBy} required>
+          <RadioGroup value={submiss_by} onChange={setUploadBy} required>
             <div className="flex justify-start gap-8">
               <Radio value="instructor" label="Instructor" />
               <Radio value="student" label="Student" />
             </div>
           </RadioGroup>
         </div>
-        <div className="flex justify-between mt-4 gap-4">
+        <div className="flex justify-between mt-4 mb-4 gap-4">
           <div className="w-full">
             <TextInput
               label="Release Date (EDT)"
               placeholder="Select release date"
               type="date"
-              value={releaseDate}
+              value={release_date}
               onChange={(event) => setReleaseDate(event.currentTarget.value)}
               required
             />
@@ -100,25 +103,30 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
               label="Due Date (EDT)"
               placeholder="Select due date"
               type="date"
-              value={dueDate}
+              value={due_date}
               onChange={(event) => setDueDate(event.currentTarget.value)}
               required
             />
           </div>
         </div>
         <Checkbox
-          className="mt-4"
           label="Allow late submissions"
-          checked={allowLateSubmission}
+          checked={late_submiss}
           onChange={(event) => setAllowLateSubmission(event.currentTarget.checked)}
+          className="mb-1"
+        />
+        <Checkbox
+          label="Allow group submissions"
+          checked={group_submiss}
+          onChange={(event) => setGroupSubmiss(event.currentTarget.checked)}
         />
         {/* แสดง Cut off Date ถ้ามีการเลือก Allow late submissions */}
-        {allowLateSubmission && (
+        {late_submiss && (
           <TextInput
             label="Cut off Date"
             placeholder="Select cut off date"
             type="date"
-            value={cutOffDate}
+            value={cut_off_date}
             onChange={(event) => setCutOffDate(event.currentTarget.value)}
             className="mt-4"
           />

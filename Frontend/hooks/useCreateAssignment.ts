@@ -1,35 +1,36 @@
-// useCreateAssignment.ts
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAssignmentStore } from '../store/AssignmentStore';
 
 // Interface สำหรับข้อมูล Assignment
 interface AssignmentData {
-  assignmentName: string;
+  assignment_name: string;
   templateFile: File | null;
-  uploadBy: string;
-  releaseDate: string;
-  dueDate: string;
-  allowLateSubmission: boolean;
-  cutOffDate: string;
+  submiss_by: string;
+  release_date: string;
+  due_date: string;
+  group_submiss: boolean;
+  late_submiss: boolean;
+  cut_off_date: string;
 }
 
 const createAssignment = async (assignmentData: AssignmentData) => {
   const formData = new FormData();
 
-  formData.append('assignmentName', assignmentData.assignmentName);
+  formData.append('assignment_name', assignmentData.assignment_name);
 
   if (assignmentData.templateFile) {
     formData.append('templateFile', assignmentData.templateFile);
   }
 
-  formData.append('uploadBy', assignmentData.uploadBy);
-  formData.append('releaseDate', assignmentData.releaseDate);
-  formData.append('dueDate', assignmentData.dueDate);
-  formData.append('allowLateSubmission', String(assignmentData.allowLateSubmission));
+  formData.append('submiss_by', assignmentData.submiss_by);
+  formData.append('release_date', assignmentData.release_date);
+  formData.append('due_date', assignmentData.due_date);
+  formData.append('group_submiss', String(assignmentData.group_submiss));
+  formData.append('late_submiss', String(assignmentData.late_submiss));
 
-  if (assignmentData.allowLateSubmission) {
-    formData.append('cutOffDate', assignmentData.cutOffDate);
+  if (assignmentData.late_submiss) {
+    formData.append('cut_off_date', assignmentData.cut_off_date);
   }
 
   const response = await axios.post('/api/api/assignment', formData, {

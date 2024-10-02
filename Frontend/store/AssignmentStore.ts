@@ -1,46 +1,51 @@
 import create from 'zustand';
 
 interface AssignmentStore {
-  assignmentName: string;
+  assignment_name: string;
   templateFile: File | null;
-  uploadBy: string;
-  releaseDate: string;
-  dueDate: string;
-  allowLateSubmission: boolean;
-  cutOffDate: string;
+  submiss_by: string;
+  release_date: string;
+  due_date: string;
+  group_submiss: boolean;
+  late_submiss: boolean;
+  cut_off_date: string;
   setAssignmentName: (name: string) => void;
   setTemplateFile: (file: File | null) => void;
   setUploadBy: (uploadBy: string) => void;
   setReleaseDate: (date: string) => void;
   setDueDate: (date: string) => void;
+  setGroupSubmiss: (submission: boolean) => void;
   setAllowLateSubmission: (allow: boolean) => void;
   setCutOffDate: (date: string) => void;
   reset: () => void;
 }
 
 export const useAssignmentStore = create<AssignmentStore>((set) => ({
-  assignmentName: '',
+  assignment_name: '',
   templateFile: null,
-  uploadBy: 'student',
-  releaseDate: '',
-  dueDate: '',
-  allowLateSubmission: false,
-  cutOffDate: '',
-  setAssignmentName: (name) => set({ assignmentName: name }),
+  submiss_by: 'student',
+  release_date: '',
+  due_date: '',
+  group_submiss: false,
+  late_submiss: false,
+  cut_off_date: '',
+  setAssignmentName: (name) => set({ assignment_name: name }),
   setTemplateFile: (file) => set({ templateFile: file }),
-  setUploadBy: (uploadBy) => set({ uploadBy }),
-  setReleaseDate: (date) => set({ releaseDate: date }),
-  setDueDate: (date) => set({ dueDate: date }),
-  setAllowLateSubmission: (allow) => set({ allowLateSubmission: allow }),
-  setCutOffDate: (date) => set({ cutOffDate: date }),
+  setUploadBy: (submiss_by) => set({ submiss_by }),
+  setReleaseDate: (date) => set({ release_date: date }),
+  setDueDate: (date) => set({ due_date: date }),
+  setGroupSubmiss: (submission: boolean) => set({ group_submiss: submission }),
+  setAllowLateSubmission: (allow) => set({ late_submiss: allow }),
+  setCutOffDate: (date) => set({ cut_off_date: date }),
   reset: () =>
     set({
-      assignmentName: '',
+      assignment_name: '',
       templateFile: null,
-      uploadBy: 'student',
-      releaseDate: '',
-      dueDate: '',
-      allowLateSubmission: false,
-      cutOffDate: '',
+      submiss_by: 'student',
+      release_date: '',
+      due_date: '',
+      group_submiss: false,
+      late_submiss: false,
+      cut_off_date: '',
     }),
 }));
