@@ -15,9 +15,8 @@ export const useFetchCourses = () => {
       }
       const data = await response.json();
 
-      // Map data to match Course interface
       const transformedData = data.courses.map((course: any) => ({
-        course_id: course.course_id, // Ensure the key matches the Course interface
+        course_id: course.course_id,
         course_name: course.course_name,
         course_code: course.course_code,
         semester: course.term,

@@ -1,5 +1,5 @@
 // useCreateCourse.ts
-import { useMutation,useQueryClient,UseMutationResult } from '@tanstack/react-query';
+import { useMutation, useQueryClient, UseMutationResult } from '@tanstack/react-query';
 import axios from 'axios';
 import { useCreateCourseStore } from '../store/useCreateCourseStore';
 
@@ -21,7 +21,6 @@ const createCourse = async (courseData: CreateCourseParams): Promise<any> => {
   return response.data;
 };
 
-// Custom Hook สำหรับการสร้างคอร์ส
 export const useCreateCourse = (): UseMutationResult<
   any,
   Error,
@@ -35,7 +34,7 @@ export const useCreateCourse = (): UseMutationResult<
     mutationFn: createCourse,
     onSuccess: () => {
       resetForm();
-      queryClient.invalidateQueries('courses');
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
     },
     onError: (error: Error) => {
       console.error("Error creating course:", error);

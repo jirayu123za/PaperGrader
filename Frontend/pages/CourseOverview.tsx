@@ -1,13 +1,13 @@
 // CourseOverview.tsx
 import React from 'react';
-import { useFetchCourses } from '../hooks/useFetchCourse'; // Import custom hook
-import { useCourseStore } from '../store/useCourseStore'; // Import Zustand store
-import CourseCard from '../components/CourseCard'; // Import CourseCard component
+import { useFetchCourses } from '../hooks/useFetchCourse';
+import { useCourseStore } from '../store/useCourseStore';
+import CourseCard from '../components/CourseCard';
 
 
 const CourseOverview = () => {
-  const { data: courses, isLoading, error } = useFetchCourses(); // ดึงข้อมูล courses ทั้งหมด
-  const selectedCourseId = useCourseStore((state) => state.selectedCourseId); // ดึง selectedCourseId จาก store
+  const { data: courses, isLoading, error } = useFetchCourses();
+  const selectedCourseId = useCourseStore((state) => state.selectedCourseId);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading courses: {error.message}</div>;
@@ -21,7 +21,7 @@ const CourseOverview = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <CourseCard /> {/* Card สำหรับ Create a new course */}
           {courses.map((course :any) => (
-            <CourseCard key={course.course_id} course={course} /> // แสดง CourseCard สำหรับแต่ละ course
+            <CourseCard key={course.course_id} course={course} />
           ))}
         </div>
       </div>

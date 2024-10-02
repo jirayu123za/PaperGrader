@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Modal, Button, TextInput, RadioGroup, Radio, Checkbox } from '@mantine/core';
-import { useAssignmentStore } from '../store/AssignmentStore'; // นำเข้า Zustand store
-import { useCreateAssignment } from '../hooks/useCreateAssignment'; // นำเข้า Custom Hook
-import UploadFile from './UploadFile'; // นำเข้า UploadFile component
-import { useFileStore } from '../store/FileStore'; // นำเข้า useFileStore สำหรับจัดการไฟล์
+import { useAssignmentStore } from '../store/AssignmentStore';
+import { useCreateAssignment } from '../hooks/useCreateAssignment';
+import UploadFile from './UploadFile';
+import { useFileStore } from '../store/FileStore';
 
 interface CreateAssignmentModalProps {
   isOpen: boolean;
@@ -23,11 +23,11 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
     allowLateSubmission,
     setAllowLateSubmission,
     cutOffDate,
-    setCutOffDate, // ใช้ setter ของ cutOffDate
-  } = useAssignmentStore(); // ดึง state และ functions จาก Zustand store
+    setCutOffDate,
+  } = useAssignmentStore();
 
-  const { templateFile } = useFileStore(); // ใช้ useFileStore สำหรับจัดการ state ของไฟล์
-  const { mutate } = useCreateAssignment(); // ใช้ custom hook สำหรับการสร้าง assignment
+  const { templateFile } = useFileStore();
+  const { mutate } = useCreateAssignment();
 
   const handleCreateAssignment = () => {
     const assignmentData = {
@@ -37,14 +37,15 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
       releaseDate,
       dueDate,
       allowLateSubmission,
-      cutOffDate: allowLateSubmission ? cutOffDate : '', // ส่ง cutOffDate เมื่ออนุญาตให้ส่งล่าช้า
+      cutOffDate: allowLateSubmission ? cutOffDate : '',
     };
 
-    // เรียกใช้ mutation เพื่อสร้าง assignment ใหม่
+    console.log('assignmentData:', assignmentData);
+
     mutate(assignmentData, {
       onSuccess: () => {
         console.log('Assignment created successfully');
-        onClose(); // ปิด modal หลังจากสร้างสำเร็จ
+        onClose();
       },
       onError: (error) => {
         console.error('Error creating assignment:', error);
@@ -60,19 +61,19 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
       size="lg"
       overlayProps={{ opacity: 0.55, blur: 3 }}
     >
-      <div className="p-4"> {/* เพิ่ม padding รอบๆ เนื้อหา */}
+      <div className="p-4">
         <TextInput
           label="Assignment Name"
           placeholder="Name your assignment"
           value={assignmentName}
           onChange={(event) => setAssignmentName(event.currentTarget.value)}
           required
-          className="mb-4" // เพิ่มระยะห่างด้านล่าง
+          className="mb-4"
         />
         {/* ส่วนสำหรับการอัพโหลดไฟล์ */}
-        <div className="flex items-center justify-between mb-4"> {/* ใช้ flex เพื่อจัดแนวให้ตรง */}
-          <p className="text-sm text-gray-700">Upload File</p> {/* ข้อความ Upload File อยู่ด้านซ้าย */}
-          <UploadFile /> {/* ปุ่ม Select PDF อยู่ด้านขวา */}
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-sm text-gray-700">Upload File</p>
+          <UploadFile />
         </div>
         <div className="mt-4">
           <p className="text-sm text-gray-500 mb-1">Who will upload submissions?</p>

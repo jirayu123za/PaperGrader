@@ -18,7 +18,7 @@ const YearPicker: React.FC<YearPickerProps> = ({ value, onChange }) => {
       value={value}
       onChange={(value) => {
         if (value) {
-          onChange(value); // เรียกใช้ onChange เฉพาะเมื่อ value ไม่ใช่ null
+          onChange(value);
         }
       }}
       required
