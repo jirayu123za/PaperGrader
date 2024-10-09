@@ -5,8 +5,8 @@ interface CreateCourseParams {
   course_name: string;
   course_description?: string;
   course_code: string;
-  term: string;
-  year: string;
+  semester: string;
+  academic_year: string;
   entry_code: boolean;
 }
 
@@ -15,8 +15,8 @@ interface CreateCourseStore extends CreateCourseParams {
   setCourseNumber: (course_code: string) => void;
   setCourseName: (course_name: string) => void;
   setCourseDescription: (course_description: string) => void;
-  setTerm: (term: string) => void;
-  setYear: (year: string) => void;
+  setSemester: (semester: string) => void;
+  setAcademicYear: (academic_year: string) => void;
   setEntryCode: (entry_code: boolean) => void;
   resetForm: () => void;
 }
@@ -25,21 +25,21 @@ export const useCreateCourseStore = create<CreateCourseStore>((set) => ({
   course_code: '',
   course_name: '',
   course_description: '',
-  term: '',
-  year: '',
+  semester: '',
+  academic_year: '',
   entry_code: false,
   setCourseNumber: (course_code) => set({ course_code }),
   setCourseName: (course_name) => set({ course_name }),
   setCourseDescription: (course_description) => set({ course_description }),
-  setTerm: (term) => set({ term }),
-  setYear: (year) => set({ year }),
+  setSemester: (semester) => set({ semester }),
+  setAcademicYear: (academic_year) => set({ academic_year }),
   setEntryCode: (entry_code) => set({ entry_code }),
   resetForm: () => set({
     course_code: '',
     course_name: '',
     course_description: '',
-    term: '',
-    year: '',
+    semester: '',
+    academic_year: '',
     entry_code: false,
   }),
 }));

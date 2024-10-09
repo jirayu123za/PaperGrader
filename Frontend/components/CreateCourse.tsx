@@ -17,16 +17,15 @@ const CreateCourse: React.FC<CreateCourseModalProps> = ({ isOpen, onClose }) => 
     setCourseName,
     course_description,
     setCourseDescription,
-    term,
-    setTerm,
-    year,
-    setYear,
+    semester,
+    setSemester,
+    academic_year,
+    setAcademicYear,
     entry_code,
     setEntryCode,
     resetForm,
   } = useCreateCourseStore();
 
-  // ดึงค่า mutate จากผลลัพธ์ของ useMutation
   const { mutate } = useCreateCourse();
 
   const handleCreateCourse = async () => {
@@ -34,12 +33,11 @@ const CreateCourse: React.FC<CreateCourseModalProps> = ({ isOpen, onClose }) => 
       course_code,
       course_name,
       course_description,
-      term,
-      year,
+      semester,
+      academic_year,
       entry_code,
     };
 
-    // เรียกใช้ mutation เพื่อสร้างคอร์สใหม่
     mutate(courseData, {
       onSuccess: () => {
         console.log('Course created successfully');
@@ -89,14 +87,14 @@ const CreateCourse: React.FC<CreateCourseModalProps> = ({ isOpen, onClose }) => 
             label="Semester"
             placeholder="Select semester"
             data={['1', '2', '3']}
-            value={term}
-            onChange={(value) => setTerm(value!)}
+            value={semester}
+            onChange={(value) => setSemester(value!)}
             required
             className="w-full"
           />
           <YearPicker
-            value={year}
-            onChange={setYear}
+            value={academic_year}
+            onChange={setAcademicYear}
           />
         </div>
 
