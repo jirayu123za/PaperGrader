@@ -12,12 +12,12 @@ type User struct {
 	UserID     uuid.UUID `gorm:"primaryKey" json:"user_id"`
 	GoogleID   string    `gorm:"unique;not null" json:"google_id"`
 	GroupID    uint      `gorm:"not null" json:"group_id"`
-	FirstName  string    `gorm:"type:varchar(50)" json:"first_name"`
-	LastName   string    `gorm:"type:varchar(50)" json:"last_name"`
+	FirstName  string    `gorm:"type:varchar(50);not null" json:"first_name"`
+	LastName   string    `gorm:"type:varchar(50);not null" json:"last_name"`
 	Email      string    `gorm:"type:varchar(50);not null" json:"email"`
-	BirthDate  time.Time `gorm:"type:date" json:"birth_date"`
-	StudentID  string    `gorm:"type:varchar(50)" json:"student_id"`
-	University string    `gorm:"type:varchar(50)" json:"university"`
+	BirthDate  time.Time `gorm:"type:date;not null" json:"birth_date"`
+	StudentID  *string   `gorm:"type:varchar(50);null" json:"student_id"`
+	University string    `gorm:"type:varchar(50);not null" json:"university"`
 	//ProfileImageURL string    `gorm:"type:varchar(255)" json:"profile_image_url"`
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
@@ -35,7 +35,7 @@ func (user *User) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-// UnmarshalJSON to handle the birth_date in "yyyy-mm-dd" format
+// UnmarshalJSON to handle the birth_date in "dd-mm-yyyy" format
 func (user *User) UnmarshalJSON(data []byte) error {
 	type Alias User
 	aux := &struct {
@@ -49,12 +49,25 @@ func (user *User) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	// Parse BirthDate in "yyyy-mm-dd" format
-	parsedDate, err := time.Parse("2006-01-02", aux.BirthDate)
+	// Parse BirthDate in "dd-mm-yyyy" format
+	parsedDate, err := time.Parse("02-01-2006", aux.BirthDate)
 	if err != nil {
 		return err
 	}
 	user.BirthDate = parsedDate
 
 	return nil
+}
+
+// MarshalJSON to format the birth_date as "dd-mm-yyyy" when sending as JSON
+func (user User) MarshalJSON() ([]byte, error) {
+	type Alias User
+	return json.Marshal(&struct {
+		BirthDate string `json:"birth_date"`
+		*Alias
+	}{
+		// Format BirthDate as "dd-mm-yyyy"
+		BirthDate: user.BirthDate.Format("02-01-2006"),
+		Alias:     (*Alias)(&user),
+	})
 }
