@@ -8,6 +8,8 @@ interface Course {
   course_name: string;
   course_code: string;
   semester: string;
+  academic_year: string;
+  entry_code: boolean;
 }
 
 interface CourseStore {

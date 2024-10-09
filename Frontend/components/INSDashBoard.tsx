@@ -19,7 +19,7 @@ const INSDashBoard = () => {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">
-            {selectedCourse ? `${selectedCourse.course_name} ${selectedCourse.semester}` : 'No Course Selected'}
+            {selectedCourse ? `${selectedCourse.course_name} ${selectedCourse.semester}/${selectedCourse.academic_year}` : 'No Course Selected'}
           </h1>
         </div>
       </div>

@@ -19,8 +19,10 @@ export const useFetchCourses = () => {
         course_id: course.course_id,
         course_name: course.course_name,
         course_code: course.course_code,
-        semester: course.term,
         course_description: course.course_description,
+        semester: course.semester,
+        academic_year: course.academic_year,
+        entry_code: course.entry_code,
       }));
 
       setCourses(transformedData);
