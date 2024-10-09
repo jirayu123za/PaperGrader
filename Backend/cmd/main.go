@@ -68,9 +68,14 @@ func main() {
 	assignmentService := services.NewAssignmentService(assignmentRepo, courseRepo)
 	assignmentHandler := adapters.NewHttpAssignmentHandler(assignmentService)
 
+	//! TODO: Implement assignmentFileRepo and assignmentFileService
+	assignmentFileRepo := adapters.NewGormAssignmentFileRepository(db)
+	assignmentFileService := services.NewAssignmentFileService(assignmentFileRepo)
+	//assignmentFileHandler := adapters.NewHttpAssignmentFileHandler(assignmentFileService)
+
 	instructorRepo := adapters.NewGormInstructorRepository(db)
 	instructorService := services.NewInstructorService(instructorRepo, courseRepo)
-	instructorHandler := adapters.NewHttpInstructorHandler(instructorService)
+	instructorHandler := adapters.NewHttpInstructorHandler(instructorService, fileService, assignmentFileService)
 
 	// Routes
 	api := app.Group("/")
@@ -82,7 +87,7 @@ func main() {
 		})
 	})
 
-	apiGroup.Post("/file", fileHandler.CreateFile)
+	//apiGroup.Post("/file", fileHandler.CreateFile)
 	apiGroup.Get("/file", fileHandler.GetFileByID)
 	apiGroup.Get("/file/url", fileHandler.GetFileURL)
 
@@ -123,7 +128,7 @@ func main() {
 	apiGroup.Put("/assignment", assignmentHandler.UpdateAssignment)
 	apiGroup.Delete("/assignment", assignmentHandler.DeleteAssignment)
 
-	apiGroup.Post("/instructor", instructorHandler.CreateAssignment)
+	apiGroup.Post("/instructor/assignment", instructorHandler.CreateAssignment)
 	apiGroup.Get("/instructor/assignments", instructorHandler.GetAssignmentsByCourseID)
 	apiGroup.Get("/instructor/courses", instructorHandler.GetCoursesByUserID)
 	apiGroup.Get("/instructor/assignments/active", instructorHandler.GetActiveAssignmentsByCourseID)
