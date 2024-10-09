@@ -53,7 +53,7 @@ func (r *GormInstructorRepository) FindAssignmentsByCourseID(CourseID uuid.UUID)
 
 func (r *GormInstructorRepository) FindActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error) {
 	var activeAssignments []*models.Assignment
-	currentDate := time.Now().Format("2006-01-02")
+	currentDate := time.Now().Format("02-01-2006")
 
 	if result := r.db.Find(&activeAssignments, "course_id = ? AND due_date >= ? AND release_date <= ? AND cut_off_date > ?", CourseID, currentDate, currentDate, currentDate); result.Error != nil {
 		return nil, result.Error
