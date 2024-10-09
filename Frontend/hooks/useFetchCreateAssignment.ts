@@ -1,11 +1,12 @@
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
-import { useAssignmentStore } from '../store/AssignmentStore';
+import { useAssignmentStore } from '../store/useCreateAssignmentStore';
 
 // Interface สำหรับข้อมูล Assignment
 interface AssignmentData {
-  //course_id: string;
+  course_id: string;
   assignment_name: string;
+  assignment_description: string;
   //templateFile: File | null;
   submiss_by: string;
   release_date: string;
@@ -46,8 +47,9 @@ const createAssignment = async (assignmentData: AssignmentData) => {
 
 const createAssignment = async (assignmentData: AssignmentData) => {
   const assignmentBody = {
-    //course_id: assignmentData.course_id,
+    course_id: assignmentData.course_id,
     assignment_name: assignmentData.assignment_name,
+    assignment_description: assignmentData.assignment_description,
     submiss_by: assignmentData.submiss_by,
     release_date: assignmentData.release_date,
     due_date: assignmentData.due_date,
@@ -56,10 +58,11 @@ const createAssignment = async (assignmentData: AssignmentData) => {
     cut_off_date: assignmentData.cut_off_date,
   };
 
-  const { data: assignmentResponse } = await axios.post('/api/api/assignment', assignmentBody, {
+  const { data: assignmentResponse } = await axios.post('/api/api/instructor/assignment', assignmentBody, {
     headers: {
       'Content-Type': 'application/json',
     },
+    params: { course_id: assignmentData.course_id },
   });
 
   /*

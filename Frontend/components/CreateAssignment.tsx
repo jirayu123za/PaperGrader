@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Modal, Button, TextInput, RadioGroup, Radio, Checkbox } from '@mantine/core';
-import { useAssignmentStore } from '../store/AssignmentStore';
-import { useCreateAssignment } from '../hooks/useCreateAssignment';
+import { useAssignmentStore } from '../store/useCreateAssignmentStore';
+import { useCreateAssignment } from '../hooks/useFetchCreateAssignment';
 import UploadFile from './UploadFile';
 import { useFileStore } from '../store/FileStore';
 import { DatePickerInput } from '@mantine/dates';
 import dayjs from 'dayjs';
 import '@mantine/dates/styles.css';
+import { useRouter } from 'next/router';
 
 interface CreateAssignmentModalProps {
   isOpen: boolean;
@@ -14,9 +15,14 @@ interface CreateAssignmentModalProps {
 }
 
 const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, onClose }) => {
+  const router = useRouter();
+  const { course_id } = router.query; 
+
   const {
     assignment_name,
     setAssignmentName,
+    assignment_description,
+    setAssignmentDescription,
     submiss_by,
     setUploadBy,
     release_date,
@@ -31,13 +37,15 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
     setCutOffDate,
   } = useAssignmentStore();
 
-  const { templateFile } = useFileStore();
+  //const { templateFile } = useFileStore();
   const { mutate } = useCreateAssignment();
 
   const handleCreateAssignment = () => {
     const assignmentData = {
+      course_id: Array.isArray(course_id) ? course_id[0] : course_id || '',
       assignment_name,
       //templateFile,
+      assignment_description,
       submiss_by,
       release_date: release_date ? dayjs(release_date).format("DD-MM-YYYY") : '',
       due_date: due_date ? dayjs(due_date).format("DD-MM-YYYY") : '',              
@@ -46,7 +54,8 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
       cut_off_date: late_submiss && cut_off_date ? dayjs(cut_off_date).format("DD-MM-YYYY") : '',  
     };
 
-    //console.log('assignmentData:', assignmentData);
+    console.log('assignmentData:', assignmentData);
+    console.log('course_id:', course_id);
 
     mutate(assignmentData, {
       onSuccess: () => {
@@ -76,6 +85,16 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
           required
           className="mb-4"
         />
+
+        <TextInput
+          label="Assignment Description"
+          placeholder="Add your assignment description"
+          value={assignment_description}
+          onChange={(event) => setAssignmentDescription(event.currentTarget.value)}
+          required
+          className="mb-4"
+        />
+
         {/* ส่วนสำหรับการอัพโหลดไฟล์ */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-gray-700">Upload File</p>
@@ -99,10 +118,11 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
               label="Release Date"
               placeholder="Select release date"
               value={release_date ? new Date(release_date) : null}
+              minDate={new Date()}
               onChange={(date) => {
                 setReleaseDate(date ? dayjs(date).toDate() : null);
-                setDueDate(null); // รีเซ็ต Due Date เมื่อมีการเปลี่ยน Release Date
-                setCutOffDate(null); // รีเซ็ต Cut off Date เมื่อมีการเปลี่ยน Release Date
+                setDueDate(null);
+                setCutOffDate(null);
               }}
               valueFormat="DD/MM/YYYY"
               required
@@ -113,10 +133,10 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
               label="Due Date"
               placeholder="Select due date"
               value={due_date ? new Date(due_date) : null}
-              minDate={release_date ? new Date(release_date) : undefined}  // กำหนด minDate เป็น Release Date
+              minDate={release_date ? new Date(release_date) : undefined}
               onChange={(date) => {
                 setDueDate(date ? dayjs(date).toDate() : null);
-                setCutOffDate(null); // รีเซ็ต Cut off Date เมื่อ Due Date เปลี่ยน
+                setCutOffDate(null);
               }}
               valueFormat="DD/MM/YYYY"
               required
@@ -142,7 +162,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
             label="Cut off Date"
             placeholder="Select cut off date"
             value={cut_off_date ? new Date(cut_off_date) : null}
-            minDate={due_date ? new Date(due_date) : undefined}  // กำหนด minDate เป็น Due Date
+            minDate={due_date ? dayjs(new Date(due_date)).add(1, 'day').toDate() : new Date()} 
             onChange={(date) => setCutOffDate(date ? dayjs(date).toDate() : null)}
             valueFormat="DD/MM/YYYY"
             className="mt-4"
