@@ -16,21 +16,21 @@ interface CreateUserParams {
 // ฟังก์ชันสำหรับการสร้างผู้ใช้ใหม่
 const createUser = async (userData: CreateUserParams): Promise<any> => {
   console.log('userData:', userData);
-  
+
   const response = await axios.post('/api/api/user', userData);
   return response.data;
 };
 
 // การใช้ UseMutationOptions เพื่อกำหนดประเภทของ mutation
 export const useCreateUser = (
-  options?: UseMutationOptions<any, Error, CreateUserParams, unknown> // เพิ่ม `unknown` เป็น argument สุดท้าย
+  options?: UseMutationOptions<any, Error, CreateUserParams, unknown>
 ) => {
   const setUser = useUserStore((state) => state.setUser);
   const setError = useUserStore((state) => state.setError);
   const setLoading = useUserStore((state) => state.setIsLoading);
 
   return useMutation<any, Error, CreateUserParams, unknown>({
-    mutationFn: createUser, // กำหนด mutation function ที่ต้องการใช้
+    mutationFn: createUser,
     onMutate: () => {
       setLoading(true);
       setError(null);
