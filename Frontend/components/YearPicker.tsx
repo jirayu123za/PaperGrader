@@ -12,8 +12,8 @@ const YearPicker: React.FC<YearPickerProps> = ({ value, onChange }) => {
 
   return (
     <Select
-      label="Academia year"
-      placeholder="Select Academia year"
+      label="Academic year"
+      placeholder="Select Academic year"
       data={yearOptions}
       value={value}
       onChange={(value) => {

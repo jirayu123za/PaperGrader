@@ -9,7 +9,7 @@ interface CreateUserParams {
   last_name: string;
   email: string;
   birth_date?: string;
-  student_id?: string;
+  student_id?: string | null;
   university: string;
 }
 
