@@ -34,7 +34,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
   const handleCreateAssignment = () => {
     const assignmentData = {
       assignment_name,
-      templateFile,
+      //templateFile,
       submiss_by,
       release_date,
       due_date,
@@ -43,7 +43,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
       cut_off_date: late_submiss ? cut_off_date : '',
     };
 
-    console.log('assignmentData:', assignmentData);
+    //console.log('assignmentData:', assignmentData);
 
     mutate(assignmentData, {
       onSuccess: () => {
