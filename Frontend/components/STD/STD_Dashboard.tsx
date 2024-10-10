@@ -1,10 +1,10 @@
 import React from 'react';
 import { useAssignments } from '../../hooks/useFetchSTD_Assignment';
 import { useAssignmentStore } from '../../store/useSTD_AssignmentStore';
-import { Card, Progress, Text, Checkbox } from '@mantine/core';
+import { Card, Progress, Text, Checkbox , ScrollArea  } from '@mantine/core';
 import dayjs from 'dayjs';
 
-// ฟังก์ชันสำหรับแปลงวันที่จาก DD-MM-YYYY เป็น MM-DD-YYYY
+
 const convertToMMDDYYYY = (dateStr: string) => {
   const [day, month, year] = dateStr.split('-');
   return `${month}-${day}-${year}`;
@@ -17,30 +17,32 @@ const STD_Dashboard = () => {
   if (isLoading) return <div>Loading assignments...</div>;
   if (error) return <div>Error loading assignments: {error.message}</div>;
 
-  // ฟังก์ชันคำนวณเวลาที่เหลือจนถึงกำหนดส่งงาน
-  const calculateTimeLeft = (dueDate: string) => {
+
+  const calculateProgress = (releaseDate: string, dueDate: string) => {
     const now = dayjs();
     
-    // แปลงฟอร์แมตวันที่เป็น MM-DD-YYYY
+
+    const convertedReleaseDate = convertToMMDDYYYY(releaseDate);
     const convertedDueDate = convertToMMDDYYYY(dueDate);
-    
-    // แปลงวันที่โดยใช้ฟอร์แมต MM-DD-YYYY
+
+    const release = dayjs(convertedReleaseDate, "MM-DD-YYYY");
     const due = dayjs(convertedDueDate, "MM-DD-YYYY");
 
-    // ถ้าวันที่ไม่ถูกต้อง ให้แสดง Invalid date
-    if (!due.isValid()) {
+    if (!release.isValid() || !due.isValid()) {
       return { diff: "Invalid date", progress: 0 };
     }
 
-    // คำนวณวันที่เหลือ
-    const diff = due.diff(now, 'day');
-    const totalDuration = due.diff(now, 'day');
-    const progress = diff > 0 ? ((totalDuration - diff) / totalDuration) * 100 : 0; 
+    const totalDuration = due.diff(release, 'day');
+    const timePassed = now.diff(release, 'day');   
 
-    return { diff, progress };
+   
+    const progress = totalDuration > 0 ? (timePassed / totalDuration) * 100 : 0;
+    const diff = due.diff(now, 'day');
+
+    return { diff, progress: progress > 100 ? 100 : progress };
   };
 
-  // จัดเรียง assignments ตามเวลาที่เหลือ (น้อยสุดอยู่บน)
+
   const sortedAssignments = [...assignmentList].sort((a, b) => {
     const timeLeftA = dayjs(convertToMMDDYYYY(a.due_date), "MM-DD-YYYY").diff(dayjs(), 'day');
     const timeLeftB = dayjs(convertToMMDDYYYY(b.due_date), "MM-DD-YYYY").diff(dayjs(), 'day');
@@ -48,14 +50,15 @@ const STD_Dashboard = () => {
   });
 
   return (
-    <div className="space-y-4 max-h-[800px] overflow-y-auto p-4 no-scrollbar">
+    <ScrollArea h={700} type="never">
+    <div className="space-y-4 ">
       {sortedAssignments.map((assignment) => {
-        const { diff, progress } = calculateTimeLeft(assignment.due_date);
+        const releaseDate = '1-10-2024';  
+        const { diff, progress } = calculateProgress(releaseDate, assignment.due_date);
 
         return (
           <Card key={assignment.assignment_id} shadow="sm" padding="lg" radius="md" withBorder>
             <div className="flex justify-between items-center">
-              {/* ด้านซ้าย: ข้อมูล Course */}
               <div className="w-1/4">
                 <Text style={{ fontWeight: 500 }}>Course Code: {assignment.course_code}</Text>
                 <Text size="sm" color="dimmed">
@@ -63,7 +66,6 @@ const STD_Dashboard = () => {
                 </Text>
               </div>
 
-              {/* กลาง: Assignment name */}
               <div className="w-2/4 flex items-center">
                 <Checkbox />
                 <Text size="sm" color="dimmed" className="ml-2">
@@ -71,7 +73,6 @@ const STD_Dashboard = () => {
                 </Text>
               </div>
 
-              {/* ด้านขวา: Progress bar */}
               <div className="w-1/4">
                 <Text size="sm" color="dimmed">
                   Due in: {typeof diff === 'number' ? `${diff} Days` : diff}
@@ -80,9 +81,11 @@ const STD_Dashboard = () => {
               </div>
             </div>
           </Card>
+          
         );
       })}
     </div>
+    </ScrollArea>
   );
 };
 

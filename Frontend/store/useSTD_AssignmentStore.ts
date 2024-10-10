@@ -7,6 +7,7 @@ interface AssignmentStore {
     course_name?: string;
     assignment_name: string;
     due_date: string;
+    release_Date: string;
   }[];
   setAssignments: (assignments: AssignmentStore['assignments']) => void;
 }

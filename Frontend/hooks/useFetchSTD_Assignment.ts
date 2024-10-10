@@ -10,6 +10,7 @@ interface StudentAssignment {
   course_name?: string;
   assignment_name: string;
   due_date: string;
+  release_Date: string;
 }
 
 const fetchAssignments = async (): Promise<StudentAssignment[]> => {
