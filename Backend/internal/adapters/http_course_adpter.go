@@ -139,7 +139,7 @@ func (h *HttpCourseHandler) UpdateCourse(c *fiber.Ctx) error {
 
 	course.CourseName = newCourse.CourseName
 	//course.CourseDescription = newCourse.CourseDescription
-	course.Term = newCourse.Term
+	//course.Term = newCourse.Term
 
 	if err := h.services.UpdateCourse(course); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
