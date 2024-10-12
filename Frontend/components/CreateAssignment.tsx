@@ -3,7 +3,6 @@ import { Modal, Button, TextInput, RadioGroup, Radio, Checkbox } from '@mantine/
 import { useAssignmentStore } from '../store/useCreateAssignmentStore';
 import { useCreateAssignment } from '../hooks/useFetchCreateAssignment';
 import UploadFile from './UploadFile';
-import { useFileStore } from '../store/FileStore';
 import { DatePickerInput } from '@mantine/dates';
 import dayjs from 'dayjs';
 import '@mantine/dates/styles.css';
@@ -16,7 +15,7 @@ interface CreateAssignmentModalProps {
 
 const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
-  const { course_id } = router.query; 
+  const { course_id } = router.query;
 
   const {
     assignment_name,
@@ -37,21 +36,26 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
     setCutOffDate,
   } = useAssignmentStore();
 
-  //const { templateFile } = useFileStore();
   const { mutate } = useCreateAssignment();
 
+  const [formError, setFormError] = useState('');
+
   const handleCreateAssignment = () => {
+    if (!assignment_name || !assignment_description) {
+      setFormError('Please fill in all required fields.');
+      return;
+    }
+
     const assignmentData = {
       course_id: Array.isArray(course_id) ? course_id[0] : course_id || '',
       assignment_name,
-      //templateFile,
       assignment_description,
       submiss_by,
       release_date: release_date ? dayjs(release_date).format("DD-MM-YYYY") : '',
-      due_date: due_date ? dayjs(due_date).format("DD-MM-YYYY") : '',              
+      due_date: due_date ? dayjs(due_date).format("DD-MM-YYYY") : '',
       group_submiss,
       late_submiss,
-      cut_off_date: late_submiss && cut_off_date ? dayjs(cut_off_date).format("DD-MM-YYYY") : '',  
+      cut_off_date: late_submiss && cut_off_date ? dayjs(cut_off_date).format("DD-MM-YYYY") : '',
     };
 
     console.log('assignmentData:', assignmentData);
@@ -95,10 +99,20 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
           className="mb-4"
         />
 
+        {formError && (
+          <div className="text-red-500 mb-4">
+            {formError}
+          </div>
+        )}
+
         {/* ส่วนสำหรับการอัพโหลดไฟล์ */}
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-sm text-gray-700">Upload File</p>
-          <UploadFile />
+        <div className="flex flex-col mb-4">
+          <p className="text-sm text-gray-700 mb-2"> 
+            Upload File
+          </p>
+          <div className="mt-2">
+            <UploadFile /> 
+          </div>
         </div>
 
         <div className="mt-4">
@@ -162,7 +176,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
             label="Cut off Date"
             placeholder="Select cut off date"
             value={cut_off_date ? new Date(cut_off_date) : null}
-            minDate={due_date ? dayjs(new Date(due_date)).add(1, 'day').toDate() : new Date()} 
+            minDate={due_date ? dayjs(new Date(due_date)).add(1, 'day').toDate() : new Date()}
             onChange={(date) => setCutOffDate(date ? dayjs(date).toDate() : null)}
             valueFormat="DD/MM/YYYY"
             className="mt-4"

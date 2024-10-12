@@ -9,7 +9,7 @@ const TestPage: React.FC = () => {
     <div className="flex min-h-screen bg-gray-50"> 
     <STD_LeftMain studentId={studentId} /> 
     <div className="flex-grow p-6">
-      <h1 className="text-2xl font-bold mb-4"> DashBoard </h1>
+      <h1 className="text-2xl font-bold mb-4"> Dashboard </h1>
       <STD_Dashboard studentId={studentId} /> 
     </div>
   </div>
