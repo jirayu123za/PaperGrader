@@ -8,13 +8,11 @@ import (
 	"github.com/google/uuid"
 )
 
-// Primary port
 type FileService interface {
 	CreateFile(file *models.File, fileContent io.Reader) error
 	GetFileByID(fileName string) (*models.File, error)
 	UpdateFile(file *models.File) error
 	Delete(file *models.File) error
-
 	GetFileURL(fileName string) (string, error)
 }
 
@@ -22,7 +20,6 @@ type FileServiceImpl struct {
 	repo repositories.FileRepository
 }
 
-// func instance business logic call
 func NewFileService(repo repositories.FileRepository) FileService {
 	return &FileServiceImpl{
 		repo: repo,

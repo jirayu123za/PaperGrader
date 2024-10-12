@@ -39,9 +39,13 @@ func main() {
 	db := database.ConnectPostgres(true)
 	//database.ConnectPostgres(true)
 
-	fileRepo := adapters.NewMinIOFileRepository(minioClient, os.Getenv("MINIO_BUCKET_NAME"))
+	minioRepo := adapters.NewMinIORepository(minioClient, os.Getenv("MINIO_BUCKET_NAME"))
+	minioService := services.NewMinIOService(minioRepo)
+	_ = adapters.NewHttpMinIOHandler(minioService)
+
+	fileRepo := adapters.NewFileRepository(minioClient, os.Getenv("MINIO_BUCKET_NAME"))
 	fileService := services.NewFileService(fileRepo)
-	fileHandler := adapters.NewHttpFileHandler(fileService)
+	_ = adapters.NewHttpFileHandler(fileService)
 
 	userRepo := adapters.NewGormUserRepository(db)
 	userService := services.NewUserService(userRepo)
@@ -68,14 +72,9 @@ func main() {
 	assignmentService := services.NewAssignmentService(assignmentRepo, courseRepo)
 	assignmentHandler := adapters.NewHttpAssignmentHandler(assignmentService)
 
-	//! TODO: Implement assignmentFileRepo and assignmentFileService
-	assignmentFileRepo := adapters.NewGormAssignmentFileRepository(db)
-	assignmentFileService := services.NewAssignmentFileService(assignmentFileRepo)
-	//assignmentFileHandler := adapters.NewHttpAssignmentFileHandler(assignmentFileService)
-
 	instructorRepo := adapters.NewGormInstructorRepository(db)
 	instructorService := services.NewInstructorService(instructorRepo, courseRepo)
-	instructorHandler := adapters.NewHttpInstructorHandler(instructorService, fileService, assignmentFileService)
+	instructorHandler := adapters.NewHttpInstructorHandler(instructorService, fileService, minioService)
 
 	// Routes
 	api := app.Group("/")
@@ -87,9 +86,9 @@ func main() {
 		})
 	})
 
-	//apiGroup.Post("/file", fileHandler.CreateFile)
-	apiGroup.Get("/file", fileHandler.GetFileByID)
-	apiGroup.Get("/file/url", fileHandler.GetFileURL)
+	//apiGroup.Post("/file", minioHandler.CreateFile)
+	//apiGroup.Get("/file", minioHandler.GetFileByID)
+	//apiGroup.Get("/file/url", minioHandler.GetFileURL)
 
 	apiGroup.Get("/google", oauthHandler.GetGoogleLoginURL)
 	apiGroup.Get("/google/callback", oauthHandler.GetGoogleCallBack)
