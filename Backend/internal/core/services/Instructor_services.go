@@ -11,6 +11,10 @@ import (
 type InstructorService interface {
 	// v1 add assignment to course with out Files(Json)
 	CreateAssignment(CourseID uuid.UUID, assignment *models.Assignment) error
+	CreateAssignmentWithFiles(CourseID uuid.UUID, assignment *models.Assignment, files []models.AssignmentFile, uploads []models.Upload) error
+
+	CreateAssignmentFile(file *models.AssignmentFile) error
+
 	// v2 add assignment to course with Files(FromData)
 	//CreateAssignmentWithFile(CourseID uuid.UUID, assignment *models.Assignment, file multipart.File, userGroupName, userName, fileName string) error
 
@@ -44,6 +48,18 @@ func (s *InstructorServiceImpl) CreateAssignment(CourseID uuid.UUID, assignment 
 		return err
 	}
 	return nil
+}
+
+// News Create assignment to course with Files(FromData)
+func (s *InstructorServiceImpl) CreateAssignmentWithFiles(CourseID uuid.UUID, assignment *models.Assignment, files []models.AssignmentFile, uploads []models.Upload) error {
+	if err := s.repo.AddAssignmentWithFiles(CourseID, assignment, files, uploads); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *InstructorServiceImpl) CreateAssignmentFile(file *models.AssignmentFile) error {
+	return s.repo.AddAssignmentFile(file)
 }
 
 // v2 add assignment to course with Files(FromData)

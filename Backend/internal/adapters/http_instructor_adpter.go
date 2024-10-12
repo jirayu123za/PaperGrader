@@ -5,6 +5,8 @@ import (
 	"paperGrader/internal/core/services"
 	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
+	"strconv"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -114,6 +116,157 @@ func (h *HttpInstructorHandler) CreateAssignment(c *fiber.Ctx) error {
 		"message":    "Assignment created and file saved to bucket",
 		"assignment": assignment,
 		//"file_url":   file.URL,
+	})
+}
+
+// News Create assignment to course with Files(FromData)
+func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	userID, err := utils.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid user_id in JWT",
+			"error":   err.Error(),
+		})
+	}
+
+	assignmentName := c.FormValue("assignment_name")
+	assignmentDescription := c.FormValue("assignment_description")
+	submissBy := c.FormValue("submiss_by")
+	lateSubmissStr := c.FormValue("late_submiss")
+	lateSubmiss, err := strconv.ParseBool(lateSubmissStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid value for late_submiss",
+			"error":   err.Error(),
+		})
+	}
+	groupSubmissStr := c.FormValue("group_submiss")
+	groupSubmiss, err := strconv.ParseBool(groupSubmissStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid value for group_submiss",
+			"error":   err.Error(),
+		})
+	}
+	releaseDateStr := c.FormValue("release_date")
+	dueDateStr := c.FormValue("due_date")
+	cutOffDateStr := c.FormValue("cut_off_date")
+
+	releaseDate, err := time.Parse("01-02-2006", releaseDateStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid release_date format",
+			"error":   err.Error(),
+		})
+	}
+
+	dueDate, err := time.Parse("01-02-2006", dueDateStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid due_date format",
+			"error":   err.Error(),
+		})
+	}
+
+	cutOffDate, err := time.Parse("01-02-2006", cutOffDateStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid cut_off_date format",
+			"error":   err.Error(),
+		})
+	}
+	templateFile := c.FormValue("template_file")
+
+	// Handle files uploaded
+	formFiles, err := c.MultipartForm()
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Failed to get files from form-data",
+			"error":   err.Error(),
+		})
+	}
+
+	assignment := models.Assignment{
+		CourseID:              courseID,
+		AssignmentName:        assignmentName,
+		AssignmentDescription: assignmentDescription,
+		SubmissBy:             submissBy,
+		LateSubmiss:           lateSubmiss,
+		GroupSubmiss:          groupSubmiss,
+		ReleaseDate:           releaseDate,
+		DueDate:               dueDate,
+		CutOffDate:            cutOffDate,
+	}
+
+	if err := h.services.CreateAssignment(courseID, &assignment); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to create assignment",
+			"error":   err.Error(),
+		})
+	}
+
+	files := formFiles.File["files"]
+	var assignmentFiles []models.AssignmentFile
+	var uploads []models.Upload
+
+	for _, file := range files {
+		isTemplate := file.Filename == templateFile
+
+		assignmentFile := models.AssignmentFile{
+			AssignmentFileName: file.Filename,
+			AssignmentID:       assignment.AssignmentID,
+			IsTemplate:         isTemplate,
+		}
+
+		if err := h.services.CreateAssignmentFile(&assignmentFile); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to save assignment file",
+				"error":   err.Error(),
+			})
+		}
+
+		upload := models.Upload{
+			UserID:           userID,
+			AssignmentFileID: assignmentFile.AssignmentFileID,
+			CreatedAt:        time.Now(),
+		}
+
+		assignmentFiles = append(assignmentFiles, assignmentFile)
+		uploads = append(uploads, upload)
+
+		// คุณสามารถบันทึกไฟล์ลงใน bucket (เช่น MinIO) ได้ที่นี่
+		// structure folder bucket -> course_id -> assignment_id -> file name(version)
+		// err = c.SaveFile(file, fmt.Sprintf("./uploads/%s/%s", courseID.String(), file.Filename))
+		// if err != nil {
+		// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		// 		"message": "Failed to save the file",
+		// 		"error":   err.Error(),
+		// 	})
+		// }
+	}
+
+	// Call service to create assignment and upload file
+	if err := h.services.CreateAssignmentWithFiles(courseID, &assignment, assignmentFiles, uploads); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to create assignment and save file",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message":         "Assignment was created and files saved to bucket",
+		"assignment":      assignment,
+		"assignment_file": assignmentFiles,
+		"upload":          uploads,
 	})
 }
 

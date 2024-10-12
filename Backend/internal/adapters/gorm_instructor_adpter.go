@@ -33,19 +33,44 @@ func (r *GormInstructorRepository) AddAssignment(CourseID uuid.UUID, assignment 
 	return nil
 }
 
-// v2 add assignment to course with Files(FromData)
-func (r *GormInstructorRepository) AddAssignmentWithFiles(CourseID uuid.UUID, assignment *models.Assignment) error {
-	var existingCourse *models.Course
-	if result := r.db.First(&existingCourse, "course_id = ?", CourseID); result.Error != nil {
-		return result.Error
-	}
+// News add assignment to course with Files(FromData)
+func (r *GormInstructorRepository) AddAssignmentWithFiles(CourseID uuid.UUID, assignment *models.Assignment, files []models.AssignmentFile, uploads []models.Upload) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		var existingCourse *models.Course
+		if result := r.db.First(&existingCourse, "course_id = ?", CourseID); result.Error != nil {
+			return result.Error
+		}
 
-	assignment.CourseID = existingCourse.CourseID
-	if assignment := r.db.Create(assignment); assignment.Error != nil {
-		return assignment.Error
+		for i, file := range files {
+			uploads[i].AssignmentFileID = file.AssignmentFileID
+			if result := tx.Create(&uploads[i]); result.Error != nil {
+				return result.Error
+			}
+		}
+		return nil
+	})
+}
+
+func (r *GormInstructorRepository) AddAssignmentFile(file *models.AssignmentFile) error {
+	if result := r.db.Create(file); result.Error != nil {
+		return result.Error
 	}
 	return nil
 }
+
+// v2 add assignment to course with Files(FromData)
+// func (r *GormInstructorRepository) AddAssignmentWithFiles(CourseID uuid.UUID, assignment *models.Assignment) error {
+// 	var existingCourse *models.Course
+// 	if result := r.db.First(&existingCourse, "course_id = ?", CourseID); result.Error != nil {
+// 		return result.Error
+// 	}
+
+// 	assignment.CourseID = existingCourse.CourseID
+// 	if assignment := r.db.Create(assignment); assignment.Error != nil {
+// 		return assignment.Error
+// 	}
+// 	return nil
+// }
 
 func (r *GormInstructorRepository) FindCoursesByUserID(UserID uuid.UUID) ([]*models.Course, error) {
 	var courses []*models.Course
