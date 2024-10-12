@@ -9,8 +9,9 @@ import (
 
 type AssignmentFile struct {
 	AssignmentFileID   uuid.UUID `gorm:"primaryKey"`
-	AssignmentID       uuid.UUID `gorm:"not null"`
-	AssignmentFileName string    `gorm:"type:varchar(255);not null"`
+	AssignmentID       uuid.UUID `gorm:"not null" json:"assignment_id"`
+	AssignmentFileName string    `gorm:"type:varchar(255);not null" json:"assignment_file_name"`
+	IsTemplate         bool      `gorm:"type:boolean" json:"is_template"`
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
 	DeletedAt          gorm.DeletedAt `gorm:"index"`
