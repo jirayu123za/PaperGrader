@@ -191,6 +191,42 @@ func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 	})
 }
 
+// handler Get instructors and students by course id
+func (h *HttpInstructorHandler) GetRosterByCourseID(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	users, err := h.services.GetRosterByCourseID(courseID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get roster",
+			"error":   err.Error(),
+		})
+	}
+
+	var response []map[string]interface{}
+	for _, user := range users {
+		response = append(response, map[string]interface{}{
+			"user_id":           user["user_id"],
+			"full_name":         user["first_name"].(string) + " " + user["last_name"].(string),
+			"email":             user["email"],
+			"user_group_name":   user["user_group_name"],
+			"submissions_count": user["submission_count"],
+		})
+	}
+	// Modify the response to only return ...
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Roster is retrieved",
+		"roster":  response,
+	})
+}
+
 func (h *HttpInstructorHandler) GetCoursesByUserID(c *fiber.Ctx) error {
 	userID, err := utils.GetUserIDFromJWT(c)
 	if err != nil {

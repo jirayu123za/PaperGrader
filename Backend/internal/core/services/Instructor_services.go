@@ -15,6 +15,9 @@ type InstructorService interface {
 
 	CreateAssignmentFile(file *models.AssignmentFile) error
 
+	// Get instructors and students by course id
+	GetRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
+
 	GetCoursesByUserID(UserID uuid.UUID) ([]*models.Course, error)
 	GetAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error)
 	GetActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error)
@@ -57,6 +60,15 @@ func (s *InstructorServiceImpl) CreateAssignmentWithFiles(CourseID uuid.UUID, as
 
 func (s *InstructorServiceImpl) CreateAssignmentFile(file *models.AssignmentFile) error {
 	return s.repo.AddAssignmentFile(file)
+}
+
+// Get instructors and students by course id
+func (s *InstructorServiceImpl) GetRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
+	roster, err := s.repo.FindRosterByCourseID(CourseID)
+	if err != nil {
+		return nil, err
+	}
+	return roster, nil
 }
 
 func (s *InstructorServiceImpl) GetCoursesByUserID(UserID uuid.UUID) ([]*models.Course, error) {

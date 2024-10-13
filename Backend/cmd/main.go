@@ -133,6 +133,7 @@ func main() {
 	apiGroup.Get("/instructor/courses", instructorHandler.GetCoursesByUserID)
 	apiGroup.Get("/instructor/assignments/active", instructorHandler.GetActiveAssignmentsByCourseID)
 	apiGroup.Get("/instructorsList", instructorHandler.GetInstructorsNameByCourseID)
+	apiGroup.Get("/instructors/roster", instructorHandler.GetRosterByCourseID)
 
 	if err := app.Listen(":" + port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)

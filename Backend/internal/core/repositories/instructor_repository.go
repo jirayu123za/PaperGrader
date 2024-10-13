@@ -15,6 +15,9 @@ type InstructorRepository interface {
 
 	AddAssignmentFile(file *models.AssignmentFile) error
 
+	// Find instructors and students by course id
+	FindRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
+
 	FindCoursesByUserID(UserID uuid.UUID) ([]*models.Course, error)
 	FindAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error)
 	FindActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error)
