@@ -1,110 +1,124 @@
 {
-    "assignments": [
-      {
-        "assignment_id": "1",
-        "course_code": "CS101",
-        "course_name": "Introduction to Computer Science",
-        "assignment_name": "Assignment 1",
-        "due_date": "15-10-2024"
-      },
-      {
-        "assignment_id": "2",
-        "course_code": "CS101",
-        "course_name": "Introduction to Computer Science",
-        "assignment_name": "Assignment 2",
-        "due_date": "01-11-2024"
-      },
-      {
-        "assignment_id": "3",
-        "course_code": "MATH101",
-        "course_name": "Calculus I",
-        "assignment_name": "Assignment 1",
-        "due_date": "20-10-2024"
-      },
-      {
-        "assignment_id": "4",
-        "course_code": "MATH101",
-        "course_name": "Calculus I",
-        "assignment_name": "Assignment 2",
-        "due_date": "05-11-2024"
-      },
-      {
-        "assignment_id": "5",
-        "course_code": "ENG101",
-        "course_name": "English Composition",
-        "assignment_name": "Essay 1",
-        "due_date": "25-10-2024"
-      },
-      {
-        "assignment_id": "6",
-        "course_code": "ENG101",
-        "course_name": "English Composition",
-        "assignment_name": "Essay 2",
-        "due_date": "10-11-2024"
-      },
-      {
-        "assignment_id": "7",
-        "course_code": "PHYS101",
-        "course_name": "Physics I",
-        "assignment_name": "Lab Report 1",
-        "due_date": "18-10-2024"
-      },
-      {
-        "assignment_id": "8",
-        "course_code": "PHYS101",
-        "course_name": "Physics I",
-        "assignment_name": "Lab Report 2",
-        "due_date": "12-11-2024"
-      },
-      {
-        "assignment_id": "9",
-        "course_code": "HIST101",
-        "course_name": "World History",
-        "assignment_name": "Essay 1",
-        "due_date": "30-10-2024"
-      },
-      {
-        "assignment_id": "10",
-        "course_code": "HIST101",
-        "course_name": "World History",
-        "assignment_name": "Essay 2",
-        "due_date": "15-11-2024"
-      },
-      {
-        "assignment_id": "11",
-        "course_code": "CHEM101",
-        "course_name": "Chemistry I",
-        "assignment_name": "Lab Report 1",
-        "due_date": "22-10-2024"
-      },
-      {
-        "assignment_id": "12",
-        "course_code": "BIO101",
-        "course_name": "Biology I",
-        "assignment_name": "Research Paper",
-        "due_date": "05-12-2024"
-      },
-      {
-        "assignment_id": "13",
-        "course_code": "CS202",
-        "course_name": "Data Structures",
-        "assignment_name": "Project 1",
-        "due_date": "12-10-2024"
-      },
-      {
-        "assignment_id": "14",
-        "course_code": "CS202",
-        "course_name": "Data Structures",
-        "assignment_name": "Project 2",
-        "due_date": "25-11-2024"
-      },
-      {
-        "assignment_id": "15",
-        "course_code": "PHIL101",
-        "course_name": "Introduction to Philosophy",
-        "assignment_name": "Essay",
-        "due_date": "01-12-2024"
-      }
-    ]
-  }
-  
+  "assignments": [
+    {
+      "assignment_id": "1",
+      "course_code": "CS101",
+      "course_name": "Introduction to Computer Science",
+      "assignment_name": "Assignment 1",
+      "release_date": "08-10-2024",
+      "due_date": "15-10-2024"
+    },
+    {
+      "assignment_id": "2",
+      "course_code": "CS101",
+      "course_name": "Introduction to Computer Science",
+      "assignment_name": "Assignment 2",
+      "release_date": "25-10-2024",
+      "due_date": "01-11-2024"
+    },
+    {
+      "assignment_id": "3",
+      "course_code": "MATH101",
+      "course_name": "Calculus I",
+      "assignment_name": "Assignment 1",
+      "release_date": "13-10-2024",
+      "due_date": "20-10-2024"
+    },
+    {
+      "assignment_id": "4",
+      "course_code": "MATH101",
+      "course_name": "Calculus I",
+      "assignment_name": "Assignment 2",
+      "release_date": "29-10-2024",
+      "due_date": "05-11-2024"
+    },
+    {
+      "assignment_id": "5",
+      "course_code": "ENG101",
+      "course_name": "English Composition",
+      "assignment_name": "Essay 1",
+      "release_date": "18-10-2024",
+      "due_date": "25-10-2024"
+    },
+    {
+      "assignment_id": "6",
+      "course_code": "ENG101",
+      "course_name": "English Composition",
+      "assignment_name": "Essay 2",
+      "release_date": "03-11-2024",
+      "due_date": "10-11-2024"
+    },
+    {
+      "assignment_id": "7",
+      "course_code": "PHYS101",
+      "course_name": "Physics I",
+      "assignment_name": "Lab Report 1",
+      "release_date": "11-10-2024",
+      "due_date": "18-10-2024"
+    },
+    {
+      "assignment_id": "8",
+      "course_code": "PHYS101",
+      "course_name": "Physics I",
+      "assignment_name": "Lab Report 2",
+      "release_date": "05-11-2024",
+      "due_date": "12-11-2024"
+    },
+    {
+      "assignment_id": "9",
+      "course_code": "HIST101",
+      "course_name": "World History",
+      "assignment_name": "Essay 1",
+      "release_date": "23-10-2024",
+      "due_date": "30-10-2024"
+    },
+    {
+      "assignment_id": "10",
+      "course_code": "HIST101",
+      "course_name": "World History",
+      "assignment_name": "Essay 2",
+      "release_date": "08-11-2024",
+      "due_date": "15-11-2024"
+    },
+    {
+      "assignment_id": "11",
+      "course_code": "CHEM101",
+      "course_name": "Chemistry I",
+      "assignment_name": "Lab Report 1",
+      "release_date": "15-10-2024",
+      "due_date": "22-10-2024"
+    },
+    {
+      "assignment_id": "12",
+      "course_code": "BIO101",
+      "course_name": "Biology I",
+      "assignment_name": "Research Paper",
+      "release_date": "28-11-2024",
+      "due_date": "05-12-2024"
+    },
+    {
+      "assignment_id": "13",
+      "course_code": "CS202",
+      "course_name": "Data Structures",
+      "assignment_name": "Project 1",
+      "release_date": "05-10-2024",
+      "due_date": "12-10-2024"
+    },
+    {
+      "assignment_id": "14",
+      "course_code": "CS202",
+      "course_name": "Data Structures",
+      "assignment_name": "Project 2",
+      "release_date": "18-11-2024",
+      "due_date": "25-11-2024"
+    },
+    {
+      "assignment_id": "15",
+      "course_code": "PHIL101",
+      "course_name": "Introduction to Philosophy",
+      "assignment_name": "Essay",
+      "release_date": "24-11-2024",
+      "due_date": "01-12-2024"
+    }
+  ]
+}

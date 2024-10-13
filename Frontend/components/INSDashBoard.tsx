@@ -44,14 +44,14 @@ const INSDashBoard = () => {
   };
 
   // กรอง assignments ที่ยังไม่เกิน due date หรือเท่ากับ due date
-  const filteredAssignments = activeAssignments
-    .filter(assignment => {
-      const now = dayjs();
-      const dueDate = dayjs(parseDate(assignment.assignment_due_date));
-      // ตรวจสอบว่า now น้อยกว่าหรือเท่ากับ due_date
-      return now.isSameOrBefore(dueDate);
-    })
-    .slice(0, 4); // แสดงผลแค่ 4 รายการ
+  const filteredAssignments = (activeAssignments || [])
+  .filter(assignment => {
+    const now = dayjs();
+    const dueDate = dayjs(parseDate(assignment.assignment_due_date));
+    // ตรวจสอบว่า now น้อยกว่าหรือเท่ากับ due_date
+    return now.isSameOrBefore(dueDate);
+  })
+  .slice(0, 4); 
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
