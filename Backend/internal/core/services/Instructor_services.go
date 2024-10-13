@@ -17,6 +17,8 @@ type InstructorService interface {
 
 	// Get instructors and students by course id
 	GetRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
+	// Insert student or instructor to course
+	CreateSingleUserRoster(CourseID uuid.UUID, Email string, UserGroupName string) error
 
 	GetCoursesByUserID(UserID uuid.UUID) ([]*models.Course, error)
 	GetAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error)
@@ -69,6 +71,54 @@ func (s *InstructorServiceImpl) GetRosterByCourseID(CourseID uuid.UUID) ([]map[s
 		return nil, err
 	}
 	return roster, nil
+}
+
+// Insert student or instructor to course
+func (s *InstructorServiceImpl) CreateSingleUserRoster(CourseID uuid.UUID, Email string, UserGroupName string) error {
+	user, err := s.repo.FindUserByEmail(Email)
+	if err != nil {
+		return err
+	}
+
+	if user["group_name"] != UserGroupName {
+		return err
+	}
+
+	userID, err := uuid.Parse(user["user_id"].(string))
+	if err != nil {
+		return err
+	}
+
+	if UserGroupName == "INSTRUCTOR" {
+		exists, err := s.repo.FindInstructorExists(userID, CourseID)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return err
+		}
+
+		err = s.repo.AddInstructorToCourse(userID, CourseID)
+		if err != nil {
+			return err
+		}
+	} else if UserGroupName == "STUDENT" {
+		exists, err := s.repo.FindStudentExists(userID, CourseID)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return err
+		}
+
+		err = s.repo.AddStudentToCourse(userID, CourseID)
+		if err != nil {
+			return err
+		}
+	} else {
+		return err
+	}
+	return nil
 }
 
 func (s *InstructorServiceImpl) GetCoursesByUserID(UserID uuid.UUID) ([]*models.Course, error) {
