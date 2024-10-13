@@ -66,7 +66,6 @@ func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 	}
 	releaseDateStr := c.FormValue("release_date")
 	dueDateStr := c.FormValue("due_date")
-	cutOffDateStr := c.FormValue("cut_off_date")
 
 	releaseDate, err := time.Parse("01-02-2006", releaseDateStr)
 	if err != nil {
@@ -84,13 +83,21 @@ func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 		})
 	}
 
-	cutOffDate, err := time.Parse("01-02-2006", cutOffDateStr)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid cut_off_date format",
-			"error":   err.Error(),
-		})
+	var cutOffDate *time.Time
+	cutOffDateStr := c.FormValue("cut_off_date")
+	if cutOffDateStr != "" {
+		parsedDate, err := time.Parse("01-02-2006", cutOffDateStr)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"message": "Invalid cut_off_date format",
+				"error":   err.Error(),
+			})
+		}
+		cutOffDate = &parsedDate
+	} else {
+		cutOffDate = nil
 	}
+
 	templateFile := c.FormValue("template_file")
 
 	// Handle files uploaded
@@ -230,7 +237,10 @@ func (h *HttpInstructorHandler) GetAssignmentsByCourseID(c *fiber.Ctx) error {
 	for _, assignment := range assignments {
 		releaseDate := assignment.ReleaseDate.Format("02-01-2006")
 		dueDate := assignment.DueDate.Format("02-01-2006")
-		cutOffDate := assignment.CutOffDate.Format("02-01-2006")
+		cutOffDate := ""
+		if assignment.CutOffDate != nil {
+			cutOffDate = assignment.CutOffDate.Format("02-01-2006")
+		}
 
 		response = append(response, map[string]interface{}{
 			"assignment_id":           assignment.AssignmentID,
