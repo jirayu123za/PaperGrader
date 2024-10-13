@@ -109,16 +109,21 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
       formData.append('cut_off_date', dayjs(values.cut_off_date).format("MM-DD-YYYY"));
     }
 
+    // ตรวจสอบว่ามี template file หรือไม่
+    if (templateFile) {
+      formData.append('template_file', templateFile);
+      formData.append('is_template', 'true');
+    }
+
     files.forEach((file) => {
       formData.append('files', file);
     });
 
-    if (templateFile) {
-      formData.append('template_file', templateFile);
-    }
-
-    console.log('formData:', form.values);
-
+    // Log the FormData content
+    console.log('FormData Entries:');
+    formData.forEach((value, key) => {
+      console.log(key, value);
+    });
     mutate(formData, {
       onSuccess: () => {
         onClose();
@@ -130,6 +135,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
       },
     });
   };
+
 
   return (
     // <Modal
@@ -257,109 +263,109 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
         clearFiles();
         onClose();
       }}
-      title="Create Assignment" 
+      title="Create Assignment"
       size="lg"
       overlayProps={{ opacity: 0.55, blur: 3 }}
     >
-    <form 
-      onSubmit={form.onSubmit(handleSubmit)}
-      className='p-4' 
-    >
-      <TextInput
-        className="mb-4"
-        label="Assignment Name" 
-        placeholder="Name your assignment"
-        {...form.getInputProps('assignment_name')}
-        required
-      />
-      <TextInput
-        className="mb-4"
-        label="Assignment Description" 
-        placeholder="Add your assignment description"
-        {...form.getInputProps('assignment_description')} 
-        required
-      />
-
-      {/* ส่วนสำหรับการอัพโหลดไฟล์ */}
-      <div className="flex flex-col mb-4">
-        <p className="text-sm text-gray-700 mb-2"> 
-          Upload File
-          </p>
-          <div className="mt-2">
-            <UploadFile /> 
-          </div>
-      </div>
-      <div className="mt-4">
-          <RadioGroup
-            {...form.getInputProps('submiss_by')} 
-            label="Who will upload submissions?" 
-            required
-          >
-          <div className="flex justify-start gap-8 mt-1">
-            <Radio 
-              value="instructor" 
-              label="Instructor"
-            />
-            <Radio 
-              value="student" 
-              label="Student" 
-            />            
-          </div>
-          </RadioGroup>
-      </div>
-
-      <div className="flex justify-between mt-4 mb-4 gap-4">
-        <div className="w-full">
-          <DatePickerInput
-            label="Release Date"
-            placeholder="Select release date"
-            {...form.getInputProps('release_date')} 
-            minDate={new Date()}
-            valueFormat="DD/MM/YYYY"
-            required
-          />
-        </div>
-        <div className="w-full">
-          <DatePickerInput
-            label="Due Date"
-            placeholder="Select due date" 
-            {...form.getInputProps('due_date')}
-            minDate={form.values.release_date ? new Date(form.values.release_date) : undefined}
-            valueFormat="DD/MM/YYYY"
-            required 
-          />
-        </div>
-      </div>
-
-      <Checkbox
-        className="mb-1"
-        label="Allow late submissions" 
-        {...form.getInputProps('late_submiss', 
-        { type: 'checkbox' })} 
-      />
-      <Checkbox 
-        label="Allow group submissions" 
-        {...form.getInputProps('group_submiss', 
-        { type: 'checkbox' })} 
-      />
-
-      {form.values.late_submiss && (
-        <DatePickerInput
-          className="mt-4"
-          label="Cut off Date" 
-          placeholder="Select cut off date"
-          {...form.getInputProps('cut_off_date')}
-          minDate={form.values.due_date ? dayjs(new Date(form.values.due_date)).add(1, 'day').toDate() : new Date()}
-          valueFormat="DD/MM/YYYY"
+      <form
+        onSubmit={form.onSubmit(handleSubmit)}
+        className='p-4'
+      >
+        <TextInput
+          className="mb-4"
+          label="Assignment Name"
+          placeholder="Name your assignment"
+          {...form.getInputProps('assignment_name')}
           required
         />
-      )}
+        <TextInput
+          className="mb-4"
+          label="Assignment Description"
+          placeholder="Add your assignment description"
+          {...form.getInputProps('assignment_description')}
+          required
+        />
 
-      <div className="flex justify-end mt-6">
-        <Button type="submit">Create Assignment</Button>
-      </div>
-    </form>
-  </Modal>
+        {/* ส่วนสำหรับการอัพโหลดไฟล์ */}
+        <div className="flex flex-col mb-4">
+          <p className="text-sm text-gray-700 mb-2">
+            Upload File
+          </p>
+          <div className="mt-2">
+            <UploadFile />
+          </div>
+        </div>
+        <div className="mt-4">
+          <RadioGroup
+            {...form.getInputProps('submiss_by')}
+            label="Who will upload submissions?"
+            required
+          >
+            <div className="flex justify-start gap-8 mt-1">
+              <Radio
+                value="instructor"
+                label="Instructor"
+              />
+              <Radio
+                value="student"
+                label="Student"
+              />
+            </div>
+          </RadioGroup>
+        </div>
+
+        <div className="flex justify-between mt-4 mb-4 gap-4">
+          <div className="w-full">
+            <DatePickerInput
+              label="Release Date"
+              placeholder="Select release date"
+              {...form.getInputProps('release_date')}
+              minDate={new Date()}
+              valueFormat="DD/MM/YYYY"
+              required
+            />
+          </div>
+          <div className="w-full">
+            <DatePickerInput
+              label="Due Date"
+              placeholder="Select due date"
+              {...form.getInputProps('due_date')}
+              minDate={form.values.release_date ? new Date(form.values.release_date) : undefined}
+              valueFormat="DD/MM/YYYY"
+              required
+            />
+          </div>
+        </div>
+
+        <Checkbox
+          className="mb-1"
+          label="Allow late submissions"
+          {...form.getInputProps('late_submiss',
+            { type: 'checkbox' })}
+        />
+        <Checkbox
+          label="Allow group submissions"
+          {...form.getInputProps('group_submiss',
+            { type: 'checkbox' })}
+        />
+
+        {form.values.late_submiss && (
+          <DatePickerInput
+            className="mt-4"
+            label="Cut off Date"
+            placeholder="Select cut off date"
+            {...form.getInputProps('cut_off_date')}
+            minDate={form.values.due_date ? dayjs(new Date(form.values.due_date)).add(1, 'day').toDate() : new Date()}
+            valueFormat="DD/MM/YYYY"
+            required
+          />
+        )}
+
+        <div className="flex justify-end mt-6">
+          <Button type="submit">Create Assignment</Button>
+        </div>
+      </form>
+    </Modal>
   );
 };
 
