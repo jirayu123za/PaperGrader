@@ -29,14 +29,14 @@ const INSDashBoard = () => {
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => {
     setIsModalOpen(false);
-    refetch(); // เรียกใช้ refetch หลังจากปิด modal เพื่อรีเฟรชข้อมูล assignments
+    refetch();
   };
 
   // ฟังก์ชันคำนวณ Time Progress ระหว่าง release date และ due date
   const calculateTimeProgress = (releaseDate: string, dueDate: string) => {
     const now = dayjs();
-    const start = dayjs(parseDate(releaseDate)); // ใช้ parseDate เพื่อแปลงวันที่
-    const end = dayjs(parseDate(dueDate)); // ใช้ parseDate เพื่อแปลงวันที่
+    const start = dayjs(parseDate(releaseDate));
+    const end = dayjs(parseDate(dueDate));
     const totalDuration = end.diff(start, 'day');
     const elapsedTime = now.diff(start, 'day');
     const progress = (elapsedTime / totalDuration) * 100;
@@ -48,7 +48,7 @@ const INSDashBoard = () => {
   .filter(assignment => {
     const now = dayjs();
     const dueDate = dayjs(parseDate(assignment.assignment_due_date));
-    // ตรวจสอบว่า now น้อยกว่าหรือเท่ากับ due_date
+
     return now.isSameOrBefore(dueDate);
   })
   .slice(0, 4); 
