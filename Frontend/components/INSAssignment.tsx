@@ -33,7 +33,7 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
             <th className="py-2 px-4 text-left">NAME</th>
             <th className="py-2 px-4 text-left">POINTS</th>
             <th className="py-2 px-4 text-left">RELEASED</th>
-            <th className="py-2 px-4 text-left">DUE (PST)</th>
+            <th className="py-2 px-4 text-left">DUE</th>
             <th className="py-2 px-4 text-left">CUTOFF</th>
             <th className="py-2 px-4 text-left">SUBMISSIONS</th>
             <th className="py-2 px-4 text-left">% GRADED</th>
