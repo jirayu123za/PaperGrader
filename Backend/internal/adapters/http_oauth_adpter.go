@@ -119,7 +119,7 @@ func (h *HttpOAuthHandler) GetGoogleCallBack(c *fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:     "user_token",
 		Value:    jwtToken,
-		Expires:  time.Now().Add(time.Hour * 1), // add more expires time 3hrs
+		Expires:  time.Now().Add(time.Hour * 12), // add more expires time 3hrs
 		HTTPOnly: true,
 		Secure:   true,
 	})
