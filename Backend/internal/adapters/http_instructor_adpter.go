@@ -227,6 +227,32 @@ func (h *HttpInstructorHandler) GetRosterByCourseID(c *fiber.Ctx) error {
 	})
 }
 
+// handler Insert student or instructor to course
+func (h *HttpInstructorHandler) CreateSingleUserRoster(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	email := c.FormValue("email")
+	userGroupName := c.FormValue("user_group_name")
+
+	if err := h.services.CreateSingleUserRoster(courseID, email, userGroupName); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to add user to course",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message": "User was added to course",
+	})
+}
+
 func (h *HttpInstructorHandler) GetCoursesByUserID(c *fiber.Ctx) error {
 	userID, err := utils.GetUserIDFromJWT(c)
 	if err != nil {
