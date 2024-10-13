@@ -317,7 +317,10 @@ func (h *HttpInstructorHandler) GetActiveAssignmentsByCourseID(c *fiber.Ctx) err
 
 		releaseDate := activeAssignment.ReleaseDate.Format("02-01-2006")
 		dueDate := activeAssignment.DueDate.Format("02-01-2006")
-		cutOffDate := activeAssignment.CutOffDate.Format("02-01-2006")
+		cutOffDate := ""
+		if activeAssignment.CutOffDate != nil {
+			cutOffDate = activeAssignment.CutOffDate.Format("02-01-2006")
+		}
 
 		response = append(response, map[string]interface{}{
 			"assignment_id":           activeAssignment.AssignmentID,
