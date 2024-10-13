@@ -94,13 +94,11 @@ func (h *HttpOAuthHandler) GetGoogleCallBack(c *fiber.Ctx) error {
 			})
 		}
 
-		/*
-			return c.Status(fiber.StatusOK).JSON(fiber.Map{
-				"message":  "New User logged in via Google OAuth2",
-				"userInfo": userInfo,
-				"jwtToken": jwtToken,
-			})
-		*/
+		// return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		// 	"message":  "New User logged in via Google OAuth2",
+		// 	"userInfo": userInfo,
+		// 	"jwtToken": jwtToken,
+		// })
 
 		redirectURL := "http://localhost:5173/?token=" + jwtToken
 		return c.Redirect(redirectURL, fiber.StatusTemporaryRedirect)
@@ -119,28 +117,43 @@ func (h *HttpOAuthHandler) GetGoogleCallBack(c *fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:     "user_token",
 		Value:    jwtToken,
-		Expires:  time.Now().Add(time.Hour * 12), // add more expires time 3hrs
+		Expires:  time.Now().Add(time.Hour * 12),
 		HTTPOnly: true,
 		Secure:   true,
 	})
 
-	/*
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"message":  "User is logged in by Google OAuth2",
-			"token":    token,
-			"jwtToken": jwtToken,
-			"user":     userInfo,
+	// return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	// 	"message":  "User is logged in by Google OAuth2",
+	// 	"token":    token,
+	// 	"jwtToken": jwtToken,
+	// 	"user":     userInfo,
+	// })
+	// return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	// 	"message": "User logged in via Google OAuth2",
+	// 	"user":    user,
+	// })
+
+	groupID, err := utils.GetUserGroupIDFromJWT(c)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid group_id in JWT",
+			"error":   err.Error(),
 		})
-	*/
-	/*
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"message": "User logged in via Google OAuth2",
-			"user":    user,
+	}
+
+	switch groupID {
+	case 1:
+		return c.Redirect("http://localhost:5173/CourseOverview", fiber.StatusTemporaryRedirect)
+	case 2:
+		return c.Redirect("http://localhost:5173/students/12345", fiber.StatusTemporaryRedirect)
+	default:
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid group ID",
+			"error":   "Invalid group ID",
 		})
+	}
 
-	*/
-
-	redirectURL := "http://localhost:5173/CourseOverview"
-	return c.Redirect(redirectURL, fiber.StatusTemporaryRedirect)
-
+	// insRedirectURL := "http://localhost:5173/CourseOverview"
+	// stdRedirectURL := "http://localhost:5173/students/12345"
+	// return c.Redirect(insRedirectURL, fiber.StatusTemporaryRedirect)
 }
