@@ -17,6 +17,12 @@ type InstructorRepository interface {
 
 	// Find instructors and students by course id
 	FindRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
+	// Add student or instructor to course
+	FindUserByEmail(email string) (map[string]interface{}, error)
+	FindInstructorExists(userID uuid.UUID, CourseID uuid.UUID) (bool, error)
+	FindStudentExists(userID, courseID uuid.UUID) (bool, error)
+	AddInstructorToCourse(userID uuid.UUID, courseID uuid.UUID) error
+	AddStudentToCourse(userID uuid.UUID, courseID uuid.UUID) error
 
 	FindCoursesByUserID(UserID uuid.UUID) ([]*models.Course, error)
 	FindAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error)
