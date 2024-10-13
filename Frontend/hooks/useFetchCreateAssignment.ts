@@ -45,43 +45,55 @@ const createAssignment = async (assignmentData: AssignmentData) => {
 };
 */
 
-const createAssignment = async (assignmentData: AssignmentData) => {
-  const assignmentBody = {
-    course_id: assignmentData.course_id,
-    assignment_name: assignmentData.assignment_name,
-    assignment_description: assignmentData.assignment_description,
-    submiss_by: assignmentData.submiss_by,
-    release_date: assignmentData.release_date,
-    due_date: assignmentData.due_date,
-    group_submiss: assignmentData.group_submiss,
-    late_submiss: assignmentData.late_submiss,
-    cut_off_date: assignmentData.cut_off_date,
-  };
+// const createAssignment = async (assignmentData: AssignmentData) => {
+//   const assignmentBody = {
+//     course_id: assignmentData.course_id,
+//     assignment_name: assignmentData.assignment_name,
+//     assignment_description: assignmentData.assignment_description,
+//     submiss_by: assignmentData.submiss_by,
+//     release_date: assignmentData.release_date,
+//     due_date: assignmentData.due_date,
+//     group_submiss: assignmentData.group_submiss,
+//     late_submiss: assignmentData.late_submiss,
+//     cut_off_date: assignmentData.cut_off_date,
+//   };
 
-  const { data: assignmentResponse } = await axios.post('/api/api/instructor/assignment', assignmentBody, {
+//   const { data: assignmentResponse } = await axios.post('/api/api/instructor/assignment', assignmentBody, {
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//     params: { course_id: assignmentData.course_id },
+//   });
+
+//   /*
+//   if (assignmentData.templateFile && assignmentResponse.assignment_id) {
+//     const formData = new FormData();
+
+//     formData.append('templateFile', assignmentData.templateFile);
+
+//     await axios.post(`/api/api/assignment/${assignmentResponse.assignment_id}/upload`, formData, {
+//       headers: {
+//         'Content-Type': 'multipart/form-data',
+//       },
+//     });
+//   }
+//     */
+
+//   return assignmentResponse;
+// };
+
+const createAssignment = async (formData: FormData) => {
+  const course_id = formData.get('course_id');
+  const { data: assignmentResponse } = await axios.post('/api/api/instructor/assignment/files',
+    formData, {
+    params: { course_id },
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'multipart/form-data',
     },
-    params: { course_id: assignmentData.course_id },
   });
-
-  /*
-  if (assignmentData.templateFile && assignmentResponse.assignment_id) {
-    const formData = new FormData();
-
-    formData.append('templateFile', assignmentData.templateFile);
-
-    await axios.post(`/api/api/assignment/${assignmentResponse.assignment_id}/upload`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-  }
-    */
 
   return assignmentResponse;
 };
-
 
 export const useCreateAssignment = () => {
   const reset = useAssignmentStore((state) => state.reset);
