@@ -1,8 +1,8 @@
 import React from 'react';
-import { Modal, Button, TextInput, RadioGroup, Radio, Checkbox } from '@mantine/core';
+import { Modal, Button, TextInput, RadioGroup, Radio, Checkbox, Alert } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useCreateSingleUser } from '../../hooks/useFetchCreateSingleUser';
-// import { useUserStore } from '../../store/useCreateSingleUserStore';
+import { useRouter } from 'next/router';
 
 interface SingleUserModalProps {
   isOpen: boolean;
@@ -11,6 +11,8 @@ interface SingleUserModalProps {
 
 const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
   const { mutate } = useCreateSingleUser();
+  const router = useRouter();
+  const { course_id } = router.query;
 
   const form = useForm({
     initialValues: {
@@ -33,6 +35,7 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
     const [first_name, last_name] = values.name.split(' ');
     const formData = new FormData();
 
+    formData.append('course_id', Array.isArray(course_id) ? course_id[0] : course_id || '');
     formData.append('first_name', first_name || '');
     formData.append('last_name', last_name || '');
     formData.append('email', values.email);
@@ -40,18 +43,9 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
     formData.append('user_group_name', values.user_group_name);
     // formData.append('notifyUser', String(values.notifyUser));
 
-    // setUser({ first_name, last_name, email: values.email, student_id: values.student_id, user_group_name: values.user_group_name/*, notifyUser: values.notifyUser */});
-
     console.log('Form data:', form.values);
     
     mutate(formData,
-      // {
-      //   name: values.name,
-      //   email: values.email,
-      //   student_id: values.student_id || undefined,
-      //   user_group_name: values.user_group_name,
-      //   notifyUser: values.notifyUser,
-      // },
       {
         onSuccess: () => {
           console.log('User created successfully');
