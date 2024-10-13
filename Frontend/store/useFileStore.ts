@@ -7,6 +7,7 @@ interface FileStoreState {
   removeFile: (fileName: string) => void;
   templateFile: File | null;
   setTemplateFile: (file: File | null) => void;
+  clearFiles: () => void;
 }
 
 export const useFileStore = create<FileStoreState>((set) => ({
@@ -20,6 +21,7 @@ export const useFileStore = create<FileStoreState>((set) => ({
     set((state) => ({
       files: state.files.filter((file) => file.name !== fileName),
     })),
+  clearFiles: () => set({ files: [] }),
   templateFile: null,
   setTemplateFile: (file) => set({ templateFile: file }),
 }));

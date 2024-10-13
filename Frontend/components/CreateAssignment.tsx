@@ -18,7 +18,7 @@ interface CreateAssignmentModalProps {
 const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
   const { course_id } = router.query;
-  const { files, templateFile } = useFileStore();
+  const { files, templateFile, clearFiles } = useFileStore();
   const { mutate } = useCreateAssignment();
 
   const {
@@ -123,6 +123,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
       onSuccess: () => {
         onClose();
         form.reset();
+        clearFiles();
       },
       onError: (error) => {
         console.error('Error creating assignment:', error);
@@ -252,7 +253,8 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
     <Modal
       opened={isOpen}
       onClose={() => {
-        form.reset(); // Reset the form when the modal is closed
+        form.reset();
+        clearFiles();
         onClose();
       }}
       title="Create Assignment" 
