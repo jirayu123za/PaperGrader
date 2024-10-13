@@ -23,19 +23,20 @@ func NewMinIORepository(client *minio.Client, bucketName string) *MinIORepositor
 	}
 }
 
-func (r *MinIORepository) SaveFileToMinIO(file multipart.File, userGroupName, userName, fileName string) error {
+func (r *MinIORepository) AddFileToMinIO(file multipart.File, CourseID, AssignmentID, fileName string) error {
 	ctx := context.Background()
 	exists, err := r.client.BucketExists(ctx, r.bucketName)
 	if err != nil {
 		return err
 	}
+
 	if !exists {
 		if err := r.client.MakeBucket(ctx, r.bucketName, minio.MakeBucketOptions{Region: "ap-southeast-1"}); err != nil {
 			return err
 		}
 	}
 
-	objectName := filepath.Join(userGroupName, userName, fileName)
+	objectName := filepath.Join(CourseID, AssignmentID, fileName)
 	objectName = strings.ReplaceAll(objectName, "\\", "/")
 
 	tempDir := os.TempDir()
@@ -52,8 +53,16 @@ func (r *MinIORepository) SaveFileToMinIO(file multipart.File, userGroupName, us
 	}
 
 	contentType := "application/octet-stream"
-	if strings.HasSuffix(fileName, ".pdf") {
+	if strings.HasSuffix(fileName, ".png") {
+		contentType = "image/png"
+	} else if strings.HasSuffix(fileName, ".jpg") || strings.HasSuffix(fileName, ".jpeg") {
+		contentType = "image/jpeg"
+	} else if strings.HasSuffix(fileName, ".pdf") {
 		contentType = "application/pdf"
+	} else if strings.HasSuffix(fileName, ".doc") {
+		contentType = "application/msword"
+	} else if strings.HasSuffix(fileName, ".docx") {
+		contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 	}
 
 	_, err = r.client.FPutObject(ctx, r.bucketName, objectName, tempFilePath, minio.PutObjectOptions{

@@ -1,7 +1,6 @@
 package adapters
 
 import (
-	"fmt"
 	"paperGrader/internal/core/services"
 	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
@@ -25,98 +24,6 @@ func NewHttpInstructorHandler(services services.InstructorService, fileServices 
 		fileServices:  fileServices,
 		minioServices: minioServices,
 	}
-}
-
-// v1
-func (h *HttpInstructorHandler) CreateAssignment(c *fiber.Ctx) error {
-	courseIDParam := c.Query("course_id")
-	courseID, err := uuid.Parse(courseIDParam)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid course_id",
-			"error":   err.Error() + ": " + courseIDParam,
-		})
-	}
-
-	var assignment models.Assignment
-	if err := c.BodyParser(&assignment); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Failed to parse request body",
-			"error":   err.Error(),
-		})
-	}
-
-	fmt.Printf("Received assignment: %+v\n", assignment)
-	fmt.Printf("Received assignment: %+v\n", c.BodyParser(&assignment))
-
-	/*
-		fileHeader, err := c.FormFile("templateFile")
-		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"message": "Failed to get file from request",
-				"error":   err.Error(),
-			})
-		}
-
-		fileContent, err := fileHeader.Open()
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Failed to open file",
-				"error":   err.Error(),
-			})
-		}
-		defer fileContent.Close()
-
-		file := &models.File{
-			Name: fileHeader.Filename,
-		}
-		if err := h.fileServices.CreateFile(file, fileContent); err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Failed to save file to bucket",
-				"error":   err.Error(),
-			})
-		}
-	*/
-
-	/*
-		assignmentFile := &models.AssignmentFile{
-			AssignmentID: assignment.AssignmentID,
-			//AssignmentFileName: file.Name,
-		}
-
-		if err := h.assignmentFileService.CreateAssignmentFile(assignmentFile); err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Failed to create assignment file record",
-				"error":   err.Error(),
-			})
-		}
-	*/
-	if err := h.services.CreateAssignment(courseID, &assignment); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to create assignment",
-			"error":   err.Error(),
-		})
-	}
-
-	/*
-		assignmentFile := &models.AssignmentFile{
-			AssignmentID: assignment.AssignmentID,
-			//AssignmentFileName: file.Name,
-		}
-
-		if err := h.assignmentFileService.CreateAssignmentFile(assignmentFile); err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Failed to create assignment file record",
-				"error":   err.Error(),
-			})
-		}
-	*/
-
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"message":    "Assignment created and file saved to bucket",
-		"assignment": assignment,
-		//"file_url":   file.URL,
-	})
 }
 
 // News Create assignment to course with Files(FromData)
@@ -243,15 +150,22 @@ func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 		assignmentFiles = append(assignmentFiles, assignmentFile)
 		uploads = append(uploads, upload)
 
-		// คุณสามารถบันทึกไฟล์ลงใน bucket (เช่น MinIO) ได้ที่นี่
 		// structure folder bucket -> course_id -> assignment_id -> file name(version)
-		// err = c.SaveFile(file, fmt.Sprintf("./uploads/%s/%s", courseID.String(), file.Filename))
-		// if err != nil {
-		// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-		// 		"message": "Failed to save the file",
-		// 		"error":   err.Error(),
-		// 	})
-		// }
+		fileContent, err := file.Open()
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to open file",
+				"error":   err.Error(),
+			})
+		}
+		defer fileContent.Close()
+
+		if err := h.minioServices.CreateFileToMinIO(fileContent, courseID.String(), assignment.AssignmentID.String(), file.Filename); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to save the file",
+				"error":   err.Error(),
+			})
+		}
 	}
 
 	// Call service to create assignment and upload file
@@ -269,64 +183,6 @@ func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 		"upload":          uploads,
 	})
 }
-
-// v2
-/*
-func (h *HttpInstructorHandler) CreateAssignmentWithFile(c *fiber.Ctx) error {
-	courseIDParam := c.Query("course_id")
-	courseID, err := uuid.Parse(courseIDParam)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid course_id",
-			"error":   err.Error(),
-		})
-	}
-
-	var assignment models.Assignment
-	if err := c.BodyParser(&assignment); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Failed to parse request body",
-			"error":   err.Error(),
-		})
-	}
-
-	// Handle File Upload
-	userGroupName := c.FormValue("user_group_name")
-	userName := c.FormValue("user_name")
-
-	fileHeader, err := c.FormFile("file")
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Failed to get file from request",
-			"error":   err.Error(),
-		})
-	}
-
-	file, err := fileHeader.Open()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to open file",
-			"error":   err.Error(),
-		})
-	}
-	defer file.Close()
-
-	fileName := filepath.Base(fileHeader.Filename)
-
-	// Call service to create assignment and upload file
-	if err := h.services.CreateAssignmentWithFile(courseID, &assignment, file, userGroupName, userName, fileName); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to create assignment and save file",
-			"error":   err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"message":    "Assignment created and file saved to bucket",
-		"assignment": assignment,
-	})
-}
-*/
 
 func (h *HttpInstructorHandler) GetCoursesByUserID(c *fiber.Ctx) error {
 	userID, err := utils.GetUserIDFromJWT(c)

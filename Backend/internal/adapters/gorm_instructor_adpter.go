@@ -19,7 +19,7 @@ func NewGormInstructorRepository(db *gorm.DB) *GormInstructorRepository {
 	}
 }
 
-// v1 add assignment to course with out Files(Json)
+// Add assignment to course with out Files(Json)
 func (r *GormInstructorRepository) AddAssignment(CourseID uuid.UUID, assignment *models.Assignment) error {
 	var existingCourse *models.Course
 	if result := r.db.First(&existingCourse, "course_id = ?", CourseID); result.Error != nil {
@@ -57,20 +57,6 @@ func (r *GormInstructorRepository) AddAssignmentFile(file *models.AssignmentFile
 	}
 	return nil
 }
-
-// v2 add assignment to course with Files(FromData)
-// func (r *GormInstructorRepository) AddAssignmentWithFiles(CourseID uuid.UUID, assignment *models.Assignment) error {
-// 	var existingCourse *models.Course
-// 	if result := r.db.First(&existingCourse, "course_id = ?", CourseID); result.Error != nil {
-// 		return result.Error
-// 	}
-
-// 	assignment.CourseID = existingCourse.CourseID
-// 	if assignment := r.db.Create(assignment); assignment.Error != nil {
-// 		return assignment.Error
-// 	}
-// 	return nil
-// }
 
 func (r *GormInstructorRepository) FindCoursesByUserID(UserID uuid.UUID) ([]*models.Course, error) {
 	var courses []*models.Course

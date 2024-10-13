@@ -7,7 +7,7 @@ import (
 
 // Primary port
 type MinIOService interface {
-	CreateFileToMinIO(file multipart.File, userGroupName, userName string, fileName string) error
+	CreateFileToMinIO(file multipart.File, CourseID, AssignmentID, fileName string) error
 }
 
 type MinIOServiceImpl struct {
@@ -21,8 +21,8 @@ func NewMinIOService(repo repositories.MinIORepository) MinIOService {
 	}
 }
 
-func (s *MinIOServiceImpl) CreateFileToMinIO(file multipart.File, userGroupName, userName, fileName string) error {
-	if err := s.repo.SaveFileToMinIO(file, userGroupName, userName, fileName); err != nil {
+func (s *MinIOServiceImpl) CreateFileToMinIO(file multipart.File, CourseID, AssignmentID, fileName string) error {
+	if err := s.repo.AddFileToMinIO(file, CourseID, AssignmentID, fileName); err != nil {
 		return err
 	}
 	return nil

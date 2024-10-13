@@ -127,7 +127,7 @@ func main() {
 	apiGroup.Put("/assignment", assignmentHandler.UpdateAssignment)
 	apiGroup.Delete("/assignment", assignmentHandler.DeleteAssignment)
 
-	apiGroup.Post("/instructor/assignment", instructorHandler.CreateAssignment)
+	// apiGroup.Post("/instructor/assignment", instructorHandler.CreateAssignment)
 	apiGroup.Post("/instructor/assignment/files", instructorHandler.CreateAssignmentWithFiles)
 	apiGroup.Get("/instructor/assignments", instructorHandler.GetAssignmentsByCourseID)
 	apiGroup.Get("/instructor/courses", instructorHandler.GetCoursesByUserID)
