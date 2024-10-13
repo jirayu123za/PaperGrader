@@ -43,3 +43,34 @@ func GetUserIDFromJWT(c *fiber.Ctx) (uuid.UUID, error) {
 
 	return userID, nil
 }
+
+func GetUserGroupIDFromJWT(c *fiber.Ctx) (uint, error) {
+	config.LoadEnv()
+	jwtSecret := os.Getenv("JWT_SECRET")
+
+	userToken := c.Cookies("user_token")
+	if userToken == "" {
+		return 0, fmt.Errorf("JWT token is missing")
+	}
+
+	parsedToken, err := jwt.ParseWithClaims(userToken, &jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
+		return []byte(jwtSecret), nil
+	})
+	if err != nil || !parsedToken.Valid {
+		return 0, fmt.Errorf("invalid JWT token: %v", err)
+	}
+
+	claims, ok := parsedToken.Claims.(*jwt.MapClaims)
+	if !ok {
+		return 0, fmt.Errorf("failed to parse JWT claims")
+	}
+
+	groupIDValue, ok := (*claims)["group_id"].(float64)
+	if !ok {
+		return 0, fmt.Errorf("groupID not found in JWT claims")
+	}
+
+	groupID := uint(groupIDValue)
+
+	return groupID, nil
+}
