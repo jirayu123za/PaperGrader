@@ -2,6 +2,7 @@ import create from 'zustand';
 
 interface AssignmentStore {
   assignments: {
+    [x: string]: string;
     assignment_id: string;
     course_code: string;
     course_name?: string;
