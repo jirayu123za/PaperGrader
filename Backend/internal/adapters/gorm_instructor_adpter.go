@@ -63,25 +63,73 @@ func (r *GormInstructorRepository) FindRosterByCourseID(CourseID uuid.UUID) ([]m
 	var users []map[string]interface{}
 
 	if err := r.db.Table("users").
-		// Select("users.user_id, users.first_name, users.last_name, users.email, user_groups.group_name AS user_group_name, COUNT(submissions.submission_id) AS submission_count").
-		// Joins("LEFT JOIN user_groups ON users.group_id = user_groups.group_id").
-		// Joins("LEFT JOIN instructor_lists ON users.user_id = instructor_lists.user_id AND instructor_lists.course_id = ?", CourseID).
-		// Joins("LEFT JOIN enrollments ON users.user_id = enrollments.user_id AND enrollments.course_id = ?", CourseID).
-		// Joins("LEFT JOIN submissions ON users.user_id = submissions.user_id AND submissions.assignment_id IN (SELECT assignment_id FROM assignments WHERE course_id = ?)", CourseID).
-		// Preload("Submissions").
-		// Where("instructor_lists.course_id IS NOT NULL OR enrollments.course_id IS NOT NULL").
-		// Group("users.user_id, user_groups.group_name").
-		// Scan(&users).Error
 		Select("users.user_id, users.first_name, users.last_name, users.email, user_groups.group_name AS user_group_name, COUNT(submissions.submission_id) AS submission_count").
 		Joins("LEFT JOIN user_groups ON users.group_id = user_groups.group_id").
-		Joins("LEFT JOIN instructor_lists ON users.user_id = instructor_lists.user_id AND instructor_lists.course_id = ?", CourseID).
-		Joins("LEFT JOIN enrollments ON users.user_id = enrollments.user_id AND enrollments.course_id = ?", CourseID).
+		Joins("LEFT JOIN instructor_lists ON users.user_id = instructor_lists.user_id AND instructor_lists.course_id = ? AND instructor_lists.deleted_at IS NULL", CourseID).
+		Joins("LEFT JOIN enrollments ON users.user_id = enrollments.user_id AND enrollments.course_id = ? AND enrollments.deleted_at IS NULL", CourseID).
 		Joins("LEFT JOIN submissions ON users.user_id = submissions.user_id AND submissions.assignment_id IN (SELECT assignment_id FROM assignments WHERE course_id = ?)", CourseID).
+		Where("instructor_lists.course_id IS NOT NULL OR enrollments.course_id IS NOT NULL").
 		Group("users.user_id, user_groups.group_name").
 		Scan(&users).Error; err != nil {
 		return nil, err
 	}
 	return users, nil
+}
+
+// Add student or instructor to course
+// FindUserByEmail finds a user by their email address
+func (r *GormInstructorRepository) FindUserByEmail(email string) (map[string]interface{}, error) {
+	var result map[string]interface{}
+
+	if err := r.db.Table("users").
+		Select("users.user_id, users.email, user_groups.group_name").
+		Joins("left join user_groups on users.group_id = user_groups.group_id").
+		Where("users.email = ?", email).
+		Scan(&result).Error; err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (r *GormInstructorRepository) FindInstructorExists(userID, courseID uuid.UUID) (bool, error) {
+	var count int64
+	err := r.db.Table("instructor_lists").
+		Where("user_id = ? AND course_id = ?", userID, courseID).
+		Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func (r *GormInstructorRepository) FindStudentExists(userID, courseID uuid.UUID) (bool, error) {
+	var count int64
+	err := r.db.Table("enrollments").
+		Where("user_id = ? AND course_id = ?", userID, courseID).
+		Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+// AddInstructorToCourse adds an instructor to a course
+func (r *GormInstructorRepository) AddInstructorToCourse(userID uuid.UUID, courseID uuid.UUID) error {
+	instructor := models.InstructorList{
+		UserID:   userID,
+		CourseID: courseID,
+	}
+	return r.db.Create(&instructor).Error
+}
+
+// AddStudentToCourse adds a student to a course
+func (r *GormInstructorRepository) AddStudentToCourse(userID uuid.UUID, courseID uuid.UUID) error {
+	enrollment := models.Enrollment{
+		UserID:   userID,
+		CourseID: courseID,
+	}
+	return r.db.Create(&enrollment).Error
 }
 
 func (r *GormInstructorRepository) FindCoursesByUserID(UserID uuid.UUID) ([]*models.Course, error) {
