@@ -18,7 +18,7 @@ type Assignment struct {
 	GroupSubmiss          bool             `gorm:"type:boolean;not null" json:"group_submiss"`
 	ReleaseDate           time.Time        `gorm:"type:date;not null" json:"release_date"`
 	DueDate               time.Time        `gorm:"type:date;not null" json:"due_date"`
-	CutOffDate            time.Time        `gorm:"type:date;not null" json:"cut_off_date"`
+	CutOffDate            *time.Time       `gorm:"type:date" json:"cut_off_date"`
 	AssignmentFiles       []AssignmentFile `gorm:"foreignKey:AssignmentID"`
 	Submissions           []Submission     `gorm:"foreignKey:AssignmentID"`
 	CreatedAt             time.Time
@@ -56,7 +56,7 @@ func (assignment *Assignment) UnmarshalJSON(data []byte) error {
 	}{
 		{aux.ReleaseDate, &assignment.ReleaseDate},
 		{aux.DueDate, &assignment.DueDate},
-		{aux.CutOffDate, &assignment.CutOffDate},
+		{aux.CutOffDate, assignment.CutOffDate},
 	}
 
 	// Parse dates and assign to respective fields
@@ -84,7 +84,12 @@ func (assignment Assignment) MarshalJSON() ([]byte, error) {
 		// Format the date fields as "dd-mm-yyyy"
 		ReleaseDate: assignment.ReleaseDate.Format("02-01-2006"),
 		DueDate:     assignment.DueDate.Format("02-01-2006"),
-		CutOffDate:  assignment.CutOffDate.Format("02-01-2006"),
-		Alias:       (*Alias)(&assignment),
+		CutOffDate: func() string {
+			if assignment.CutOffDate != nil {
+				return assignment.CutOffDate.Format("02-01-2006")
+			}
+			return ""
+		}(),
+		Alias: (*Alias)(&assignment),
 	})
 }
