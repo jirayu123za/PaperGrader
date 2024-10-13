@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import Link from 'next/link';
-import { FaBars, FaHome, FaBook, FaCog } from 'react-icons/fa'; // รวมไอคอนที่ต้องใช้
-import AccountMenu from '../STD/STD_Account'; // นำเข้า AccountMenu component
+import { FaBars, FaHome, FaClipboardList, FaUserCircle, FaQuestionCircle, FaEdit, FaSignOutAlt } from 'react-icons/fa';
+import AccountMenu from '../STD/STD_Account';
 
 interface LeftMainProps {
   studentId: string;
+  courseName: string; // เพิ่ม prop สำหรับชื่อคอร์ส
+  instructors: string[]; // เพิ่ม prop สำหรับรายชื่อ Instructor
 }
 
-export default function STD_LeftMain({ studentId }: LeftMainProps) {
+export default function STD_LeftMain({ studentId, courseName, instructors }: LeftMainProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const toggleCollapse = () => {
@@ -27,9 +29,16 @@ export default function STD_LeftMain({ studentId }: LeftMainProps) {
         </button>
       </div>
 
-      {/* Main Menu */}
+      {/* Main Content */}
       <div className={`flex-grow ${isCollapsed ? 'flex flex-col items-center' : ''}`}>
         <div className={`flex flex-col space-y-4 ${isCollapsed ? 'items-center' : ''}`}>
+          {/* Course Name */}
+          <h2 className="font-bold text-lg">
+            {courseName} {/* รับค่า courseName จาก props */}
+          </h2>
+          <p className="text-sm text-gray-600">Fullstack Software Development</p>
+
+          {/* Main Menu */}
           <Link href={`/student/${studentId}/dashboard`} passHref>
             <button className="flex items-center space-x-2 hover:text-teal-700">
               <FaHome />
@@ -37,24 +46,28 @@ export default function STD_LeftMain({ studentId }: LeftMainProps) {
             </button>
           </Link>
 
-          <Link href={`/student/${studentId}/course`} passHref>
+          <Link href={`/student/${studentId}/regrade`} passHref>
             <button className="flex items-center space-x-2 hover:text-teal-700">
-              <FaBook />
-              {!isCollapsed && <span>Course</span>}
+              <FaClipboardList />
+              {!isCollapsed && <span>Regrade Requests</span>}
             </button>
           </Link>
 
-          <Link href={`/student/${studentId}/settings`} passHref>
-            <button className="flex items-center space-x-2 hover:text-teal-700">
-              <FaCog />
-              {!isCollapsed && <span>Settings</span>}
-            </button>
-          </Link>
+          {/* Instructors Section */}
+          <h3 className="font-bold text-md mt-4">Instructors</h3>
+          <ul>
+            {instructors.map((instructor, index) => (
+              <li key={index} className="flex items-center space-x-2">
+                <FaUserCircle />
+                {!isCollapsed && <span>{instructor}</span>} {/* แสดงรายชื่อ Instructor */}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 
       {/* User Account Section */}
-      <AccountMenu /> {/* ใช้ AccountMenu component */}
+      <AccountMenu />
     </div>
   );
 }
