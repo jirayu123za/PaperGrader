@@ -1,6 +1,8 @@
 package adapters
 
 import (
+	"paperGrader/internal/models"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -34,4 +36,21 @@ func (r *GormStudentRepository) FindCoursesAndAssignments(UserID uuid.UUID) ([]m
 		return nil, result.Error
 	}
 	return courses, nil
+}
+
+func (r *GormStudentRepository) FindAssignmentNamesWithCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, err error) {
+	var assignmentFiles []models.AssignmentFile
+	if err := r.db.Table("assignment_files").
+		Select("assignment_files.assignment_file_name").
+		Joins("JOIN assignments ON assignments.assignment_id = assignment_files.assignment_id").
+		Where("assignments.course_id = ? AND assignment_files.assignment_id = ? AND assignment_files.deleted_at IS NULL", CourseID, AssignmentID).
+		Scan(&assignmentFiles).Error; err != nil {
+		return nil, err
+	}
+
+	for _, assignmentFile := range assignmentFiles {
+		fileNames = append(fileNames, assignmentFile.AssignmentFileName)
+	}
+
+	return fileNames, nil
 }
