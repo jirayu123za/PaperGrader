@@ -76,6 +76,10 @@ func main() {
 	instructorService := services.NewInstructorService(instructorRepo, courseRepo)
 	instructorHandler := adapters.NewHttpInstructorHandler(instructorService, fileService, minioService)
 
+	studentRepo := adapters.NewGormStudentRepository(db)
+	studentService := services.NewStudentService(studentRepo)
+	studentHandler := adapters.NewHttpStudentHandler(studentService)
+
 	// Routes
 	api := app.Group("/")
 	apiGroup := api.Group("/api")
@@ -136,6 +140,8 @@ func main() {
 	apiGroup.Get("/instructorsList", instructorHandler.GetInstructorsNameByCourseID)
 	apiGroup.Get("/instructors/roster", instructorHandler.GetRosterByCourseID)
 	apiGroup.Post("/instructor/roster", instructorHandler.CreateSingleUserRoster)
+
+	apiGroup.Get("/student/dashboard", studentHandler.GetCoursesAndAssignments)
 
 	if err := app.Listen(":" + port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
