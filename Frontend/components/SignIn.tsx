@@ -82,6 +82,14 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
     }
   }, [universityData, universitySuccess, setUniversities]);
 
+  const handleRoleBasedRedirect = (group_id: number) => {
+    if (group_id === 1) {
+      router.push("/INSCourseOverview");
+    } else if (group_id === 2) {
+      router.push("/STDCourseOverview");
+    }
+  };
+
   const handleSubmit = (values: typeof form.values) => {
     const formData = {
       google_id: google_id, 
@@ -98,7 +106,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
       onSuccess: () => {
         console.log("User created successfully");
         onClose();
-        router.push("/CourseOverview");
+        handleRoleBasedRedirect(formData.group_id);
       },
       onError: (error) => {
         console.error("Error creating user:", error);
