@@ -2,6 +2,7 @@ package services
 
 import (
 	"paperGrader/internal/core/repositories"
+	"paperGrader/internal/models"
 
 	"github.com/google/uuid"
 )
@@ -11,6 +12,7 @@ type StudentService interface {
 	GetCoursesAndAssignments(UserID uuid.UUID) ([]map[string]interface{}, error)
 	GetAssignmentNamesWithCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, err error)
 	GetPDFFileNamesAndURLs(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, fileURLs []string, err error)
+	CreateSubmissionFile(submission *models.Submission) error
 }
 
 type StudentServiceImpl struct {
@@ -24,6 +26,13 @@ func NewStudentService(repo repositories.StudentRepository, minioRepo repositori
 		repo:      repo,
 		minioRepo: minioRepo,
 	}
+}
+
+func (s *StudentServiceImpl) CreateSubmissionFile(submission *models.Submission) error {
+	if err := s.repo.AddSubmissionFile(submission); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *StudentServiceImpl) GetCoursesAndAssignments(UserID uuid.UUID) ([]map[string]interface{}, error) {

@@ -18,6 +18,13 @@ func NewGormStudentRepository(db *gorm.DB) *GormStudentRepository {
 	}
 }
 
+func (r *GormStudentRepository) AddSubmissionFile(submission *models.Submission) error {
+	if result := r.db.Create(submission); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
 // find all courses and assignments for a student
 func (r *GormStudentRepository) FindCoursesAndAssignments(UserID uuid.UUID) ([]map[string]interface{}, error) {
 	var courses []map[string]interface{}
