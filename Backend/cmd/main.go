@@ -73,7 +73,7 @@ func main() {
 	assignmentHandler := adapters.NewHttpAssignmentHandler(assignmentService)
 
 	instructorRepo := adapters.NewGormInstructorRepository(db)
-	instructorService := services.NewInstructorService(instructorRepo, courseRepo)
+	instructorService := services.NewInstructorService(instructorRepo, courseRepo, minioRepo)
 	instructorHandler := adapters.NewHttpInstructorHandler(instructorService, fileService, minioService)
 
 	studentRepo := adapters.NewGormStudentRepository(db)
@@ -140,6 +140,9 @@ func main() {
 	apiGroup.Get("/instructorsList", instructorHandler.GetInstructorsNameByCourseID)
 	apiGroup.Get("/instructors/roster", instructorHandler.GetRosterByCourseID)
 	apiGroup.Post("/instructor/roster", instructorHandler.CreateSingleUserRoster)
+	// test api get template file name
+	apiGroup.Get("/instructor/template/name", instructorHandler.GetAssignmentNameTemplate)
+	apiGroup.Get("/instructor/template/url", instructorHandler.GetPDFTemplateWithURL)
 
 	apiGroup.Get("/student/dashboard", studentHandler.GetCoursesAndAssignments)
 
