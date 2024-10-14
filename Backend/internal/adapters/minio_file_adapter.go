@@ -38,11 +38,16 @@ func (r *MinIORepository) AddFileToMinIO(file multipart.File, CourseID, Assignme
 		}
 	}
 
+	//! add version name
+	//versionedFileName := fmt.Sprintf("%s_%s", uuid.New().String(), fileName)
 	objectName := filepath.Join(CourseID, AssignmentID, fileName)
+	//objectName := filepath.Join(CourseID, AssignmentID, versionedFileName)
 	objectName = strings.ReplaceAll(objectName, "\\", "/")
 
 	tempDir := os.TempDir()
 	tempFilePath := filepath.Join(tempDir, fileName)
+	//! add version name
+	//tempFilePath := filepath.Join(tempDir, versionedFileName)
 	tempFile, err := os.Create(tempFilePath)
 	if err != nil {
 		return err
