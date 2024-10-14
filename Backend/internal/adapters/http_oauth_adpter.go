@@ -133,6 +133,33 @@ func (h *HttpOAuthHandler) GetGoogleCallBack(c *fiber.Ctx) error {
 	// 	"user":    user,
 	// })
 
+	// groupID, err := utils.GetUserGroupIDFromJWT(c)
+	// if err != nil {
+	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	// 		"message": "Invalid group_id in JWT",
+	// 		"error":   err.Error(),
+	// 	})
+	// }
+
+	// switch groupID {
+	// case 1:
+	// 	return c.Redirect("http://localhost:5173/INSCourseOverview", fiber.StatusTemporaryRedirect)
+	// case 2:
+	// 	return c.Redirect("http://localhost:5173/STDCourseOverview", fiber.StatusTemporaryRedirect)
+	// default:
+	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	// 		"message": "Invalid group ID",
+	// 		"error":   "Invalid group ID",
+	// 	})
+	// }
+
+	// insRedirectURL := "http://localhost:5173/CourseOverview"
+	// stdRedirectURL := "http://localhost:5173/students/12345"
+	// return c.Redirect(insRedirectURL, fiber.StatusTemporaryRedirect)
+	return c.Redirect("/api/google/callback/verify", fiber.StatusTemporaryRedirect)
+}
+
+func (h *HttpOAuthHandler) VerifyGoogleCallback(c *fiber.Ctx) error {
 	groupID, err := utils.GetUserGroupIDFromJWT(c)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -152,8 +179,4 @@ func (h *HttpOAuthHandler) GetGoogleCallBack(c *fiber.Ctx) error {
 			"error":   "Invalid group ID",
 		})
 	}
-
-	// insRedirectURL := "http://localhost:5173/CourseOverview"
-	// stdRedirectURL := "http://localhost:5173/students/12345"
-	// return c.Redirect(insRedirectURL, fiber.StatusTemporaryRedirect)
 }

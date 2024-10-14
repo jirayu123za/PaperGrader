@@ -92,6 +92,7 @@ func main() {
 
 	apiGroup.Get("/google", oauthHandler.GetGoogleLoginURL)
 	apiGroup.Get("/google/callback", oauthHandler.GetGoogleCallBack)
+	apiGroup.Get("/google/callback/verify", oauthHandler.VerifyGoogleCallback)
 
 	apiGroup.Post("/user", userHandler.CreateUser)
 	apiGroup.Get("/user/:googleID", userHandler.GetUserByID)
