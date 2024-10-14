@@ -28,7 +28,7 @@ func (r *GormStudentRepository) FindCoursesAndAssignments(UserID uuid.UUID) ([]m
 		AND e.deleted_at IS NULL 
 		AND c.deleted_at IS NULL 
 		AND a.deleted_at IS NULL 
-		AND a.cut_off_date > NOW()
+		AND (COALESCE(a.cut_off_date, a.due_date) > NOW())
 	`
 	if result := r.db.Raw(query, UserID).Scan(&courses); result.Error != nil {
 		return nil, result.Error
