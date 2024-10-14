@@ -1,8 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { useEffect } from 'react';
 import { useAssignmentStore } from '../store/useSTD_AssignmentStore';
-
 
 interface StudentAssignment {
   assignment_id: string;
@@ -13,25 +11,27 @@ interface StudentAssignment {
   release_Date: string;
 }
 
-const fetchAssignments = async (): Promise<StudentAssignment[]> => {
-    const response = await axios.get(`/assignments.json`);
-    const assignments = response.data.assignments; // ไม่ต้องแปลง
-    return assignments;
-  };
-  
-  export const useAssignments = () => {
-    const { setAssignments } = useAssignmentStore();
-  
-    const query = useQuery<StudentAssignment[], Error>({
-      queryKey: ['assignments'],
-      queryFn: fetchAssignments,
-    });
-  
-    useEffect(() => {
-      if (query.data) {
-        setAssignments(query.data); 
+// Function สำหรับดึงข้อมูล assignment
+export const useAssignments = (courseId: string) => {
+  const setAssignments = useAssignmentStore((state) => state.setAssignments);
+
+  return useQuery<StudentAssignment[], Error>({
+    queryKey: ['assignments', courseId],
+    queryFn: async () => {
+      // ใช้ axios เพื่อส่ง course_id ผ่าน params
+      const response = await axios.get(`/api/api/student/dashboard`, {
+        params: { course_id: courseId },
+      });
+      console.log(response);
+      
+      if (response.status !== 200) {
+        throw new Error('Network response was not ok');
       }
-    }, [query.data, setAssignments]);
-  
-    return query;
-  };
+
+      // แปลงข้อมูลให้ตรงกับโครงสร้าง StudentAssignment
+      const data = response.data.assignments as StudentAssignment[];
+      setAssignments(data); // ตั้งค่า assignments ใน Zustand store
+      return data;
+    },
+  });
+};

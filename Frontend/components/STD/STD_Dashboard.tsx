@@ -1,20 +1,15 @@
 import React, { useState } from 'react';
+import Link from 'next/link'; // นำเข้า Link จาก Next.js
 import { useAssignments } from '../../hooks/useFetchSTD_Assignment';
 import { useAssignmentStore } from '../../store/useSTD_AssignmentStore';
 import { Card, Progress, Text, Checkbox, ScrollArea } from '@mantine/core';
 import dayjs from 'dayjs';
 import STDSubmit from '../STD/STD_submit'; // Import STDSubmit component
 
-// ฟังก์ชันแปลงวันที่เป็นรูปแบบ MM-DD-YYYY
-const convertToMMDDYYYY = (dateStr: string) => {
-  const [day, month, year] = dateStr.split('-');
-  return `${month}-${day}-${year}`;
-};
-
 const STD_Dashboard = () => {
-  const { data: assignments, isLoading, error } = useAssignments();
+  const { data: assignments, isLoading, error } = useAssignments('courseId');
   const { assignments: assignmentList } = useAssignmentStore();
-  
+
   // State สำหรับควบคุมการเปิด modal และเก็บ assignmentId
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<string | null>(null);
@@ -25,11 +20,8 @@ const STD_Dashboard = () => {
   // ฟังก์ชันคำนวณ Progress bar และจำนวนวันคงเหลือ
   const calculateProgress = (releaseDate: string, dueDate: string) => {
     const now = dayjs();
-    const convertedReleaseDate = convertToMMDDYYYY(releaseDate);
-    const convertedDueDate = convertToMMDDYYYY(dueDate);
-
-    const release = dayjs(convertedReleaseDate, "MM-DD-YYYY");
-    const due = dayjs(convertedDueDate, "MM-DD-YYYY");
+    const release = dayjs(releaseDate);
+    const due = dayjs(dueDate);
 
     if (!release.isValid() || !due.isValid()) {
       return { diff: "Invalid date", progress: 0 };
@@ -57,15 +49,14 @@ const STD_Dashboard = () => {
 
   // กรอง assignment ที่ยังไม่เลย due date
   const filteredAssignments = assignmentList.filter((assignment) => {
-    const convertedDueDate = convertToMMDDYYYY(assignment.due_date);
-    const dueDate = dayjs(convertedDueDate, "MM-DD-YYYY");
+    const dueDate = dayjs(assignment.due_date);
     return dueDate.isAfter(dayjs()); // แสดง assignments ที่ไม่เลยกำหนด
   });
 
   // เรียง assignments ตามเวลาที่เหลือก่อน due date
   const sortedAssignments = [...filteredAssignments].sort((a, b) => {
-    const timeLeftA = dayjs(convertToMMDDYYYY(a.due_date), "MM-DD-YYYY").diff(dayjs(), 'day');
-    const timeLeftB = dayjs(convertToMMDDYYYY(b.due_date), "MM-DD-YYYY").diff(dayjs(), 'day');
+    const timeLeftA = dayjs(a.due_date).diff(dayjs(), 'day');
+    const timeLeftB = dayjs(b.due_date).diff(dayjs(), 'day');
     return timeLeftA - timeLeftB;
   });
 
@@ -74,25 +65,33 @@ const STD_Dashboard = () => {
       <ScrollArea h={700} type="never">
         <div className="space-y-4">
           {sortedAssignments.map((assignment) => {
-            const { diff, progress } = calculateProgress(assignment.release_date, assignment.due_date);
+            const { diff, progress } = calculateProgress(assignment.release_Date, assignment.due_date);
 
             return (
               <Card key={assignment.assignment_id} shadow="sm" padding="lg" radius="md" withBorder>
                 <div className="flex justify-between items-center">
+
+                  {/* คลิกที่ชื่อ Course จะแสดงเป็น course_code แต่ส่ง course_id */}
                   <div className="w-1/4">
-                    <Text style={{ fontWeight: 500 }}>Course Code: {assignment.course_code}</Text>
+                    <Link href={`/STDCourseOverview/Course/${assignment.course_id}`} passHref>
+                      <Text style={{ fontWeight: 500 }} className="cursor-pointer hover:underline">
+                        Course Code: {assignment.course_code} {/* แสดงเป็น course_code */}
+                      </Text>
+                    </Link>
+
                     <Text size="sm" color="dimmed">
                       {assignment.course_name || "Unknown Course"}
                     </Text>
                   </div>
 
+                  {/* คลิกที่ชื่อ Assignment เพื่อเปิด modal */}
                   <div className="w-2/4 flex items-center">
                     <Checkbox />
                     <Text
                       size="sm"
                       color="dimmed"
                       className="ml-2 cursor-pointer"
-                      onClick={() => openModal(assignment.assignment_id)} // เมื่อคลิก assignment name จะเปิด modal
+                      onClick={() => openModal(assignment.assignment_id)}
                     >
                       {assignment.assignment_name}
                     </Text>
@@ -111,12 +110,12 @@ const STD_Dashboard = () => {
         </div>
       </ScrollArea>
 
-      {/* เรียกใช้ STDSubmit modal เมื่อคลิกที่ assignment name */}
+      {/* เปิด modal สำหรับการ submit assignment */}
       {selectedAssignmentId && (
         <STDSubmit
           isOpen={isModalOpen}
           onClose={closeModal}
-          assignmentId={selectedAssignmentId} // ส่งค่า assignmentId ที่เลือกไปยัง STDSubmit
+          assignmentId={selectedAssignmentId}
         />
       )}
     </div>
