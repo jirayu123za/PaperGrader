@@ -264,6 +264,41 @@ func (h *HttpInstructorHandler) GetPDFTemplateWithURL(c *fiber.Ctx) error {
 	})
 }
 
+// !
+func (h *HttpInstructorHandler) GetFileFormSubmission(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	fileNames, fileURLs, err := h.services.GetFileFormSubmission(courseID, assignmentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get files",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Files are retrieved",
+		"files":   fileNames,
+		"urls":    fileURLs,
+	})
+}
+
 // handler Get instructors and students by course id
 func (h *HttpInstructorHandler) GetRosterByCourseID(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")

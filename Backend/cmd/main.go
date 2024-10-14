@@ -143,6 +143,8 @@ func main() {
 	// test api get template file name
 	apiGroup.Get("/instructor/template/name", instructorHandler.GetAssignmentNameTemplate)
 	apiGroup.Get("/instructor/template/url", instructorHandler.GetPDFTemplateWithURL)
+	//!
+	apiGroup.Get("/instructor/submissions", instructorHandler.GetFileFormSubmission)
 
 	apiGroup.Get("/student/dashboard", studentHandler.GetCoursesAndAssignments)
 	// test api get pdf files name

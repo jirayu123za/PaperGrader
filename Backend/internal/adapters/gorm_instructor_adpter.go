@@ -63,6 +63,26 @@ func (r *GormInstructorRepository) FindAssignmentNameTemplate(CourseID uuid.UUID
 	return assignmentFile.AssignmentFileName, nil
 }
 
+// !
+func (r *GormInstructorRepository) FindFileFormSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, err error) {
+	var submissionFiles []models.Submission
+	if err := r.db.Raw(`
+		SELECT DISTINCT ON (user_id) submission_file_name
+		FROM submissions
+		JOIN assignments ON assignments.assignment_id = submissions.assignment_id
+		WHERE assignments.course_id = ? AND submissions.assignment_id = ? AND submissions.deleted_at IS NULL
+		ORDER BY user_id, submitted_at DESC
+	`, CourseID, AssignmentID).Scan(&submissionFiles).Error; err != nil {
+		return nil, err
+	}
+
+	for _, submissionFile := range submissionFiles {
+		fileNames = append(fileNames, submissionFile.SubmissionFileName)
+	}
+
+	return fileNames, nil
+}
+
 func (r *GormInstructorRepository) AddAssignmentFile(file *models.AssignmentFile) error {
 	if result := r.db.Create(file); result.Error != nil {
 		return result.Error

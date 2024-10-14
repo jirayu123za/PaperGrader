@@ -15,6 +15,7 @@ type InstructorService interface {
 
 	GetAssignmentNameTemplate(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileName string, err error)
 	GetPDFTemplateWithURL(CourseID uuid.UUID, AssignmentID uuid.UUID) (templateURL string, err error)
+	GetFileFormSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, fileURLs []string, err error)
 
 	CreateAssignmentFile(file *models.AssignmentFile) error
 
@@ -84,6 +85,23 @@ func (s *InstructorServiceImpl) GetPDFTemplateWithURL(CourseID uuid.UUID, Assign
 		return "", err
 	}
 	return fileTemplateURL, nil
+}
+
+// !
+func (s *InstructorServiceImpl) GetFileFormSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, fileURLs []string, err error) {
+	fileNames, err = s.repo.FindFileFormSubmission(CourseID, AssignmentID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	courseIDSlice := []string{CourseID.String()}
+	assignmentIDSlice := []string{AssignmentID.String()}
+
+	returnFileURLs, returnFileNames, err := s.minioRepo.FindFilesAndNames(courseIDSlice, assignmentIDSlice, fileNames)
+	if err != nil {
+		return nil, nil, err
+	}
+	return returnFileNames, returnFileURLs, nil
 }
 
 func (s *InstructorServiceImpl) CreateAssignmentFile(file *models.AssignmentFile) error {
