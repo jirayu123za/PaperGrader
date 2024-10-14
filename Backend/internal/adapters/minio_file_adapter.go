@@ -4,9 +4,11 @@ import (
 	"context"
 	"io"
 	"mime/multipart"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/minio/minio-go/v7"
 )
@@ -75,4 +77,18 @@ func (r *MinIORepository) AddFileToMinIO(file multipart.File, CourseID, Assignme
 	defer os.Remove(tempFilePath)
 
 	return nil
+}
+
+func (r *MinIORepository) FindFileFromMinIO(CourseID, AssignmentID, fileName string) (string, error) {
+	ctx := context.Background()
+	objectName := filepath.Join(CourseID, AssignmentID, fileName)
+	objectName = strings.ReplaceAll(objectName, "\\", "/")
+
+	reqParams := make(url.Values)
+	presignedURL, err := r.client.PresignedGetObject(ctx, r.bucketName, objectName, time.Minute*15, reqParams)
+	if err != nil {
+		return "", err
+	}
+
+	return presignedURL.String(), nil
 }
