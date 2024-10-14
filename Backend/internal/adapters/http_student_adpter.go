@@ -1,6 +1,7 @@
 package adapters
 
 import (
+	"fmt"
 	"paperGrader/internal/core/services"
 	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
@@ -58,10 +59,13 @@ func (h *HttpStudentHandler) CreateSubmissionFile(c *fiber.Ctx) error {
 		})
 	}
 
+	versionedFileName := fmt.Sprintf("%s_%s", uuid.New().String(), file.Filename)
+
 	submission := &models.Submission{
-		UserID:             userID,
-		AssignmentID:       assignmentID,
-		SubmissionFileName: file.Filename,
+		UserID:       userID,
+		AssignmentID: assignmentID,
+		//SubmissionFileName: file.Filename,
+		SubmissionFileName: versionedFileName,
 		SubmittedAt:        time.Now(),
 	}
 
@@ -83,7 +87,7 @@ func (h *HttpStudentHandler) CreateSubmissionFile(c *fiber.Ctx) error {
 	defer fileContent.Close()
 
 	// upload file to MinIO
-	if err := h.minioServices.CreateFileToMinIO(fileContent, courseID.String(), assignmentID.String(), file.Filename); err != nil {
+	if err := h.minioServices.CreateFileToMinIO(fileContent, courseID.String(), assignmentID.String() /*file.Filename*/, versionedFileName); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to upload file to MinIO",
 			"error":   err.Error(),
