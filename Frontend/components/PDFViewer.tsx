@@ -1,39 +1,43 @@
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import '@react-pdf-viewer/core/lib/styles/index.css';
-import { pageNavigationPlugin } from '@react-pdf-viewer/page-navigation'; // ปลั๊กอินสำหรับการเลื่อนหน้า
-import { zoomPlugin } from '@react-pdf-viewer/zoom'; // ปลั๊กอินสำหรับการซูม
+import { pageNavigationPlugin } from '@react-pdf-viewer/page-navigation';
+import { scrollModePlugin } from '@react-pdf-viewer/scroll-mode';
+import { zoomPlugin } from '@react-pdf-viewer/zoom';
 import '@react-pdf-viewer/page-navigation/lib/styles/index.css';
+import '@react-pdf-viewer/zoom/lib/styles/index.css';
 
 const PDFViewer = () => {
-  // ปลั๊กอินสำหรับการนำทางหน้า
   const pageNavigationPluginInstance = pageNavigationPlugin();
-  // ปลั๊กอินสำหรับการซูม
+  const scrollModePluginInstance = scrollModePlugin();
   const zoomPluginInstance = zoomPlugin();
 
-  // เมื่อ component mount, กำหนด zoom เริ่มต้นที่ 100%
-  const setInitialZoom = () => {
-    zoomPluginInstance.zoomTo(1); // ซูม 100%
-  };
+  // ใช้ ZoomInButton และ ZoomOutButton จาก zoomPluginInstance
+  const { ZoomInButton, ZoomOutButton } = zoomPluginInstance;
 
   return (
-    <div style={{ height: '100vh', width: '100%' }}>
-      <Worker workerUrl={`https://unpkg.com/pdfjs-dist@2.14.305/build/pdf.worker.min.js`}>
-        <Viewer
-          fileUrl="/pdf/26x497-Quiz-167.pdf" // URL ของไฟล์ PDF
-          plugins={[pageNavigationPluginInstance, zoomPluginInstance]} // เพิ่มปลั๊กอินการเลื่อนหน้าและการซูม
-          onDocumentLoad={setInitialZoom} // เรียกฟังก์ชันเมื่อโหลดเอกสารเสร็จ
-        />
+    <div style={{ height: '100vh', width: '100%', position: 'relative' }}>
+      <Worker workerUrl={`https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js`}>
+        <div style={{ height: '100%', width: '100%' }}>
+          <Viewer
+            fileUrl="/pdf/26x497-Quiz-167.pdf"
+            plugins={[pageNavigationPluginInstance, scrollModePluginInstance, zoomPluginInstance]}
+          />
+        </div>
       </Worker>
 
-      {/* ปุ่มเลื่อนหน้า */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
-        {/* ปุ่มไปยังหน้าก่อนหน้า */}
-        <button onClick={() => pageNavigationPluginInstance.jumpToPreviousPage()}>
+      {/* ปุ่มควบคุม PDF ที่ลอยอยู่ในเอกสาร */}
+      <div style={{ position: 'absolute', bottom: '20px', left: '20px', display: 'flex', gap: '10px', backgroundColor: 'rgba(255, 255, 255, 0.7)', padding: '10px', borderRadius: '8px' }}>
+        {/* ปุ่มเลื่อนหน้า */}
+        <button onClick={() => pageNavigationPluginInstance.jumpToPreviousPage()} style={{ padding: '5px' }}>
           {'<'} Previous
         </button>
 
-        {/* ปุ่มไปยังหน้าถัดไป */}
-        <button onClick={() => pageNavigationPluginInstance.jumpToNextPage()}>
+        {/* ปุ่มซูม */}
+        <ZoomOutButton /> {/* ปุ่มลดขนาด */}
+        <ZoomInButton />  {/* ปุ่มเพิ่มขนาด */}
+
+        {/* ปุ่มเลื่อนหน้า */}
+        <button onClick={() => pageNavigationPluginInstance.jumpToNextPage()} style={{ padding: '5px' }}>
           Next {'>'}
         </button>
       </div>
