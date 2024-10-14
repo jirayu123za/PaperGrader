@@ -92,3 +92,25 @@ func (r *MinIORepository) FindFileFromMinIO(CourseID, AssignmentID, fileName str
 
 	return presignedURL.String(), nil
 }
+
+func (r *MinIORepository) FindFilesAndNames(CourseID, AssignmentID, fileNames []string) ([]string, []string, error) {
+	ctx := context.Background()
+	var fileURLs []string
+	var fileNamesResult []string
+
+	for _, fileName := range fileNames {
+		objectName := filepath.Join(CourseID[0], AssignmentID[0], fileName)
+		objectName = strings.ReplaceAll(objectName, "\\", "/")
+
+		reqParams := make(url.Values)
+		presignedURL, err := r.client.PresignedGetObject(ctx, r.bucketName, objectName, time.Minute*15, reqParams)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		fileURLs = append(fileURLs, presignedURL.String())
+		fileNamesResult = append(fileNamesResult, fileName)
+	}
+
+	return fileURLs, fileNamesResult, nil
+}
