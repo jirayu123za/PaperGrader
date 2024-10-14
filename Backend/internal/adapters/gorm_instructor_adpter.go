@@ -51,6 +51,18 @@ func (r *GormInstructorRepository) AddAssignmentWithFiles(CourseID uuid.UUID, as
 	})
 }
 
+func (r *GormInstructorRepository) FindAssignmentNameTemplate(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileName string, err error) {
+	var assignmentFile models.AssignmentFile
+	if err := r.db.Table("assignment_files").
+		Select("assignment_files.assignment_file_name").
+		Joins("JOIN assignments ON assignments.assignment_id = assignment_files.assignment_id").
+		Where("assignments.course_id = ? AND assignment_files.assignment_id = ? AND assignment_files.is_template = true AND assignment_files.deleted_at IS NULL", CourseID, AssignmentID).
+		First(&assignmentFile).Error; err != nil {
+		return "", err
+	}
+	return assignmentFile.AssignmentFileName, nil
+}
+
 func (r *GormInstructorRepository) AddAssignmentFile(file *models.AssignmentFile) error {
 	if result := r.db.Create(file); result.Error != nil {
 		return result.Error
