@@ -12,6 +12,8 @@ type InstructorRepository interface {
 	AddAssignment(CourseID uuid.UUID, assignment *models.Assignment) error
 	// News add assignment to course with Files(FromData)
 	AddAssignmentWithFiles(CourseID uuid.UUID, assignment *models.Assignment, files []models.AssignmentFile, uploads []models.Upload) error
+	FindAssignmentNameTemplate(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileName string, err error)
+	// FindPDFTemplateWithURL(CourseID uuid.UUID, AssignmentID uuid.UUID) (template string, err error)
 
 	AddAssignmentFile(file *models.AssignmentFile) error
 
