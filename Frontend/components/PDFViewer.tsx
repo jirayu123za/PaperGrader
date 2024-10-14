@@ -6,12 +6,16 @@ import { zoomPlugin } from '@react-pdf-viewer/zoom';
 import '@react-pdf-viewer/page-navigation/lib/styles/index.css';
 import '@react-pdf-viewer/zoom/lib/styles/index.css';
 
-const PDFViewer = () => {
+interface PDFViewerProps {
+  fileUrl: string; // รับ URL ของไฟล์ PDF
+}
+
+const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl }) => {
   const pageNavigationPluginInstance = pageNavigationPlugin();
+
   const scrollModePluginInstance = scrollModePlugin();
   const zoomPluginInstance = zoomPlugin();
-
-  // ใช้ ZoomInButton และ ZoomOutButton จาก zoomPluginInstance
+  console.log("PDF URL:", fileUrl);
   const { ZoomInButton, ZoomOutButton } = zoomPluginInstance;
 
   return (
@@ -19,24 +23,30 @@ const PDFViewer = () => {
       <Worker workerUrl={`https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js`}>
         <div style={{ height: '100%', width: '100%' }}>
           <Viewer
-            fileUrl="/pdf/26x497-Quiz-167.pdf"
+            fileUrl={fileUrl} // ใช้ URL ของ PDF ที่ได้รับจาก prop
             plugins={[pageNavigationPluginInstance, scrollModePluginInstance, zoomPluginInstance]}
           />
         </div>
       </Worker>
 
       {/* ปุ่มควบคุม PDF ที่ลอยอยู่ในเอกสาร */}
-      <div style={{ position: 'absolute', bottom: '20px', left: '20px', display: 'flex', gap: '10px', backgroundColor: 'rgba(255, 255, 255, 0.7)', padding: '10px', borderRadius: '8px' }}>
-        {/* ปุ่มเลื่อนหน้า */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '20px',
+          left: '20px',
+          display: 'flex',
+          gap: '10px',
+          backgroundColor: 'rgba(255, 255, 255, 0.7)',
+          padding: '10px',
+          borderRadius: '8px',
+        }}
+      >
         <button onClick={() => pageNavigationPluginInstance.jumpToPreviousPage()} style={{ padding: '5px' }}>
           {'<'} Previous
         </button>
-
-        {/* ปุ่มซูม */}
-        <ZoomOutButton /> {/* ปุ่มลดขนาด */}
-        <ZoomInButton />  {/* ปุ่มเพิ่มขนาด */}
-
-        {/* ปุ่มเลื่อนหน้า */}
+        <ZoomOutButton />
+        <ZoomInButton />
         <button onClick={() => pageNavigationPluginInstance.jumpToNextPage()} style={{ padding: '5px' }}>
           Next {'>'}
         </button>

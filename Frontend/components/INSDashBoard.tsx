@@ -6,6 +6,7 @@ import { useFetchActiveAssignments } from '../hooks/useFetchActiveAssignment';
 import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'; // นำเข้า plugin
 import { Progress } from '@mantine/core';
+import { useRouter } from 'next/router';
 
 dayjs.extend(isSameOrBefore); // เปิดใช้งาน plugin
 
@@ -16,6 +17,7 @@ const parseDate = (dateString: string): Date => {
 };
 
 const INSDashBoard = () => {
+  const router = useRouter(); // ใช้ router เพื่อนำทาง
   const selectedCourseId = useCourseStore((state) => state.selectedCourseId); 
   const selectedCourse = useCourseStore((state) =>
     state.courses.find((course) => course.course_id === selectedCourseId)
@@ -113,7 +115,12 @@ const INSDashBoard = () => {
             <tbody>
               {filteredAssignments.map((assignment) => (
                 <tr key={assignment.assignment_id} className="border-b">
-                  <td className="py-2 px-4">{assignment.assignment_name}</td>
+                  <td 
+                    className="py-2 px-4 cursor-pointer  hover:underline"
+                    onClick={() => router.push(`/courses/${selectedCourseId}/process/${assignment.assignment_id}/CreateOutline`)}
+                  >
+                    {assignment.assignment_name}
+                  </td>
                   <td className="py-2 px-4">
                     {parseDate(assignment.assignment_release_date).toLocaleDateString('en-US', {
                       day: 'numeric',
@@ -165,3 +172,4 @@ const INSDashBoard = () => {
 };
 
 export default INSDashBoard;
+
