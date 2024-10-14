@@ -143,9 +143,9 @@ func (h *HttpOAuthHandler) GetGoogleCallBack(c *fiber.Ctx) error {
 
 	switch groupID {
 	case 1:
-		return c.Redirect("http://localhost:5173/CourseOverview", fiber.StatusTemporaryRedirect)
+		return c.Redirect("http://localhost:5173/INSCourseOverview", fiber.StatusTemporaryRedirect)
 	case 2:
-		return c.Redirect("http://localhost:5173/students/12345", fiber.StatusTemporaryRedirect)
+		return c.Redirect("http://localhost:5173/STDCourseOverview", fiber.StatusTemporaryRedirect)
 	default:
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Invalid group ID",
