@@ -77,7 +77,7 @@ func main() {
 	instructorHandler := adapters.NewHttpInstructorHandler(instructorService, fileService, minioService)
 
 	studentRepo := adapters.NewGormStudentRepository(db)
-	studentService := services.NewStudentService(studentRepo)
+	studentService := services.NewStudentService(studentRepo, minioRepo)
 	studentHandler := adapters.NewHttpStudentHandler(studentService)
 
 	// Routes
@@ -145,6 +145,9 @@ func main() {
 	apiGroup.Get("/instructor/template/url", instructorHandler.GetPDFTemplateWithURL)
 
 	apiGroup.Get("/student/dashboard", studentHandler.GetCoursesAndAssignments)
+	// test api get pdf files name
+	apiGroup.Get("/student/files", studentHandler.GetAssignmentNamesWithCourseIDAndAssignmentID)
+	apiGroup.Get("/student/files/download", studentHandler.GetPDFFileNamesAndURLs)
 
 	if err := app.Listen(":" + port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
