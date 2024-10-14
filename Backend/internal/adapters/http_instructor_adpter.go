@@ -1,6 +1,7 @@
 package adapters
 
 import (
+	"fmt"
 	"paperGrader/internal/core/services"
 	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
@@ -98,8 +99,6 @@ func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 		cutOffDate = nil
 	}
 
-	templateFile := c.FormValue("template_file")
-
 	// Handle files uploaded
 	formFiles, err := c.MultipartForm()
 	if err != nil {
@@ -132,8 +131,16 @@ func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 	var assignmentFiles []models.AssignmentFile
 	var uploads []models.Upload
 
-	for _, file := range files {
-		isTemplate := file.Filename == templateFile
+	for i, file := range files {
+		isTemplateStr := c.FormValue(fmt.Sprintf("is_template[%d]", i))
+		isTemplate, err := strconv.ParseBool(isTemplateStr)
+
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"message": "Invalid is_template value",
+				"error":   err.Error(),
+			})
+		}
 
 		assignmentFile := models.AssignmentFile{
 			AssignmentFileName: file.Filename,
