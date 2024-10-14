@@ -13,6 +13,9 @@ type InstructorService interface {
 	CreateAssignment(CourseID uuid.UUID, assignment *models.Assignment) error
 	CreateAssignmentWithFiles(CourseID uuid.UUID, assignment *models.Assignment, files []models.AssignmentFile, uploads []models.Upload) error
 
+	GetAssignmentNameTemplate(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileName string, err error)
+	GetPDFTemplateWithURL(CourseID uuid.UUID, AssignmentID uuid.UUID) (templateURL string, err error)
+
 	CreateAssignmentFile(file *models.AssignmentFile) error
 
 	// Get instructors and students by course id
@@ -29,13 +32,15 @@ type InstructorService interface {
 type InstructorServiceImpl struct {
 	repo       repositories.InstructorRepository
 	courseRepo repositories.CourseRepository
+	minioRepo  repositories.MinIORepository
 }
 
 // func instance business logic call
-func NewInstructorService(repo repositories.InstructorRepository, courseRepo repositories.CourseRepository) InstructorService {
+func NewInstructorService(repo repositories.InstructorRepository, courseRepo repositories.CourseRepository, minioRepo repositories.MinIORepository) InstructorService {
 	return &InstructorServiceImpl{
 		repo:       repo,
 		courseRepo: courseRepo,
+		minioRepo:  minioRepo,
 	}
 }
 
@@ -58,6 +63,27 @@ func (s *InstructorServiceImpl) CreateAssignmentWithFiles(CourseID uuid.UUID, as
 		return err
 	}
 	return nil
+}
+
+func (s *InstructorServiceImpl) GetAssignmentNameTemplate(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileName string, err error) {
+	templateFile, err := s.repo.FindAssignmentNameTemplate(CourseID, AssignmentID)
+	if err != nil {
+		return "", err
+	}
+	return templateFile, nil
+}
+
+func (s *InstructorServiceImpl) GetPDFTemplateWithURL(CourseID uuid.UUID, AssignmentID uuid.UUID) (templateURL string, err error) {
+	assignmentName, err := s.repo.FindAssignmentNameTemplate(CourseID, AssignmentID)
+	if err != nil {
+		return "", err
+	}
+
+	fileTemplateURL, err := s.minioRepo.FindFileFromMinIO(CourseID.String(), AssignmentID.String(), assignmentName)
+	if err != nil {
+		return "", err
+	}
+	return fileTemplateURL, nil
 }
 
 func (s *InstructorServiceImpl) CreateAssignmentFile(file *models.AssignmentFile) error {
