@@ -9,7 +9,8 @@ interface INTAssignmentProps {
 const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
   const { data, isLoading, error } = useFetchAssignments(courseId);
   const assignments = useAssignmentStore((state) => state.assignments);
-  const parseDate = (dateString: string): Date => {
+  const parseDate = (dateString: string): Date | null => {
+    if (!dateString) return null; // ตรวจสอบว่า dateString มีค่าหรือไม่
     const [day, month, year] = dateString.split('-').map(Number);
     return new Date(year, month - 1, day);
   };
@@ -34,7 +35,7 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
             <th className="py-2 px-4 text-left">POINTS</th>
             <th className="py-2 px-4 text-left">RELEASED</th>
             <th className="py-2 px-4 text-left">DUE</th>
-            <th className="py-2 px-4 text-left">CUTOFF</th>
+            <th className="py-2 px-4 text-center">CUTOFF</th> {/* จัดกึ่งกลางหัวข้อ CUTOFF */}
             <th className="py-2 px-4 text-left">SUBMISSIONS</th>
             <th className="py-2 px-4 text-left">% GRADED</th>
             <th className="py-2 px-4 text-left">PUBLISHED</th>
@@ -42,40 +43,52 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
           </tr>
         </thead>
         <tbody>
-          {assignments.map((assignment) => (
-            <tr key={assignment.assignment_id} className="border-b">
-            <td className="py-2 px-4">{assignment.assignment_name}</td>
-            <td className="py-2 px-4">0.0</td>
-            <td className="py-2 px-4">
-              {parseDate(assignment.assignment_release_date).toLocaleDateString('en-US', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-              })}
-            </td>
-            <td className="py-2 px-4">
-              {parseDate(assignment.assignment_due_date).toLocaleDateString('en-US', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-              })}
-            </td>
-            <td className="py-2 px-4">
-              {parseDate(assignment.assignment_cut_off_date).toLocaleDateString('en-US', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-              })}
-            </td>
-            <td className="py-2 px-4">0</td>
-            <td className="py-2 px-4">0%</td>
-            <td className="py-2 px-4">ON</td>
-            <td className="py-2 px-4">ON</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
+          {assignments.map((assignment) => {
+            const releaseDate = parseDate(assignment.assignment_release_date);
+            const dueDate = parseDate(assignment.assignment_due_date);
+            const cutOffDate = parseDate(assignment.assignment_cut_off_date);
+            
+            return (
+              <tr key={assignment.assignment_id} className="border-b">
+                <td className="py-2 px-4">{assignment.assignment_name}</td>
+                <td className="py-2 px-4">0.0</td>
+                <td className="py-2 px-4">
+                  {releaseDate
+                    ? releaseDate.toLocaleDateString('en-US', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })
+                    : '-'}
+                </td>
+                <td className="py-2 px-4">
+                  {dueDate
+                    ? dueDate.toLocaleDateString('en-US', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })
+                    : '-'}
+                </td>
+                <td className="py-2 px-4 text-center"> {/* จัดกึ่งกลางข้อมูลใน CUTOFF */}
+                  {cutOffDate
+                    ? cutOffDate.toLocaleDateString('en-US', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })
+                    : '-'}
+                </td>
+                <td className="py-2 px-4">0</td>
+                <td className="py-2 px-4">0%</td>
+                <td className="py-2 px-4">ON</td>
+                <td className="py-2 px-4">ON</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 };
 
