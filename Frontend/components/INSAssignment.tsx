@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useAssignmentStore } from '../store/useAssignmentStore';
 import { useFetchAssignments } from '../hooks/useFetchAssignments';
+import { useRouter } from 'next/router';
 
 interface INTAssignmentProps {
   courseId: string;
@@ -9,6 +10,7 @@ interface INTAssignmentProps {
 const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
   const { data, isLoading, error } = useFetchAssignments(courseId);
   const assignments = useAssignmentStore((state) => state.assignments);
+  const router = useRouter(); // ใช้ router เพื่อนำทาง
   const parseDate = (dateString: string): Date | null => {
     if (!dateString) return null; // ตรวจสอบว่า dateString มีค่าหรือไม่
     const [day, month, year] = dateString.split('-').map(Number);
@@ -50,7 +52,12 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
             
             return (
               <tr key={assignment.assignment_id} className="border-b">
-                <td className="py-2 px-4">{assignment.assignment_name}</td>
+                <td 
+                  className="py-2 px-4 cursor-pointer hover:underline"
+                  onClick={() => router.push(`/courses/${courseId}/process/${assignment.assignment_id}/CreateOutline`)} // นำทางไปยังหน้า CreateOutline
+                >
+                  {assignment.assignment_name}
+                </td>
                 <td className="py-2 px-4">0.0</td>
                 <td className="py-2 px-4">
                   {releaseDate

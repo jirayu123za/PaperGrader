@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Modal, Button, FileInput, Alert } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconDownload, IconFileText } from '@tabler/icons-react';
@@ -10,12 +10,16 @@ interface STDSubmitProps {
   isOpen: boolean;
   onClose: () => void;
   assignmentId: string;
+  courseId: string;  // Add courseId as a prop
 }
 
-const STDSubmit: React.FC<STDSubmitProps> = ({ isOpen, onClose, assignmentId }) => {
-  const { data: instructorFile, isLoading } = useFetchInstructorFile(assignmentId);
-  const { mutate: uploadStudentFile } = useUploadStudentFile(); // Correctly imported hook
-  const { studentFile, setStudentFile } = useFileStore(); // Zustand state
+const STDSubmit: React.FC<STDSubmitProps> = ({ isOpen, onClose, assignmentId, courseId }) => {
+  // ดึงข้อมูลไฟล์ของอาจารย์
+  const { data: instructorFile, isLoading } = useFetchInstructorFile(courseId, assignmentId);
+  // ใช้ hook สำหรับอัปโหลดไฟล์
+  const { mutate: uploadStudentFile } = useUploadStudentFile(); 
+  // จัดการไฟล์ที่นักศึกษาเลือกผ่าน Zustand
+  const { studentFile, setStudentFile } = useFileStore(); 
 
   const form = useForm({
     initialValues: {
@@ -26,19 +30,29 @@ const STDSubmit: React.FC<STDSubmitProps> = ({ isOpen, onClose, assignmentId }) 
     },
   });
 
-  // ฟังก์ชัน handleSubmit สำหรับอัปโหลดไฟล์
+  // ฟังก์ชันบังคับดาวน์โหลดไฟล์
+  const downloadFile = (url: string, fileName: string) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link); // ลบลิงก์หลังจากดาวน์โหลดเสร็จสิ้น
+  };
+
+  // ฟังก์ชัน handleSubmit สำหรับอัปโหลดไฟล์นักศึกษา
   const handleSubmit = () => {
     if (studentFile) {
       uploadStudentFile({ assignmentId, file: studentFile });
-      handleClose(); // เมื่ออัปโหลดไฟล์เสร็จแล้ว ให้ปิด modal และรีเซ็ตข้อมูล
+      handleClose(); // ปิด modal และรีเซ็ตข้อมูลหลังจากอัปโหลดสำเร็จ
     }
   };
 
-  // ฟังก์ชัน handleClose สำหรับปิด Modal และรีเซ็ตข้อมูล
+  // ฟังก์ชันปิด modal และรีเซ็ตค่าในฟอร์ม
   const handleClose = () => {
     form.reset(); // รีเซ็ตฟอร์ม
-    setStudentFile(null); // รีเซ็ตไฟล์ของนักเรียนใน Zustand store
-    onClose(); // ปิด Modal
+    setStudentFile(null); // รีเซ็ตไฟล์นักศึกษา
+    onClose(); // ปิด modal
   };
 
   return (
@@ -47,13 +61,22 @@ const STDSubmit: React.FC<STDSubmitProps> = ({ isOpen, onClose, assignmentId }) 
         <div>Loading...</div>
       ) : (
         <>
-          {/* ตรวจสอบว่าไฟล์ของผู้สอนมีอยู่จริงและแสดงชื่อไฟล์พร้อมลิงก์ดาวน์โหลด */}
-          {instructorFile && instructorFile.fileUrl && instructorFile.fileName ? (
-            <Alert  title="Your Instructor has provided a PDF to help you complete your assignment" color="blue" radius="md">
-              <a href={instructorFile.fileUrl} download={instructorFile.fileName} className="text-blue-500 hover:underline">
-                <IconDownload size={18} className="inline-block mr-2" />
-                {instructorFile.fileName} {/* แสดงชื่อไฟล์ที่ดึงมาจาก API */}
-              </a>
+          {/* ตรวจสอบว่าไฟล์จากอาจารย์มีอยู่จริง และแสดงชื่อไฟล์พร้อมปุ่มดาวน์โหลด */}
+          {instructorFile && instructorFile.files && instructorFile.fileNames ? (
+            <Alert title="Your Instructor has provided PDF files to help you complete your assignment" color="blue" radius="md">
+              {/* แสดงรายการไฟล์ทั้งหมด */}
+              {instructorFile.files.map((fileUrl: string, index: number) => (
+                <div key={index}>
+                  <Button
+                    variant="light"
+                    leftIcon={<IconDownload size={18} />}
+                    onClick={() => downloadFile(fileUrl, instructorFile.fileNames[index])} // ใช้ฟังก์ชันดาวน์โหลดโดยตรง
+                    className="text-blue-500 hover:underline block"
+                  >
+                    {instructorFile.fileNames[index]} {/* แสดงชื่อไฟล์ */}
+                  </Button>
+                </div>
+              ))}
             </Alert>
           ) : (
             <Alert icon={<IconFileText size={16} />} title="No file available" color="red" radius="md">

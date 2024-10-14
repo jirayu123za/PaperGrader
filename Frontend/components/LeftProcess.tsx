@@ -62,8 +62,10 @@ export default function LeftProcess() {
         </button>
       </div>
       
-      {/* ใช้ AccountMenu จาก STD_Account */}
-      <AccountMenu /> {/* นำ AccountMenu มาจาก STD_Account */}
+      {/* ห่อ AccountMenu ด้วย div และตั้งค่า className */}
+      <div className="w-full">
+        <AccountMenu /> {/* นำ AccountMenu มาจาก STD_Account */}
+      </div>
     </div>
   );
 }

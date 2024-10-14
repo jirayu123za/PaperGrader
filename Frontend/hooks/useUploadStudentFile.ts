@@ -11,9 +11,13 @@ const uploadStudentFile = async ({ assignmentId, file }: UploadFileParams) => {
   const formData = new FormData();
   formData.append('file', file);
   
-  const { data } = await axios.post(`/api/assignments/${assignmentId}/student-file`, formData, {
+  // ใช้ API ที่ถูกต้องในการอัปโหลดไฟล์
+  const { data } = await axios.post(`api/api/student/file`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
+    },
+    params: {
+      assignment_id: assignmentId,  // ส่ง assignmentId เป็น query parameter
     },
   });
 
@@ -26,7 +30,7 @@ export const useUploadStudentFile = () => {
   return useMutation({
     mutationFn: uploadStudentFile,
     onSuccess: () => {
-      // Refetch data when the upload is successful
+      // Refetch data เมื่ออัปโหลดสำเร็จ
       queryClient.invalidateQueries({ queryKey: ['instructorFile'] });
     },
   });

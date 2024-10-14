@@ -116,6 +116,7 @@ const STD_Dashboard = () => {
           isOpen={isModalOpen}
           onClose={closeModal}
           assignmentId={selectedAssignmentId}
+          courseId={assignmentList.find(a => a.assignment_id === selectedAssignmentId)?.course_id} 
         />
       )}
     </div>

@@ -1,25 +1,31 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
-// Hook สำหรับดึงไฟล์ของอาจารย์
-const fetchInstructorFile = async (assignmentId: string) => {
-    const response = await axios.get('https://s28.q4cdn.com/392171258/files/doc_downloads/test.pdf', {
-      responseType: 'blob',  // ดึงเป็นไฟล์ประเภท blob
-    });
-    
-    // สร้าง URL สำหรับ blob เพื่อให้สามารถดาวน์โหลดไฟล์ได้
-    const fileUrl = window.URL.createObjectURL(new Blob([response.data]));
-    const fileName = 'test.pdf';  // กำหนดชื่อไฟล์
-  
-    return { fileUrl, fileName };
-  };
+// Hook สำหรับดึงไฟล์ของอาจารย์จาก API
+const fetchInstructorFile = async (courseId: string, assignmentId: string) => {
+  const response = await axios.get('api/api/student/files/download', {
+    params: {
+      course_id: courseId,
+      assignment_id: assignmentId,
+    },
+  });
+  console.log('API Response:', response.data);
 
-  export const useFetchInstructorFile = (assignmentId: string) => {
-    return useQuery({
-      queryKey: ['instructorFile', assignmentId],
-      queryFn: () => fetchInstructorFile(assignmentId),
-    });
-  };
+  // API ส่งกลับมาเป็น array ของ URLs ใน response.data.files และชื่อไฟล์ใน response.data.urls
+  const files = response.data.files;
+  const fileNames = response.data.urls;
+
+  return { files, fileNames };  // ส่งคืนทั้ง URLs และชื่อไฟล์
+};
+
+export const useFetchInstructorFile = (courseId: string, assignmentId: string) => {
+  return useQuery({
+    queryKey: ['instructorFile', courseId, assignmentId],
+    queryFn: () => fetchInstructorFile(courseId, assignmentId),
+  });
+};
+
+
 
 
 //   const fetchInstructorFile = async (assignmentId: string) => {

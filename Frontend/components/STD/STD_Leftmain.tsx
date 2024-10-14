@@ -30,14 +30,16 @@ export default function STD_LeftMain({ studentId }: LeftMainProps) {
       {/* Main Menu */}
       <div className={`flex-grow ${isCollapsed ? 'flex flex-col items-center' : ''}`}>
         <div className={`flex flex-col space-y-4 ${isCollapsed ? 'items-center' : ''}`}>
-          <Link href={`/student/${studentId}/dashboard`} passHref>
+          {/* เมื่อคลิก Dashboard ไปที่ STDCourseOverview */}
+          <Link href={`/STDCourseOverview`} passHref>
             <button className="flex items-center space-x-2 hover:text-teal-700">
               <FaHome />
               {!isCollapsed && <span>Dashboard</span>}
             </button>
           </Link>
 
-          <Link href={`/student/${studentId}/course`} passHref>
+          {/* เมื่อคลิก Course ไปที่ STDCourse */}
+          <Link href={`/CourseOveview`} passHref>
             <button className="flex items-center space-x-2 hover:text-teal-700">
               <FaBook />
               {!isCollapsed && <span>Course</span>}

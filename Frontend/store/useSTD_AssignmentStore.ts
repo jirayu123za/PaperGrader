@@ -1,16 +1,17 @@
 import create from 'zustand';
 
+interface StudentAssignment {
+  assignment_id: string;
+  course_code: string;
+  course_name?: string;
+  assignment_name: string;
+  due_date: string;
+  release_Date: string;
+}
+
 interface AssignmentStore {
-  assignments: {
-    [x: string]: string;
-    assignment_id: string;
-    course_code: string;
-    course_name?: string;
-    assignment_name: string;
-    due_date: string;
-    release_Date: string;
-  }[];
-  setAssignments: (assignments: AssignmentStore['assignments']) => void;
+  assignments: StudentAssignment[];
+  setAssignments: (assignments: StudentAssignment[]) => void;
 }
 
 export const useAssignmentStore = create<AssignmentStore>((set) => ({
