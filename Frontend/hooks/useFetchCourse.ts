@@ -23,6 +23,7 @@ export const useFetchCourses = () => {
         semester: course.semester,
         academic_year: course.academic_year,
         entry_code: course.entry_code,
+        total_assignments:course.total_assignments,
       }));
 
       setCourses(transformedData);

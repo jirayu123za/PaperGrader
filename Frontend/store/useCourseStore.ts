@@ -10,6 +10,7 @@ interface Course {
   semester: string;
   academic_year: string;
   entry_code: boolean;
+  total_assignments: string;
 }
 
 interface CourseStore {

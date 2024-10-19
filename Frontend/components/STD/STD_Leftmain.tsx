@@ -39,7 +39,7 @@ export default function STD_LeftMain({ studentId }: LeftMainProps) {
           </Link>
 
           {/* เมื่อคลิก Course ไปที่ STDCourse */}
-          <Link href={`/CourseOverview`} passHref>
+          <Link href={`/STDCourseOverview/CourseOverview`} passHref>
             <button className="flex items-center space-x-2 hover:text-teal-700">
               <FaBook />
               {!isCollapsed && <span>Course</span>}

@@ -10,7 +10,7 @@ const STDCourse: React.FC = () => {
 
       {/* ขวามือเป็น CourseCard */}
       <div className="w-1/4 p-6">
-        <CourseCard />
+      <CourseCard studentMode={true} />
       </div>
     </div>
   );

@@ -1,23 +1,26 @@
-// CourseCard.tsx
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useCourseStore } from '../store/useCourseStore';
-import CreateCourse from './CreateCourse'; // Import CreateCourseModal component
+import CreateCourse from './CreateCourse';
+
 
 interface Course {
   course_id: string;
   course_name: string;
+  course_code: string; // เพิ่ม course_code
+  description: string; // เพิ่ม description หรือข้อความเพิ่มเติมถ้ามี
+  total_assignments: string;
 }
 
 interface CourseCardProps {
-  course?: Course; // ทำให้ course เป็น optional เพื่อรองรับการสร้างคอร์สใหม่
+  course?: Course;
+  studentMode?: boolean; // เพิ่ม studentMode เพื่อตรวจสอบว่าอยู่ในโหมดนักศึกษาหรือไม่
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
+const CourseCard: React.FC<CourseCardProps> = ({ course, studentMode = false }) => {
   const { setSelectedCourseId } = useCourseStore();
   const router = useRouter();
 
-  // สถานะการเปิด/ปิด Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleSelectCourse = () => {
@@ -28,37 +31,49 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
   };
 
   const handleCreateCourseClick = () => {
-    setIsModalOpen(true); // เปิด Modal
+    setIsModalOpen(true);
   };
 
   return (
     <>
-      {/* ตรวจสอบว่าเป็นการสร้างคอร์สใหม่หรือไม่ */}
       {course ? (
         <div
-          className="p-6 bg-white shadow rounded-lg cursor-pointer"
+          className="p-4 bg-gray-100 shadow rounded-lg cursor-pointer relative"
           style={{ height: 150 }}
           onClick={handleSelectCourse}
         >
-          <h2 className="text-2xl font-semibold mb-2">{course.course_name}</h2>
-          <p className="text-gray-500">Introduction to {course.course_name}</p>
-        </div>
-      ) : (
-        // Card สำหรับสร้างคอร์สใหม่
-        <div
-          className="p-6 bg-white border-dashed border-2 border-teal-600 shadow-sm rounded-lg cursor-pointer flex items-center justify-center"
-          onClick={handleCreateCourseClick}
-          style={{ height: 150 }}
-        >
-          <div className="text-teal-600 text-center">
-            <div className="text-3xl mb-2">+</div>
-            <div>Create a new course</div>
+          <h2 className="text-sm text-gray-500 mb-1">
+            {course.course_code}
+          </h2>
+          <h3 className="text-xl font-semibold mb-1">
+            {course.course_name}
+          </h3>
+          <p className="text-gray-500 mb-3">{course.description}</p>
+
+          {/* แถบที่ด้านล่างเพื่อแสดงจำนวน assignments */}
+          <div className="absolute bottom-0 left-0 right-0 bg-purple-900 text-white p-2 text-center">
+            {course.total_assignments ? `${course.total_assignments} assignments` : 'No assignments'}
           </div>
         </div>
+      ) : (
+        // หากเป็นโหมดผู้สอน (studentMode = false) จะแสดงปุ่มสร้างคอร์สใหม่
+        !studentMode && (
+          <div
+            className="p-6 bg-white border-dashed border-2 border-teal-600 shadow-sm rounded-lg cursor-pointer flex items-center justify-center"
+            onClick={handleCreateCourseClick}
+            style={{ height: 150 }}
+          >
+            <div className="text-teal-600 text-center">
+              <div className="text-3xl mb-2">+</div>
+              <div>Create a new course</div>
+            </div>
+          </div>
+        )
       )}
 
-      {/* Modal สำหรับสร้างคอร์สใหม่ */}
-      <CreateCourse isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      {!studentMode && (
+        <CreateCourse isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      )}
     </>
   );
 };
