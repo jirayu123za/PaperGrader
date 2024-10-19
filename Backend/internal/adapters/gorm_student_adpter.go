@@ -29,7 +29,8 @@ func (r *GormStudentRepository) AddSubmissionFile(submission *models.Submission)
 func (r *GormStudentRepository) FindCoursesAndAssignments(UserID uuid.UUID) ([]map[string]interface{}, error) {
 	var courses []map[string]interface{}
 	query := `
-		SELECT c.course_id, c.course_name, c.course_code, a.assignment_id, a.assignment_name, a.due_date, a.release_date
+		SELECT c.course_id, c.course_name, c.course_code,
+				a.assignment_id, a.assignment_name, a.due_date, a.release_date, a.submiss_by
 		FROM courses c
 		JOIN assignments a ON c.course_id = a.course_id
 		JOIN enrollments e ON c.course_id = e.course_id
