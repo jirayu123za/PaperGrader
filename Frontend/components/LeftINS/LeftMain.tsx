@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 //import { useRouter } from 'next/router';
-import { FaBars, FaUser, FaCog, FaRedoAlt, FaChartBar, FaFileAlt, FaUsers, FaClock, FaHome } from 'react-icons/fa'; 
+import { FaBars, FaUser, FaCog, FaRedoAlt, FaChartBar, FaFileAlt, FaUsers, FaClock, FaHome } from 'react-icons/fa';
 import { IoStatsChart } from "react-icons/io5";
-import { useCourseStore } from '../store/useCourseStore'; 
-import { useFetchInstructorList } from '../hooks/useFetchInstructorList';
+import { useCourseStore } from '../../store/useCourseStore';
+import { useFetchInstructorList } from '../../hooks/useFetchInstructorList';
 
 interface LeftMainProps {
   courseId: string;
 }
 
-export default function LeftMain( { courseId }: LeftMainProps ) {
+export default function LeftMain({ courseId }: LeftMainProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { selectedCourseId, courses } = useCourseStore();
   //const router = useRouter();
@@ -26,7 +26,7 @@ export default function LeftMain( { courseId }: LeftMainProps ) {
   useEffect(() => {
     console.log(instructorList);
   }, [instructorList]);
-  
+
   if (isLoading) return <div>Loading instructorList...</div>;
   if (error) return <div>Error loading instructorList: {error.message}</div>;
 
@@ -38,7 +38,7 @@ export default function LeftMain( { courseId }: LeftMainProps ) {
         <button onClick={toggleCollapse} className="text-sm">
           <FaBars
             size={24}
-            className={`transition-transform duration-300 ${isCollapsed ? '' : 'transform rotate-180'}`} 
+            className={`transition-transform duration-300 ${isCollapsed ? '' : 'transform rotate-180'}`}
           />
         </button>
       </div>
@@ -76,10 +76,10 @@ export default function LeftMain( { courseId }: LeftMainProps ) {
           </Link>
 
           <Link href={selectedCourseId ? `/courses/${selectedCourseId}/ManageRoster` : '#'} passHref>
-          <button className="flex items-center space-x-2 hover:text-teal-700" disabled={!selectedCourseId}>
-            <FaUsers />
-            {!isCollapsed && <span>Roster</span>}
-          </button>
+            <button className="flex items-center space-x-2 hover:text-teal-700" disabled={!selectedCourseId}>
+              <FaUsers />
+              {!isCollapsed && <span>Roster</span>}
+            </button>
           </Link>
 
           <button className="flex items-center space-x-2 hover:text-teal-700" disabled={!selectedCourseId}>
@@ -102,10 +102,10 @@ export default function LeftMain( { courseId }: LeftMainProps ) {
           key={instructor.instructor_id}
           className="flex items-center space-x-2 mb-4 text-gray-700 hover:text-teal-700"
         >
-        <FaUser />
-      {!isCollapsed && <span>{instructor.instructor_name}</span>}
-    </button>
-  ))}
+          <FaUser />
+          {!isCollapsed && <span>{instructor.instructor_name}</span>}
+        </button>
+      ))}
     </div>
   );
 }

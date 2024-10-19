@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
-import { FaBars, FaHome, FaBook, FaCog } from 'react-icons/fa'; // รวมไอคอนที่ต้องใช้
-import AccountMenu from '../STD/STD_Account'; // นำเข้า AccountMenu component
+import { FaBars, FaHome, FaBook, FaCog } from 'react-icons/fa';
+import AccountMenu from '../Account'; // นำเข้า AccountMenu component
 
 interface LeftMainProps {
   studentId: string;
@@ -22,7 +22,7 @@ export default function STD_LeftMain({ studentId }: LeftMainProps) {
         <button onClick={toggleCollapse} className="text-sm">
           <FaBars
             size={24}
-            className={`transition-transform duration-300 ${isCollapsed ? '' : 'transform rotate-180'}`} 
+            className={`transition-transform duration-300 ${isCollapsed ? '' : 'transform rotate-180'}`}
           />
         </button>
       </div>
@@ -39,7 +39,7 @@ export default function STD_LeftMain({ studentId }: LeftMainProps) {
           </Link>
 
           {/* เมื่อคลิก Course ไปที่ STDCourse */}
-          <Link href={`/CourseOveview`} passHref>
+          <Link href={`/CourseOverview`} passHref>
             <button className="flex items-center space-x-2 hover:text-teal-700">
               <FaBook />
               {!isCollapsed && <span>Course</span>}
@@ -56,7 +56,7 @@ export default function STD_LeftMain({ studentId }: LeftMainProps) {
       </div>
 
       {/* User Account Section */}
-      <AccountMenu /> {/* ใช้ AccountMenu component */}
+      <AccountMenu isCollapsed={isCollapsed} /> {/* ส่ง isCollapsed เข้าไปใน AccountMenu */}
     </div>
   );
 }

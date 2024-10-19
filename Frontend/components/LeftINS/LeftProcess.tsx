@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { FaBarsStaggered } from 'react-icons/fa6'; // Import FaBarsStaggered จาก react-icons
-import AccountMenu from '../components/STD/STD_Account'; // นำเข้า AccountMenu จาก STD_Account
+import AccountMenu from '../Account'; // นำเข้า AccountMenu จาก STD_Account
 
 export default function LeftProcess() {
   const [isCollapsed, setIsCollapsed] = useState(false); // สถานะสำหรับการหุบ/ขยายเมนู
@@ -61,7 +61,7 @@ export default function LeftProcess() {
           ⚙️ {isCollapsed ? '' : 'Settings'}
         </button>
       </div>
-      
+
       {/* ห่อ AccountMenu ด้วย div และตั้งค่า className */}
       <div className="w-full">
         <AccountMenu /> {/* นำ AccountMenu มาจาก STD_Account */}
