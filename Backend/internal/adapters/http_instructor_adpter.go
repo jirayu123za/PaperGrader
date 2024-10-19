@@ -378,10 +378,23 @@ func (h *HttpInstructorHandler) GetCoursesByUserID(c *fiber.Ctx) error {
 		})
 	}
 
-	// Modify the response to only return ...
+	var response []map[string]interface{}
+	for _, course := range courses {
+		response = append(response, map[string]interface{}{
+			"course_id":          course["course_id"],
+			"course_name":        course["course_name"],
+			"course_code":        course["course_code"],
+			"course_description": course["course_description"],
+			"semester":           course["semester"],
+			"academic_year":      course["academic_year"],
+			"entry_code":         course["entry_code"],
+			"total_assignments":  course["total_assignments"],
+		})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Courses are retrieved",
-		"courses": courses,
+		"courses": response,
 	})
 }
 
