@@ -24,7 +24,7 @@ type InstructorService interface {
 	// Insert student or instructor to course
 	CreateSingleUserRoster(CourseID uuid.UUID, Email string, UserGroupName string) error
 
-	GetCoursesByUserID(UserID uuid.UUID) ([]*models.Course, error)
+	GetCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error)
 	GetAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error)
 	GetActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error)
 	GetInstructorsNameByCourseID(CourseID uuid.UUID) ([]*models.User, error)
@@ -165,7 +165,7 @@ func (s *InstructorServiceImpl) CreateSingleUserRoster(CourseID uuid.UUID, Email
 	return nil
 }
 
-func (s *InstructorServiceImpl) GetCoursesByUserID(UserID uuid.UUID) ([]*models.Course, error) {
+func (s *InstructorServiceImpl) GetCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error) {
 	courses, err := s.repo.FindCoursesByUserID(UserID)
 	if err != nil {
 		return nil, err

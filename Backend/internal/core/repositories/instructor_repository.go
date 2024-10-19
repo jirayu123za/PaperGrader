@@ -27,7 +27,7 @@ type InstructorRepository interface {
 	AddInstructorToCourse(userID uuid.UUID, courseID uuid.UUID) error
 	AddStudentToCourse(userID uuid.UUID, courseID uuid.UUID) error
 
-	FindCoursesByUserID(UserID uuid.UUID) ([]*models.Course, error)
+	FindCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error)
 	FindAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error)
 	FindActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error)
 	FindInstructorsNameByCourseID(CourseID uuid.UUID) ([]*models.User, error)
