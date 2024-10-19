@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import LeftProcess from '../../../../../components/LeftProcess';
+import LeftProcess from '../../../../../components/LeftINS/LeftProcess';
 import PDFViewer from '../../../../../components/PDFViewer';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
@@ -32,7 +32,7 @@ export default function CreateOutline() {
     };
     fetchPdfUrl();
   }, [assignment_id, course_id])
-  
+
   return (
     <div className="flex min-h-screen">
       {/* แถบเมนูทางซ้าย */}
