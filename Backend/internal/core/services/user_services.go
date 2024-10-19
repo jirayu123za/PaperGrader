@@ -10,6 +10,7 @@ type UserService interface {
 	CreateUser(user *models.User) error
 	GetUserByGoogleID(googleID string) (*models.User, error)
 	SignUpOrSignInUser(googleUserInfo *models.GoogleUserInfo) (*models.User, error)
+	Logout(token string) error
 }
 
 type UserServiceImpl struct {
@@ -43,4 +44,12 @@ func (s *UserServiceImpl) SignUpOrSignInUser(googleUserInfo *models.GoogleUserIn
 	}
 
 	return user, nil
+}
+
+func (s *UserServiceImpl) Logout(token string) error {
+	err := s.repo.RemoveJWT(token)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -28,3 +28,7 @@ func (r *GormUserRepository) FindUserByGoogleID(googleID string) (*models.User, 
 	}
 	return &user, nil
 }
+
+func (r *GormUserRepository) RemoveJWT(token string) error {
+	return nil
+}

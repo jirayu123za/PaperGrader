@@ -100,6 +100,7 @@ func main() {
 
 	apiGroup.Post("/user", userHandler.CreateUser)
 	apiGroup.Get("/user/:googleID", userHandler.GetUserByID)
+	apiGroup.Post("/user/logout", userHandler.DeleteJWT)
 
 	apiGroup.Post("/university", universityHandler.CreateUniversity)
 	apiGroup.Get("/universities", universityHandler.GetUniversities)

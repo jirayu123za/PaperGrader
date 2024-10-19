@@ -61,3 +61,30 @@ func (h *HttpUserHandler) GetUserByID(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(user)
 }
+
+func (h *HttpUserHandler) DeleteJWT(c *fiber.Ctx) error {
+	token := c.Cookies("user_token")
+	if token == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"message": "Unauthorized: token is required",
+		})
+	}
+
+	err := h.services.Logout(token)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to logout",
+			"error":   err,
+		})
+	}
+
+	c.Cookie(&fiber.Cookie{
+		Name:    "jwt-token",
+		Value:   "",
+		Expires: time.Now().Add(-time.Hour * 10),
+	})
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Successfully logged out",
+	})
+}
