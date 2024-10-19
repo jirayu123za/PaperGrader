@@ -164,11 +164,17 @@ func (r *GormInstructorRepository) AddStudentToCourse(userID uuid.UUID, courseID
 	return r.db.Create(&enrollment).Error
 }
 
-func (r *GormInstructorRepository) FindCoursesByUserID(UserID uuid.UUID) ([]*models.Course, error) {
-	var courses []*models.Course
+func (r *GormInstructorRepository) FindCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error) {
+	var courses []map[string]interface{}
+
 	if err := r.db.
+		Table("courses").
+		Select("courses.course_id, courses.course_name, courses.course_code, courses.course_description, courses.semester, courses.academic_year, courses.entry_code, COUNT(assignments.assignment_id) AS total_assignments").
 		Joins("JOIN instructor_lists ON instructor_lists.course_id = courses.course_id").
+		Joins("LEFT JOIN assignments ON assignments.course_id = courses.course_id").
 		Where("instructor_lists.user_id = ?", UserID).
+		Where("courses.deleted_at IS NULL").
+		Group("courses.course_id").
 		Find(&courses).Error; err != nil {
 		return nil, err
 	}
