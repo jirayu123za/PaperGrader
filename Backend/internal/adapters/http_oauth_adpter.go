@@ -33,7 +33,7 @@ func (h *HttpOAuthHandler) GetGoogleLoginURL(c *fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:     "oauth_state",
 		Value:    state,
-		Expires:  time.Now().Add(time.Minute * 10),
+		Expires:  time.Now().Add(time.Hour * 12),
 		HTTPOnly: true,
 	})
 
