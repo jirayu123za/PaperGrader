@@ -48,10 +48,10 @@ const STD_Dashboard = () => {
   };
 
   // กรอง assignment ที่ยังไม่เลย due date
-  const filteredAssignments = assignmentList.filter((assignment) => {
+  const filteredAssignments = assignmentList?.filter((assignment) => {
     const dueDate = dayjs(assignment.due_date);
     return dueDate.isAfter(dayjs()); // แสดง assignments ที่ไม่เลยกำหนด
-  });
+  }) || [];
 
   // เรียง assignments ตามเวลาที่เหลือก่อน due date
   const sortedAssignments = [...filteredAssignments].sort((a, b) => {
@@ -59,6 +59,17 @@ const STD_Dashboard = () => {
     const timeLeftB = dayjs(b.due_date).diff(dayjs(), 'day');
     return timeLeftA - timeLeftB;
   });
+
+  // ถ้า assignmentList ยังไม่มีข้อมูล ให้แสดงข้อความแทน
+  if (!assignmentList || assignmentList.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-white">
+        <p className="text-lg font-semibold text-gray-500">
+        You have not been added to a course. Or your instructor hasn't released an assignment yet.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div>
