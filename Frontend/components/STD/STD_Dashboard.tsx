@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import Link from 'next/link'; // นำเข้า Link จาก Next.js
+import Link from 'next/link';
 import { useAssignments } from '../../hooks/useFetchSTD_Assignment';
 import { useAssignmentStore } from '../../store/useSTD_AssignmentStore';
 import { Card, Progress, Text, Checkbox, ScrollArea } from '@mantine/core';
 import dayjs from 'dayjs';
-import STDSubmit from '../STD/STD_submit'; // Import STDSubmit component
+import STDSubmit from '../STD/STD_submit';
 
 const STD_Dashboard = () => {
   const { data: assignments, isLoading, error } = useAssignments('courseId');
@@ -37,20 +37,20 @@ const STD_Dashboard = () => {
 
   // ฟังก์ชันเปิด modal เมื่อคลิก assignment name
   const openModal = (assignmentId: string) => {
-    setSelectedAssignmentId(assignmentId); // เก็บ assignmentId ที่เลือก
-    setIsModalOpen(true); // เปิด modal
+    setSelectedAssignmentId(assignmentId);
+    setIsModalOpen(true);
   };
 
   // ปิด modal
   const closeModal = () => {
     setIsModalOpen(false);
-    setSelectedAssignmentId(null); // รีเซ็ตค่า assignmentId
+    setSelectedAssignmentId(null);
   };
 
   // กรอง assignment ที่ยังไม่เลย due date
   const filteredAssignments = assignmentList?.filter((assignment) => {
     const dueDate = dayjs(assignment.due_date);
-    return dueDate.isAfter(dayjs()); // แสดง assignments ที่ไม่เลยกำหนด
+    return dueDate.isAfter(dayjs());
   }) || [];
 
   // เรียง assignments ตามเวลาที่เหลือก่อน due date
@@ -63,7 +63,7 @@ const STD_Dashboard = () => {
   // ถ้า assignmentList ยังไม่มีข้อมูล ให้แสดงข้อความแทน
   if (!assignmentList || assignmentList.length === 0) {
     return (
-      <div className="flex items-center justify-center h-screen bg-white">
+      <div className="flex items-center justify-center">
         <p className="text-lg font-semibold text-gray-500">
         You have not been added to a course. Or your instructor hasn't released an assignment yet.
         </p>
@@ -86,7 +86,7 @@ const STD_Dashboard = () => {
                   <div className="w-1/4">
                     <Link href={`/STDCourseOverview/Course/${assignment.course_id}`} passHref>
                       <Text style={{ fontWeight: 500 }} className="cursor-pointer hover:underline">
-                        Course Code: {assignment.course_code} {/* แสดงเป็น course_code */}
+                        Course Code: {assignment.course_code}
                       </Text>
                     </Link>
 
