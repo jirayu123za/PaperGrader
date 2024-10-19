@@ -152,6 +152,7 @@ func main() {
 	apiGroup.Get("/student/files", studentHandler.GetAssignmentNamesWithCourseIDAndAssignmentID)
 	apiGroup.Get("/student/files/download", studentHandler.GetPDFFileNamesAndURLs)
 	apiGroup.Post("/student/file", studentHandler.CreateSubmissionFile)
+	apiGroup.Get("/student/courses", studentHandler.GetCoursesByUserID)
 
 	if err := app.Listen(":" + port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)

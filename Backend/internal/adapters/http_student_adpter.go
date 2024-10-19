@@ -198,3 +198,40 @@ func (h *HttpStudentHandler) GetPDFFileNamesAndURLs(c *fiber.Ctx) error {
 		"urls":    urls,
 	})
 }
+
+func (h *HttpStudentHandler) GetCoursesByUserID(c *fiber.Ctx) error {
+	userID, err := utils.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid user_id in JWT",
+			"error":   err.Error(),
+		})
+	}
+
+	courses, err := h.services.GetCoursesByUserID(userID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get courses",
+			"error":   err.Error(),
+		})
+	}
+
+	var response []map[string]interface{}
+	for _, course := range courses {
+		response = append(response, map[string]interface{}{
+			"course_id":          course["course_id"],
+			"course_name":        course["course_name"],
+			"course_code":        course["course_code"],
+			"course_description": course["course_description"],
+			"semester":           course["semester"],
+			"academic_year":      course["academic_year"],
+			"entry_code":         course["entry_code"],
+			"total_assignments":  course["total_assignments"],
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Successfully fetched courses",
+		"courses": response,
+	})
+}

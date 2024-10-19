@@ -46,6 +46,21 @@ func (r *GormStudentRepository) FindCoursesAndAssignments(UserID uuid.UUID) ([]m
 	return courses, nil
 }
 
+func (r *GormStudentRepository) FindCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error) {
+	var courses []map[string]interface{}
+	if err := r.db.Table("courses").
+		Select("courses.course_id, courses.course_name, courses.course_code, courses.course_description, courses.semester, courses.academic_year, courses.entry_code, COUNT(assignments.assignment_id) AS total_assignments").
+		Joins("JOIN enrollments ON courses.course_id = enrollments.course_id").
+		Joins("LEFT JOIN assignments ON assignments.course_id = courses.course_id").
+		Where("enrollments.user_id = ? AND enrollments.deleted_at IS NULL AND courses.deleted_at IS NULL", UserID).
+		Group("courses.course_id").
+		Find(&courses).Error; err != nil {
+		return nil, err
+	}
+
+	return courses, nil
+}
+
 func (r *GormStudentRepository) FindAssignmentNamesWithCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, err error) {
 	var assignmentFiles []models.AssignmentFile
 	if err := r.db.Table("assignment_files").
