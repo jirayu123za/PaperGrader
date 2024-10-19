@@ -56,7 +56,7 @@ const INSDashBoard = () => {
   .slice(0, 4); 
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="bg-white-50 p-8">
       {/* แสดงผลชื่อ course และ semester */}
       <div className="flex justify-between items-center mb-8">
         <div>
