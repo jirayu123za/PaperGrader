@@ -15,14 +15,12 @@ import (
 // Primary adapters
 type HttpInstructorHandler struct {
 	services      services.InstructorService
-	fileServices  services.FileService
 	minioServices services.MinIOService
 }
 
-func NewHttpInstructorHandler(services services.InstructorService, fileServices services.FileService, minioServices services.MinIOService) *HttpInstructorHandler {
+func NewHttpInstructorHandler(services services.InstructorService, minioServices services.MinIOService) *HttpInstructorHandler {
 	return &HttpInstructorHandler{
 		services:      services,
-		fileServices:  fileServices,
 		minioServices: minioServices,
 	}
 }

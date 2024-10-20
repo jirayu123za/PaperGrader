@@ -43,10 +43,6 @@ func main() {
 	minioService := services.NewMinIOService(minioRepo)
 	_ = adapters.NewHttpMinIOHandler(minioService)
 
-	fileRepo := adapters.NewFileRepository(minioClient, os.Getenv("MINIO_BUCKET_NAME"))
-	fileService := services.NewFileService(fileRepo)
-	_ = adapters.NewHttpFileHandler(fileService)
-
 	userRepo := adapters.NewGormUserRepository(db)
 	userService := services.NewUserService(userRepo)
 
@@ -74,7 +70,7 @@ func main() {
 
 	instructorRepo := adapters.NewGormInstructorRepository(db)
 	instructorService := services.NewInstructorService(instructorRepo, courseRepo, minioRepo)
-	instructorHandler := adapters.NewHttpInstructorHandler(instructorService, fileService, minioService)
+	instructorHandler := adapters.NewHttpInstructorHandler(instructorService, minioService)
 
 	studentRepo := adapters.NewGormStudentRepository(db)
 	studentService := services.NewStudentService(studentRepo, minioRepo)
