@@ -84,7 +84,7 @@ const STD_Dashboard = () => {
 
                   {/* คลิกที่ชื่อ Course จะแสดงเป็น course_code แต่ส่ง course_id */}
                   <div className="w-1/4">
-                    <Link href={`/STDCourseOverview/Course/${assignment.course_id}`} passHref>
+                    <Link href={`/STDCourseOverview/${assignment.course_id}/CourseDashboard`} passHref>
                       <Text style={{ fontWeight: 500 }} className="cursor-pointer hover:underline">
                         Course Code: {assignment.course_code}
                       </Text>
