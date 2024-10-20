@@ -1,24 +1,28 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { FaBars, FaHome, FaClipboardList, FaUserCircle, FaQuestionCircle, FaEdit, FaSignOutAlt } from 'react-icons/fa';
-import { Menu, Button } from '@mantine/core'; // ใช้ Mantine Menu สำหรับการสร้างเมนู
+import { FaBars, FaHome, FaClipboardList, FaUserCircle } from 'react-icons/fa';
+import AccountMenu from '../../components/Account'; // นำเข้า AccountMenu
+import { useFetchInstructorList } from '../../hooks/useFetchInstructorList'; // นำเข้า hook สำหรับดึงข้อมูล Instructors
+import { useCourseStore } from '../../store/useCourseStore'; // ใช้ store เพื่อเก็บข้อมูลคอร์ส
 
 interface LeftMainProps {
   studentId: string;
-  courseName: string;
-  instructors: {
-    instructor_id: string;
-    instructor_name: string;
-  }[];
+  courseId: string ; // เพิ่ม courseId เพื่อดึงรายชื่อ Instructor
 }
 
-export default function STD_LeftMain({ studentId, courseName, instructors }: LeftMainProps) {
+export default function STD_LeftMain({ studentId, courseId }: LeftMainProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [accountOpened, setAccountOpened] = useState(false);
+
+  const { data: instructorList, isLoading, error } = useFetchInstructorList(courseId); // ใช้ hook เพื่อดึงข้อมูล Instructor
+  const { courses } = useCourseStore(); // ดึงข้อมูลคอร์สจาก store
+  const course = courses.find((c) => c.course_id === courseId); // หา course จาก store ตาม courseId
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
+
+  if (isLoading) return <div>Loading instructors...</div>;
+  if (error) return <div>Error loading instructors: {error.message}</div>;
 
   return (
     <div
@@ -36,6 +40,14 @@ export default function STD_LeftMain({ studentId, courseName, instructors }: Lef
           />
         </button>
       </div>
+
+      {/* Course Information */}
+      {!isCollapsed && course && (
+        <div className="mb-4">
+          <h1 className="text-lg font-bold">{course.course_code}</h1>
+          <p className="text-gray-600">{course.course_name}</p>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className={`flex-grow ${isCollapsed ? 'flex flex-col items-center justify-center' : ''}`}>
@@ -61,7 +73,7 @@ export default function STD_LeftMain({ studentId, courseName, instructors }: Lef
           <div>
             <h3 className="font-bold text-md mt-4">Instructors</h3>
             <ul>
-              {instructors.map((instructor) => (
+              {instructorList && instructorList.map((instructor: any) => (
                 <li key={instructor.instructor_id} className="flex items-center space-x-2">
                   <FaUserCircle />
                   <span>{instructor.instructor_name}</span> {/* แสดงรายชื่อ Instructor */}
@@ -73,44 +85,7 @@ export default function STD_LeftMain({ studentId, courseName, instructors }: Lef
       </div>
 
       {/* User Account Section */}
-      <div className="absolute bottom-0 left-0 w-full">
-        <Menu
-          opened={accountOpened}
-          onOpen={() => setAccountOpened(true)}
-          onClose={() => setAccountOpened(false)}
-          position="top" // ปรับให้เมนูขึ้นด้านบน
-          withArrow
-        >
-          <Menu.Target>
-            <Button
-              variant="subtle"
-              onClick={() => setAccountOpened(!accountOpened)}
-              className="w-full flex justify-between items-center p-2 border rounded"
-              style={{
-                color: 'black', // เปลี่ยนเป็นสีดำ
-                width: '100%', // เต็มความกว้างของ LeftMain
-              }}
-            >
-              <FaUserCircle size={18} />
-              {!isCollapsed && <span className="ml-2">Account</span>}
-              <span>{accountOpened ? '▴' : '▾'}</span>
-            </Button>
-          </Menu.Target>
-
-          <Menu.Dropdown>
-            <Menu.Item>
-              <FaQuestionCircle size={16} style={{ marginRight: '8px' }} /> Help
-            </Menu.Item>
-            <Menu.Item>
-              <FaEdit size={16} style={{ marginRight: '8px' }} /> Edit Account
-            </Menu.Item>
-            <Menu.Item>
-              <FaSignOutAlt size={16} style={{ marginRight: '8px', color: 'red' }} />
-              <span style={{ color: 'red' }}>Log Out</span>
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
-      </div>
+      <AccountMenu isCollapsed={isCollapsed} /> {/* ใช้ AccountMenu ที่เป็น component */}
     </div>
   );
 }

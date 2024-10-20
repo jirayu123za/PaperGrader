@@ -11,17 +11,22 @@ interface Assignment {
   assignment_release_date: string;
   assignment_due_date: string;
   assignment_cut_off_date: string;
+  
 }
 
-// Custom Hook สำหรับดึงข้อมูล assignments ตาม CourseId
-export const useFetchAssignments = (courseId: string) => {
+// Custom Hook สำหรับดึงข้อมูล assignments ตาม CourseId และ role ของผู้ใช้
+export const useFetchAssignments = (courseId: string, isStudent: boolean) => {
   const setAssignments = useAssignmentStore((state) => state.setAssignments);
 
   return useQuery<Assignment[], Error>({
-    queryKey: ['assignments', courseId],
+    queryKey: ['assignments', courseId, isStudent],
     queryFn: async () => {
-      //const response = await fetch(`https://66f1054741537919154f2c12.mockapi.io/api/Course/${courseId}/assignment`);
-      const response = await axios.get(`/api/api/instructor/assignments`, {
+      // เลือกใช้ API ตาม role ของผู้ใช้งาน (Instructor หรือ Student)
+      const apiEndpoint = isStudent
+        ? '/api/api/student/assignments'
+        : '/api/api/instructor/assignments';
+
+      const response = await axios.get(apiEndpoint, {
         params: { course_id: courseId },
       });
 
