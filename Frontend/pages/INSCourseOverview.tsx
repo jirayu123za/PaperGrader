@@ -1,13 +1,19 @@
-// CourseOverview.tsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useFetchCourses } from '../hooks/useFetchCourse';
 import { useCourseStore } from '../store/useCourseStore';
 import CourseCard from '../components/CourseCard';
-import STD_LeftMain from '../components/LeftINS/LeftOverview'; // นำเข้า LeftMain
+import LeftINSMain from '../components/LeftINS/LeftOverview'; // นำเข้า Sidebar ฝั่งผู้สอน
 
 const CourseOverview = () => {
-  const { data: courses, isLoading, error } = useFetchCourses();
-  const selectedCourseId = useCourseStore((state) => state.selectedCourseId);
+  const { data: courses, isLoading, error } = useFetchCourses({ isStudent: false }); // ใช้ hook สำหรับผู้สอน
+  const { setCourses } = useCourseStore(); // ใช้ store เพื่อเก็บคอร์ส
+
+  // เมื่อดึงข้อมูล courses ได้แล้ว จะใช้ store เพื่อเก็บข้อมูล
+  useEffect(() => {
+    if (courses) {
+      setCourses(courses); // เก็บข้อมูลคอร์สใน store
+    }
+  }, [courses, setCourses]);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading courses: {error.message}</div>;
@@ -15,15 +21,18 @@ const CourseOverview = () => {
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar ฝั่งซ้าย */}
-      <STD_LeftMain/> {/* ส่งค่า studentId เพื่อใช้งานในเมนู */}
+      <LeftINSMain />
 
       {/* เนื้อหาฝั่งขวา */}
       <div className="flex-grow p-8">
         <h1 className="text-3xl font-bold mb-8">Courses Overview</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <CourseCard /> {/* Card สำหรับ Create a new course */}
+          {/* Card สำหรับการสร้างคอร์สใหม่ */}
+          <CourseCard studentMode={false} />
+
+          {/* แสดงคอร์สที่ดึงมาจาก API */}
           {courses.map((course: any) => (
-            <CourseCard key={course.course_id} course={course} />
+            <CourseCard key={course.course_id} course={course} studentMode={false} />
           ))}
         </div>
       </div>

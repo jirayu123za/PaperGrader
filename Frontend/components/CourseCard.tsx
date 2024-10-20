@@ -3,18 +3,17 @@ import { useRouter } from 'next/router';
 import { useCourseStore } from '../store/useCourseStore';
 import CreateCourse from './CreateCourse';
 
-
 interface Course {
   course_id: string;
   course_name: string;
-  course_code: string; // เพิ่ม course_code
-  description: string; // เพิ่ม description หรือข้อความเพิ่มเติมถ้ามี
+  course_code: string;
+  description: string;
   total_assignments: string;
 }
 
 interface CourseCardProps {
   course?: Course;
-  studentMode?: boolean; // เพิ่ม studentMode เพื่อตรวจสอบว่าอยู่ในโหมดนักศึกษาหรือไม่
+  studentMode?: boolean; // เพื่อตรวจสอบว่าอยู่ในโหมดนักศึกษาหรือไม่
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({ course, studentMode = false }) => {
@@ -26,7 +25,14 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, studentMode = false }) 
   const handleSelectCourse = () => {
     if (course) {
       setSelectedCourseId(course.course_id);
-      router.push(`/courses/${course.course_id}`);
+  
+      // ส่งไปที่หน้าเฉพาะของนักศึกษา
+      if (studentMode) {
+        router.push(`/STDCourseOverview/${course.course_id}/CourseDashboard`);
+      } else {
+        // ส่งไปที่หน้าเฉพาะของผู้สอน
+        router.push(`/courses/${course.course_id}`);
+      }
     }
   };
 

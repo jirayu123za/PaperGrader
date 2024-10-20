@@ -1,20 +1,28 @@
 import { useQuery } from '@tanstack/react-query';
 import { useCourseStore } from '../store/useCourseStore';
 
-// เปลี่ยนชื่อฟังก์ชันเป็น useFetchCourses เพื่อบ่งบอกว่าดึงข้อมูล courses ทั้งหมด
-export const useFetchCourses = () => {
+interface FetchCoursesOptions {
+  isStudent: boolean; // ระบุว่าเป็นนักศึกษาหรือไม่
+}
+
+export const useFetchCourses = ({ isStudent }: FetchCoursesOptions) => {
   const setCourses = useCourseStore((state) => state.setCourses);
 
   return useQuery({
-    queryKey: ['courses'],
+    queryKey: ['courses', isStudent],
     queryFn: async () => {
-      //const response = await fetch('https://66f1054741537919154f2c12.mockapi.io/api/Course');
-      const response = await fetch('api/api/instructor/courses');
+      // เลือก API ที่เหมาะสมตามสถานะของผู้ใช้
+      const apiUrl = isStudent
+        ? '/api/api/student/courses' // API สำหรับนักศึกษา
+        : 'api/api/instructor/courses'; // API สำหรับผู้สอน
+
+      const response = await fetch(apiUrl);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
       const data = await response.json();
 
+      // แปลงข้อมูลให้ตรงกับโครงสร้างของ courses
       const transformedData = data.courses.map((course: any) => ({
         course_id: course.course_id,
         course_name: course.course_name,
@@ -23,7 +31,7 @@ export const useFetchCourses = () => {
         semester: course.semester,
         academic_year: course.academic_year,
         entry_code: course.entry_code,
-        total_assignments:course.total_assignments,
+        total_assignments: course.total_assignments,
       }));
 
       setCourses(transformedData);
