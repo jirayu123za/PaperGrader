@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, Button } from '@mantine/core';
 import Image from 'next/image';
-import { useGoogleLogin } from '../hooks/useGoogleLogin'; // import custom hook
+import { useGoogleLogin } from '../hooks/useGoogleLogin';
 
 interface SignUpProps {
   opened: boolean;
@@ -9,7 +9,7 @@ interface SignUpProps {
 }
 
 export default function SignUp({ opened, onClose }: SignUpProps) {
-  const { loginWithGoogle, loading, error } = useGoogleLogin(); // ใช้ custom hook ที่สร้างไว้
+  const { loginWithGoogle, loading, error } = useGoogleLogin();
 
   const handleGoogleClick = () => {
     loginWithGoogle(); 
@@ -24,62 +24,81 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
       centered
       overlayProps={{
         color: 'rgba(0, 0, 0, 0.5)',
-        blur: 3,
+        blur: 5,
+      }}
+      radius="lg"
+      transitionProps={{
+        transition: 'fade',
+        duration: 150,
+        timingFunction: 'ease',
       }}
       styles={{
         content: {
           backgroundColor: '#f5f5dc',
-          height: '240px',
-          width: '400px',
-          padding: '20px',
+          height: '280px',
+          width: '420px',
+          padding: '24px',
+          borderRadius: '12px',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
         },
       }}
     >
       <div className="flex flex-col space-y-4 items-center">
-        {/* ปุ่ม CMU พร้อมไอคอน */}
         <Button
-          className="rounded-full flex items-center justify-center"
+          className="rounded-full flex items-center justify-center shadow-lg"
           style={{
             backgroundColor: '#9b59b6',
             color: '#fffffe',
-            height: '60px',
-            width: '200px',
+            height: '65px',
+            width: '220px',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            transition: 'background-color 0.3s ease',
           }}
-          radius="lg"
+          radius="xl"
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#8e44ad')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#9b59b6')}
         >
           <Image
             src="/icon/Chiang_Mai_University.svg.png"
             alt="CMU Logo"
             width={28}
             height={28}
-            className="mr-2 text-lg"
+            className="mr-3"
           />
           <span>CMU Account</span>
         </Button>
 
-        {/* ปุ่ม Google สี Default */}
         <Button
-          className="rounded-full flex items-center justify-center text-lg"
+          className="rounded-full flex items-center justify-center shadow-lg"
           style={{
             backgroundColor: '#3457D5',
             color: '#fffffe',
-            height: '60px',
-            width: '200px',
+            height: '65px',
+            width: '220px',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            transition: 'background-color 0.3s ease',
           }}
-          radius="lg"
-          onClick={handleGoogleClick} // เรียกใช้งานเมื่อคลิกปุ่ม Google
+          radius="xl"
+          onClick={handleGoogleClick}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#357AD0')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#357AE8')}
         >
           <Image
             src="/icon/GoogleIcon.png"
             alt="Google Logo"
             width={28}
             height={28}
-            className="mr-2 text-lg"
+            className="mr-3"
           />
           <span>Google</span>
         </Button>
 
-        {/* แสดงข้อความ error ถ้ามี */}
         {error && <div className="text-red-500 mt-2">{error}</div>}
       </div>
     </Modal>
