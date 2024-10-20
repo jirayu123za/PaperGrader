@@ -86,8 +86,8 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
           }}
           radius="xl"
           onClick={handleGoogleClick}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#357AD0')}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#357AE8')}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#3457F5')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3457D5')}
         >
           <Image
             src="/icon/GoogleIcon.png"
