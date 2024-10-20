@@ -1,4 +1,4 @@
-import LeftProcess from '../components/LeftProcess';
+import LeftProcess from '../components/LeftINS/LeftProcess';
 import UploadFile from '../components/UploadFile';
 
 export default function UploadFilePage() {
