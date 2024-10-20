@@ -77,3 +77,13 @@ func (r *GormStudentRepository) FindAssignmentNamesWithCourseIDAndAssignmentID(C
 
 	return fileNames, nil
 }
+
+func (r *GormStudentRepository) FindAssignmentsByCourseID(courseID uuid.UUID) ([]*models.Assignment, error) {
+	var assignments []*models.Assignment
+	if err := r.db.
+		Where("course_id = ? AND deleted_at IS NULL", courseID).
+		Find(&assignments).Error; err != nil {
+		return nil, err
+	}
+	return assignments, nil
+}

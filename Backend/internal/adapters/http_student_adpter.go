@@ -235,3 +235,45 @@ func (h *HttpStudentHandler) GetCoursesByUserID(c *fiber.Ctx) error {
 		"courses": response,
 	})
 }
+
+func (h *HttpStudentHandler) GetAssignmentsByCourseID(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	assignments, err := h.services.GetAssignmentsByCourseID(courseID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get assignments",
+			"error":   err.Error(),
+		})
+	}
+
+	var response []map[string]interface{}
+	for _, assignment := range assignments {
+		releaseDate := assignment.ReleaseDate.Format("02-01-2006")
+		dueDate := assignment.DueDate.Format("02-01-2006")
+		cutOffDate := ""
+		if assignment.CutOffDate != nil {
+			cutOffDate = assignment.CutOffDate.Format("02-01-2006")
+		}
+
+		response = append(response, map[string]interface{}{
+			"assignment_id":           assignment.AssignmentID,
+			"assignment_name":         assignment.AssignmentName,
+			"assignment_release_date": releaseDate,
+			"assignment_due_date":     dueDate,
+			"assignment_cut_off_date": cutOffDate,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":     "Successfully fetched assignments",
+		"assignments": response,
+	})
+}

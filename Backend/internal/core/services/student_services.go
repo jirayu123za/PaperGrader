@@ -14,6 +14,7 @@ type StudentService interface {
 	GetPDFFileNamesAndURLs(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, fileURLs []string, err error)
 	CreateSubmissionFile(submission *models.Submission) error
 	GetCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error)
+	GetAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error)
 }
 
 type StudentServiceImpl struct {
@@ -74,4 +75,12 @@ func (s *StudentServiceImpl) GetCoursesByUserID(UserID uuid.UUID) ([]map[string]
 		return nil, err
 	}
 	return courses, nil
+}
+
+func (s *StudentServiceImpl) GetAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error) {
+	assignments, err := s.repo.FindAssignmentsByCourseID(CourseID)
+	if err != nil {
+		return nil, err
+	}
+	return assignments, nil
 }
