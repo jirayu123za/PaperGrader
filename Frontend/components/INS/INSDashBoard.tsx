@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useCourseStore } from '../store/useCourseStore'; 
-import CreateAssignmentModal from '../components/CreateAssignment'; 
-import { useActiveAssignmentStore } from '../store/useActiveAssignmentStore'; 
-import { useFetchActiveAssignments } from '../hooks/useFetchActiveAssignment'; 
+import { useCourseStore } from '../../store/useCourseStore';
+import CreateAssignmentModal from '../Create/CreateAssignment';
+import { useActiveAssignmentStore } from '../../store/useActiveAssignmentStore';
+import { useFetchActiveAssignments } from '../../hooks/useFetchActiveAssignment';
 import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'; // นำเข้า plugin
 import { Progress } from '@mantine/core';
@@ -18,16 +18,16 @@ const parseDate = (dateString: string): Date => {
 
 const INSDashBoard = () => {
   const router = useRouter(); // ใช้ router เพื่อนำทาง
-  const selectedCourseId = useCourseStore((state) => state.selectedCourseId); 
+  const selectedCourseId = useCourseStore((state) => state.selectedCourseId);
   const selectedCourse = useCourseStore((state) =>
     state.courses.find((course) => course.course_id === selectedCourseId)
-  ); 
+  );
 
   const { activeAssignments } = useActiveAssignmentStore();
   const { isLoading, error, refetch } = useFetchActiveAssignments(selectedCourseId || '');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => {
     setIsModalOpen(false);
@@ -47,13 +47,13 @@ const INSDashBoard = () => {
 
   // กรอง assignments ที่ยังไม่เกิน due date หรือเท่ากับ due date
   const filteredAssignments = (activeAssignments || [])
-  .filter(assignment => {
-    const now = dayjs();
-    const dueDate = dayjs(parseDate(assignment.assignment_due_date));
+    .filter(assignment => {
+      const now = dayjs();
+      const dueDate = dayjs(parseDate(assignment.assignment_due_date));
 
-    return now.isSameOrBefore(dueDate);
-  })
-  .slice(0, 4); 
+      return now.isSameOrBefore(dueDate);
+    })
+    .slice(0, 4);
 
   return (
     <div className="bg-white-50 p-8">
@@ -115,7 +115,7 @@ const INSDashBoard = () => {
             <tbody>
               {filteredAssignments.map((assignment) => (
                 <tr key={assignment.assignment_id} className="border-b">
-                  <td 
+                  <td
                     className="py-2 px-4 cursor-pointer  hover:underline"
                     onClick={() => router.push(`/courses/${selectedCourseId}/process/${assignment.assignment_id}/CreateOutline`)}
                   >

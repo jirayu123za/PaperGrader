@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import { useCourseStore } from '../../../store/useCourseStore';
-import INTAssignment from '../../../components/INSAssignment';
+import INTAssignment from '../../../components/INS/INSAssignment';
 import LeftMain from '../../../components/LeftINS/LeftMain';
 
 const Assignment = () => {

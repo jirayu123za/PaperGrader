@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Modal, Button, TextInput, RadioGroup, Radio, Checkbox } from '@mantine/core';
-import { useAssignmentStore } from '../store/useCreateAssignmentStore';
-import { useCreateAssignment } from '../hooks/useFetchCreateAssignment';
-import UploadFile from './UploadFile';
+import { useAssignmentStore } from '../../store/useCreateAssignmentStore';
+import { useCreateAssignment } from '../../hooks/useFetchCreateAssignment';
+import UploadFile from '../UploadFile';
 import { DatePickerInput } from '@mantine/dates';
 import dayjs from 'dayjs';
 import '@mantine/dates/styles.css';
 import { useRouter } from 'next/router';
-import { useFileStore } from '../store/useFileStore';
+import { useFileStore } from '../../store/useFileStore';
 import { useForm } from '@mantine/form';
 
 interface CreateAssignmentModalProps {
@@ -87,7 +87,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
     formData.forEach((value, key) => {
       console.log(key, value);
     });
-    
+
     mutate(formData, {
       onSuccess: () => {
         onClose();

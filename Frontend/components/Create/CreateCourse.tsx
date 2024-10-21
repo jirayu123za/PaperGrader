@@ -1,8 +1,8 @@
 import React from 'react';
 import { Modal, Button, TextInput, Select, Checkbox } from '@mantine/core';
-import { useCreateCourseStore } from '../store/useCreateCourseStore';
-import { useCreateCourse } from '../hooks/useCreateCourse';
-import YearPicker from './YearPicker';
+import { useCreateCourseStore } from '../../store/useCreateCourseStore';
+import { useCreateCourse } from '../../hooks/useCreateCourse';
+import YearPicker from '../YearPicker';
 
 interface CreateCourseModalProps {
   isOpen: boolean;
