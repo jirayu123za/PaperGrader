@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { useAssignmentStore } from '../store/useAssignmentStore';
-import { useFetchAssignments } from '../hooks/useFetchAssignments';
+import { useAssignmentStore } from '../../store/useAssignmentStore';
+import { useFetchAssignments } from '../../hooks/useFetchAssignments';
 import { useRouter } from 'next/router';
 
 interface INTAssignmentProps {
@@ -49,10 +49,10 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
             const releaseDate = parseDate(assignment.assignment_release_date);
             const dueDate = parseDate(assignment.assignment_due_date);
             const cutOffDate = parseDate(assignment.assignment_cut_off_date);
-            
+
             return (
               <tr key={assignment.assignment_id} className="border-b">
-                <td 
+                <td
                   className="py-2 px-4 cursor-pointer hover:underline"
                   onClick={() => router.push(`/courses/${courseId}/process/${assignment.assignment_id}/CreateOutline`)} // นำทางไปยังหน้า CreateOutline
                 >
@@ -62,28 +62,28 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
                 <td className="py-2 px-4">
                   {releaseDate
                     ? releaseDate.toLocaleDateString('en-US', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })
                     : '-'}
                 </td>
                 <td className="py-2 px-4">
                   {dueDate
                     ? dueDate.toLocaleDateString('en-US', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })
                     : '-'}
                 </td>
                 <td className="py-2 px-4 text-center"> {/* จัดกึ่งกลางข้อมูลใน CUTOFF */}
                   {cutOffDate
                     ? cutOffDate.toLocaleDateString('en-US', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })
                     : '-'}
                 </td>
                 <td className="py-2 px-4">0</td>

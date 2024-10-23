@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAssignmentStore } from '../../../../../store/useAssignmentStore';
 
-export default function CreateOutline() {
+export default function Submissions() {
   const router = useRouter();
   const { assignment_id, course_id } = router.query; // ดึง assignment_id และ course_id มาจาก URL
   const { assignments } = useAssignmentStore(); // ดึง assignments จาก Zustand Store

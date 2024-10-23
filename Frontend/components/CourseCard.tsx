@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useCourseStore } from '../store/useCourseStore';
-import CreateCourse from './CreateCourse';
+import CreateCourse from './Create/CreateCourse';
 
 interface Course {
   course_id: string;
@@ -25,7 +25,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, studentMode = false }) 
   const handleSelectCourse = () => {
     if (course) {
       setSelectedCourseId(course.course_id);
-  
+
       // ส่งไปที่หน้าเฉพาะของนักศึกษา
       if (studentMode) {
         router.push(`/STDCourseOverview/${course.course_id}/CourseDashboard`);

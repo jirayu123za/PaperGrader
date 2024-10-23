@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import LeftMain from '../../../components/LeftINS/LeftMain';
-import INTDashBoard from '../../../components/INSDashBoard';
+import INTDashBoard from '../../../components/INS/INSDashBoard';
 
 const Dashboard = () => {
   const router = useRouter();
