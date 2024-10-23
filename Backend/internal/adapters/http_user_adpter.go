@@ -79,9 +79,15 @@ func (h *HttpUserHandler) DeleteJWT(c *fiber.Ctx) error {
 	}
 
 	c.Cookie(&fiber.Cookie{
-		Name:    "jwt-token",
+		Name:    "user_token",
 		Value:   "",
-		Expires: time.Now().Add(-time.Hour * 10),
+		Expires: time.Now().Add(-time.Hour * 12),
+	})
+
+	c.Cookie(&fiber.Cookie{
+		Name:    "oauth_state",
+		Value:   "",
+		Expires: time.Now().Add(-time.Hour * 12),
 	})
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
