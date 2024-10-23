@@ -69,11 +69,11 @@ const STDSubmit: React.FC<STDSubmitProps> = ({ isOpen, onClose, assignmentId, co
                 <div key={index}>
                   <Button
                     variant="light"
-                    leftIcon={<IconDownload size={18} />}
-                    onClick={() => downloadFile(fileUrl, instructorFile.fileNames[index])} // ใช้ฟังก์ชันดาวน์โหลดโดยตรง
+                    onClick={() => downloadFile(fileUrl, instructorFile.fileNames[index])} 
                     className="text-blue-500 hover:underline block"
                   >
-                    {instructorFile.fileNames[index]} {/* แสดงชื่อไฟล์ */}
+                    <IconDownload size={18} className="inline-block mr-2" />
+                    {instructorFile.fileNames[index]}
                   </Button>
                 </div>
               ))}
