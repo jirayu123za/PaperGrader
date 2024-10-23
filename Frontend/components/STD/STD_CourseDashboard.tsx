@@ -8,11 +8,10 @@ import { Badge, Divider } from '@mantine/core';
 
 interface CourseDashboardProps {
   courseId: string;
-  isStudent: boolean; // เพิ่ม isStudent เป็นพารามิเตอร์เพื่อบอกว่าเป็นนักเรียนหรือผู้สอน
+  isStudent: boolean;
 }
 
 const STD_CourseDashboard: React.FC<CourseDashboardProps> = ({ courseId, isStudent }) => {
-  // ใช้ useFetchAssignments แทน useAssignments
   const { data: assignments, isLoading, error } = useFetchAssignments(courseId, isStudent);
   const { assignments: assignmentList } = useAssignmentStore();
   const { courses } = useCourseStore();
@@ -32,7 +31,7 @@ const STD_CourseDashboard: React.FC<CourseDashboardProps> = ({ courseId, isStude
         <Divider my="md" />
       </div>
 
-      <div className="overflow-x-auto">
+      {/* <div className="overflow-x-auto"> */}
         <table className="min-w-full bg-white border-collapse">
           <thead>
             <tr className="border-b">
@@ -44,10 +43,10 @@ const STD_CourseDashboard: React.FC<CourseDashboardProps> = ({ courseId, isStude
           </thead>
           <tbody>
             {assignmentList.map((assignment) => {
-              const releaseDate = dayjs(assignment.assignment_release_date).format('MMM D, YYYY [at] h:mm A');
-              const dueDate = dayjs(assignment.assignment_due_date).format('MMM D, YYYY [at] h:mm A');
-              const lateDueDate = dayjs(assignment.assignment_due_date).add(5, 'minute').format('MMM D, YYYY [at] h:mm A');
-
+              // const releaseDate = dayjs(assignment.assignment_release_date).format('MMM D, YYYY [at] h:mm A');
+              // const dueDate = dayjs(assignment.assignment_due_date).format('MMM D, YYYY [at] h:mm A');
+              // const lateDueDate = dayjs(assignment.assignment_due_date).add(5, 'minute').format('MMM D, YYYY [at] h:mm A');
+              
               return (
                 <React.Fragment key={assignment.assignment_id}>
                   <tr className="border-b">
@@ -64,13 +63,13 @@ const STD_CourseDashboard: React.FC<CourseDashboardProps> = ({ courseId, isStude
                       </Badge>
                     </td>
 
-                    <td className="py-2 px-4">{releaseDate}</td>
+                    <td className="py-2 px-4">{assignment.assignment_release_date}</td>
 
                     <td className="py-2 px-4">
                       <div>
-                        {dueDate}
+                        {assignment.assignment_due_date}
                         <br />
-                        <span className="text-gray-500">Late Due Date: {lateDueDate}</span>
+                        <span className="text-gray-500">Late Due Date: {assignment.assignment_due_date}</span>
                       </div>
                     </td>
                   </tr>
@@ -83,7 +82,7 @@ const STD_CourseDashboard: React.FC<CourseDashboardProps> = ({ courseId, isStude
           </tbody>
         </table>
       </div>
-    </div>
+      // </div>
   );
 };
 
