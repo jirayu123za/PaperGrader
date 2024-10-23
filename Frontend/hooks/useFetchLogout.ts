@@ -13,7 +13,8 @@ export const useFetchLogout = () => {
           throw new Error('Network response was not ok');
         }
         if (response.status === 200) {
-          Router.replace('/'); // กลับไปหน้าแรกเมื่อ logout สำเร็จ
+          Router.replace('/');
+          return response.data || { message: 'Logout successful' };
         } else {
           throw new Error('Logout failed');
         }
@@ -22,6 +23,6 @@ export const useFetchLogout = () => {
         throw new Error('An error occurred while logging out');
       }
     },
-    enabled: false, // ปิดการทำงานอัตโนมัติ ต้องใช้การเรียก refetch
+    enabled: false,
   });
 };
