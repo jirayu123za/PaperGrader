@@ -17,9 +17,9 @@ const STDSubmit: React.FC<STDSubmitProps> = ({ isOpen, onClose, assignmentId, co
   // ดึงข้อมูลไฟล์ของอาจารย์
   const { data: instructorFile, isLoading } = useFetchInstructorFile(courseId, assignmentId);
   // ใช้ hook สำหรับอัปโหลดไฟล์
-  const { mutate: uploadStudentFile } = useUploadStudentFile(); 
+  const { mutate: uploadStudentFile } = useUploadStudentFile();
   // จัดการไฟล์ที่นักศึกษาเลือกผ่าน Zustand
-  const { studentFile, setStudentFile } = useFileStore(); 
+  const { studentFile, setStudentFile } = useFileStore();
 
   const form = useForm({
     initialValues: {
@@ -42,11 +42,22 @@ const STDSubmit: React.FC<STDSubmitProps> = ({ isOpen, onClose, assignmentId, co
 
   // ฟังก์ชัน handleSubmit สำหรับอัปโหลดไฟล์นักศึกษา
   const handleSubmit = () => {
+    console.log('Selected file before submit:', studentFile);  // ตรวจสอบว่าไฟล์ถูกเลือกแล้ว
     if (studentFile) {
-      uploadStudentFile({ assignmentId, file: studentFile });
-      handleClose(); // ปิด modal และรีเซ็ตข้อมูลหลังจากอัปโหลดสำเร็จ
+      uploadStudentFile({ assignmentId, courseId, file: studentFile }, {
+        onSuccess: (data) => {
+          console.log('Upload successful:', data);  // Log success
+          handleClose(); // ปิด modal และรีเซ็ตข้อมูลหลังจากอัปโหลดสำเร็จ
+        },
+        onError: (error) => {
+          console.error('Upload failed:', error);  // Log error
+        },
+      });
+    } else {
+      console.log('No file selected');
     }
   };
+
 
   // ฟังก์ชันปิด modal และรีเซ็ตค่าในฟอร์ม
   const handleClose = () => {
@@ -69,7 +80,7 @@ const STDSubmit: React.FC<STDSubmitProps> = ({ isOpen, onClose, assignmentId, co
                 <div key={index}>
                   <Button
                     variant="light"
-                    onClick={() => downloadFile(fileUrl, instructorFile.fileNames[index])} 
+                    onClick={() => downloadFile(fileUrl, instructorFile.fileNames[index])}
                     className="text-blue-500 hover:underline block"
                   >
                     <IconDownload size={18} className="inline-block mr-2" />
@@ -84,16 +95,21 @@ const STDSubmit: React.FC<STDSubmitProps> = ({ isOpen, onClose, assignmentId, co
             </Alert>
           )}
 
-          <form onSubmit={form.onSubmit(handleSubmit)}>
+          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+
             <div className="my-4">
               <FileInput
                 placeholder="Select PDF"
                 label="Upload a PDF containing your responses to the assignment."
                 value={studentFile}
-                onChange={setStudentFile}
+                onChange={(file) => {
+                  console.log('Selected file:', file);  // Log การเลือกไฟล์
+                  setStudentFile(file);
+                }}
                 accept="application/pdf"
                 required
               />
+
             </div>
 
             {studentFile && (
@@ -108,7 +124,7 @@ const STDSubmit: React.FC<STDSubmitProps> = ({ isOpen, onClose, assignmentId, co
                 Cancel
               </Button>
               <Button type="submit" color="blue" className="ml-2">
-                Upload PDF
+                Submit
               </Button>
             </div>
           </form>
