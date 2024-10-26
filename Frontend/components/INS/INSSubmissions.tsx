@@ -40,7 +40,8 @@ const INSSubmissions: React.FC<INSSubmissionsProps> = ({ courseId, assignmentId,
           ))}
         </ul>
       ) : (
-        <Alert color="yellow">No submissions available.</Alert>
+        // แสดงข้อความเมื่อไม่มีการส่งไฟล์จากนักศึกษา
+        <Alert color="yellow">No students have submitted assignments yet.</Alert>
       )}
     </div>
   );

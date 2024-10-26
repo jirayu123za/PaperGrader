@@ -42,7 +42,14 @@ export const useFetchINS_Submission = (): UseMutationResult<
     mutationFn: fetchSubmissions,
     onSuccess: (data: SubmissionResponse) => {
       console.log('Submissions fetched successfully:', data);
-      setSubmissions(data.files, data.urls); // ตั้งค่า files และ urls ใน Zustand store
+      
+      // ตรวจสอบว่ามี files และ urls ที่ถูกส่งเข้ามาหรือไม่
+      if (data.files && data.files.length > 0 && data.urls && data.urls.length > 0) {
+        setSubmissions(data.files, data.urls); // ตั้งค่า files และ urls ใน Zustand store
+      } else {
+        console.log('No submissions available.'); // แสดงข้อความหากไม่มีไฟล์
+        clearSubmissions(); // ล้างข้อมูลใน Zustand store เมื่อไม่มีไฟล์
+      }
     },
     onError: (error: Error) => {
       console.error('Error fetching submissions:', error.message);
