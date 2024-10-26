@@ -25,9 +25,17 @@ const STDCourse = () => {
 
       {/* ขวามือแสดงคอร์สที่ดึงมาจาก API */}
       <div className="w-3/4 p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {courses.map((course: any) => (
-          <CourseCard key={course.course_id} course={course} studentMode={true}  />
-        ))}
+        {/* ตรวจสอบว่ามีคอร์สหรือไม่ */}
+        {courses && courses.length > 0 ? (
+          courses.map((course: any) => (
+            <CourseCard key={course.course_id} course={course} studentMode={true} />
+          ))
+        ) : (
+          // แสดงข้อความเมื่อไม่มีคอร์ส
+          <div className="text-center col-span-full text-gray-500">
+            No courses have been Join yet.
+          </div>
+        )}
       </div>
     </div>
   );
