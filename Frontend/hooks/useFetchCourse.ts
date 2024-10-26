@@ -11,16 +11,20 @@ export const useFetchCourses = ({ isStudent }: FetchCoursesOptions) => {
   return useQuery({
     queryKey: ['courses', isStudent],
     queryFn: async () => {
-      // เลือก API ที่เหมาะสมตามสถานะของผู้ใช้
       const apiUrl = isStudent
         ? '/api/api/student/courses' // API สำหรับนักศึกษา
-        : 'api/api/instructor/courses'; // API สำหรับผู้สอน
+        : '/api/api/instructor/courses'; // API สำหรับผู้สอน
 
       const response = await fetch(apiUrl);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
       const data = await response.json();
+
+      // ตรวจสอบว่า data.courses เป็น array ที่ถูกต้อง
+      if (!data.courses || !Array.isArray(data.courses)) {
+        return []; // ส่งกลับ array ว่างเมื่อไม่มีข้อมูลคอร์ส
+      }
 
       // แปลงข้อมูลให้ตรงกับโครงสร้างของ courses
       const transformedData = data.courses.map((course: any) => ({
@@ -34,8 +38,8 @@ export const useFetchCourses = ({ isStudent }: FetchCoursesOptions) => {
         total_assignments: course.total_assignments,
       }));
 
-      setCourses(transformedData);
+      setCourses(transformedData); // เก็บข้อมูลใน store
       return transformedData;
-    }
+    },
   });
 };

@@ -30,10 +30,17 @@ const CourseOverview = () => {
           {/* Card สำหรับการสร้างคอร์สใหม่ */}
           <CourseCard studentMode={false} />
 
-          {/* แสดงคอร์สที่ดึงมาจาก API */}
-          {courses.map((course: any) => (
-            <CourseCard key={course.course_id} course={course} studentMode={false} />
-          ))}
+          {/* ตรวจสอบว่าคอร์สไม่ใช่ null หรือ undefined และมีคอร์สอยู่จริง ๆ ก่อน */}
+          {courses && Array.isArray(courses) && courses.length > 0 ? (
+            courses.map((course: any) => (
+              <CourseCard key={course.course_id} course={course} studentMode={false} />
+            ))
+          ) : (
+            // แสดงข้อความเมื่อไม่มีคอร์สถูกสร้าง
+            <div className="text-center col-span-full text-gray-500">
+              No courses have been created yet.
+            </div>
+          )}
         </div>
       </div>
     </div>

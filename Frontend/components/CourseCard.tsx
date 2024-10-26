@@ -77,6 +77,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, studentMode = false }) 
         )
       )}
 
+      {/* Modal สำหรับการสร้างคอร์สใหม่ */}
       {!studentMode && (
         <CreateCourse isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       )}
