@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { Modal, Button, TextInput, RadioGroup, Radio, Checkbox } from '@mantine/core';
-import { useAssignmentStore } from '../../store/useCreateAssignmentStore';
+import React from 'react';
+import { Modal, Button, TextInput, RadioGroup, Radio, Checkbox, Text } from '@mantine/core';
 import { useCreateAssignment } from '../../hooks/useFetchCreateAssignment';
 import UploadFile from '../UploadFile';
 import { DatePickerInput } from '@mantine/dates';
@@ -9,6 +8,8 @@ import '@mantine/dates/styles.css';
 import { useRouter } from 'next/router';
 import { useFileStore } from '../../store/useFileStore';
 import { useForm } from '@mantine/form';
+import '@mantine/tiptap/styles.css';
+import { Editor } from './Editor.tsx/Editor';
 
 interface CreateAssignmentModalProps {
   isOpen: boolean;
@@ -20,25 +21,6 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
   const { course_id } = router.query;
   const { files, templateFile, clearFiles } = useFileStore();
   const { mutate } = useCreateAssignment();
-
-  // const {
-  //   assignment_name,
-  //   setAssignmentName,
-  //   assignment_description,
-  //   setAssignmentDescription,
-  //   submiss_by,
-  //   setUploadBy,
-  //   release_date,
-  //   setReleaseDate,
-  //   due_date,
-  //   setDueDate,
-  //   group_submiss,
-  //   setGroupSubmiss,
-  //   setAllowLateSubmission,
-  //   late_submiss,
-  //   cut_off_date,
-  //   setCutOffDate,
-  // } = useAssignmentStore();
 
   const form = useForm({
     initialValues: {
@@ -63,7 +45,6 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
     formData.append('assignment_name', values.assignment_name);
     formData.append('assignment_description', values.assignment_description);
     formData.append('submiss_by', values.submiss_by);
-
     formData.append('release_date', values.release_date ? dayjs(values.release_date).format('MM-DD-YYYY') : '');
     formData.append('due_date', values.due_date ? dayjs(values.due_date).format('MM-DD-YYYY') : '');
     formData.append('group_submiss', String(values.group_submiss));
@@ -100,7 +81,6 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
     });
   };
 
-
   return (
     <Modal
       opened={isOpen}
@@ -124,19 +104,20 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
           {...form.getInputProps('assignment_name')}
           required
         />
-        <TextInput
+        {/* <TextInput
           className="mb-4"
           label="Assignment Description"
           placeholder="Add your assignment description"
           {...form.getInputProps('assignment_description')}
           required
-        />
+        /> */}
 
-        {/* ส่วนสำหรับการอัพโหลดไฟล์ */}
-        <div className="flex flex-col mb-4">
-          <p className="text-sm text-gray-700 mb-2">
-            Upload File
-          </p>
+        <Text size='sm' fw={500} mb={2}>Assignment Description</Text>
+        <Editor onContentChange={(content) => form.setFieldValue('assignment_description', content)} />
+
+        {/* file upload */}
+        <div className="flex flex-col mb-4 mt-4">
+          <Text size='sm' fw={500}>Upload File</Text>
           <div className="mt-2">
             <UploadFile />
           </div>
