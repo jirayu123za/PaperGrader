@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FaBars, FaUser, FaCog, FaFileAlt, FaUsers, FaHome } from 'react-icons/fa';
 import { IoStatsChart } from 'react-icons/io5';
-import { BiExport } from 'react-icons/bi'; // นำเข้าไอคอน BiExport
-import { Divider } from '@mantine/core'; // นำเข้า Divider จาก Mantine
+import { BiExport } from 'react-icons/bi';
+import { Button, Divider } from '@mantine/core';
 import { useCourseStore } from '../../store/useCourseStore';
 import { useFetchInstructorList } from '../../hooks/useFetchInstructorList';
-import AccountMenu from '../Account'; // นำเข้า AccountMenu
+import { useInstructorListStore } from '../../store/useInstructorListStore';
+import AccountMenu from '../Account';
 
 interface LeftMainProps {
   courseId: string;
@@ -15,21 +16,14 @@ interface LeftMainProps {
 export default function LeftMain({ courseId }: LeftMainProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { selectedCourseId, courses } = useCourseStore();
-  const { data, isLoading, error } = useFetchInstructorList(courseId);
-  const instructorList = data;
+  const { isLoading, error } = useFetchInstructorList(courseId);
+  const instructorList = useInstructorListStore((state) => state.instructorList);
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
 
   const selectedCourse = courses.find((course) => course.course_id === selectedCourseId);
-
-  useEffect(() => {
-    console.log(instructorList);
-  }, [instructorList]);
-
-  if (isLoading) return <div>Loading instructorList...</div>;
-  if (error) return <div>Error loading instructorList: {error.message}</div>;
 
   return (
     <div className={`relative h-screen flex flex-col justify-between border-r border-gray-300 ${isCollapsed ? 'w-16 p-4' : 'w-64 p-6'} bg-gray-100`}>
@@ -39,12 +33,12 @@ export default function LeftMain({ courseId }: LeftMainProps) {
          <Link href="/INSCourseOverview" passHref>
            <div className={`${isCollapsed ? 'hidden' : 'block'} text-2xl font-semibold cursor-pointer`}>Logo</div>
           </Link>
-          <button onClick={toggleCollapse} className="text-sm">
+          <Button onClick={toggleCollapse} className="text-sm">
             <FaBars
               size={24}
               className={`transition-transform duration-300 ${isCollapsed ? '' : 'transform rotate-180'}`}
             />
-          </button>
+          </Button>
         </div>
 
         <div className="mb-4">
