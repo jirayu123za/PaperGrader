@@ -14,7 +14,6 @@ const Dashboard = () => {
     <div className="flex min-h-screen bg-gray-50">
       <LeftMain courseId={courseId} />
       <div className="flex-grow p-6">
-        <h1 className="text-2xl font-bold mb-4">Dashboard Page </h1>
         <INTDashBoard courseId={courseId} />
       </div>
     </div>
