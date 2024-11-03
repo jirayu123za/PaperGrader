@@ -36,7 +36,9 @@ export default function LeftMain({ courseId }: LeftMainProps) {
       <div className="flex-grow">
         {/* ส่วนบน: Header และชื่อคอร์ส */}
         <div className="flex items-center justify-between mb-4">
-          <div className={`${isCollapsed ? 'hidden' : 'block'} text-2xl font-semibold`}>Logo</div>
+         <Link href="/INSCourseOverview" passHref>
+           <div className={`${isCollapsed ? 'hidden' : 'block'} text-2xl font-semibold cursor-pointer`}>Logo</div>
+          </Link>
           <button onClick={toggleCollapse} className="text-sm">
             <FaBars
               size={24}
