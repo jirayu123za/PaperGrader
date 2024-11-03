@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
 import { useInstructorListStore } from '../store/useInstructorListStore';
-
+import axios from 'axios';
 
 interface InstructorList {
     instructor_id: string;
@@ -15,7 +14,6 @@ export const useFetchInstructorList = (courseId: string) => {
     return useQuery<InstructorList[], Error>({
         queryKey: ['instructors', courseId],
         queryFn: async () => {
-            //const response = await fetch(`https://66f1054741537919154f2c12.mockapi.io/api/Course/${courseId}/assignment`);
             const response = await axios.get(`/api/api/instructorsList`, {
                 params: { course_id: courseId },
             });
@@ -28,5 +26,6 @@ export const useFetchInstructorList = (courseId: string) => {
             setInstructorList(data);
             return data;
         },
+        enabled: !!courseId,
     });
 };
