@@ -28,5 +28,6 @@ export const useFetchActiveAssignments = (course_id: string) => {
             setActiveAssignments(data);
             return data;
         },
+        enabled: !!course_id,
     });
 };
