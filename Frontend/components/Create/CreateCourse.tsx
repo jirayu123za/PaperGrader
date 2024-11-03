@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Button, TextInput, Select, Checkbox } from '@mantine/core';
+import { Modal, Button, TextInput, Select, Checkbox, Textarea } from '@mantine/core';
 import { useCreateCourseStore } from '../../store/useCreateCourseStore';
 import { useCreateCourse } from '../../hooks/useCreateCourse';
 import YearPicker from '../YearPicker';
@@ -75,10 +75,11 @@ const CreateCourse: React.FC<CreateCourseModalProps> = ({ isOpen, onClose }) => 
           required
           className="mt-4"
         />
-        <TextInput
+        <Textarea
           label="Course Description"
           placeholder="Course description"
           value={course_description}
+          resize="vertical"
           onChange={(event) => setCourseDescription(event.currentTarget.value)}
           className="mt-4"
         />
