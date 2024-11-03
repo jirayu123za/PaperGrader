@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
-import { useUserStore } from '../store/useUserStore';
-import { useUniversityStore } from '../store/useUniversityStore';
+import { useUserStore } from '../../store/useUserStore';
+import { useUniversityStore } from '../../store/useUniversityStore';
 import { Modal, Button, TextInput, Select } from '@mantine/core';
-import { useFetchUniversity } from '../hooks/useFetchUniversities';
-import { useCreateUser } from '../hooks/useCreateUser';
+import { useFetchUniversity } from '../../hooks/useFetchUniversities';
+import { useCreateUser } from '../../hooks/useCreateUser';
 import { jwtDecode } from 'jwt-decode';
 import { useRouter } from 'next/router';
 import { useForm } from '@mantine/form';
@@ -32,7 +32,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
       email: '',
       first_name: '',
       last_name: '',
-      birth_date: '',
+      birth_date: null ,
       student_id: '',
       role: 'Instructor', // ค่าเริ่มต้นเป็น Instructor
       selectedUniversity: '',
@@ -188,7 +188,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
               allowDeselect
               clearable
               required
-              minDate={new Date(1900, 0, 1)}
+              minDate={new Date(1980, 0, 1)}
               maxDate={new Date()}
               closeOnChange
               valueFormat="DD/MM/YYYY"

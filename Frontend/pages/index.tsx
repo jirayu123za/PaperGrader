@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { AppShell, Button, Grid, Group, List, Text, Title } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import SignUp from "../components/SignUp";
-import SignIn from "../components/SignIn";
+import SignUp from "../components/Login/SignUp";
+import SignIn from "../components/Login/SignIn";
 import "@mantine/core/styles/AppShell.css";
 import "@mantine/core/styles/Text.css";
 

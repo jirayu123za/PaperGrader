@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, Button } from '@mantine/core';
 import Image from 'next/image';
-import { useGoogleLogin } from '../hooks/useGoogleLogin';
+import { useGoogleLogin } from '../../hooks/useGoogleLogin';
 
 interface SignUpProps {
   opened: boolean;
@@ -12,7 +12,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
   const { loginWithGoogle, loading, error } = useGoogleLogin();
 
   const handleGoogleClick = () => {
-    loginWithGoogle(); 
+    loginWithGoogle();
   };
 
   return (
