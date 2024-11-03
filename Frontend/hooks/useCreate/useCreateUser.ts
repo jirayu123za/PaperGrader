@@ -1,5 +1,5 @@
 import { useMutation, UseMutationOptions } from '@tanstack/react-query';
-import { useUserStore } from '../store/usecreatestore';
+import { useUserStore } from '../../store/usecreatestore';
 import axios from 'axios';
 
 interface CreateUserParams {

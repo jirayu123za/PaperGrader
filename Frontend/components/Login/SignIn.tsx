@@ -3,7 +3,7 @@ import { useUserStore } from '../../store/useUserStore';
 import { useUniversityStore } from '../../store/useUniversityStore';
 import { Modal, Button, TextInput, Select } from '@mantine/core';
 import { useFetchUniversity } from '../../hooks/useFetchUniversities';
-import { useCreateUser } from '../../hooks/useCreateUser';
+import { useCreateUser } from '../../hooks/useCreate/useCreateUser';
 import { jwtDecode } from 'jwt-decode';
 import { useRouter } from 'next/router';
 import { useForm } from '@mantine/form';
@@ -19,12 +19,12 @@ interface SignUpProps {
 }
 
 export default function SignUp({ opened, onClose }: SignUpProps) {
-  const { setGoogleId , google_id } = useUserStore();
+  const { setGoogleId, google_id } = useUserStore();
   const { universities, setUniversities } = useUniversityStore();
   const { data: universityData, isSuccess: universitySuccess } = useFetchUniversity();
   const createUserMutation = useCreateUser();
   const router = useRouter();
-  
+
 
   // ใช้ useForm สำหรับการจัดการฟอร์ม
   const form = useForm({
@@ -32,7 +32,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
       email: '',
       first_name: '',
       last_name: '',
-      birth_date: null ,
+      birth_date: null,
       student_id: '',
       role: 'Instructor', // ค่าเริ่มต้นเป็น Instructor
       selectedUniversity: '',
@@ -92,7 +92,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
 
   const handleSubmit = (values: typeof form.values) => {
     const formData = {
-      google_id: google_id, 
+      google_id: google_id,
       group_id: values.role === 'Instructor' ? 1 : 2,
       first_name: values.first_name,
       last_name: values.last_name,
@@ -181,21 +181,21 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
             />
           )}
 
-         
-            <DatePickerInput
-              label="Birth date"
-              placeholder="Pick a date"
-              allowDeselect
-              clearable
-              required
-              minDate={new Date(1980, 0, 1)}
-              maxDate={new Date()}
-              closeOnChange
-              valueFormat="DD/MM/YYYY"
-              dropdownType="popover"
-              {...form.getInputProps("birth_date")}
-            />
-  
+
+          <DatePickerInput
+            label="Birth date"
+            placeholder="Pick a date"
+            allowDeselect
+            clearable
+            required
+            minDate={new Date(1980, 0, 1)}
+            maxDate={new Date()}
+            closeOnChange
+            valueFormat="DD/MM/YYYY"
+            dropdownType="popover"
+            {...form.getInputProps("birth_date")}
+          />
+
 
 
           <Select

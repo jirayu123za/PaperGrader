@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
-import { useAssignmentStore } from '../store/useCreateAssignmentStore';
+import { useAssignmentStore } from '../../store/useCreateAssignmentStore';
 
 const createAssignment = async (formData: FormData) => {
   const course_id = formData.get('course_id');

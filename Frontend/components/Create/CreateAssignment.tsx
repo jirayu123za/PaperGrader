@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Button, TextInput, RadioGroup, Radio, Checkbox, Text } from '@mantine/core';
-import { useCreateAssignment } from '../../hooks/useFetchCreateAssignment';
+import { useCreateAssignment } from '../../hooks/useCreate/useCreateAssignment';
 import UploadFile from '../UploadFile';
 import { DatePickerInput } from '@mantine/dates';
 import dayjs from 'dayjs';

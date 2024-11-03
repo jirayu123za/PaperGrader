@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient, UseMutationResult } from '@tanstack/react-query';
 import axios from 'axios';
-import { useCreateCourseStore } from '../store/useCreateCourseStore';
+import { useCreateCourseStore } from '../../store/useCreateCourseStore';
 
 interface CreateCourseParams {
   course_code: string;

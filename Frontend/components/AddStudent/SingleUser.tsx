@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, Button, TextInput, RadioGroup, Radio, Checkbox, Alert } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { useCreateSingleUser } from '../../hooks/useFetchCreateSingleUser';
+import { useCreateSingleUser } from '../../hooks/useCreate/useCreateSingleUser';
 import { useRouter } from 'next/router';
 
 interface SingleUserModalProps {

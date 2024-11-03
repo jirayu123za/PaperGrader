@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, Button, TextInput, Select, Checkbox, Textarea } from '@mantine/core';
 import { useCreateCourseStore } from '../../store/useCreateCourseStore';
-import { useCreateCourse } from '../../hooks/useCreateCourse';
+import { useCreateCourse } from '../../hooks/useCreate/useCreateCourse';
 import YearPicker from '../YearPicker';
 
 interface CreateCourseModalProps {
