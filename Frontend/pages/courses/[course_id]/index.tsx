@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import LeftMain from '../../../components/LeftINS/LeftMain';
-import INTDashBoard from '../../../components/INS/INSDashBoard';
+import INTDashBoard from '../../../components/INS/INDDashBoard/INSDashBoard';
 
 const Dashboard = () => {
   const router = useRouter();
@@ -12,10 +12,10 @@ const Dashboard = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <LeftMain courseId={courseId} /> {/* ส่ง courseId ที่แปลงแล้วไปที่ LeftMain */}
+      <LeftMain courseId={courseId} />
       <div className="flex-grow p-6">
         <h1 className="text-2xl font-bold mb-4">Dashboard Page </h1>
-        <INTDashBoard courseId={courseId} /> {/* ส่ง courseId ที่แปลงแล้วไปที่ INTDashBoard */}
+        <INTDashBoard courseId={courseId} />
       </div>
     </div>
   );

@@ -1,16 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useFileStore } from '../store/useFileStore';
 import { Button, Checkbox, Input } from '@mantine/core';
 
 const UploadFile: React.FC = () => {
    const { files, addFile, templateFile, setTemplateFile } = useFileStore();
+   const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.currentTarget.files) {
       const newFiles = Array.from(event.currentTarget.files);
+      
       newFiles.forEach(file => {
         addFile(file);
       });
+      setError(null);
     }
   };
 

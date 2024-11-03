@@ -27,10 +27,10 @@ const CourseOverview = () => {
       <div className="flex-grow p-8">
         <h1 className="text-3xl font-bold mb-8">Courses Overview</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Card สำหรับการสร้างคอร์สใหม่ */}
+
           <CourseCard studentMode={false} />
 
-          {/* ตรวจสอบว่าคอร์สไม่ใช่ null หรือ undefined และมีคอร์สอยู่จริง ๆ ก่อน */}
+    
           {courses && Array.isArray(courses) && courses.length > 0 ? (
             courses.map((course: any) => (
               <CourseCard key={course.course_id} course={course} studentMode={false} />
@@ -38,7 +38,6 @@ const CourseOverview = () => {
           ) : (
             // แสดงข้อความเมื่อไม่มีคอร์สถูกสร้าง
             <div className="text-center col-span-full text-gray-500">
-              No courses have been created yet.
             </div>
           )}
         </div>
