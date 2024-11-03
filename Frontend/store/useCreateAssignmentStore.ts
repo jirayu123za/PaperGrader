@@ -2,7 +2,6 @@ import create from 'zustand';
 
 interface AssignmentStore {
   assignment_name: string;
-  //templateFile: File | null;
   assignment_description: string;
   submiss_by: string;
   release_date: Date | null;
@@ -11,7 +10,6 @@ interface AssignmentStore {
   late_submiss: boolean;
   cut_off_date: Date | null;
   setAssignmentName: (name: string) => void;
-  //setTemplateFile: (file: File | null) => void;
   setAssignmentDescription: (description: string) => void;
   setUploadBy: (uploadBy: string) => void;
   setReleaseDate: (date: Date | null) => void;
@@ -24,7 +22,6 @@ interface AssignmentStore {
 
 export const useAssignmentStore = create<AssignmentStore>((set) => ({
   assignment_name: '',
-  //templateFile: null,
   assignment_description: '',
   submiss_by: 'student',
   release_date: null,
@@ -33,7 +30,6 @@ export const useAssignmentStore = create<AssignmentStore>((set) => ({
   late_submiss: false,
   cut_off_date: null,
   setAssignmentName: (name) => set({ assignment_name: name }),
-  //setTemplateFile: (file) => set({ templateFile: file }),
   setAssignmentDescription: (description) => set({ assignment_description: description }),
   setUploadBy: (submiss_by) => set({ submiss_by }),
   setReleaseDate: (date) => set({ release_date: date }),
@@ -44,7 +40,6 @@ export const useAssignmentStore = create<AssignmentStore>((set) => ({
   reset: () =>
     set({
       assignment_name: '',
-      //templateFile: null,
       assignment_description: '',
       submiss_by: 'student',
       release_date: null,
