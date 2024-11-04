@@ -14,25 +14,27 @@ interface Course {
 }
 
 interface CourseCardProps {
-  courses: Course[];
+  courses?: Course[]; // อนุญาตให้เป็น undefined ได้
   studentMode?: boolean;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ courses, studentMode = false }) => {
+const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = false }) => { // ใช้ค่าเริ่มต้นเป็นอาร์เรย์ว่าง
   const { setSelectedCourseId } = useCourseStore();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showOlderCourses, setShowOlderCourses] = useState(false);
 
   // การจัดกลุ่มคอร์สตามปีการศึกษาและเทอม
-  const groupedCourses = courses.reduce((acc: Record<string, Course[]>, course: Course) => {
-    const key = `${course.academic_year} / ${course.semester}`;
-    if (!acc[key]) {
-      acc[key] = [];
-    }
-    acc[key].push(course);
-    return acc;
-  }, {});
+  const groupedCourses = Array.isArray(courses)
+  ? courses.reduce((acc: Record<string, Course[]>, course: Course) => {
+      const key = `${course.academic_year} / ${course.semester}`;
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(course);
+      return acc;
+    }, {})
+  : {};
 
   const sortedKeys = Object.keys(groupedCourses).sort().reverse();
   const latestKeys = sortedKeys.slice(0, 2); // ดึง 2 เทอมล่าสุด
@@ -77,7 +79,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses, studentMode = false })
               <div
                 className="p-6 bg-white border-dashed border-2 border-teal-600 shadow-sm rounded-lg cursor-pointer flex items-center justify-center"
                 onClick={handleCreateCourseClick}
-                style={{ height: 180, width: 450,marginLeft: '60px' }}
+                style={{ height: 180, width: 450, marginLeft: '60px' }}
               >
                 <div className="text-teal-600 text-center">
                   <div className="text-3xl mb-2">+</div>
@@ -91,7 +93,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses, studentMode = false })
 
       {/* ปุ่มแสดง/ซ่อนเทอมเก่ากว่า */}
       {olderKeys.length > 0 && (
-        <div className="text-left mt-4"> {/* จัดชิดซ้าย */}
+        <div className="text-left mt-4">
           <button
             className="text-blue-600 underline"
             onClick={() => setShowOlderCourses(!showOlderCourses)}
