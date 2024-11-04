@@ -2,16 +2,16 @@ import React, { useEffect } from 'react';
 import { useFetchCourses } from '../hooks/useFetchCourse';
 import { useCourseStore } from '../store/useCourseStore';
 import CourseCard from '../components/CourseCard';
-import LeftINSMain from '../components/LeftINS/LeftOverview'; // นำเข้า Sidebar ฝั่งผู้สอน
+import LeftINSMain from '../components/LeftINS/LeftOverview';
 
-const CourseOverview = () => {
-  const { data: courses, isLoading, error } = useFetchCourses({ isStudent: false }); // ใช้ hook สำหรับผู้สอน
-  const { setCourses } = useCourseStore(); // ใช้ store เพื่อเก็บคอร์ส
+const INSCourseOverview = () => {
+  const { data: courses, isLoading, error } = useFetchCourses({ isStudent: false });
+  const { setCourses } = useCourseStore();
 
   // เมื่อดึงข้อมูล courses ได้แล้ว จะใช้ store เพื่อเก็บข้อมูล
   useEffect(() => {
     if (courses) {
-      setCourses(courses); // เก็บข้อมูลคอร์สใน store
+      setCourses(courses);
     }
   }, [courses, setCourses]);
 
@@ -26,24 +26,10 @@ const CourseOverview = () => {
       {/* เนื้อหาฝั่งขวา */}
       <div className="flex-grow p-8">
         <h1 className="text-3xl font-bold mb-8">Courses Overview</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-
-          <CourseCard studentMode={false} />
-
-    
-          {courses && Array.isArray(courses) && courses.length > 0 ? (
-            courses.map((course: any) => (
-              <CourseCard key={course.course_id} course={course} studentMode={false} />
-            ))
-          ) : (
-            // แสดงข้อความเมื่อไม่มีคอร์สถูกสร้าง
-            <div className="text-center col-span-full text-gray-500">
-            </div>
-          )}
-        </div>
+        {courses && <CourseCard courses={courses} studentMode={false} />}
       </div>
     </div>
   );
 };
 
-export default CourseOverview;
+export default INSCourseOverview;
