@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal, Button, TextInput, RadioGroup, Radio, Checkbox, Text } from '@mantine/core';
 import { useCreateAssignment } from '../../hooks/useCreate/useCreateAssignment';
 import UploadFile from '../UploadFile';
-import { DatePickerInput } from '@mantine/dates';
+import { DateTimePicker } from '@mantine/dates'; // นำเข้า DateTimePicker
 import dayjs from 'dayjs';
 import '@mantine/dates/styles.css';
 import { useRouter } from 'next/router';
@@ -45,13 +45,13 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
     formData.append('assignment_name', values.assignment_name);
     formData.append('assignment_description', values.assignment_description);
     formData.append('submiss_by', values.submiss_by);
-    formData.append('release_date', values.release_date ? dayjs(values.release_date).format('MM-DD-YYYY') : '');
-    formData.append('due_date', values.due_date ? dayjs(values.due_date).format('MM-DD-YYYY') : '');
+    formData.append('release_date', values.release_date ? dayjs(values.release_date).format('MM-DD-YYYY HH:mm') : '');
+    formData.append('due_date', values.due_date ? dayjs(values.due_date).format('MM-DD-YYYY HH:mm') : '');
     formData.append('group_submiss', String(values.group_submiss));
     formData.append('late_submiss', String(values.late_submiss));
 
     if (values.late_submiss && values.cut_off_date) {
-      formData.append('cut_off_date', dayjs(values.cut_off_date).format("MM-DD-YYYY"));
+      formData.append('cut_off_date', dayjs(values.cut_off_date).format('MM-DD-YYYY HH:mm'));
     }
 
     if (templateFile) {
@@ -93,10 +93,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
       size="lg"
       overlayProps={{ opacity: 0.55, blur: 3 }}
     >
-      <form
-        onSubmit={form.onSubmit(handleSubmit)}
-        className='p-4'
-      >
+      <form onSubmit={form.onSubmit(handleSubmit)} className="p-4">
         <TextInput
           className="mb-4"
           label="Assignment Name"
@@ -104,61 +101,48 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
           {...form.getInputProps('assignment_name')}
           required
         />
-        {/* <TextInput
-          className="mb-4"
-          label="Assignment Description"
-          placeholder="Add your assignment description"
-          {...form.getInputProps('assignment_description')}
-          required
-        /> */}
 
-        <Text size='sm' fw={500} mb={2}>Assignment Description</Text>
+        <Text size="sm" fw={500} mb={2}>
+          Assignment Description
+        </Text>
         <Editor onContentChange={(content) => form.setFieldValue('assignment_description', content)} />
 
         {/* file upload */}
         <div className="flex flex-col mb-4 mt-4">
-          <Text size='sm' fw={500}>Upload File</Text>
+          <Text size="sm" fw={500}>
+            Upload File
+          </Text>
           <div className="mt-2">
             <UploadFile />
           </div>
         </div>
         <div className="mt-4">
-          <RadioGroup
-            {...form.getInputProps('submiss_by')}
-            label="Who will upload submissions?"
-            required
-          >
+          <RadioGroup {...form.getInputProps('submiss_by')} label="Who will upload submissions?" required>
             <div className="flex justify-start gap-8 mt-1">
-              <Radio
-                value="instructor"
-                label="Instructor"
-              />
-              <Radio
-                value="student"
-                label="Student"
-              />
+              <Radio value="instructor" label="Instructor" />
+              <Radio value="student" label="Student" />
             </div>
           </RadioGroup>
         </div>
 
         <div className="flex justify-between mt-4 mb-4 gap-4">
           <div className="w-full">
-            <DatePickerInput
+            <DateTimePicker
               label="Release Date"
               placeholder="Select release date"
               {...form.getInputProps('release_date')}
               minDate={new Date()}
-              valueFormat="DD/MM/YYYY"
+              valueFormat="DD/MM/YYYY HH:mm"
               required
             />
           </div>
           <div className="w-full">
-            <DatePickerInput
+            <DateTimePicker
               label="Due Date"
               placeholder="Select due date"
               {...form.getInputProps('due_date')}
               minDate={form.values.release_date ? new Date(form.values.release_date) : undefined}
-              valueFormat="DD/MM/YYYY"
+              valueFormat="DD/MM/YYYY HH:mm"
               required
             />
           </div>
@@ -167,23 +151,21 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
         <Checkbox
           className="mb-1"
           label="Allow late submissions"
-          {...form.getInputProps('late_submiss',
-            { type: 'checkbox' })}
+          {...form.getInputProps('late_submiss', { type: 'checkbox' })}
         />
         <Checkbox
           label="Allow group submissions"
-          {...form.getInputProps('group_submiss',
-            { type: 'checkbox' })}
+          {...form.getInputProps('group_submiss', { type: 'checkbox' })}
         />
 
         {form.values.late_submiss && (
-          <DatePickerInput
+          <DateTimePicker
             className="mt-4"
             label="Cut off Date"
             placeholder="Select cut off date"
             {...form.getInputProps('cut_off_date')}
             minDate={form.values.due_date ? dayjs(new Date(form.values.due_date)).add(1, 'day').toDate() : new Date()}
-            valueFormat="DD/MM/YYYY"
+            valueFormat="DD/MM/YYYY HH:mm"
             required
           />
         )}
