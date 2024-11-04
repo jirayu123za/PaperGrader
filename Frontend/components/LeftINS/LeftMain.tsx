@@ -30,13 +30,17 @@ export default function LeftMain({ courseId }: LeftMainProps) {
       <div className="flex-grow">
         {/* ส่วนบน: Header และชื่อคอร์ส */}
         <div className="flex items-center justify-between mb-4">
-         <Link href="/INSCourseOverview" passHref>
-           <div className={`${isCollapsed ? 'hidden' : 'block'} text-2xl font-semibold cursor-pointer`}>Logo</div>
+          <Link href="/INSCourseOverview" passHref>
+            <div className={`${isCollapsed ? 'hidden' : 'block'} text-2xl font-semibold cursor-pointer`}>Logo</div>
           </Link>
-          <Button onClick={toggleCollapse} className="text-sm">
+          <Button
+            onClick={toggleCollapse}
+            unstyled 
+            className="bg-transparent p-2 shadow-none hover:bg-gray-100"
+          >
             <FaBars
               size={24}
-              className={`transition-transform duration-300 ${isCollapsed ? '' : 'transform rotate-180'}`}
+              className={`text-black transition-transform duration-300 ${isCollapsed ? '' : 'transform rotate-180'}`}
             />
           </Button>
         </div>
@@ -100,21 +104,21 @@ export default function LeftMain({ courseId }: LeftMainProps) {
         </div>
 
         <Divider className="mt-4 mb-4" color="gray" size="md" />   {/* Divider คั่นระหว่างเมนูกับส่วน Instructor */}
-          
+
         {/* ส่วนล่าง: Instructor section */}
         <div className={`${isCollapsed ? 'hidden' : 'block'} text-md mb-2 font-semibold text-gray-900 mt-4`}>
           INSTRUCTOR
         </div>
         <div className={`flex flex-col ${isCollapsed ? 'items-center' : ''} mb-4`}>
-        {instructorList && instructorList.map((instructor) => (
-          <button
-            key={instructor.instructor_id}
-            className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-2'} text-gray-700 hover:text-teal-700 mb-4`}
-          >
-            <FaUser />
-            {!isCollapsed && <span>{instructor.instructor_name}</span>}
-          </button>
-        ))}
+          {instructorList && instructorList.map((instructor) => (
+            <button
+              key={instructor.instructor_id}
+              className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-2'} text-gray-700 hover:text-teal-700 mb-4`}
+            >
+              <FaUser />
+              {!isCollapsed && <span>{instructor.instructor_name}</span>}
+            </button>
+          ))}
         </div>
       </div>
 
