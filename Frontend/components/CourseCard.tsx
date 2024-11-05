@@ -18,7 +18,7 @@ interface CourseCardProps {
   studentMode?: boolean;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = false }) => { // ใช้ค่าเริ่มต้นเป็นอาร์เรย์ว่าง
+const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = false }) => {
   const { setSelectedCourseId } = useCourseStore();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,15 +26,15 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
 
   // การจัดกลุ่มคอร์สตามปีการศึกษาและเทอม
   const groupedCourses = Array.isArray(courses)
-  ? courses.reduce((acc: Record<string, Course[]>, course: Course) => {
-      const key = `${course.academic_year} / ${course.semester}`;
-      if (!acc[key]) {
-        acc[key] = [];
-      }
-      acc[key].push(course);
-      return acc;
-    }, {})
-  : {};
+    ? courses.reduce((acc: Record<string, Course[]>, course: Course) => {
+        const key = `${course.academic_year} / ${course.semester}`;
+        if (!acc[key]) {
+          acc[key] = [];
+        }
+        acc[key].push(course);
+        return acc;
+      }, {})
+    : {};
 
   const sortedKeys = Object.keys(groupedCourses).sort().reverse();
   const latestKeys = sortedKeys.slice(0, 2); // ดึง 2 เทอมล่าสุด
@@ -55,6 +55,18 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
 
   return (
     <div style={{ maxHeight: '600px', overflowY: 'auto' }}> {/* เลื่อนเฉพาะคอมโพเนนต์ */}
+      {/* หากไม่มีคอร์สใด ๆ และเป็นฝั่งอาจารย์ ให้แสดงปุ่มสร้างคอร์ส */}
+      {courses.length === 0 && !studentMode && (
+        <div className="mb-8 text-center">
+          <button
+            className="p-6 bg-white border-dashed border-2 border-teal-600 shadow-sm rounded-lg cursor-pointer text-teal-600 text-lg"
+            onClick={handleCreateCourseClick}
+          >
+            + Create a new course
+          </button>
+        </div>
+      )}
+
       {/* แสดง 2 เทอมล่าสุด */}
       {latestKeys.map((key) => (
         <div key={key} className="mb-8">
