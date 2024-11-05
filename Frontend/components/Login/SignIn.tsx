@@ -131,7 +131,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
         },
       }}
     >
-      <div className="p-6">
+      <div className="p-6 ">
         <h2 className="text-center text-xl font-semibold mb-4">Sign up</h2>
 
         {/* สลับ Role */}
@@ -211,7 +211,11 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
             {...form.getInputProps('selectedUniversity')}
           />
 
-          <Button type="submit" className="bg-[#b7410e] w-full">{`Sign up as an ${form.values.role}`}</Button>
+          <div className="flex justify-center mt-4">
+            <Button type="submit" className="bg-[#b7410e]">{`Sign up as an ${form.values.role}`}</Button>
+          </div>
+
+
         </form>
       </div>
     </Modal>
