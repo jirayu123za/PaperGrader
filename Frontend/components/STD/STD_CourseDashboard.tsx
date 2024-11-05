@@ -31,7 +31,11 @@ const STD_CourseDashboard: React.FC<CourseDashboardProps> = ({ courseId, isStude
         <Divider my="md" />
       </div>
 
-      {/* <div className="overflow-x-auto"> */}
+      {(!assignmentList || assignmentList.length === 0) ? (
+        <div className="text-center text-gray-500">
+          This course has no assignments assigned yet.
+        </div>
+      ) : (
         <table className="min-w-full bg-white border-collapse">
           <thead>
             <tr className="border-b">
@@ -43,10 +47,9 @@ const STD_CourseDashboard: React.FC<CourseDashboardProps> = ({ courseId, isStude
           </thead>
           <tbody>
             {assignmentList.map((assignment) => {
-              // const releaseDate = dayjs(assignment.assignment_release_date).format('MMM D, YYYY [at] h:mm A');
-              // const dueDate = dayjs(assignment.assignment_due_date).format('MMM D, YYYY [at] h:mm A');
-              // const lateDueDate = dayjs(assignment.assignment_due_date).add(5, 'minute').format('MMM D, YYYY [at] h:mm A');
-              
+              // ตรวจสอบว่า assignment มี property 'status' หรือไม่
+              const status = (assignment as any).status || 'No Status';
+
               return (
                 <React.Fragment key={assignment.assignment_id}>
                   <tr className="border-b">
@@ -56,33 +59,29 @@ const STD_CourseDashboard: React.FC<CourseDashboardProps> = ({ courseId, isStude
                     >
                       {assignment.assignment_name}
                     </td>
-
                     <td className="py-2 px-4">
-                      <Badge color={assignment.status === 'Submitted' ? 'green' : 'blue'} variant="filled">
-                        {assignment.status === 'Submitted' ? 'Submitted' : 'No Submission'}
+                      <Badge color={status === 'Submitted' ? 'green' : 'blue'} variant="filled">
+                        {status === 'Submitted' ? 'Submitted' : 'No Submission'}
                       </Badge>
                     </td>
-
                     <td className="py-2 px-4">{assignment.assignment_release_date}</td>
-
                     <td className="py-2 px-4">
                       <div>
                         {assignment.assignment_due_date}
                         <br />
-                        <span className="text-gray-500">Late Due Date: {assignment.assignment_due_date}</span>
+                        <span className="text-gray-500">
+                          Late Due Date: {assignment.assignment_due_date}
+                        </span>
                       </div>
                     </td>
-                  </tr>
-                  <tr>
-
                   </tr>
                 </React.Fragment>
               );
             })}
           </tbody>
         </table>
-      </div>
-      // </div>
+      )}
+    </div>
   );
 };
 

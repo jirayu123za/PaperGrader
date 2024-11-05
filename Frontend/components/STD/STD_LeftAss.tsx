@@ -7,7 +7,7 @@ import { useCourseStore } from '../../store/useCourseStore'; // ใช้ store 
 
 interface LeftMainProps {
   studentId: string;
-  courseId: string ; // เพิ่ม courseId เพื่อดึงรายชื่อ Instructor
+  courseId: string; // เพิ่ม courseId เพื่อดึงรายชื่อ Instructor
 }
 
 export default function STD_LeftMain({ studentId, courseId }: LeftMainProps) {
@@ -32,7 +32,11 @@ export default function STD_LeftMain({ studentId, courseId }: LeftMainProps) {
     >
       {/* Header section */}
       <div className="flex items-center justify-between mb-4">
-        <div className={`${isCollapsed ? 'hidden' : 'block'} text-2xl font-semibold`}>Logo</div>
+        <Link href="/STDCourseOverview/CourseOverview" passHref> {/* เพิ่ม Link ไปที่ CourseOverview */}
+          <div className={`${isCollapsed ? 'hidden' : 'block'} text-2xl font-semibold cursor-pointer`}>
+            Logo
+          </div>
+        </Link>
         <button onClick={toggleCollapse} className="text-sm">
           <FaBars
             size={24}
@@ -53,7 +57,7 @@ export default function STD_LeftMain({ studentId, courseId }: LeftMainProps) {
       <div className={`flex-grow ${isCollapsed ? 'flex flex-col items-center justify-center' : ''}`}>
         {/* Dashboard และ Regrade Requests */}
         <div className="flex flex-col space-y-4">
-          <Link href={`/student/${studentId}/dashboard`} passHref>
+          <Link href={`/STDCourseOverview/${courseId}/CourseDashboard`} passHref>
             <button className="flex items-center justify-center space-x-2 hover:text-teal-700">
               <FaHome size={24} />
               {!isCollapsed && <span>Dashboard</span>}
@@ -73,12 +77,13 @@ export default function STD_LeftMain({ studentId, courseId }: LeftMainProps) {
           <div>
             <h3 className="font-bold text-md mt-4">Instructors</h3>
             <ul>
-              {instructorList && instructorList.map((instructor: any) => (
-                <li key={instructor.instructor_id} className="flex items-center space-x-2">
-                  <FaUserCircle />
-                  <span>{instructor.instructor_name}</span> {/* แสดงรายชื่อ Instructor */}
-                </li>
-              ))}
+              {instructorList &&
+                instructorList.map((instructor: any) => (
+                  <li key={instructor.instructor_id} className="flex items-center space-x-2">
+                    <FaUserCircle />
+                    <span>{instructor.instructor_name}</span> {/* แสดงรายชื่อ Instructor */}
+                  </li>
+                ))}
             </ul>
           </div>
         )}
