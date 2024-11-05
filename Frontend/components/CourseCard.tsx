@@ -75,7 +75,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
                   <div
                     key={course.course_id}
                     className="p-4 bg-gray-100 shadow rounded-lg cursor-pointer relative"
-                    style={{ height: 180, width: 450 }}
+                    style={{ height: 180, width: 450 ,marginRight: '60px'}}
                     onClick={() => handleSelectCourse(course)}
                   >
                     <h2 className="text-base text-gray-600 mb-2">{course.course_code}</h2>
