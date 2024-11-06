@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useRosterStore } from '../store/useRosterStore';
+import { useRosterStore } from '../../store/useRosterStore';
 import axios from 'axios';
 
 interface UsersList {

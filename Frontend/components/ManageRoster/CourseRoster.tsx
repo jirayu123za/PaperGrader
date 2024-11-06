@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react'; 
+import React, { useEffect, useState } from 'react';
 import { Button, Select, Table } from '@mantine/core';
-import AddMember from '../components/AddStudent/AddMember';
-import { useFetchUsersRoster } from '../hooks/useFetchUsersRoster';
+import AddMember from '../AddStudent/AddMember';
+import { useFetchUsersRoster } from '../../hooks/Roster/useFetchUsersRoster';
 import { useRouter } from 'next/router';
-import { useRosterStore } from '../store/useRosterStore';
+import { useRosterStore } from '../../store/useRosterStore';
 
 // interface Member {
 //   name: string;
@@ -23,9 +23,9 @@ const CourseRoster: React.FC = () => {
   // ]);
   const router = useRouter();
   const { course_id } = router.query;
-  const { data, isLoading, error } = useFetchUsersRoster(course_id as string); 
+  const { data, isLoading, error } = useFetchUsersRoster(course_id as string);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { usersList, setUsersList } = useRosterStore(); 
+  const { usersList, setUsersList } = useRosterStore();
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -46,7 +46,7 @@ const CourseRoster: React.FC = () => {
       <div className="flex justify-between items-center mb-4">
         <Select
           placeholder="All"
-          data={['All', 'Instructor', 'Student','Staff']}
+          data={['All', 'Instructor', 'Student', 'Staff']}
           className="w-1/4"
         />
         <input
@@ -79,7 +79,7 @@ const CourseRoster: React.FC = () => {
                   searchable
                   nothingFoundMessage="Nothing found..."
                   //disabled
-                  style={{ width: '140px' }} 
+                  style={{ width: '140px' }}
                 />
               </td>
               <td className="p-2">{member.submissions_count}</td>
