@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Modal, Button, TextInput, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useCreateSection } from '../../hooks/useCreate/useCreateSection';
@@ -12,7 +12,7 @@ interface CreateSectionProps {
 const CreateSection: React.FC<CreateSectionProps> = ({ opened, onClose }) => {
   const form = useForm({
     initialValues: {
-      name: [] as string[], // กำหนดชนิดข้อมูลให้เป็น string[]
+      name: [] as string[],
     },
     validate: {
       name: (value) => (value.length < 1 ? 'Please enter at least one tag' : null),
@@ -23,7 +23,7 @@ const CreateSection: React.FC<CreateSectionProps> = ({ opened, onClose }) => {
 
   const handleSubmit = (values: { name: string[] }) => {
     createSectionMutation.mutate(
-      { name: values.name }, // ส่งค่าที่มี property `name` ไปยัง mutate
+      { name: values.name },
       {
         onSuccess: () => {
           console.log('Section created successfully');
@@ -36,6 +36,13 @@ const CreateSection: React.FC<CreateSectionProps> = ({ opened, onClose }) => {
       }
     );
   };
+
+  // ล้างข้อมูลในฟอร์มเมื่อ Modal ถูกปิด
+  useEffect(() => {
+    if (!opened) {
+      form.reset();
+    }
+  }, [opened]);
 
   return (
     <Modal
