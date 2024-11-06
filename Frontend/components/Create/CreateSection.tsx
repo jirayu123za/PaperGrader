@@ -1,7 +1,8 @@
 import React from 'react';
-import { Modal, Button, TextInput } from '@mantine/core';
+import { Modal, Button, TextInput, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useCreateSection } from '../../hooks/useCreate/useCreateSection';
+import { TagsInput } from '@mantine/core';
 
 interface CreateSectionProps {
   opened: boolean;
@@ -11,33 +12,36 @@ interface CreateSectionProps {
 const CreateSection: React.FC<CreateSectionProps> = ({ opened, onClose }) => {
   const form = useForm({
     initialValues: {
-      name: '',
+      name: [] as string[], // กำหนดชนิดข้อมูลให้เป็น string[]
     },
     validate: {
-      name: (value) => (value.trim().length < 2 ? 'Section name must be at least 2 characters' : null),
+      name: (value) => (value.length < 1 ? 'Please enter at least one tag' : null),
     },
   });
 
   const createSectionMutation = useCreateSection();
 
-  const handleSubmit = (values: typeof form.values) => {
-    createSectionMutation.mutate(values, {
-      onSuccess: () => {
-        console.log('Section created successfully');
-        onClose();
-        form.reset();
-      },
-      onError: (error) => {
-        console.error('Error creating section:', error);
-      },
-    });
+  const handleSubmit = (values: { name: string[] }) => {
+    createSectionMutation.mutate(
+      { name: values.name }, // ส่งค่าที่มี property `name` ไปยัง mutate
+      {
+        onSuccess: () => {
+          console.log('Section created successfully');
+          onClose();
+          form.reset();
+        },
+        onError: (error) => {
+          console.error('Error creating section:', error);
+        },
+      }
+    );
   };
 
   return (
     <Modal
       opened={opened}
       onClose={onClose}
-      title="Create New Section"  
+      title="Create New Section"
       centered
       overlayProps={{
         color: 'rgba(0, 0, 0, 0.5)',
@@ -45,14 +49,14 @@ const CreateSection: React.FC<CreateSectionProps> = ({ opened, onClose }) => {
       }}
       styles={{
         header: {
-          backgroundColor: '#7E60BF', 
+          backgroundColor: '#7E60BF',
           padding: '16px',
           color: '#fff',
           textAlign: 'center',
           fontWeight: 700,
         },
         title: {
-          color: '#fff', 
+          color: '#fff',
         },
         content: {
           backgroundColor: '#f5f5dc',
@@ -60,11 +64,11 @@ const CreateSection: React.FC<CreateSectionProps> = ({ opened, onClose }) => {
       }}
     >
       <form onSubmit={form.onSubmit(handleSubmit)}>
-        <TextInput
-          label="Section Name"
-          placeholder="Enter section name"
-          required
+        <Text fw={500} mb={4}>Section Tags</Text>
+        <TagsInput
+          placeholder="Enter tags and press enter, comma, or space"
           {...form.getInputProps('name')}
+          splitChars={[' ', ',', '\n']}
           className="mb-4"
         />
 
