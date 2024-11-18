@@ -64,8 +64,8 @@ func (r *GormAssignmentRepository) ModifyAssignment(assignment *models.Assignmen
 	existingAssignment.AssignmentName = assignment.AssignmentName
 	//existingAssignment.AssignmentDescription = Assignment.AssignmentDescription
 	existingAssignment.SubmissBy = assignment.SubmissBy
-	existingAssignment.ReleaseDate = assignment.ReleaseDate
-	existingAssignment.DueDate = assignment.DueDate
+	// existingAssignment.ReleaseDate = assignment.ReleaseDate
+	// existingAssignment.DueDate = assignment.DueDate
 	existingAssignment.LateSubmiss = assignment.LateSubmiss
 	existingAssignment.GroupSubmiss = assignment.GroupSubmiss
 
