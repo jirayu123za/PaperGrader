@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal, Button, TextInput, RadioGroup, Radio, Checkbox, Text } from '@mantine/core';
 import { useCreateAssignment } from '../../hooks/useCreate/useCreateAssignment';
 import UploadFile from '../UploadFile';
-import { DateTimePicker } from '@mantine/dates'; // นำเข้า DateTimePicker
+import { DateTimePicker } from '@mantine/dates';
 import dayjs from 'dayjs';
 import '@mantine/dates/styles.css';
 import { useRouter } from 'next/router';
@@ -45,13 +45,13 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
     formData.append('assignment_name', values.assignment_name);
     formData.append('assignment_description', values.assignment_description);
     formData.append('submiss_by', values.submiss_by);
-    formData.append('release_date', values.release_date ? dayjs(values.release_date).format('MM-DD-YYYY HH:mm') : '');
-    formData.append('due_date', values.due_date ? dayjs(values.due_date).format('MM-DD-YYYY HH:mm') : '');
+    formData.append('release_date', values.release_date ? dayjs(values.release_date).format('DD/MM/YYYY HH:mm') : '');
+    formData.append('due_date', values.due_date ? dayjs(values.due_date).format('DD/MM/YYYY HH:mm') : '');
     formData.append('group_submiss', String(values.group_submiss));
     formData.append('late_submiss', String(values.late_submiss));
 
     if (values.late_submiss && values.cut_off_date) {
-      formData.append('cut_off_date', dayjs(values.cut_off_date).format('MM-DD-YYYY HH:mm'));
+      formData.append('cut_off_date', dayjs(values.cut_off_date).format('DD/MM/YYYY HH:mm'));
     }
 
     if (templateFile) {
