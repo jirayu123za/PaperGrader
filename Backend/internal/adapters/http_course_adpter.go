@@ -44,17 +44,6 @@ func (h *HttpCourseHandler) CreateCourse(c *fiber.Ctx) error {
 		})
 	}
 
-	/*
-		userIDParam := c.Query("user_id")
-		userID, err := uuid.Parse(userIDParam)
-		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"message": "Invalid instructor_id",
-				"error":   err.Error(),
-			})
-		}
-	*/
-
 	instructorList := models.InstructorList{
 		CourseID: course.CourseID,
 		UserID:   userID,
