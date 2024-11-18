@@ -14,14 +14,16 @@ import (
 
 // Primary adapters
 type HttpInstructorHandler struct {
-	services      services.InstructorService
-	minioServices services.MinIOService
+	services        services.InstructorService
+	minioServices   services.MinIOService
+	sectionServices services.SectionService
 }
 
-func NewHttpInstructorHandler(services services.InstructorService, minioServices services.MinIOService) *HttpInstructorHandler {
+func NewHttpInstructorHandler(services services.InstructorService, minioServices services.MinIOService, sectionServices services.SectionService) *HttpInstructorHandler {
 	return &HttpInstructorHandler{
-		services:      services,
-		minioServices: minioServices,
+		services:        services,
+		minioServices:   minioServices,
+		sectionServices: sectionServices,
 	}
 }
 
@@ -55,53 +57,12 @@ func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 			"error":   err.Error(),
 		})
 	}
+
 	groupSubmissStr := c.FormValue("group_submiss")
 	groupSubmiss, err := strconv.ParseBool(groupSubmissStr)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Invalid value for group_submiss",
-			"error":   err.Error(),
-		})
-	}
-	releaseDateStr := c.FormValue("release_date")
-	dueDateStr := c.FormValue("due_date")
-
-	releaseDate, err := time.Parse("01-02-2006", releaseDateStr)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid release_date format",
-			"error":   err.Error(),
-		})
-	}
-
-	dueDate, err := time.Parse("01-02-2006", dueDateStr)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid due_date format",
-			"error":   err.Error(),
-		})
-	}
-
-	var cutOffDate *time.Time
-	cutOffDateStr := c.FormValue("cut_off_date")
-	if cutOffDateStr != "" {
-		parsedDate, err := time.Parse("01-02-2006", cutOffDateStr)
-		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"message": "Invalid cut_off_date format",
-				"error":   err.Error(),
-			})
-		}
-		cutOffDate = &parsedDate
-	} else {
-		cutOffDate = nil
-	}
-
-	// Handle files uploaded
-	formFiles, err := c.MultipartForm()
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Failed to get files from form-data",
 			"error":   err.Error(),
 		})
 	}
@@ -113,14 +74,70 @@ func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 		SubmissBy:             submissBy,
 		LateSubmiss:           lateSubmiss,
 		GroupSubmiss:          groupSubmiss,
-		ReleaseDate:           releaseDate,
-		DueDate:               dueDate,
-		CutOffDate:            cutOffDate,
 	}
 
 	if err := h.services.CreateAssignment(courseID, &assignment); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to create assignment",
+			"error":   err.Error(),
+		})
+	}
+
+	sectionID, err := h.sectionServices.GetSectionIDsByCourseID(courseID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to retrieve section_id",
+			"error":   err.Error(),
+		})
+	}
+
+	releaseDateStr := c.FormValue("release_date")
+	dueDateStr := c.FormValue("due_date")
+
+	releaseDate, err := time.Parse("02/01/2006 15:04", releaseDateStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid release_date format",
+			"error":   err.Error(),
+		})
+	}
+
+	dueDate, err := time.Parse("02/01/2006 15:04", dueDateStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid due_date format",
+			"error":   err.Error(),
+		})
+	}
+
+	var cutOffDate *time.Time
+	if cutOffDateStr := c.FormValue("cut_off_date"); cutOffDateStr != "" {
+		parsedCutOffDate, err := time.Parse("02/01/2006 15:04", cutOffDateStr)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"message": "Invalid cut_off_date format",
+				"error":   err.Error(),
+			})
+		}
+		cutOffDate = &parsedCutOffDate
+	}
+
+	var assignmentSections []models.AssignmentSection
+	for _, secID := range sectionID {
+		assignmentSection := models.AssignmentSection{
+			SectionID:   secID,
+			ReleaseDate: releaseDate,
+			DueDate:     dueDate,
+			CutOffDate:  cutOffDate,
+		}
+		assignmentSections = append(assignmentSections, assignmentSection)
+	}
+
+	// Handle files uploaded
+	formFiles, err := c.MultipartForm()
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Failed to get files from form-data",
 			"error":   err.Error(),
 		})
 	}
@@ -180,19 +197,19 @@ func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 		}
 	}
 
-	// Call service to create assignment and upload file
-	if err := h.services.CreateAssignmentWithFiles(courseID, &assignment, assignmentFiles, uploads); err != nil {
+	if err := h.services.CreateAssignmentWithFiles(courseID, &assignment, assignmentFiles, uploads, assignmentSections); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to create assignment and save file",
+			"message": "Failed to create assignment and save files",
 			"error":   err.Error(),
 		})
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"message":         "Assignment was created and files saved to bucket",
-		"assignment":      assignment,
-		"assignment_file": assignmentFiles,
-		"upload":          uploads,
+		"message":            "Assignment was created and files saved to bucket",
+		"assignment":         assignment,
+		"assignment_file":    assignmentFiles,
+		"upload":             uploads,
+		"assignment_section": assignmentSections,
 	})
 }
 
@@ -333,6 +350,32 @@ func (h *HttpInstructorHandler) GetRosterByCourseID(c *fiber.Ctx) error {
 	})
 }
 
+// handler Get sections by course id
+func (h *HttpInstructorHandler) GetRosterSectionByCourseID(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	sections, err := h.services.GetRosterSectionByCourseID(courseID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get sections",
+			"error":   err.Error(),
+		})
+	}
+
+	// Modify the response to only return ...
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":  "Sections are retrieved",
+		"sections": sections,
+	})
+}
+
 // handler Insert student or instructor to course
 func (h *HttpInstructorHandler) CreateSingleUserRoster(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
@@ -414,28 +457,9 @@ func (h *HttpInstructorHandler) GetAssignmentsByCourseID(c *fiber.Ctx) error {
 		})
 	}
 
-	var response []map[string]interface{}
-	for _, assignment := range assignments {
-		releaseDate := assignment.ReleaseDate.Format("02-01-2006")
-		dueDate := assignment.DueDate.Format("02-01-2006")
-		cutOffDate := ""
-		if assignment.CutOffDate != nil {
-			cutOffDate = assignment.CutOffDate.Format("02-01-2006")
-		}
-
-		response = append(response, map[string]interface{}{
-			"assignment_id":           assignment.AssignmentID,
-			"assignment_name":         assignment.AssignmentName,
-			"assignment_release_date": releaseDate,
-			"assignment_due_date":     dueDate,
-			"assignment_cut_off_date": cutOffDate,
-		})
-	}
-
-	// Modify the response to only return ...
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":     "Assignments are retrieved",
-		"assignments": response,
+		"assignments": assignments,
 	})
 }
 
@@ -457,29 +481,10 @@ func (h *HttpInstructorHandler) GetActiveAssignmentsByCourseID(c *fiber.Ctx) err
 		})
 	}
 
-	var response []map[string]interface{}
-	for _, activeAssignment := range activeAssignments {
-
-		releaseDate := activeAssignment.ReleaseDate.Format("02-01-2006")
-		dueDate := activeAssignment.DueDate.Format("02-01-2006")
-		cutOffDate := ""
-		if activeAssignment.CutOffDate != nil {
-			cutOffDate = activeAssignment.CutOffDate.Format("02-01-2006")
-		}
-
-		response = append(response, map[string]interface{}{
-			"assignment_id":           activeAssignment.AssignmentID,
-			"assignment_name":         activeAssignment.AssignmentName,
-			"assignment_release_date": releaseDate,
-			"assignment_due_date":     dueDate,
-			"assignment_cut_off_date": cutOffDate,
-		})
-	}
-
 	// Modify the response to only return ...
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":            "Active assignments are retrieved",
-		"active_assignments": response,
+		"active_assignments": activeAssignments,
 	})
 }
 
