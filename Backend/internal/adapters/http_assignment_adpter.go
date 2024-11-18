@@ -141,8 +141,8 @@ func (h *HttpAssignmentHandler) UpdateAssignment(c *fiber.Ctx) error {
 	assignment.AssignmentName = newAssignment.AssignmentName
 	//existingAssignment.AssignmentDescription = Assignment.AssignmentDescription
 	assignment.SubmissBy = newAssignment.SubmissBy
-	assignment.ReleaseDate = newAssignment.ReleaseDate
-	assignment.DueDate = newAssignment.DueDate
+	// assignment.ReleaseDate = newAssignment.ReleaseDate
+	// assignment.DueDate = newAssignment.DueDate
 	assignment.LateSubmiss = newAssignment.LateSubmiss
 	assignment.GroupSubmiss = newAssignment.GroupSubmiss
 
