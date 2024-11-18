@@ -34,7 +34,7 @@ func (r *GormInstructorRepository) AddAssignment(CourseID uuid.UUID, assignment 
 }
 
 // News add assignment to course with Files(FromData)
-func (r *GormInstructorRepository) AddAssignmentWithFiles(CourseID uuid.UUID, assignment *models.Assignment, files []models.AssignmentFile, uploads []models.Upload) error {
+func (r *GormInstructorRepository) AddAssignmentWithFiles(CourseID uuid.UUID, assignment *models.Assignment, files []models.AssignmentFile, uploads []models.Upload, assignmentSections []models.AssignmentSection) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		var existingCourse *models.Course
 		if result := r.db.First(&existingCourse, "course_id = ?", CourseID); result.Error != nil {
@@ -44,6 +44,13 @@ func (r *GormInstructorRepository) AddAssignmentWithFiles(CourseID uuid.UUID, as
 		for i, file := range files {
 			uploads[i].AssignmentFileID = file.AssignmentFileID
 			if result := tx.Create(&uploads[i]); result.Error != nil {
+				return result.Error
+			}
+		}
+
+		for _, assignmentSection := range assignmentSections {
+			assignmentSection.AssignmentID = assignment.AssignmentID
+			if result := tx.Create(&assignmentSection); result.Error != nil {
 				return result.Error
 			}
 		}
@@ -106,6 +113,21 @@ func (r *GormInstructorRepository) FindRosterByCourseID(CourseID uuid.UUID) ([]m
 		return nil, err
 	}
 	return users, nil
+}
+
+// Find sections by course id
+func (r *GormInstructorRepository) FindRosterSectionByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
+	var sectionsDetails []map[string]interface{}
+
+	if err := r.db.Table("sections").
+		Select("sections.section_id, sections.section_name, COUNT(enrollments.enrollment_id) AS total_students").
+		Joins("LEFT JOIN enrollments ON enrollments.section_id = sections.section_id").
+		Where("sections.course_id = ? AND sections.deleted_at IS NULL", CourseID).
+		Group("sections.section_id, sections.section_name").
+		Scan(&sectionsDetails).Error; err != nil {
+		return nil, err
+	}
+	return sectionsDetails, nil
 }
 
 // Add student or instructor to course
@@ -181,22 +203,31 @@ func (r *GormInstructorRepository) FindCoursesByUserID(UserID uuid.UUID) ([]map[
 	return courses, nil
 }
 
-func (r *GormInstructorRepository) FindAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error) {
-	var assignments []*models.Assignment
-	if result := r.db.Find(&assignments, "course_id = ?", CourseID); result.Error != nil {
-		return nil, result.Error
+func (r *GormInstructorRepository) FindAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
+	var assignments []map[string]interface{}
+
+	if err := r.db.
+		Table("assignments").
+		Select("DISTINCT ON (assignments.assignment_id) assignments.assignment_id, assignments.assignment_name, assignments.submiss_by, assignments.published, assignments.regrades, assignment_sections.release_date AS assignment_release_date, assignment_sections.due_date AS assignment_due_date").
+		Joins("JOIN assignment_sections ON assignments.assignment_id = assignment_sections.assignment_id").
+		Find(&assignments, "assignments.course_id = ? AND assignments.deleted_at IS NULL", CourseID).Error; err != nil {
+		return nil, err
 	}
 	return assignments, nil
 }
 
-func (r *GormInstructorRepository) FindActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error) {
-	var activeAssignments []*models.Assignment
-	currentDate := time.Now().Format("01-02-2006")
+func (r *GormInstructorRepository) FindActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
+	var activeAssignments []map[string]interface{}
+	currentDate := time.Now()
 
-	if result := r.db.Find(&activeAssignments,
-		"course_id = ? AND release_date <= ? AND (cut_off_date IS NULL OR cut_off_date > ?) AND deleted_at IS NULL",
-		CourseID, currentDate, currentDate); result.Error != nil {
-		return nil, result.Error
+	if err := r.db.
+		Table("assignments").
+		Select("DISTINCT ON (assignments.assignment_id) assignments.assignment_id, assignments.assignment_name, assignments.assignment_description, assignments.submiss_by, assignments.published, assignments.regrades, assignment_sections.release_date AS assignment_release_date, assignment_sections.due_date AS assignment_due_date").
+		Joins("JOIN assignment_sections ON assignments.assignment_id = assignment_sections.assignment_id").
+		Where("assignment_sections.release_date <= ? AND (assignment_sections.cut_off_date IS NULL OR assignment_sections.cut_off_date > ?) AND assignments.course_id = ? AND assignments.deleted_at IS NULL", currentDate, currentDate, CourseID).
+		Order("assignments.assignment_id, assignment_sections.release_date ASC").
+		Find(&activeAssignments).Error; err != nil {
+		return nil, err
 	}
 	return activeAssignments, nil
 }
