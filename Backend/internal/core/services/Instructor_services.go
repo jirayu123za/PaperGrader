@@ -11,7 +11,7 @@ import (
 type InstructorService interface {
 	// v1 add assignment to course with out Files(Json)
 	CreateAssignment(CourseID uuid.UUID, assignment *models.Assignment) error
-	CreateAssignmentWithFiles(CourseID uuid.UUID, assignment *models.Assignment, files []models.AssignmentFile, uploads []models.Upload) error
+	CreateAssignmentWithFiles(CourseID uuid.UUID, assignment *models.Assignment, files []models.AssignmentFile, uploads []models.Upload, assignmentSections []models.AssignmentSection) error
 
 	GetAssignmentNameTemplate(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileName string, err error)
 	GetPDFTemplateWithURL(CourseID uuid.UUID, AssignmentID uuid.UUID) (templateURL string, err error)
@@ -19,14 +19,13 @@ type InstructorService interface {
 
 	CreateAssignmentFile(file *models.AssignmentFile) error
 
-	// Get instructors and students by course id
 	GetRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
-	// Insert student or instructor to course
+	GetRosterSectionByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
 	CreateSingleUserRoster(CourseID uuid.UUID, Email string, UserGroupName string) error
 
 	GetCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error)
-	GetAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error)
-	GetActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error)
+	GetAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
+	GetActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
 	GetInstructorsNameByCourseID(CourseID uuid.UUID) ([]*models.User, error)
 }
 
@@ -59,8 +58,8 @@ func (s *InstructorServiceImpl) CreateAssignment(CourseID uuid.UUID, assignment 
 }
 
 // News Create assignment to course with Files(FromData)
-func (s *InstructorServiceImpl) CreateAssignmentWithFiles(CourseID uuid.UUID, assignment *models.Assignment, files []models.AssignmentFile, uploads []models.Upload) error {
-	if err := s.repo.AddAssignmentWithFiles(CourseID, assignment, files, uploads); err != nil {
+func (s *InstructorServiceImpl) CreateAssignmentWithFiles(CourseID uuid.UUID, assignment *models.Assignment, files []models.AssignmentFile, uploads []models.Upload, assignmentSections []models.AssignmentSection) error {
+	if err := s.repo.AddAssignmentWithFiles(CourseID, assignment, files, uploads, assignmentSections); err != nil {
 		return err
 	}
 	return nil
@@ -115,6 +114,15 @@ func (s *InstructorServiceImpl) GetRosterByCourseID(CourseID uuid.UUID) ([]map[s
 		return nil, err
 	}
 	return roster, nil
+}
+
+// Get sections by course id
+func (s *InstructorServiceImpl) GetRosterSectionByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
+	rosterSection, err := s.repo.FindRosterSectionByCourseID(CourseID)
+	if err != nil {
+		return nil, err
+	}
+	return rosterSection, nil
 }
 
 // Insert student or instructor to course
@@ -173,7 +181,7 @@ func (s *InstructorServiceImpl) GetCoursesByUserID(UserID uuid.UUID) ([]map[stri
 	return courses, nil
 }
 
-func (s *InstructorServiceImpl) GetAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error) {
+func (s *InstructorServiceImpl) GetAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
 	assignments, err := s.repo.FindAssignmentsByCourseID(CourseID)
 	if err != nil {
 		return nil, err
@@ -181,7 +189,7 @@ func (s *InstructorServiceImpl) GetAssignmentsByCourseID(CourseID uuid.UUID) ([]
 	return assignments, nil
 }
 
-func (s *InstructorServiceImpl) GetActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error) {
+func (s *InstructorServiceImpl) GetActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
 	activeAssignments, err := s.repo.FindActiveAssignmentsByCourseID(CourseID)
 	if err != nil {
 		return nil, err
