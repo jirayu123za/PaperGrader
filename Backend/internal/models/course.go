@@ -18,6 +18,7 @@ type Course struct {
 	Assignments       []Assignment     `gorm:"foreignKey:CourseID"`
 	InstructorLists   []InstructorList `gorm:"foreignKey:CourseID"`
 	Enrollments       []Enrollment     `gorm:"foreignKey:CourseID"`
+	Sections          []Section        `gorm:"foreignKey:CourseID"`
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
 	DeletedAt         gorm.DeletedAt `gorm:"index"`

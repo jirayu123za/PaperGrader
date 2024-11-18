@@ -9,16 +9,15 @@ import (
 )
 
 type User struct {
-	UserID     uuid.UUID `gorm:"primaryKey" json:"user_id"`
-	GoogleID   string    `gorm:"unique;not null" json:"google_id"`
-	GroupID    uint      `gorm:"not null" json:"group_id"`
-	FirstName  string    `gorm:"type:varchar(50);not null" json:"first_name"`
-	LastName   string    `gorm:"type:varchar(50);not null" json:"last_name"`
-	Email      string    `gorm:"type:varchar(50);not null" json:"email"`
-	BirthDate  time.Time `gorm:"type:date;not null" json:"birth_date"`
-	StudentID  *string   `gorm:"type:varchar(50);null" json:"student_id"`
-	University string    `gorm:"type:varchar(50);not null" json:"university"`
-	//ProfileImageURL string    `gorm:"type:varchar(255)" json:"profile_image_url"`
+	UserID          uuid.UUID `gorm:"primaryKey" json:"user_id"`
+	GoogleID        string    `gorm:"unique;not null" json:"google_id"`
+	GroupID         uint      `gorm:"not null" json:"group_id"`
+	FirstName       string    `gorm:"type:varchar(50);not null" json:"first_name"`
+	LastName        string    `gorm:"type:varchar(50);not null" json:"last_name"`
+	Email           string    `gorm:"type:varchar(50);not null" json:"email"`
+	BirthDate       time.Time `gorm:"type:date;not null" json:"birth_date"`
+	StudentID       *string   `gorm:"type:varchar(50);null" json:"student_id"`
+	University      string    `gorm:"type:varchar(50);not null" json:"university"`
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 	DeletedAt       gorm.DeletedAt   `gorm:"index"`

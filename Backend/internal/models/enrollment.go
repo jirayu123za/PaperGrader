@@ -11,6 +11,7 @@ type Enrollment struct {
 	EnrollmentID uuid.UUID `gorm:"primaryKey"`
 	UserID       uuid.UUID `gorm:"not null"`
 	CourseID     uuid.UUID `gorm:"not null"`
+	SectionID    uuid.UUID `gorm:"not null"`
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 	DeletedAt    gorm.DeletedAt `gorm:"index"`
