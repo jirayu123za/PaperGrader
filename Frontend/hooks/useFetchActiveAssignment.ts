@@ -5,6 +5,8 @@ import axios from "axios";
 interface ActiveAssignments {
     assignment_id: string;
     assignment_name: string;
+    published: boolean;
+    regrades: boolean;
     assignment_release_date: string;
     assignment_due_date: string;
     assignment_description: string;
@@ -25,7 +27,7 @@ export const useFetchActiveAssignments = (course_id: string) => {
             }
 
             const data = response.data.active_assignments;
-            setActiveAssignments(data);
+            // setActiveAssignments(data);
             return data;
         },
         enabled: !!course_id,
