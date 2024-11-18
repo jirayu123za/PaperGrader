@@ -7,11 +7,9 @@ interface Assignment {
   assignment_id: string;
   CourseId: string;
   assignment_name: string;
-  //assignment_decription: string;
   assignment_release_date: string;
   assignment_due_date: string;
   assignment_cut_off_date: string;
-  
 }
 
 // Custom Hook สำหรับดึงข้อมูล assignments ตาม CourseId และ role ของผู้ใช้
