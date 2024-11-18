@@ -37,7 +37,6 @@ func main() {
 
 	// Connect to postgres database
 	db := database.ConnectPostgres(true)
-	//database.ConnectPostgres(true)
 
 	minioRepo := adapters.NewMinIORepository(minioClient, os.Getenv("MINIO_BUCKET_NAME"))
 	minioService := services.NewMinIOService(minioRepo)
@@ -60,6 +59,10 @@ func main() {
 	userGroupService := services.NewUserGroupService(userGroupRepo)
 	userGroupHandler := adapters.NewHttpUserGroupHandler(userGroupService)
 
+	sectionRepo := adapters.NewGormSectionRepository(db)
+	sectionService := services.NewSectionService(sectionRepo)
+	sectionHandler := adapters.NewHttpSectionHandler(sectionService)
+
 	courseRepo := adapters.NewGormCourseRepository(db)
 	courseService := services.NewCourseService(courseRepo)
 	courseHandler := adapters.NewHttpCourseHandler(courseService)
@@ -70,7 +73,7 @@ func main() {
 
 	instructorRepo := adapters.NewGormInstructorRepository(db)
 	instructorService := services.NewInstructorService(instructorRepo, courseRepo, minioRepo)
-	instructorHandler := adapters.NewHttpInstructorHandler(instructorService, minioService)
+	instructorHandler := adapters.NewHttpInstructorHandler(instructorService, minioService, sectionService)
 
 	studentRepo := adapters.NewGormStudentRepository(db)
 	studentService := services.NewStudentService(studentRepo, minioRepo)
@@ -85,10 +88,6 @@ func main() {
 			"error":   nil,
 		})
 	})
-
-	//apiGroup.Post("/file", minioHandler.CreateFile)
-	//apiGroup.Get("/file", minioHandler.GetFileByID)
-	//apiGroup.Get("/file/url", minioHandler.GetFileURL)
 
 	apiGroup.Get("/google", oauthHandler.GetGoogleLoginURL)
 	apiGroup.Get("/google/callback", oauthHandler.GetGoogleCallBack)
@@ -116,6 +115,10 @@ func main() {
 	apiGroup.Put("/course", courseHandler.UpdateCourse)
 	apiGroup.Delete("/course", courseHandler.DeleteCourse)
 
+	apiGroup.Get("/sections", sectionHandler.GetSectionsDetailsByCourseID)
+	apiGroup.Get("/sections/name", sectionHandler.GetSectionsNameByCourseID)
+	apiGroup.Post("/sections", sectionHandler.CreateSection)
+
 	apiGroup.Post("/instructorList", courseHandler.CreateInstructorList)
 	apiGroup.Get("/instructorList", courseHandler.GetInstructorsListByListID)
 	apiGroup.Get("/instructorList/", courseHandler.GetInstructorsListByCourseID)
@@ -129,13 +132,13 @@ func main() {
 	apiGroup.Put("/assignment", assignmentHandler.UpdateAssignment)
 	apiGroup.Delete("/assignment", assignmentHandler.DeleteAssignment)
 
-	// apiGroup.Post("/instructor/assignment", instructorHandler.CreateAssignment)
 	apiGroup.Post("/instructor/assignment/files", instructorHandler.CreateAssignmentWithFiles)
 	apiGroup.Get("/instructor/assignments", instructorHandler.GetAssignmentsByCourseID)
 	apiGroup.Get("/instructor/courses", instructorHandler.GetCoursesByUserID)
 	apiGroup.Get("/instructor/assignments/active", instructorHandler.GetActiveAssignmentsByCourseID)
 	apiGroup.Get("/instructorsList", instructorHandler.GetInstructorsNameByCourseID)
 	apiGroup.Get("/instructors/roster", instructorHandler.GetRosterByCourseID)
+	apiGroup.Get("/instructor/roster/section", instructorHandler.GetRosterSectionByCourseID)
 	apiGroup.Post("/instructor/roster", instructorHandler.CreateSingleUserRoster)
 	// test api get template file name
 	apiGroup.Get("/instructor/template/name", instructorHandler.GetAssignmentNameTemplate)
