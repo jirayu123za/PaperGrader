@@ -76,8 +76,8 @@ func (s *AssignmentServiceImpl) UpdateAssignment(Assignment *models.Assignment) 
 	existingAssignment.AssignmentName = Assignment.AssignmentName
 	//existingAssignment.AssignmentDescription = Assignment.AssignmentDescription
 	existingAssignment.SubmissBy = Assignment.SubmissBy
-	existingAssignment.ReleaseDate = Assignment.ReleaseDate
-	existingAssignment.DueDate = Assignment.DueDate
+	// existingAssignment.ReleaseDate = Assignment.ReleaseDate
+	// existingAssignment.DueDate = Assignment.DueDate
 	existingAssignment.LateSubmiss = Assignment.LateSubmiss
 	existingAssignment.GroupSubmiss = Assignment.GroupSubmiss
 
