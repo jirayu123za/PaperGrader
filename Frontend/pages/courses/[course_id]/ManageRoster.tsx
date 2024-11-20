@@ -5,17 +5,15 @@ import ManageSection from '../../../components/ManageRoster/[course_id]/ManageSe
 import { useRouter } from 'next/router';
 import { useCourseStore } from '../../../store/useCourseStore';
 import { Button } from '@mantine/core';
-import CreateSection from '../../../components/Create/CreateSection'; // นำเข้า CreateSection modal
+import CreateSection from '../../../components/Create/CreateSection';
 
 const ManageRoster: React.FC = () => {
   const router = useRouter();
   const { courseId } = router.query;
   const selectedCourseId = useCourseStore((state) => state.selectedCourseId);
-
   const actualCourseId = Array.isArray(courseId) ? courseId[0] : courseId || selectedCourseId;
-
-  const [isRosterView, setIsRosterView] = useState(true); // state เพื่อสลับ view
-  const [isModalOpen, setIsModalOpen] = useState(false); // state สำหรับควบคุมการเปิด/ปิด modal
+  const [isRosterView, setIsRosterView] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (!actualCourseId) {
     return <div>Please select a course first!</div>;
