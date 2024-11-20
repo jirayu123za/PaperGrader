@@ -1,5 +1,6 @@
 import create from 'zustand';
 
+// Store user roster data
 interface UsersList {
     user_id: string;
     full_name: string;
@@ -16,4 +17,21 @@ interface UsersListStore {
 export const useRosterStore = create<UsersListStore>((set) => ({
     usersList: [],
     setUsersList: (usersList: UsersList[]) => set({ usersList }),
+}));
+
+// Store section roster data
+interface SectionDetails {
+    section_id: string;
+    section_name: string;
+    total_students: number;
+}
+
+interface SectionDetailsStore {
+    sectionDetails: SectionDetails[];
+    setSectionDetails: (sectionDetails: SectionDetails[]) => void;
+}
+
+export const useSectionDetailsStore = create<SectionDetailsStore>((set) => ({
+    sectionDetails: [],
+    setSectionDetails: (sectionDetails: SectionDetails[]) => set({ sectionDetails }),
 }));
