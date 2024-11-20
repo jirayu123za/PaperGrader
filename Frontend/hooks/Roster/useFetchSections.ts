@@ -1,35 +1,29 @@
-// import { useQuery } from '@tanstack/react-query';
-// import axios from 'axios';
-
-// export const useFetchSections = () => {
-//   return useQuery({
-//     queryKey: ['sections'],
-//     queryFn: async () => {
-//       const response = await axios.get('/api/sections'); 
-//       return response.data || []; 
-//     },
-//   });
-// };
-
-
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
+import { useSectionDetailsStore } from '../../store/useRosterStore';
 
-export const useFetchSections = () => {
-  return useQuery({
-    queryKey: ['sections'],
+interface SectionDetails {
+  section_id: string;
+  section_name: string;
+  total_students: number;
+}
+
+export const useFetchSections = (course_id: string) => {
+  const setSectionDetails = useSectionDetailsStore((state) => state.setSectionDetails);
+
+  return useQuery<SectionDetails[]>({
+    queryKey: ['sections', course_id],
     queryFn: async () => {
-      // Mock data สำหรับทดสอบ
-      const mockData = [
-        { id: '1', name: 'UX 101 Monday A', studentCount: 30 },
-        { id: '2', name: 'UX 101 Monday B', studentCount: 22 },
-        { id: '3', name: 'UX 101 Tuesday A', studentCount: 30 },
-      ];
-
-      // ใช้ข้อมูล mock แทนการเรียก API จริง
-      return new Promise((resolve) => {
-        setTimeout(() => resolve(mockData), 1000); // ตั้งเวลา delay เพื่อจำลองการโหลดข้อมูล
-      });
+      try {
+        const response = await axios.get(`/api/api/instructor/roster/section`, {
+          params: { course_id: course_id },
+        });
+        setSectionDetails(response.data);
+        return response.data || [];
+      } catch (error) {
+        console.log(error);
+        return [];
+      }
     },
   });
 };
