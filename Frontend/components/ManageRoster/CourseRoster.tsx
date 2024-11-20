@@ -5,27 +5,12 @@ import { useFetchUsersRoster } from '../../hooks/Roster/useFetchUsersRoster';
 import { useRouter } from 'next/router';
 import { useRosterStore } from '../../store/useRosterStore';
 
-// interface Member {
-//   name: string;
-//   email: string;
-//   role: string;
-//   submissions: number;
-// }
-
 const CourseRoster: React.FC = () => {
-  // const [members, setMembers] = useState<Member[]>([
-  //   {
-  //     name: 'Olga Korobova',
-  //     email: 'olga@gradescope.com',
-  //     role: 'Instructor',
-  //     submissions: 0,
-  //   },
-  // ]);
   const router = useRouter();
   const { course_id } = router.query;
   const { data, isLoading, error } = useFetchUsersRoster(course_id as string);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const { usersList, setUsersList } = useRosterStore();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openModal = () => {
     setIsModalOpen(true);
