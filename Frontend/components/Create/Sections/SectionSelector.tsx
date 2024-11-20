@@ -25,6 +25,15 @@ interface Section {
     
     if (isLoading) return <Loader size="sm" />;
     if (error) return <Text color="red">Error fetching sections: {error.message}</Text>;
+
+    const sectionsData = sectionsList && sectionsList.length > 0
+    ? sectionsList.map((section: Section) => ({
+        label: section.section_name,
+        value: section.section_id,
+      }))
+    : [
+        { value: 'No sections available: Please create section of this course first!', disabled: true },
+      ];
   
     return (
       <div>
@@ -36,10 +45,7 @@ interface Section {
         {isEnabled && (
           <div className="mt-4">
             <TagsInput
-              data={sectionsList.map((section: Section) => ({
-                label: section.section_name,
-                value: section.section_id,
-              }))}
+              data={sectionsData}
               placeholder="Add or select sections"
               value={selectedSections}
               onChange={handleTagChange}
