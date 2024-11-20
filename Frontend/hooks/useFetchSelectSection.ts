@@ -18,7 +18,7 @@ export const useFetchSections = (course_id: string) => {
       });
 
       setSectionsList(response.data.sections);
-      return response.data.sections;
+      return response.data.sections || [];
     },
     enabled: !!course_id,
   });
