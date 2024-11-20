@@ -11,6 +11,7 @@ import { useForm } from '@mantine/form';
 import '@mantine/tiptap/styles.css';
 import { Editor } from './Editor.tsx/Editor';
 import SectionSelector from '../Create/Sections/SectionSelector';
+import { useSelectSectionStore } from '../../store/useSectionStore';
 
 interface CreateAssignmentModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
   const { course_id } = router.query;
   const { files, templateFile, clearFiles } = useFileStore();
   const { mutate } = useCreateAssignment();
+  const { selectedSections, setSelectedSections } = useSelectSectionStore();
 
   const form = useForm({
     initialValues: {
@@ -33,14 +35,14 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
       group_submiss: false,
       late_submiss: false,
       cut_off_date: null,
-      sections: [] as string[], // Add sections to form state
+      sections: selectedSections,
     },
     validate: {
       assignment_name: (value) => (value ? null : 'Assignment name is required'),
       assignment_description: (value) => (value ? null : 'Assignment description is required'),
     },
   });
-
+  
   const handleSubmit = (values: typeof form.values) => {
     const formData = new FormData();
     formData.append('course_id', Array.isArray(course_id) ? course_id[0] : course_id || '');
@@ -51,7 +53,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
     formData.append('due_date', values.due_date ? dayjs(values.due_date).format('DD/MM/YYYY HH:mm') : '');
     formData.append('group_submiss', String(values.group_submiss));
     formData.append('late_submiss', String(values.late_submiss));
-    formData.append('sections', JSON.stringify(values.sections)); // Add selected sections
+    formData.append('sections', values.sections.join(','));
 
     if (values.late_submiss && values.cut_off_date) {
       formData.append('cut_off_date', dayjs(values.cut_off_date).format('DD/MM/YYYY HH:mm'));
@@ -115,9 +117,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
           <Text size="sm" fw={500}>
             Assign to Sections
           </Text>
-          <SectionSelector
-            onSectionChange={(sections) => form.setFieldValue('sections', sections)}
-          />
+          <SectionSelector setSections={(sections: string[]) => form.setFieldValue('sections', sections)}/>
         </div>
 
         {/* File Upload */}
