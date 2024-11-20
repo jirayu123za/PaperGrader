@@ -25,14 +25,34 @@ func (r *GormSectionRepository) AddSection(CourseID uuid.UUID, sections interfac
 		return result.Error
 	}
 
+	isSameSection := func(name string) error {
+		var sectionCount int64
+		if result := r.db.
+			Model(&models.Section{}).
+			Where("course_id = ? AND section_name = ?", CourseID, name).
+			Count(&sectionCount); result.Error != nil {
+			return result.Error
+		}
+		if sectionCount > 0 {
+			return fmt.Errorf("section_name '%s' already exists in the course", name)
+		}
+		return nil
+	}
+
 	switch v := sections.(type) {
 	case *models.Section:
+		if err := isSameSection(v.SectionName); err != nil {
+			return err
+		}
 		v.CourseID = existingCourse.CourseID
 		if result := r.db.Create(v); result.Error != nil {
 			return result.Error
 		}
 	case []*models.Section:
 		for _, section := range v {
+			if err := isSameSection(section.SectionName); err != nil {
+				return err
+			}
 			section.CourseID = existingCourse.CourseID
 		}
 		if result := r.db.Create(&v); result.Error != nil {
