@@ -20,8 +20,6 @@ export const useFetchUsersRoster = (course_id: string) => {
                 params: { course_id: course_id },
             });
 
-            console.log('API Response:', response);
-
             if (response.status !== 200) {
                 throw new Error('Network response was not ok');
             }
