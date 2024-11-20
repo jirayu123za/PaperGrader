@@ -1,18 +1,25 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
+import { useSectionsListStore } from '../store/useSectionStore';
 
-export const useFetchSections = () => {
-  return useQuery({
-    queryKey: ['sections'],
+interface SectionsList {
+  section_id: string;
+  section_name: string;
+}
+
+export const useFetchSections = (course_id: string) => {
+  const setSectionsList = useSectionsListStore((state) => state.setSectionsList);
+
+  return useQuery<SectionsList[]>({
+    queryKey: ['sections', course_id],
     queryFn: async () => {
-      const response = await axios.get('/api/sections');
-      return response.data.sections; // ดึง sections จาก JSON
+      const response = await axios.get('/api/api/sections/name', {
+        params: { course_id: course_id },
+      });
+
+      setSectionsList(response.data.sections);
+      return response.data.sections;
     },
-    initialData: [
-      { section_id: '1', section_name: 'Section A' },
-      { section_id: '2', section_name: 'Section B' },
-      { section_id: '3', section_name: 'Section C' },
-    ],
-    staleTime: 1000 * 60 * 5, 
+    enabled: !!course_id,
   });
 };
