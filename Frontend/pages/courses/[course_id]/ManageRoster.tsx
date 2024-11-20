@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import LeftMain from '../../../components/LeftINS/LeftMain';
 import CourseRoster from '../../../components/ManageRoster/CourseRoster';
-import ManageSection from '../../../components/ManageRoster/ManageSection';
+import ManageSection from '../../../components/ManageRoster/[course_id]/ManageSection';
 import { useRouter } from 'next/router';
 import { useCourseStore } from '../../../store/useCourseStore';
 import { Button } from '@mantine/core';
