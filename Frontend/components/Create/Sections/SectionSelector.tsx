@@ -1,29 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useRouter } from 'next/router';
 import { Checkbox, TagsInput, Text, Loader } from '@mantine/core';
 import { useFetchSections } from '../../../hooks/useFetchSelectSection';
-
-interface SectionSelectorProps {
-  onSectionChange: (sections: string[]) => void;
-}
+import { useSectionsListStore, useSelectSectionStore } from '../../../store/useSectionStore';
+import { useDisclosure } from '@mantine/hooks';
 
 interface Section {
     section_id: string;
     section_name: string;
   }
   
-  const SectionSelector: React.FC<SectionSelectorProps> = ({ onSectionChange }) => {
-    const [isEnabled, setIsEnabled] = useState(false);
-    const [selectedSections, setSelectedSections] = useState<string[]>([]);
-    const { data: sections = [], isLoading, error } = useFetchSections();
-  
-    useEffect(() => {
-      onSectionChange(selectedSections);
-    }, [selectedSections, onSectionChange]);
-  
+  const SectionSelector: React.FC<{ setSections: (sections: string[]) => void }> = ({ setSections }) => {
+    const router = useRouter();
+    const { course_id } = router.query;
+    const [isEnabled, { toggle }] = useDisclosure();
+    const { data, isLoading, error } = useFetchSections(course_id as string);
+    const { sectionsList, setSectionsList } = useSectionsListStore();
+    const { selectedSections, setSelectedSections } = useSelectSectionStore();
+
     const handleTagChange = (tags: string[]) => {
       setSelectedSections(tags);
+      setSections(tags);
     };
-  
+    
     if (isLoading) return <Loader size="sm" />;
     if (error) return <Text color="red">Error fetching sections: {error.message}</Text>;
   
@@ -32,19 +31,22 @@ interface Section {
         <Checkbox
           label="Enable Section Selection"
           checked={isEnabled}
-          onChange={(event) => setIsEnabled(event.currentTarget.checked)}
+          onChange={toggle}
         />
         {isEnabled && (
           <div className="mt-4">
             <TagsInput
-              data={sections.map((section: Section) => ({
-                label: section.section_name, // ใช้ section_name สำหรับแสดง
-                value: section.section_id,  // ใช้ section_id สำหรับค่า
+              data={sectionsList.map((section: Section) => ({
+                label: section.section_name,
+                value: section.section_id,
               }))}
               placeholder="Add or select sections"
               value={selectedSections}
               onChange={handleTagChange}
               label="Select Sections"
+              maxDropdownHeight={100}
+              comboboxProps={{ shadow: 'md' }}
+              clearable
             />
           </div>
         )}
