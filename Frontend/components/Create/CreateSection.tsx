@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
-import { Modal, Button, TextInput, Text } from '@mantine/core';
+import React from 'react';
+import { Modal, Button, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { useCreateSection } from '../../hooks/useCreate/useCreateSection';
 import { TagsInput } from '@mantine/core';
+import { useCreateSections } from '../../hooks/useCreate/useCreateSection';
+import { useRouter } from 'next/router';
 
 interface CreateSectionProps {
   opened: boolean;
@@ -10,39 +11,34 @@ interface CreateSectionProps {
 }
 
 const CreateSection: React.FC<CreateSectionProps> = ({ opened, onClose }) => {
+  const router = useRouter();
+  const { course_id } = router.query;
+  const { mutate } = useCreateSections();
+
   const form = useForm({
     initialValues: {
-      name: [] as string[],
+      section_name: [] as string[],
     },
     validate: {
-      name: (value) => (value.length < 1 ? 'Please enter at least one tag' : null),
+      section_name: (value) => (value.length < 1 ? 'Please enter at least one tag' : null),
     },
   });
 
-  const createSectionMutation = useCreateSection();
+  const handleSubmit = (values: typeof form.values) => {
+    const sectionNames = values.section_name; 
 
-  const handleSubmit = (values: { name: string[] }) => {
-    createSectionMutation.mutate(
-      { name: values.name },
-      {
-        onSuccess: () => {
-          console.log('Section created successfully');
-          onClose();
-          form.reset();
-        },
-        onError: (error) => {
-          console.error('Error creating section:', error);
-        },
-      }
-    );
+    console.log('handleSubmit:', sectionNames);
+
+    mutate({ section_name: sectionNames, course_id: course_id as string }, {
+      onSuccess: () => {
+        onClose();
+        form.reset();
+      },
+      onError: (error) => {
+        console.error('Error creating section:', error);
+      },
+    });
   };
-
-  // ล้างข้อมูลในฟอร์มเมื่อ Modal ถูกปิด
-  useEffect(() => {
-    if (!opened) {
-      form.reset();
-    }
-  }, [opened]);
 
   return (
     <Modal
@@ -74,11 +70,10 @@ const CreateSection: React.FC<CreateSectionProps> = ({ opened, onClose }) => {
         <Text fw={500} mb={4}>Section Tags</Text>
         <TagsInput
           placeholder="Enter tags and press enter, comma, or space"
-          {...form.getInputProps('name')}
+          {...form.getInputProps('section_name')}
           splitChars={[' ', ',', '\n']}
           className="mb-4"
         />
-
         <Button type="submit" className="w-full bg-[#b7410e]">
           Create Section
         </Button>
