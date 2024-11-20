@@ -20,7 +20,7 @@ const ManageSection: React.FC = () => {
     <div>
       <Text size="xl" fw={700} className="mb-4">Sections</Text>
       <Text size="sm" color="dimmed" className="mb-4">
-        {sectionDetails && sectionDetails.length > 0 ? `${sectionDetails.length} Sections` : 'This course has no sections created yet.'}
+        {sectionDetails && sectionDetails.length > 0 ? `${sectionDetails.length} Sections` : ''}
       </Text>
 
       <Divider className="mb-4" />

@@ -10,6 +10,7 @@ import { useFileStore } from '../../store/useFileStore';
 import { useForm } from '@mantine/form';
 import '@mantine/tiptap/styles.css';
 import { Editor } from './Editor.tsx/Editor';
+import SectionSelector from '../Create/Sections/SectionSelector';
 
 interface CreateAssignmentModalProps {
   isOpen: boolean;
@@ -32,6 +33,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
       group_submiss: false,
       late_submiss: false,
       cut_off_date: null,
+      sections: [] as string[], // Add sections to form state
     },
     validate: {
       assignment_name: (value) => (value ? null : 'Assignment name is required'),
@@ -49,6 +51,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
     formData.append('due_date', values.due_date ? dayjs(values.due_date).format('DD/MM/YYYY HH:mm') : '');
     formData.append('group_submiss', String(values.group_submiss));
     formData.append('late_submiss', String(values.late_submiss));
+    formData.append('sections', JSON.stringify(values.sections)); // Add selected sections
 
     if (values.late_submiss && values.cut_off_date) {
       formData.append('cut_off_date', dayjs(values.cut_off_date).format('DD/MM/YYYY HH:mm'));
@@ -107,7 +110,17 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
         </Text>
         <Editor onContentChange={(content) => form.setFieldValue('assignment_description', content)} />
 
-        {/* file upload */}
+        {/* Section Selector */}
+        <div className="mb-4 mt-4">
+          <Text size="sm" fw={500}>
+            Assign to Sections
+          </Text>
+          <SectionSelector
+            onSectionChange={(sections) => form.setFieldValue('sections', sections)}
+          />
+        </div>
+
+        {/* File Upload */}
         <div className="flex flex-col mb-4 mt-4">
           <Text size="sm" fw={500}>
             Upload File
@@ -116,6 +129,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
             <UploadFile />
           </div>
         </div>
+
         <div className="mt-4">
           <RadioGroup {...form.getInputProps('submiss_by')} label="Who will upload submissions?" required>
             <div className="flex justify-start gap-8 mt-1">
