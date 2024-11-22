@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button, Select, Table } from '@mantine/core';
 import AddMember from '../AddStudent/AddMember';
 import { useFetchUsersRoster } from '../../hooks/Roster/useFetchUsersRoster';
@@ -9,7 +9,7 @@ const CourseRoster: React.FC = () => {
   const router = useRouter();
   const { course_id } = router.query;
   const { data, isLoading, error } = useFetchUsersRoster(course_id as string);
-  const { usersList, setUsersList } = useRosterStore();
+  const { usersList } = useRosterStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openModal = () => {
@@ -63,17 +63,18 @@ const CourseRoster: React.FC = () => {
                   data={['INSTRUCTOR', 'STUDENT', 'TA', 'STAFF']}
                   searchable
                   nothingFoundMessage="Nothing found..."
-                  //disabled
                   style={{ width: '140px' }}
                 />
               </td>
-              <td className="p-2">{member.submissions_count}</td>
+              <td className="p-2">
+                {member.user_group_name === 'INSTRUCTOR' ? '-' : member.submissions_count}
+              </td>
               <td className="p-2">
                 <Button
                   variant="outline"
                   color="red"
                   onClick={() => {
-                    //setMembers(members.filter((_, i) => i !== index));
+                    console.log(`Removing member: ${member.full_name}`);
                   }}
                 >
                   Remove
