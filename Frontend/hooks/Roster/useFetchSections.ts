@@ -16,12 +16,14 @@ export const useFetchSections = (course_id: string) => {
     queryFn: async () => {
       try {
         const response = await axios.get(`/api/api/instructor/roster/section`, {
-          params: { course_id: course_id },
+          params: { course_id },
         });
-        setSectionDetails(response.data);
-        return response.data || [];
+
+        const sections = response.data.sections || [];
+        setSectionDetails(sections); 
+        return sections;
       } catch (error) {
-        console.log(error);
+        console.error(error);
         return [];
       }
     },
