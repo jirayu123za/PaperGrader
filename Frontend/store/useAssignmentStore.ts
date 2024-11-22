@@ -9,6 +9,9 @@ interface Assignment {
   assignment_release_date: string;
   assignment_due_date: string;
   assignment_cut_off_date: string;
+  published: boolean;
+  regrades: boolean;
+  submiss_by: string;
 }
 
 // สร้าง Zustand store สำหรับ assignments

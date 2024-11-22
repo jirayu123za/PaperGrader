@@ -8,13 +8,17 @@ interface INTAssignmentProps {
 }
 
 const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
-  const { data, isLoading, error } = useFetchAssignments(courseId);
+  const { isLoading, error } = useFetchAssignments(courseId, false); // isStudent = false
   const assignments = useAssignmentStore((state) => state.assignments);
-  const router = useRouter(); // ใช้ router เพื่อนำทาง
-  const parseDate = (dateString: string): Date | null => {
-    if (!dateString) return null; // ตรวจสอบว่า dateString มีค่าหรือไม่
-    const [day, month, year] = dateString.split('-').map(Number);
-    return new Date(year, month - 1, day);
+  const router = useRouter();
+
+  const formatDate = (dateString: string): string => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
   };
 
   useEffect(() => {
@@ -34,65 +38,29 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
         <thead>
           <tr className="border-b">
             <th className="py-2 px-4 text-left">NAME</th>
-            <th className="py-2 px-4 text-left">POINTS</th>
             <th className="py-2 px-4 text-left">RELEASED</th>
             <th className="py-2 px-4 text-left">DUE</th>
-            <th className="py-2 px-4 text-center">CUTOFF</th> {/* จัดกึ่งกลางหัวข้อ CUTOFF */}
-            <th className="py-2 px-4 text-left">SUBMISSIONS</th>
-            <th className="py-2 px-4 text-left">% GRADED</th>
-            <th className="py-2 px-4 text-left">PUBLISHED</th>
-            <th className="py-2 px-4 text-left">REGRADES</th>
+            <th className="py-2 px-4 text-center">PUBLISHED</th>
+            <th className="py-2 px-4 text-center">REGRADES</th>
+            <th className="py-2 px-4 text-center">SUBMISS BY</th>
           </tr>
         </thead>
         <tbody>
-          {assignments.map((assignment) => {
-            const releaseDate = parseDate(assignment.assignment_release_date);
-            const dueDate = parseDate(assignment.assignment_due_date);
-            const cutOffDate = parseDate(assignment.assignment_cut_off_date);
-
-            return (
-              <tr key={assignment.assignment_id} className="border-b">
-                <td
-                  className="py-2 px-4 cursor-pointer hover:underline"
-                  onClick={() => router.push(`/courses/${courseId}/process/${assignment.assignment_id}/CreateOutline`)} // นำทางไปยังหน้า CreateOutline
-                >
-                  {assignment.assignment_name}
-                </td>
-                <td className="py-2 px-4">0.0</td>
-                <td className="py-2 px-4">
-                  {releaseDate
-                    ? releaseDate.toLocaleDateString('en-US', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })
-                    : '-'}
-                </td>
-                <td className="py-2 px-4">
-                  {dueDate
-                    ? dueDate.toLocaleDateString('en-US', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })
-                    : '-'}
-                </td>
-                <td className="py-2 px-4 text-center"> {/* จัดกึ่งกลางข้อมูลใน CUTOFF */}
-                  {cutOffDate
-                    ? cutOffDate.toLocaleDateString('en-US', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })
-                    : '-'}
-                </td>
-                <td className="py-2 px-4">0</td>
-                <td className="py-2 px-4">0%</td>
-                <td className="py-2 px-4">ON</td>
-                <td className="py-2 px-4">ON</td>
-              </tr>
-            );
-          })}
+          {assignments.map((assignment) => (
+            <tr key={assignment.assignment_id} className="border-b">
+              <td
+                className="py-2 px-4 cursor-pointer hover:underline"
+                onClick={() => router.push(`/courses/${courseId}/process/${assignment.assignment_id}/CreateOutline`)}
+              >
+                {assignment.assignment_name}
+              </td>
+              <td className="py-2 px-4">{formatDate(assignment.assignment_release_date)}</td>
+              <td className="py-2 px-4">{formatDate(assignment.assignment_due_date)}</td>
+              <td className="py-2 px-4 text-center">{assignment.published ? 'Yes' : 'No'}</td>
+              <td className="py-2 px-4 text-center">{assignment.regrades ? 'Yes' : 'No'}</td>
+              <td className="py-2 px-4 text-center">{assignment.submiss_by}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
