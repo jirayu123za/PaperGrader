@@ -27,13 +27,13 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
   // การจัดกลุ่มคอร์สตามปีการศึกษาและเทอม
   const groupedCourses = Array.isArray(courses)
     ? courses.reduce((acc: Record<string, Course[]>, course: Course) => {
-        const key = `${course.academic_year} / ${course.semester}`;
-        if (!acc[key]) {
-          acc[key] = [];
-        }
-        acc[key].push(course);
-        return acc;
-      }, {})
+      const key = `${course.academic_year} / ${course.semester}`;
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(course);
+      return acc;
+    }, {})
     : {};
 
   const sortedKeys = Object.keys(groupedCourses).sort().reverse();
@@ -57,8 +57,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
     <div style={{ maxHeight: '600px', overflowY: 'auto' }}> {/* เลื่อนเฉพาะคอมโพเนนต์ */}
       {courses.length === 0 && !studentMode ? ( // เงื่อนไขเมื่อไม่มีคอร์สและอยู่ในโหมดอาจารย์
         <div className="p-6 bg-white border-dashed border-2 border-teal-600 shadow-sm rounded-lg cursor-pointer flex items-center justify-center"
-             onClick={handleCreateCourseClick}
-             style={{ height: 180 , width: 400}}>
+          onClick={handleCreateCourseClick}
+          style={{ height: 180, width: 400 }}>
           <div className="text-teal-600 text-center">
             <div className="text-3xl mb-2">+</div>
             <div className="text-lg">Create a new course</div>
@@ -69,40 +69,40 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
           {/* แสดง 2 เทอมล่าสุด */}
           {latestKeys.map((key) => (
             <div key={key} className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{key}</h2>
-            {/* แก้ไข grid-cols และลด gap */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mx-auto max-w-screen-lg">
-              {groupedCourses[key].map((course) => (
-                <div
-                  key={course.course_id}
-                  className="p-4 bg-gray-100 shadow rounded-lg cursor-pointer relative"
-                  style={{ height: 180, maxWidth: 400 }} // ลดความกว้างของการ์ด
-                  onClick={() => handleSelectCourse(course)}
-                >
-                  <h2 className="text-base text-gray-600 mb-2">{course.course_code}</h2>
-                  <h3 className="text-xl font-semibold mb-2">{course.course_name}</h3>
-                  <p className="text-gray-600 text-sm mb-4">{course.description}</p>
-                  <div className="absolute bottom-0 left-0 right-0 bg-purple-900 text-white p-2 text-center text-sm">
-                    {course.total_assignments ? `${course.total_assignments} assignments` : 'No assignments'}
+              <h2 className="text-xl font-semibold mb-4">{key}</h2>
+              {/* ปรับ grid layout */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-start">
+                {groupedCourses[key].map((course) => (
+                  <div
+                    key={course.course_id}
+                    className="p-4 bg-gray-100 shadow rounded-lg cursor-pointer relative"
+                    style={{ height: 180, width: 400 }} // ลดความกว้างของการ์ด
+                    onClick={() => handleSelectCourse(course)}
+                  >
+                    <h2 className="text-base text-gray-600 mb-2">{course.course_code}</h2>
+                    <h3 className="text-xl font-semibold mb-2">{course.course_name}</h3>
+                    <p className="text-gray-600 text-sm mb-4">{course.description}</p>
+                    <div className="absolute bottom-0 left-0 right-0 bg-purple-900 text-white p-2 text-center text-sm">
+                      {course.total_assignments ? `${course.total_assignments} assignments` : 'No assignments'}
+                    </div>
                   </div>
-                </div>
-              ))}
-              {key === latestKeys[0] && !studentMode && (
-                <div
-                  className="p-6 bg-white border-dashed border-2 border-teal-600 shadow-sm rounded-lg cursor-pointer flex items-center justify-center"
-                  onClick={handleCreateCourseClick}
-                  style={{ height: 180, maxWidth: 400 }} // ลดความกว้างของการ์ด
-                >
-                  <div className="text-teal-600 text-center">
-                    <div className="text-3xl mb-2">+</div>
-                    <div className="text-lg">Create a new course</div>
+                ))}
+                {key === latestKeys[0] && !studentMode && (
+                  <div
+                    className="p-6 bg-white border-dashed border-2 border-teal-600 shadow-sm rounded-lg cursor-pointer flex items-center justify-center"
+                    onClick={handleCreateCourseClick}
+                    style={{ height: 180, width: 400 }}
+                  >
+                    <div className="text-teal-600 text-center">
+                      <div className="text-3xl mb-2">+</div>
+                      <div className="text-lg">Create a new course</div>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
-          
           ))}
+
 
           {/* ปุ่มแสดง/ซ่อนเทอมเก่ากว่า */}
           {olderKeys.length > 0 && (
