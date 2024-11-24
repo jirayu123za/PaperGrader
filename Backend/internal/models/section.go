@@ -10,7 +10,7 @@ import (
 type Section struct {
 	SectionID          uuid.UUID           `gorm:"primaryKey" json:"section_id"`
 	CourseID           uuid.UUID           `gorm:"not null" json:"course_id"`
-	Enrollments        []Enrollment        `gorm:"foreignKey:SectionID"`
+	EnrollmentLists    []EnrollmentList    `gorm:"foreignKey:SectionID"`
 	AssignmentSections []AssignmentSection `gorm:"foreignKey:SectionID"`
 	SectionName        string              `gorm:"type:varchar(50);not null" json:"section_name"`
 	CreatedAt          time.Time

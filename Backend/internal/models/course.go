@@ -16,8 +16,7 @@ type Course struct {
 	AcademicYear      string           `gorm:"type:varchar(50);not null" json:"academic_year"`
 	EntryCode         bool             `gorm:"type:boolean;not null" json:"entry_code"`
 	Assignments       []Assignment     `gorm:"foreignKey:CourseID"`
-	InstructorLists   []InstructorList `gorm:"foreignKey:CourseID"`
-	Enrollments       []Enrollment     `gorm:"foreignKey:CourseID"`
+	EnrollmentList    []EnrollmentList `gorm:"foreignKey:CourseID"`
 	Sections          []Section        `gorm:"foreignKey:CourseID"`
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
