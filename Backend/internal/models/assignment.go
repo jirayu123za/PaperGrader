@@ -13,6 +13,7 @@ type Assignment struct {
 	AssignmentName        string              `gorm:"type:varchar(255);not null" json:"assignment_name"`
 	AssignmentDescription string              `gorm:"type:varchar(255)" json:"assignment_description"`
 	SubmissBy             string              `gorm:"type:varchar(50);not null" json:"submiss_by"`
+	GradingType           string              `gorm:"type:varchar(50);not null" json:"grading_type"`
 	LateSubmiss           bool                `gorm:"type:boolean;not null" json:"late_submiss"`
 	GroupSubmiss          bool                `gorm:"type:boolean;not null" json:"group_submiss"`
 	Published             bool                `gorm:"type:boolean;not null" json:"published"`
