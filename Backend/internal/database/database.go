@@ -37,20 +37,21 @@ func ConnectPostgres(migrate bool) *gorm.DB {
 
 	// Migration
 	if migrate {
-		// db.Migrator().DropTable(
-		// 	&models.AssignmentSection{},
-		// 	&models.AssignmentFile{},
-		// 	&models.Submission{},
-		// 	&models.Enrollment{},
-		// 	&models.InstructorList{},
-		// 	&models.Section{},
-		// 	&models.Assignment{},
-		// 	&models.Course{},
-		// 	// &models.User{},
-		// 	// &models.UserGroup{},
-		// 	// &models.University{},
-		// 	&models.Upload{},
-		// )
+		db.Migrator().DropTable(
+			&models.AssignmentSection{},
+			&models.AssignmentFile{},
+			&models.Submission{},
+			// &models.Enrollment{},
+			// &models.InstructorList{},
+			models.EnrollmentList{},
+			&models.Section{},
+			&models.Assignment{},
+			&models.Course{},
+			&models.User{},
+			// &models.UserGroup{},
+			// &models.University{},
+			&models.Upload{},
+		)
 
 		err := db.AutoMigrate(
 			&models.UserGroup{},
@@ -60,8 +61,9 @@ func ConnectPostgres(migrate bool) *gorm.DB {
 			&models.Section{},
 			&models.Assignment{},
 			&models.AssignmentFile{},
-			&models.Enrollment{},
-			&models.InstructorList{},
+			// &models.Enrollment{},
+			// &models.InstructorList{},
+			models.EnrollmentList{},
 			&models.Submission{},
 			&models.AssignmentSection{},
 			&models.Upload{})
