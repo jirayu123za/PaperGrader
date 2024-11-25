@@ -27,17 +27,17 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
     initialValues: {
       name: '',
       email: '',
-      student_id: '',
-      user_group_name: '',
+      student_code: '',
+      role_type: '',
       section_id: '', 
     },
 
     validate: {
       name: (value) => (value.length < 2 ? 'Name must have at least 2 characters' : null),
       email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email format'),
-      user_group_name: (value) => (value ? null : 'Please select a role'),
+      role_type: (value) => (value ? null : 'Please select a role'),
       section_id: (value, values) =>
-        values.user_group_name === 'STUDENT' && !value ? 'Please select a section' : null,
+        values.role_type === 'STUDENT' && !value ? 'Please select a section' : null,
     },
   });
 
@@ -49,8 +49,8 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
     formData.append('first_name', first_name || '');
     formData.append('last_name', last_name || '');
     formData.append('email', values.email);
-    formData.append('student_id', values.student_id);
-    formData.append('user_group_name', values.user_group_name);
+    formData.append('student_code', values.student_code);
+    formData.append('role_type', values.role_type);
     formData.append('section_id', values.section_id); 
 
     mutate(formData, {
@@ -92,21 +92,21 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
           label="Student ID # (Optional)"
           placeholder="7855423"
           className="mt-4"
-          {...form.getInputProps('student_id')}
-          disabled={form.values.user_group_name !== 'STUDENT'}
+          {...form.getInputProps('student_code')}
+          disabled={form.values.role_type !== 'STUDENT'}
         />
         <RadioGroup
           label="Role"
           required
           className="mt-4"
-          {...form.getInputProps('user_group_name')}
+          {...form.getInputProps('role_type')}
         >
           <div className="flex gap-4">
             <Radio value="STUDENT" label="Student" />
             <Radio value="INSTRUCTOR" label="Instructor" />
           </div>
         </RadioGroup>
-        {form.values.user_group_name === 'STUDENT' && (
+        {form.values.role_type === 'STUDENT' && (
           <Select
             label="Section"
             placeholder={sortedSections.length === 0 ? "No sections created yet" : "Select a section"}
@@ -115,7 +115,8 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
               label: section.section_name,
             }))}
             required
-            searchable 
+            searchable
+            clearable 
             className="mt-4"
             {...form.getInputProps('section_id')}
           />
