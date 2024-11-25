@@ -3,7 +3,7 @@ import { useInstructorListStore } from '../store/useInstructorListStore';
 import axios from 'axios';
 
 interface InstructorList {
-    instructor_id: string;
+    personalData_id: string;
     instructor_name: string;
     CourseId: string;
 }

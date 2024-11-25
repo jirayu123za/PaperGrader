@@ -112,7 +112,7 @@ export default function LeftMain({ courseId }: LeftMainProps) {
         <div className={`flex flex-col ${isCollapsed ? 'items-center' : ''} mb-4`}>
           {instructorList && instructorList.map((instructor) => (
             <button
-              key={instructor.instructor_id}
+              key={instructor.personalData_id}
               className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-2'} text-gray-700 hover:text-teal-700 mb-4`}
             >
               <FaUser />

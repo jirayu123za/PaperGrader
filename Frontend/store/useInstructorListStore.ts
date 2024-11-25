@@ -1,7 +1,7 @@
 import create from 'zustand';
 
 interface InstructorList {
-    instructor_id: string;
+    personalData_id: string;
     instructor_name: string;
     CourseId: string;
 }
