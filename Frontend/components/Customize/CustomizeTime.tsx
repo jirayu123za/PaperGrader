@@ -19,7 +19,7 @@ const CustomizeTimeModal: React.FC<CustomizeTimeModalProps> = ({ isOpen, onClose
 
   const form = useForm({
     initialValues: {
-      selectedSections: [] as string[], // จะดึงจาก SectionSelector
+      selectedSections: [] as string[],
       release_date: releaseDate,
       due_date: dueDate,
       cut_off_date: cutOffDate,
@@ -59,14 +59,16 @@ const CustomizeTimeModal: React.FC<CustomizeTimeModalProps> = ({ isOpen, onClose
       overlayProps={{ opacity: 0.55, blur: 3 }}
     >
       <form onSubmit={form.onSubmit(handleSubmit)}>
-        <div className="mb-4">
-          <Text size="sm" fw={500}>
+        {/* Section Selector */}
+        <div className="mb-6">
+          <Text size="sm" fw={500} className="mb-2">
             Selected Section(s)
           </Text>
           <SectionSelector setSections={handleSectionsChange} />
         </div>
 
-        <div className="flex justify-between gap-4 mb-4">
+        {/* Date Pickers */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
           <DateTimePicker
             label="Release Date"
             placeholder="Select release date"
@@ -82,14 +84,15 @@ const CustomizeTimeModal: React.FC<CustomizeTimeModalProps> = ({ isOpen, onClose
         </div>
 
         <DateTimePicker
-          className="mb-4"
           label="Cut Off Date"
           placeholder="Select cut off date"
           {...form.getInputProps('cut_off_date')}
           valueFormat="DD/MM/YYYY HH:mm"
+          className="mb-6"
         />
 
-        <div className="flex justify-end mt-6">
+        {/* Action Buttons */}
+        <div className="flex justify-end space-x-4">
           <Button
             variant="default"
             onClick={() => {
@@ -99,7 +102,7 @@ const CustomizeTimeModal: React.FC<CustomizeTimeModalProps> = ({ isOpen, onClose
           >
             Cancel
           </Button>
-          <Button type="submit" className="ml-2">
+          <Button type="submit">
             Apply
           </Button>
         </div>
