@@ -54,11 +54,13 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
   };
 
   return (
-    <div style={{ maxHeight: '600px', overflowY: 'auto' }}> {/* เลื่อนเฉพาะคอมโพเนนต์ */}
-      {courses.length === 0 && !studentMode ? ( // เงื่อนไขเมื่อไม่มีคอร์สและอยู่ในโหมดอาจารย์
-        <div className="p-6 bg-white border-dashed border-2 border-teal-600 shadow-sm rounded-lg cursor-pointer flex items-center justify-center"
+    <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
+      {courses.length === 0 && !studentMode ? (
+        <div
+          className="p-6 bg-white border-dashed border-2 border-teal-600 shadow-sm rounded-lg cursor-pointer flex items-center justify-center"
           onClick={handleCreateCourseClick}
-          style={{ height: 180, width: 400 }}>
+          style={{ height: 180, width: 380 }}
+        >
           <div className="text-teal-600 text-center">
             <div className="text-3xl mb-2">+</div>
             <div className="text-lg">Create a new course</div>
@@ -70,13 +72,16 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
           {latestKeys.map((key) => (
             <div key={key} className="mb-8">
               <h2 className="text-xl font-semibold mb-4">{key}</h2>
-              {/* ปรับ grid layout */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-start">
+              {/* ใช้ Flexbox */}
+              <div className="flex flex-wrap gap-5">
                 {groupedCourses[key].map((course) => (
                   <div
                     key={course.course_id}
                     className="p-4 bg-gray-100 shadow rounded-lg cursor-pointer relative"
-                    style={{ height: 180, width: 400 }} // ลดความกว้างของการ์ด
+                    style={{
+                      width: 380, // กำหนดความกว้างคงที่
+                      height: 180, // กำหนดความสูงคงที่
+                    }}
                     onClick={() => handleSelectCourse(course)}
                   >
                     <h2 className="text-base text-gray-600 mb-2">{course.course_code}</h2>
@@ -91,7 +96,10 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
                   <div
                     className="p-6 bg-white border-dashed border-2 border-teal-600 shadow-sm rounded-lg cursor-pointer flex items-center justify-center"
                     onClick={handleCreateCourseClick}
-                    style={{ height: 180, width: 400 }}
+                    style={{
+                      width: 380, // กำหนดขนาดเท่ากับการ์ดอื่น
+                      height: 180,
+                    }}
                   >
                     <div className="text-teal-600 text-center">
                       <div className="text-3xl mb-2">+</div>
@@ -102,7 +110,6 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
               </div>
             </div>
           ))}
-
 
           {/* ปุ่มแสดง/ซ่อนเทอมเก่ากว่า */}
           {olderKeys.length > 0 && (
@@ -120,12 +127,15 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
           {showOlderCourses && olderKeys.map((key) => (
             <div key={key} className="mb-8">
               <h2 className="text-xl font-semibold mb-4">{key}</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="flex flex-wrap gap-5">
                 {groupedCourses[key].map((course) => (
                   <div
                     key={course.course_id}
                     className="p-4 bg-gray-100 shadow rounded-lg cursor-pointer relative"
-                    style={{ height: 180, width: 350 }}
+                    style={{
+                      width: 380, // ความกว้างคงที่
+                      height: 180, // ความสูงคงที่
+                    }}
                     onClick={() => handleSelectCourse(course)}
                   >
                     <h2 className="text-base text-gray-600 mb-2">{course.course_code}</h2>
