@@ -2,13 +2,9 @@ import React from 'react';
 import { Modal, Button, TextInput, RadioGroup, Radio, Checkbox, Text } from '@mantine/core';
 import { useCreateAssignment } from '../../hooks/useCreate/useCreateAssignment';
 import UploadFile from '../UploadFile';
-import { DateTimePicker } from '@mantine/dates';
-import dayjs from 'dayjs';
-import '@mantine/dates/styles.css';
 import { useRouter } from 'next/router';
 import { useFileStore } from '../../store/useFileStore';
 import { useForm } from '@mantine/form';
-import '@mantine/tiptap/styles.css';
 import { Editor } from './Editor.tsx/Editor';
 import SectionSelector from '../Create/Sections/SectionSelector';
 import { useSelectSectionStore } from '../../store/useSectionStore';
@@ -30,11 +26,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
       assignment_name: '',
       assignment_description: '',
       submiss_by: 'student',
-      release_date: null,
-      due_date: null,
       group_submiss: false,
-      late_submiss: false,
-      cut_off_date: null,
       sections: selectedSections,
     },
     validate: {
@@ -42,22 +34,15 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
       assignment_description: (value) => (value ? null : 'Assignment description is required'),
     },
   });
-  
+
   const handleSubmit = (values: typeof form.values) => {
     const formData = new FormData();
     formData.append('course_id', Array.isArray(course_id) ? course_id[0] : course_id || '');
     formData.append('assignment_name', values.assignment_name);
     formData.append('assignment_description', values.assignment_description);
     formData.append('submiss_by', values.submiss_by);
-    formData.append('release_date', values.release_date ? dayjs(values.release_date).format('DD/MM/YYYY HH:mm') : '');
-    formData.append('due_date', values.due_date ? dayjs(values.due_date).format('DD/MM/YYYY HH:mm') : '');
     formData.append('group_submiss', String(values.group_submiss));
-    formData.append('late_submiss', String(values.late_submiss));
     formData.append('sections', values.sections.join(','));
-
-    if (values.late_submiss && values.cut_off_date) {
-      formData.append('cut_off_date', dayjs(values.cut_off_date).format('DD/MM/YYYY HH:mm'));
-    }
 
     if (templateFile) {
       formData.append('template_file', templateFile);
@@ -117,7 +102,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
           <Text size="sm" fw={500}>
             Assign to Sections
           </Text>
-          <SectionSelector setSections={(sections: string[]) => form.setFieldValue('sections', sections)}/>
+          <SectionSelector setSections={(sections: string[]) => form.setFieldValue('sections', sections)} />
         </div>
 
         {/* File Upload */}
@@ -139,50 +124,10 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
           </RadioGroup>
         </div>
 
-        <div className="flex justify-between mt-4 mb-4 gap-4">
-          <div className="w-full">
-            <DateTimePicker
-              label="Release Date"
-              placeholder="Select release date"
-              {...form.getInputProps('release_date')}
-              minDate={new Date()}
-              valueFormat="DD/MM/YYYY HH:mm"
-              required
-            />
-          </div>
-          <div className="w-full">
-            <DateTimePicker
-              label="Due Date"
-              placeholder="Select due date"
-              {...form.getInputProps('due_date')}
-              minDate={form.values.release_date ? new Date(form.values.release_date) : undefined}
-              valueFormat="DD/MM/YYYY HH:mm"
-              required
-            />
-          </div>
-        </div>
-
-        <Checkbox
-          className="mb-1"
-          label="Allow late submissions"
-          {...form.getInputProps('late_submiss', { type: 'checkbox' })}
-        />
         <Checkbox
           label="Allow group submissions"
           {...form.getInputProps('group_submiss', { type: 'checkbox' })}
         />
-
-        {form.values.late_submiss && (
-          <DateTimePicker
-            className="mt-4"
-            label="Cut off Date"
-            placeholder="Select cut off date"
-            {...form.getInputProps('cut_off_date')}
-            minDate={form.values.due_date ? dayjs(new Date(form.values.due_date)).add(1, 'day').toDate() : new Date()}
-            valueFormat="DD/MM/YYYY HH:mm"
-            required
-          />
-        )}
 
         <div className="flex justify-end mt-6">
           <Button type="submit">Create Assignment</Button>
