@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Button, Select, Table } from '@mantine/core';
+import { Button, Select, Table, Menu } from '@mantine/core';
 import AddMember from '../AddStudent/AddMember';
 import { useFetchUsersRoster } from '../../hooks/Roster/useFetchUsersRoster';
 import { useRouter } from 'next/router';
 import { useRosterStore } from '../../store/useRosterStore';
+import EditCourseMember from '../Customize/EditCourseMember'; // Import modal component
 
 const CourseRoster: React.FC = () => {
   const router = useRouter();
@@ -11,14 +12,17 @@ const CourseRoster: React.FC = () => {
   const { data, isLoading, error } = useFetchUsersRoster(course_id as string);
   const { usersList } = useRosterStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null); // Track selected user
 
-  const openModal = () => {
-    setIsModalOpen(true);
-  };
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
-  const closeModal = () => {
-    setIsModalOpen(false);
+  const openEditModal = (member: any) => {
+    setSelectedMember(member);
+    setIsEditModalOpen(true);
   };
+  const closeEditModal = () => setIsEditModalOpen(false);
 
   if (isLoading) return <div>Loading Roster Users list...</div>;
   if (error) return <div>Error loading Roster Users list: {error.message}</div>;
@@ -49,7 +53,7 @@ const CourseRoster: React.FC = () => {
             <th className="text-left p-2">Email</th>
             <th className="text-left p-2">Role</th>
             <th className="text-left p-2">Submissions</th>
-            <th className="text-left p-2">Remove</th>
+
           </tr>
         </thead>
         <tbody>
@@ -70,22 +74,28 @@ const CourseRoster: React.FC = () => {
                 {member.user_group_name === 'INSTRUCTOR' ? '-' : member.submissions_count}
               </td>
               <td className="p-2">
-                <Button
-                  variant="outline"
-                  color="red"
-                  onClick={() => {
-                    console.log(`Removing member: ${member.full_name}`);
-                  }}
-                >
-                  Remove
-                </Button>
+                <Menu>
+                  <Menu.Target>
+                    <Button variant="subtle">•••</Button>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item
+                      onClick={() => openEditModal(member)}
+                    >
+                      Update Information
+                    </Menu.Item>
+                    <Menu.Item color="red">
+                      Remove User
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
               </td>
             </tr>
           ))}
         </tbody>
       </Table>
 
-      {/* กรณีที่ยังไม่มีสมาชิก */}
+      {/* No members */}
       {usersList.length === 0 && (
         <div className="text-center mt-8">
           <p>You haven't added anyone to your course yet.</p>
@@ -95,13 +105,20 @@ const CourseRoster: React.FC = () => {
         </div>
       )}
 
-      {/* ปุ่มเพิ่มสมาชิก */}
+      {/* Add Members Button */}
       <div className="text-center mt-8">
         <Button onClick={openModal}>Add Members</Button>
       </div>
 
-      {/* แสดง AddMemberModal เมื่อกดปุ่ม */}
+      {/* AddMember Modal */}
       <AddMember isOpen={isModalOpen} onClose={closeModal} />
+
+      {/* EditCourseMember Modal */}
+      <EditCourseMember
+        isOpen={isEditModalOpen}
+        onClose={closeEditModal}
+        member={selectedMember}
+      />
     </div>
   );
 };

@@ -32,25 +32,31 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose }) => {
         <Alert variant="light" color="blue" icon={icon}>
           Add a single user or upload a CSV file to add multiple users at once.
         </Alert>
-          <div className="flex justify-around items-center mt-6">
-            <div className="text-center cursor-pointer" onClick={handleSingleUserOpen}>
-              <FaUser size={50} />
-              <p>Single User</p>
-            </div>
-
-            <Divider orientation="vertical" />
-
-            <div className="text-center cursor-pointer" onClick={handleCsvOpen}>
-              <FaUsers size={50} />
-              <p>CSV File</p>
-            </div>
+        <div className="flex justify-around items-center mt-6">
+          <div
+            className="flex flex-col items-center cursor-pointer hover:text-blue-500"
+            onClick={handleSingleUserOpen}
+          >
+            <FaUser size={50} className="transition-colors duration-300" />
+            <p className="mt-2">Single User</p>
           </div>
 
-          <div className="flex justify-end mt-6">
-            <Button variant="filled" color="red" onClick={() => { onClose(); }}>
-              Cancel
-            </Button>
+          <Divider orientation="vertical" />
+
+          <div
+            className="flex flex-col items-center cursor-pointer hover:text-blue-500"
+            onClick={handleCsvOpen}
+          >
+            <FaUsers size={50} className="transition-colors duration-300" />
+            <p className="mt-2">CSV File</p>
           </div>
+        </div>
+
+        <div className="flex justify-end mt-6">
+          <Button variant="filled" color="red" onClick={() => onClose()}>
+            Cancel
+          </Button>
+        </div>
       </Modal>
 
       <SingleUser isOpen={isSingleUserOpen} onClose={() => setIsSingleUserOpen(false)} />
