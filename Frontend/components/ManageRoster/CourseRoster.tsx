@@ -52,26 +52,27 @@ const CourseRoster: React.FC = () => {
             <th className="text-left p-2">Name</th>
             <th className="text-left p-2">Email</th>
             <th className="text-left p-2">Role</th>
+            <th className="text-left p-2">Section</th>
             <th className="text-left p-2">Submissions</th>
-
           </tr>
         </thead>
         <tbody>
-          {usersList.map((member, index) => (
-            <tr key={index}>
+          {usersList.map((member) => (
+            <tr key={member.personal_data_id}>
               <td className="p-2">{member.full_name}</td>
               <td className="p-2">{member.email}</td>
               <td className="p-2">
                 <Select
-                  value={member.user_group_name}
+                  value={member.role_type}
                   data={['INSTRUCTOR', 'STUDENT', 'TA', 'STAFF']}
                   searchable
                   nothingFoundMessage="Nothing found..."
                   style={{ width: '140px' }}
                 />
               </td>
+              <td className="p-2">{member.section_name || 'All'}</td>
               <td className="p-2">
-                {member.user_group_name === 'INSTRUCTOR' ? '-' : member.submissions_count}
+                {member.role_type === 'INSTRUCTOR' ? '-' : member.submissions_count}
               </td>
               <td className="p-2">
                 <Menu>

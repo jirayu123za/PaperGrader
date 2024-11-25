@@ -3,10 +3,11 @@ import { useRosterStore } from '../../store/useRosterStore';
 import axios from 'axios';
 
 interface UsersList {
-    user_id: string;
+    personal_data_id: string;
     full_name: string;
     email: string;
-    user_group_name: string;
+    role_type: string;
+    section_name: string;
     submissions_count: number;
 }
 
@@ -28,5 +29,6 @@ export const useFetchUsersRoster = (course_id: string) => {
             setUsersList(data);
             return data;
         },
+        enabled: !!course_id,
     });
 }

@@ -2,10 +2,11 @@ import create from 'zustand';
 
 // Store user roster data
 interface UsersList {
-    user_id: string;
+    personal_data_id: string;
     full_name: string;
     email: string;
-    user_group_name: string;
+    role_type: string;
+    section_name: string;
     submissions_count: number;
 }
 
