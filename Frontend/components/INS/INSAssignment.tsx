@@ -76,24 +76,18 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
               <td className="py-2 px-4 text-center">{assignment.regrades ? 'Yes' : 'No'}</td>
               <td className="py-2 px-4 text-center">{assignment.submiss_by}</td>
               <td className="py-2 px-4 text-center">
-                <Menu shadow="md" width={200}>
+              <Menu>
                   <Menu.Target>
-                    <ActionIcon>
-                      <IconDots size={16} />
-                    </ActionIcon>
+                    <Button variant="subtle">•••</Button>
                   </Menu.Target>
                   <Menu.Dropdown>
-                    <Menu.Item onClick={() => handleOpenCustomizeTime(assignment.assignment_id)}>
-                      <div className="flex items-center gap-2">
-                        <IconSettings size={16} />
-                        Assignment Settings
-                      </div>
+                    <Menu.Item
+                      onClick={() => handleOpenCustomizeTime(assignment.assignment_id)}>
+                    
+                      Assignment Setting
                     </Menu.Item>
-                    <Menu.Item color="red" onClick={() => handleDeleteAssignment(assignment.assignment_id)}>
-                      <div className="flex items-center gap-2">
-                        <IconTrash size={16} />
-                        Delete Assignment
-                      </div>
+                    <Menu.Item color="red">
+                      Delete Assignment
                     </Menu.Item>
                   </Menu.Dropdown>
                 </Menu>
