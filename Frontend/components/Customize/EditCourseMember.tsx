@@ -30,7 +30,7 @@ const EditCourseMember: React.FC<EditCourseMemberProps> = ({ isOpen, onClose, me
 
         <TextInput
           label="Student ID"
-          defaultValue={member?.student_id || ''}
+          defaultValue={member?.student_code || ''}
         />
 
         <Select
