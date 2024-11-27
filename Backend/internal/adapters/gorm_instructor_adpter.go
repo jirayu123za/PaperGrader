@@ -1,6 +1,7 @@
 package adapters
 
 import (
+	"fmt"
 	"paperGrader/internal/models"
 	"time"
 
@@ -101,14 +102,18 @@ func (r *GormInstructorRepository) AddAssignmentFile(file *models.AssignmentFile
 func (r *GormInstructorRepository) FindRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
 	var users []map[string]interface{}
 
-	if err := r.db.Table("users").
-		Select("users.user_id, users.first_name, users.last_name, users.email, user_groups.group_name AS user_group_name, COUNT(submissions.submission_id) AS submission_count").
-		Joins("LEFT JOIN user_groups ON users.group_id = user_groups.group_id").
-		Joins("LEFT JOIN instructor_lists ON users.user_id = instructor_lists.user_id AND instructor_lists.course_id = ? AND instructor_lists.deleted_at IS NULL", CourseID).
-		Joins("LEFT JOIN enrollments ON users.user_id = enrollments.user_id AND enrollments.course_id = ? AND enrollments.deleted_at IS NULL", CourseID).
-		Joins("LEFT JOIN submissions ON users.user_id = submissions.user_id AND submissions.assignment_id IN (SELECT assignment_id FROM assignments WHERE course_id = ?)", CourseID).
-		Where("instructor_lists.course_id IS NOT NULL OR enrollments.course_id IS NOT NULL").
-		Group("users.user_id, user_groups.group_name").
+	if err := r.db.Table("enrollment_lists").
+		Select(`personal_data.personal_data_id,
+				CONCAT(personal_data.first_name, ' ', personal_data.last_name) AS full_name,
+		        personal_data.email,
+		        personal_data.role_type,
+		        sections.section_name,
+		        COUNT(submissions.submission_id) AS submission_count`).
+		Joins("JOIN personal_data ON enrollment_lists.personal_data_id = personal_data.personal_data_id").
+		Joins("LEFT JOIN sections ON enrollment_lists.section_id = sections.section_id").
+		Joins("LEFT JOIN submissions ON enrollment_lists.personal_data_id = submissions.user_id AND submissions.assignment_id IN (SELECT assignment_id FROM assignments WHERE assignments.course_id = ?)", CourseID).
+		Where("enrollment_lists.course_id = ? AND enrollment_lists.deleted_at IS NULL", CourseID).
+		Group("personal_data.personal_data_id, personal_data.first_name, personal_data.last_name, personal_data.email, personal_data.role_type, sections.section_name").
 		Scan(&users).Error; err != nil {
 		return nil, err
 	}
@@ -120,8 +125,12 @@ func (r *GormInstructorRepository) FindRosterSectionByCourseID(CourseID uuid.UUI
 	var sectionsDetails []map[string]interface{}
 
 	if err := r.db.Table("sections").
-		Select("sections.section_id, sections.section_name, COUNT(enrollments.enrollment_id) AS total_students").
-		Joins("LEFT JOIN enrollments ON enrollments.section_id = sections.section_id").
+		Select(`
+			sections.section_id,
+			sections.section_name,
+			COUNT(DISTINCT enrollment_lists.enrollment_list_id) AS total_students`).
+		Joins("LEFT JOIN enrollment_lists ON enrollment_lists.section_id = sections.section_id").
+		Joins("LEFT JOIN personal_data ON enrollment_lists.personal_data_id = personal_data.personal_data_id AND personal_data.role_type = 'STUDENT'").
 		Where("sections.course_id = ? AND sections.deleted_at IS NULL", CourseID).
 		Group("sections.section_id, sections.section_name").
 		Scan(&sectionsDetails).Error; err != nil {
@@ -168,22 +177,54 @@ func (r *GormInstructorRepository) FindStudentExists(userID, courseID uuid.UUID)
 	return count > 0, nil
 }
 
-// AddInstructorToCourse adds an instructor to a course
-func (r *GormInstructorRepository) AddInstructorToCourse(userID uuid.UUID, courseID uuid.UUID) error {
-	instructor := models.InstructorList{
-		UserID:   userID,
-		CourseID: courseID,
-	}
-	return r.db.Create(&instructor).Error
-}
+// AddSingleUserRoster adds a single user to a course
+func (r *GormInstructorRepository) AddSingleUserRoster(personalData *models.PersonalData, enrollment *models.EnrollmentList) error {
+	tx := r.db.Begin()
 
-// AddStudentToCourse adds a student to a course
-func (r *GormInstructorRepository) AddStudentToCourse(userID uuid.UUID, courseID uuid.UUID) error {
-	enrollment := models.Enrollment{
-		UserID:   userID,
-		CourseID: courseID,
+	var existingPersonalData models.PersonalData
+	err := tx.Where("email = ?", personalData.Email).First(&existingPersonalData).Error
+	if err == nil {
+		tx.Rollback()
+		return fmt.Errorf("email already exists in personal_data")
+	} else if err != gorm.ErrRecordNotFound {
+		tx.Rollback()
+		return fmt.Errorf("failed to query personal data: %v", err)
 	}
-	return r.db.Create(&enrollment).Error
+
+	if err := tx.Create(personalData).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to create personal data: %v", err)
+	}
+
+	enrollment.PersonalDataID = personalData.PersonalDataID
+
+	var count int64
+	if err := tx.Model(&models.EnrollmentList{}).
+		Where("course_id = ? AND personal_data_id = ? AND (section_id = ? OR section_id IS NULL)",
+			enrollment.CourseID, enrollment.PersonalDataID, enrollment.SectionID).
+		Count(&count).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to query enrollment list: %v", err)
+	}
+
+	if count > 0 {
+		tx.Rollback()
+		return fmt.Errorf("user is already enrolled in this course/section")
+	}
+
+	if enrollment.SectionID != nil && *enrollment.SectionID == uuid.Nil {
+		enrollment.SectionID = nil
+	}
+
+	if err := tx.Create(enrollment).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to create enrollment list: %v", err)
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("failed to commit transaction: %v", err)
+	}
+	return nil
 }
 
 func (r *GormInstructorRepository) FindCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error) {
@@ -192,9 +233,11 @@ func (r *GormInstructorRepository) FindCoursesByUserID(UserID uuid.UUID) ([]map[
 	if err := r.db.
 		Table("courses").
 		Select("courses.course_id, courses.course_name, courses.course_code, courses.course_description, courses.semester, courses.academic_year, courses.entry_code, COUNT(assignments.assignment_id) AS total_assignments").
-		Joins("JOIN instructor_lists ON instructor_lists.course_id = courses.course_id").
+		Joins("JOIN enrollment_lists ON enrollment_lists.course_id = courses.course_id").
+		Joins("JOIN personal_data ON personal_data.personal_data_id = enrollment_lists.personal_data_id").
+		Joins("JOIN users ON users.email = personal_data.email").
 		Joins("LEFT JOIN assignments ON assignments.course_id = courses.course_id").
-		Where("instructor_lists.user_id = ?", UserID).
+		Where("users.user_id = ?", UserID).
 		Where("courses.deleted_at IS NULL").
 		Group("courses.course_id").
 		Find(&courses).Error; err != nil {
@@ -232,11 +275,14 @@ func (r *GormInstructorRepository) FindActiveAssignmentsByCourseID(CourseID uuid
 	return activeAssignments, nil
 }
 
-func (r *GormInstructorRepository) FindInstructorsNameByCourseID(CourseID uuid.UUID) ([]*models.User, error) {
-	var instructors []*models.User
+func (r *GormInstructorRepository) FindInstructorsNameByCourseID(courseID uuid.UUID) ([]*models.PersonalData, error) {
+	var instructors []*models.PersonalData
+
 	if err := r.db.
-		Joins("JOIN instructor_lists ON instructor_lists.user_id = users.user_id").
-		Where("instructor_lists.course_id = ?", CourseID).
+		Table("enrollment_lists").
+		Select("personal_data.personal_data_id, personal_data.first_name, personal_data.last_name").
+		Joins("JOIN personal_data ON enrollment_lists.personal_data_id = personal_data.personal_data_id").
+		Where("enrollment_lists.course_id = ? AND personal_data.role_type = ?", courseID, "INSTRUCTOR").
 		Find(&instructors).Error; err != nil {
 		return nil, err
 	}
