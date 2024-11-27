@@ -129,21 +129,6 @@ func (s *InstructorServiceImpl) GetRosterSectionByCourseID(CourseID uuid.UUID) (
 
 // Insert student or instructor to course
 func (s *InstructorServiceImpl) CreateSingleUserRoster(personalData *models.PersonalData, enrollment *models.EnrollmentList) error {
-	// sectionIDs, err := s.sectionRepo.FindSectionIDsByCourseID(enrollment.CourseID)
-	// if err != nil {
-	// 	return fmt.Errorf("failed to retrieve sections for course: %v", err)
-	// }
-	// for _, sectionID := range sectionIDs {
-	// 	enrollment.SectionID = &sectionID
-	// 	if err := s.repo.AddSingleUserRoster(personalData, enrollment); err != nil {
-	// 		if err.Error() == "user is already enrolled in this course/section" {
-	// 			continue
-	// 		}
-	// 		return fmt.Errorf("failed to add user to section %v: %v", sectionID, err)
-	// 	}
-	// }
-	// return nil
-
 	if err := s.repo.AddSingleUserRoster(personalData, enrollment); err != nil {
 		return err
 	}
