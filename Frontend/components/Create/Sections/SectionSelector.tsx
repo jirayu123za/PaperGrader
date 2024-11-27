@@ -12,12 +12,12 @@ interface Section {
 
 interface SectionSelectorProps {
   setSections: (sections: string[]) => void;
-  defaultEnabled?: boolean; // Prop to enable TagInput by default
+  defaultEnabled?: boolean;
 }
 
 const SectionSelector: React.FC<SectionSelectorProps> = ({
   setSections,
-  defaultEnabled = false, // Default value is false
+  defaultEnabled = false,
 }) => {
   const router = useRouter();
   const { course_id } = router.query;
@@ -31,7 +31,6 @@ const SectionSelector: React.FC<SectionSelectorProps> = ({
     setSections(tags);
   };
 
-  // Open TagInput by default if `defaultEnabled` is true
   React.useEffect(() => {
     if (defaultEnabled) {
       open();
