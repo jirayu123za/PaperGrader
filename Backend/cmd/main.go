@@ -65,14 +65,14 @@ func main() {
 
 	courseRepo := adapters.NewGormCourseRepository(db)
 	courseService := services.NewCourseService(courseRepo)
-	courseHandler := adapters.NewHttpCourseHandler(courseService)
+	courseHandler := adapters.NewHttpCourseHandler(courseService, userService)
 
 	assignmentRepo := adapters.NewGormAssignmentRepository(db)
 	assignmentService := services.NewAssignmentService(assignmentRepo, courseRepo)
 	assignmentHandler := adapters.NewHttpAssignmentHandler(assignmentService)
 
 	instructorRepo := adapters.NewGormInstructorRepository(db)
-	instructorService := services.NewInstructorService(instructorRepo, courseRepo, minioRepo)
+	instructorService := services.NewInstructorService(instructorRepo, courseRepo, minioRepo, sectionRepo)
 	instructorHandler := adapters.NewHttpInstructorHandler(instructorService, minioService, sectionService)
 
 	studentRepo := adapters.NewGormStudentRepository(db)
@@ -113,17 +113,10 @@ func main() {
 	apiGroup.Get("/course", courseHandler.GetCourseByID)
 	apiGroup.Get("/courses", courseHandler.GetCourses)
 	apiGroup.Put("/course", courseHandler.UpdateCourse)
-	apiGroup.Delete("/course", courseHandler.DeleteCourse)
 
 	apiGroup.Get("/sections", sectionHandler.GetSectionsDetailsByCourseID)
 	apiGroup.Get("/sections/name", sectionHandler.GetSectionsNameByCourseID)
 	apiGroup.Post("/sections", sectionHandler.CreateSection)
-
-	apiGroup.Post("/instructorList", courseHandler.CreateInstructorList)
-	apiGroup.Get("/instructorList", courseHandler.GetInstructorsListByListID)
-	apiGroup.Get("/instructorList/", courseHandler.GetInstructorsListByCourseID)
-	apiGroup.Get("/instructorLists", courseHandler.GetInstructorsList)
-	apiGroup.Delete("/instructorList", courseHandler.DeleteInstructorList)
 
 	apiGroup.Post("/assignment", assignmentHandler.CreateAssignment)
 	apiGroup.Get("/assignment", assignmentHandler.GetAssignmentByAssignmentID)
@@ -132,14 +125,19 @@ func main() {
 	apiGroup.Put("/assignment", assignmentHandler.UpdateAssignment)
 	apiGroup.Delete("/assignment", assignmentHandler.DeleteAssignment)
 
+	// Instructor list
+	apiGroup.Get("/instructorsList", instructorHandler.GetInstructorsNameByCourseID)
+
+	// Roster management
+	apiGroup.Get("/instructors/roster", instructorHandler.GetRosterByCourseID)
+	apiGroup.Get("/instructor/roster/section", instructorHandler.GetRosterSectionByCourseID)
+	apiGroup.Post("/instructor/roster", instructorHandler.CreateSingleUserRoster)
+
 	apiGroup.Post("/instructor/assignment/files", instructorHandler.CreateAssignmentWithFiles)
 	apiGroup.Get("/instructor/assignments", instructorHandler.GetAssignmentsByCourseID)
 	apiGroup.Get("/instructor/courses", instructorHandler.GetCoursesByUserID)
 	apiGroup.Get("/instructor/assignments/active", instructorHandler.GetActiveAssignmentsByCourseID)
-	apiGroup.Get("/instructorsList", instructorHandler.GetInstructorsNameByCourseID)
-	apiGroup.Get("/instructors/roster", instructorHandler.GetRosterByCourseID)
-	apiGroup.Get("/instructor/roster/section", instructorHandler.GetRosterSectionByCourseID)
-	apiGroup.Post("/instructor/roster", instructorHandler.CreateSingleUserRoster)
+
 	// test api get template file name
 	apiGroup.Get("/instructor/template/name", instructorHandler.GetAssignmentNameTemplate)
 	apiGroup.Get("/instructor/template/url", instructorHandler.GetPDFTemplateWithURL)
