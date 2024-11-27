@@ -45,6 +45,9 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
     },
   });
 
+  const capitalizeFirstLetter = (value: string) =>
+    value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get("token");
@@ -159,15 +162,21 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
             <TextInput
               label="First name"
               placeholder="Enter your first name"
-              {...form.getInputProps('first_name')}  // รับค่าและสามารถแก้ไขได้
+              {...form.getInputProps('first_name')}
               className="flex-1"
+              onBlur={(e) => {
+                form.setFieldValue('first_name', capitalizeFirstLetter(e.target.value));
+              }} 
             />
 
             <TextInput
               label="Last name"
               placeholder="Enter your last name"
-              {...form.getInputProps('last_name')}  // รับค่าและสามารถแก้ไขได้
+              {...form.getInputProps('last_name')}
               className="flex-1"
+              onBlur={(e) => {
+                form.setFieldValue('last_name', capitalizeFirstLetter(e.target.value));
+              }}
             />
           </div>
 

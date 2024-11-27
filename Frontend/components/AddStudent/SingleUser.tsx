@@ -15,6 +15,13 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
   const { course_id } = router.query;
 
+  const capitalizeFirstLetter = (value: string) => {
+    return value
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
   const form = useForm({
     initialValues: {
       name: '',
@@ -34,16 +41,17 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
   });
 
   const handleSubmit = (values: typeof form.values) => {
-    const [first_name, last_name] = values.name.split(' ');
-    const formData = new FormData();
+    const name = capitalizeFirstLetter(values.name); // ปรับชื่อก่อนส่ง
+    const [first_name, last_name] = name.split(' ');
 
+    const formData = new FormData();
     formData.append('course_id', Array.isArray(course_id) ? course_id[0] : course_id || '');
     formData.append('first_name', first_name || '');
     formData.append('last_name', last_name || '');
     formData.append('email', values.email);
     formData.append('student_code', values.student_code);
     formData.append('role_type', values.role_type);
-    formData.append('sections', values.sections.join(',')); // Send selected sections as a comma-separated string
+    formData.append('sections', values.sections.join(','));
 
     mutate(formData, {
       onSuccess: () => {
@@ -69,13 +77,17 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <TextInput
           label="Name"
-          placeholder="John Doe"
+          placeholder="Kamisato Ayaka"
           required
           {...form.getInputProps('name')}
+          onBlur={(e) => {
+            const capitalizedName = capitalizeFirstLetter(e.target.value);
+            form.setFieldValue('name', capitalizedName);
+          }}
         />
         <TextInput
           label="Email Address"
-          placeholder="johndoe@example.com"
+          placeholder="Ayaka@example.com"
           required
           className="mt-4"
           {...form.getInputProps('email')}
