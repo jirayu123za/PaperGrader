@@ -1,6 +1,7 @@
 package adapters
 
 import (
+	"encoding/json"
 	"fmt"
 	"paperGrader/internal/core/services"
 	"paperGrader/internal/core/utils"
@@ -49,14 +50,15 @@ func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 	assignmentName := c.FormValue("assignment_name")
 	assignmentDescription := c.FormValue("assignment_description")
 	submissBy := c.FormValue("submiss_by")
-	lateSubmissStr := c.FormValue("late_submiss")
-	lateSubmiss, err := strconv.ParseBool(lateSubmissStr)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid value for late_submiss",
-			"error":   err.Error(),
-		})
-	}
+
+	// lateSubmissStr := c.FormValue("late_submiss")
+	// lateSubmiss, err := strconv.ParseBool(lateSubmissStr)
+	// if err != nil {
+	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	// 		"message": "Invalid value for late_submiss",
+	// 		"error":   err.Error(),
+	// 	})
+	// }
 
 	groupSubmissStr := c.FormValue("group_submiss")
 	groupSubmiss, err := strconv.ParseBool(groupSubmissStr)
@@ -72,8 +74,8 @@ func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 		AssignmentName:        assignmentName,
 		AssignmentDescription: assignmentDescription,
 		SubmissBy:             submissBy,
-		LateSubmiss:           lateSubmiss,
-		GroupSubmiss:          groupSubmiss,
+		// LateSubmiss:           lateSubmiss,
+		GroupSubmiss: groupSubmiss,
 	}
 
 	if err := h.services.CreateAssignment(courseID, &assignment); err != nil {
@@ -83,47 +85,69 @@ func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 		})
 	}
 
-	sectionID, err := h.sectionServices.GetSectionIDsByCourseID(courseID)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to retrieve section_id",
-			"error":   err.Error(),
-		})
-	}
+	// sectionID, err := h.sectionServices.GetSectionIDsByCourseID(courseID)
+	// if err != nil {
+	// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+	// 		"message": "Failed to retrieve section_id",
+	// 		"error":   err.Error(),
+	// 	})
+	// }
 
-	releaseDateStr := c.FormValue("release_date")
-	dueDateStr := c.FormValue("due_date")
-
-	releaseDate, err := time.Parse("02/01/2006 15:04", releaseDateStr)
-	if err != nil {
+	sectionIDsParam := c.FormValue("section_id")
+	var sectionIDs []uuid.UUID
+	if err := json.Unmarshal([]byte(sectionIDsParam), &sectionIDs); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid release_date format",
+			"message": "Invalid section_ids format",
 			"error":   err.Error(),
 		})
 	}
 
-	dueDate, err := time.Parse("02/01/2006 15:04", dueDateStr)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid due_date format",
-			"error":   err.Error(),
-		})
-	}
+	// releaseDateStr := c.FormValue("release_date")
+	// dueDateStr := c.FormValue("due_date")
 
-	var cutOffDate *time.Time
-	if cutOffDateStr := c.FormValue("cut_off_date"); cutOffDateStr != "" {
-		parsedCutOffDate, err := time.Parse("02/01/2006 15:04", cutOffDateStr)
-		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"message": "Invalid cut_off_date format",
-				"error":   err.Error(),
-			})
-		}
-		cutOffDate = &parsedCutOffDate
-	}
+	// releaseDate, err := time.Parse("02/01/2006 15:04", releaseDateStr)
+	// if err != nil {
+	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	// 		"message": "Invalid release_date format",
+	// 		"error":   err.Error(),
+	// 	})
+	// }
+
+	// dueDate, err := time.Parse("02/01/2006 15:04", dueDateStr)
+	// if err != nil {
+	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	// 		"message": "Invalid due_date format",
+	// 		"error":   err.Error(),
+	// 	})
+	// }
+
+	// var cutOffDate *time.Time
+	// if cutOffDateStr := c.FormValue("cut_off_date"); cutOffDateStr != "" {
+	// 	parsedCutOffDate, err := time.Parse("02/01/2006 15:04", cutOffDateStr)
+	// 	if err != nil {
+	// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	// 			"message": "Invalid cut_off_date format",
+	// 			"error":   err.Error(),
+	// 		})
+	// 	}
+	// 	cutOffDate = &parsedCutOffDate
+	// }
+
+	// var assignmentSections []models.AssignmentSection
+	// for _, secID := range sectionID {
+	// 	assignmentSection := models.AssignmentSection{
+	// 		SectionID:   secID,
+	// 		ReleaseDate: releaseDate,
+	// 		DueDate:     dueDate,
+	// 		CutOffDate:  cutOffDate,
+	// 	}
+	// 	assignmentSections = append(assignmentSections, assignmentSection)
+	// }
+
+	var releaseDate, dueDate, cutOffDate *time.Time
 
 	var assignmentSections []models.AssignmentSection
-	for _, secID := range sectionID {
+	for _, secID := range sectionIDs {
 		assignmentSection := models.AssignmentSection{
 			SectionID:   secID,
 			ReleaseDate: releaseDate,
@@ -333,20 +357,9 @@ func (h *HttpInstructorHandler) GetRosterByCourseID(c *fiber.Ctx) error {
 		})
 	}
 
-	var response []map[string]interface{}
-	for _, user := range users {
-		response = append(response, map[string]interface{}{
-			"user_id":           user["user_id"],
-			"full_name":         user["first_name"].(string) + " " + user["last_name"].(string),
-			"email":             user["email"],
-			"user_group_name":   user["user_group_name"],
-			"submissions_count": user["submission_count"],
-		})
-	}
-	// Modify the response to only return ...
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Roster is retrieved",
-		"roster":  response,
+		"roster":  users,
 	})
 }
 
@@ -369,14 +382,13 @@ func (h *HttpInstructorHandler) GetRosterSectionByCourseID(c *fiber.Ctx) error {
 		})
 	}
 
-	// Modify the response to only return ...
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":  "Sections are retrieved",
 		"sections": sections,
 	})
 }
 
-// handler Insert student or instructor to course
+// handler Insert a single user to course
 func (h *HttpInstructorHandler) CreateSingleUserRoster(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
@@ -387,10 +399,47 @@ func (h *HttpInstructorHandler) CreateSingleUserRoster(c *fiber.Ctx) error {
 		})
 	}
 
-	email := c.FormValue("email")
-	userGroupName := c.FormValue("user_group_name")
+	sectionIDParam := c.FormValue("section_id")
+	var sectionID *uuid.UUID
+	if sectionIDParam == "" {
+		sectionID = nil
+	} else {
+		parsedSectionID, err := uuid.Parse(sectionIDParam)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"message": "Invalid section_id",
+				"error":   err.Error(),
+			})
+		}
+		sectionID = &parsedSectionID
+	}
 
-	if err := h.services.CreateSingleUserRoster(courseID, email, userGroupName); err != nil {
+	studentCode := c.FormValue("student_code")
+	var studentCodePtr *string
+	if studentCode == "" {
+		studentCodePtr = nil
+	} else {
+		studentCodePtr = &studentCode
+	}
+	firstName := c.FormValue("first_name")
+	lastName := c.FormValue("last_name")
+	email := c.FormValue("email")
+	roleType := c.FormValue("role_type")
+
+	personalData := models.PersonalData{
+		StudentCode: studentCodePtr,
+		FirstName:   firstName,
+		LastName:    lastName,
+		Email:       email,
+		RoleType:    roleType,
+	}
+
+	enrollment := models.EnrollmentList{
+		CourseID:  courseID,
+		SectionID: sectionID,
+	}
+
+	if err := h.services.CreateSingleUserRoster(&personalData, &enrollment); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to add user to course",
 			"error":   err.Error(),
@@ -398,7 +447,7 @@ func (h *HttpInstructorHandler) CreateSingleUserRoster(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"message": "User was added to course",
+		"message": "User successfully added to the course",
 	})
 }
 
@@ -509,7 +558,7 @@ func (h *HttpInstructorHandler) GetInstructorsNameByCourseID(c *fiber.Ctx) error
 	var response []map[string]interface{}
 	for _, ins := range instructors {
 		response = append(response, map[string]interface{}{
-			"instructor_id":   ins.UserID,
+			"personalData_id": ins.PersonalDataID,
 			"instructor_name": ins.FirstName + " " + ins.LastName,
 		})
 	}
