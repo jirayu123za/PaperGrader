@@ -20,9 +20,11 @@ export const useSectionsListStore = create<SectionsListStore>((set) => ({
 interface SelectSectionStore {
     selectedSections: string[];
     setSelectedSections: (sections: string[]) => void;
+    resetSelectedSections: () => void;
 }
 
 export const useSelectSectionStore = create<SelectSectionStore>((set) => ({
     selectedSections: [],
     setSelectedSections: (selectedSections: string[]) => set({ selectedSections }),
+    resetSelectedSections: () => set({ selectedSections: [] }),
 }));

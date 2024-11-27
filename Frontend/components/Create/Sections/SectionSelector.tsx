@@ -71,6 +71,7 @@ const SectionSelector: React.FC<SectionSelectorProps> = ({
             maxDropdownHeight={100}
             comboboxProps={{ shadow: 'md' }}
             clearable
+            required
           />
         </div>
       )}
