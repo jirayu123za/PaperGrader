@@ -10,26 +10,11 @@ import (
 // Primary port
 type CourseService interface {
 	// CRUD operations for Courses
-	CreateCourse(Course *models.Course) error
+	CreateCourse(course *models.Course, personalData *models.PersonalData, enrollment *models.EnrollmentList) error
 	GetCourseByID(CourseID uuid.UUID) (*models.Course, error)
 	GetCourses() ([]*models.Course, error)
 	UpdateCourse(Course *models.Course) error
 	DeleteCourse(Course *models.Course) error
-
-	// using jwt
-	/*
-		GetCourseByUserID(UserID uuid.UUID) ([]*models.Course, error)
-		GetNameByUserID(UserID uuid.UUID) (string, error)
-		GetUserGroupByUserID(UserID uuid.UUID) (string, error)
-		GetAssignmentByUserID(UserID uuid.UUID) ([]*models.Assignment, error)
-	*/
-
-	// CRD operations for Instructor lists
-	CreateInstructorList(CourseID uuid.UUID, InstructorList *models.InstructorList) error
-	GetInstructorsList() ([]*models.InstructorList, error)
-	GetInstructorsListByCourseID(CourseID uuid.UUID) ([]*models.InstructorList, error)
-	GetInstructorsListByListID(ListID uuid.UUID) (*models.InstructorList, error)
-	DeleteInstructorList(InstructorList *models.InstructorList) error
 }
 
 type CourseServiceImpl struct {
@@ -43,8 +28,8 @@ func NewCourseService(repo repositories.CourseRepository) CourseService {
 	}
 }
 
-func (s *CourseServiceImpl) CreateCourse(Course *models.Course) error {
-	if err := s.repo.AddCourse(Course); err != nil {
+func (s *CourseServiceImpl) CreateCourse(course *models.Course, personalData *models.PersonalData, enrollment *models.EnrollmentList) error {
+	if err := s.repo.AddCourse(course, personalData, enrollment); err != nil {
 		return err
 	}
 	return nil
@@ -88,50 +73,6 @@ func (s *CourseServiceImpl) DeleteCourse(Course *models.Course) error {
 	}
 
 	if err := s.repo.RemoveCourse(deleteCourse); err != nil {
-		return err
-	}
-	return nil
-}
-
-// Under line here be CourseServiceImpl of Instructor list
-func (s *CourseServiceImpl) CreateInstructorList(CourseID uuid.UUID, InstructorList *models.InstructorList) error {
-	if err := s.repo.AddInstructorList(CourseID, InstructorList); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *CourseServiceImpl) GetInstructorsList() ([]*models.InstructorList, error) {
-	InstructorLists, err := s.repo.FindInstructorsList()
-	if err != nil {
-		return nil, err
-	}
-	return InstructorLists, nil
-}
-
-func (s *CourseServiceImpl) GetInstructorsListByCourseID(CourseID uuid.UUID) ([]*models.InstructorList, error) {
-	InstructorLists, err := s.repo.FindInstructorsListByCourseID(CourseID)
-	if err != nil {
-		return nil, err
-	}
-	return InstructorLists, nil
-}
-
-func (s *CourseServiceImpl) GetInstructorsListByListID(ListID uuid.UUID) (*models.InstructorList, error) {
-	InstructorLists, err := s.repo.FindInstructorsListByListID(ListID)
-	if err != nil {
-		return nil, err
-	}
-	return InstructorLists, nil
-}
-
-func (s *CourseServiceImpl) DeleteInstructorList(InstructorList *models.InstructorList) error {
-	deleteInstructorList, err := s.repo.FindInstructorsListByListID(InstructorList.ListID)
-	if err != nil {
-		return err
-	}
-
-	if err := s.repo.RemoveInstructorList(deleteInstructorList); err != nil {
 		return err
 	}
 	return nil
