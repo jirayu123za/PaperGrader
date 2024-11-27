@@ -8,14 +8,10 @@ import (
 )
 
 type EnrollmentList struct {
-	EnrollmentListID uuid.UUID `gorm:"primaryKey"`
-	CourseID         uuid.UUID `gorm:"not null"`
-	SectionID        uuid.UUID `gorm:"not null"`
-	StudentCode      string    `gorm:"type:varchar(50)" json:"student_code"`
-	FirstName        string    `gorm:"type:varchar(50)" json:"first_name"`
-	LastName         string    `gorm:"type:varchar(50)" json:"last_name"`
-	Email            string    `gorm:"type:varchar(50); not null" json:"email"`
-	RoleType         string    `gorm:"type:varchar(50); not null" json:"role_type"`
+	EnrollmentListID uuid.UUID  `gorm:"primaryKey"`
+	CourseID         uuid.UUID  `gorm:"not null"`
+	SectionID        *uuid.UUID `gorm:"null"`
+	PersonalDataID   uuid.UUID  `gorm:"not null"`
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 	DeletedAt        gorm.DeletedAt `gorm:"index"`
