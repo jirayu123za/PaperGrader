@@ -1,10 +1,9 @@
 import React from 'react';
-import { Modal, Button, TextInput, RadioGroup, Radio, Select } from '@mantine/core';
+import { Modal, Button, TextInput, RadioGroup, Radio } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useCreateSingleUser } from '../../hooks/useCreate/useCreateSingleUser';
 import { useRouter } from 'next/router';
-import { useFetchSections } from '../../hooks/useFetchSelectSection';
-import { useSectionsListStore } from '../../store/useSectionStore';
+import SectionSelector from '../Create/Sections/SectionSelector';
 
 interface SingleUserModalProps {
   isOpen: boolean;
@@ -16,28 +15,21 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
   const { course_id } = router.query;
 
-
-  const { isLoading, error } = useFetchSections(course_id as string);
-  const sectionsList = useSectionsListStore((state) => state.sectionsList)||[]; 
-
-
-  const sortedSections = [...sectionsList].sort((a, b) => a.section_name.localeCompare(b.section_name));
-
   const form = useForm({
     initialValues: {
       name: '',
       email: '',
       student_code: '',
       role_type: '',
-      section_id: '', 
+      sections: [] as string[], // Store selected sections as an array
     },
 
     validate: {
       name: (value) => (value.length < 2 ? 'Name must have at least 2 characters' : null),
       email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email format'),
       role_type: (value) => (value ? null : 'Please select a role'),
-      section_id: (value, values) =>
-        values.role_type === 'STUDENT' && !value ? 'Please select a section' : null,
+      sections: (value, values) =>
+        values.role_type === 'STUDENT' && value.length === 0 ? 'Please select at least one section' : null,
     },
   });
 
@@ -51,7 +43,7 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
     formData.append('email', values.email);
     formData.append('student_code', values.student_code);
     formData.append('role_type', values.role_type);
-    formData.append('section_id', values.section_id); 
+    formData.append('sections', values.sections.join(',')); // Send selected sections as a comma-separated string
 
     mutate(formData, {
       onSuccess: () => {
@@ -107,22 +99,13 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
           </div>
         </RadioGroup>
         {form.values.role_type === 'STUDENT' && (
-          <Select
-            label="Section"
-            placeholder={sortedSections.length === 0 ? "No sections created yet" : "Select a section"}
-            data={sortedSections.map((section) => ({
-              value: section.section_id,
-              label: section.section_name,
-            }))}
-            required
-            searchable
-            clearable 
-            className="mt-4"
-            {...form.getInputProps('section_id')}
-          />
+          <div className="mt-4">
+            <SectionSelector
+              setSections={(sections: string[]) => form.setFieldValue('sections', sections)}
+              defaultEnabled={true} // Automatically show the section selector
+            />
+          </div>
         )}
-        {isLoading && <p>Loading sections...</p>}
-        {error && <p style={{ color: 'red' }}>Error loading sections</p>}
         <div className="flex justify-end mt-4">
           <Button
             variant="filled"
