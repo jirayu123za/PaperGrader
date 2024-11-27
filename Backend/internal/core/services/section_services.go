@@ -14,6 +14,9 @@ type SectionService interface {
 	GetSectionsDetailsByCourseID(CourseID uuid.UUID) ([]*models.Section, error)
 	GetSectionIDsByCourseID(CourseID uuid.UUID) ([]uuid.UUID, error)
 	GetSectionsNameByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
+
+	CreateSections(section *models.Section) error
+	GetSectionByCourseAndName(courseID uuid.UUID, sectionName string, section *models.Section) error
 }
 
 type SectionServiceImpl struct {
@@ -58,4 +61,18 @@ func (s *SectionServiceImpl) GetSectionsNameByCourseID(CourseID uuid.UUID) ([]ma
 		return nil, err
 	}
 	return sections, nil
+}
+
+func (s *SectionServiceImpl) GetSectionByCourseAndName(courseID uuid.UUID, sectionName string, section *models.Section) error {
+	if err := s.repo.FindSectionByCourseAndName(courseID, sectionName, section); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *SectionServiceImpl) CreateSections(section *models.Section) error {
+	if err := s.repo.AddSections(section); err != nil {
+		return err
+	}
+	return nil
 }
