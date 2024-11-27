@@ -125,6 +125,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
         </div>
 
         <Checkbox
+          className="mt-2"
           label="Allow group submissions"
           {...form.getInputProps('group_submiss', { type: 'checkbox' })}
         />
