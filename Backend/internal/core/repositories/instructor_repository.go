@@ -15,17 +15,20 @@ type InstructorRepository interface {
 
 	AddAssignmentFile(file *models.AssignmentFile) error
 
+	// CRUD operations for Roster of a course
 	FindRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
 	FindRosterSectionByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
+	// AddInstructorToCourse(userID uuid.UUID, courseID uuid.UUID) error
+	// AddStudentToCourse(userID uuid.UUID, courseID uuid.UUID) error
+	AddSingleUserRoster(personalData *models.PersonalData, enrollment *models.EnrollmentList) error
+	//! AddMultipleUserRoster(enrollmentLists []models.EnrollmentList) error
 
 	FindUserByEmail(email string) (map[string]interface{}, error)
 	FindInstructorExists(userID uuid.UUID, CourseID uuid.UUID) (bool, error)
 	FindStudentExists(userID, courseID uuid.UUID) (bool, error)
-	AddInstructorToCourse(userID uuid.UUID, courseID uuid.UUID) error
-	AddStudentToCourse(userID uuid.UUID, courseID uuid.UUID) error
 
 	FindCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error)
 	FindAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
 	FindActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
-	FindInstructorsNameByCourseID(CourseID uuid.UUID) ([]*models.User, error)
+	FindInstructorsNameByCourseID(courseID uuid.UUID) ([]*models.PersonalData, error)
 }
