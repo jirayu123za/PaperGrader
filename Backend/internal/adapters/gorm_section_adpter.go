@@ -87,3 +87,11 @@ func (r GormSectionRepository) FindSectionsNameByCourseID(CourseID uuid.UUID) ([
 	}
 	return sections, nil
 }
+
+func (r *GormSectionRepository) FindSectionByCourseAndName(courseID uuid.UUID, sectionName string, section *models.Section) error {
+	return r.db.Where("course_id = ? AND section_name = ?", courseID, sectionName).First(section).Error
+}
+
+func (r *GormSectionRepository) AddSections(section *models.Section) error {
+	return r.db.Create(section).Error
+}
