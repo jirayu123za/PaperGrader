@@ -74,7 +74,7 @@ func (r *GormSectionRepository) FindSectionsDetailsByCourseID(CourseID uuid.UUID
 
 func (r GormSectionRepository) FindSectionIDsByCourseID(CourseID uuid.UUID) ([]uuid.UUID, error) {
 	var sectionIDs []uuid.UUID
-	if result := r.db.Model(&models.Section{}).Where("course_id = ?", CourseID).Pluck("section_id", &sectionIDs); result.Error != nil {
+	if result := r.db.Model(&models.Section{}).Where("course_id = ? AND deleted_at IS NULL", CourseID).Pluck("section_id", &sectionIDs); result.Error != nil {
 		return nil, result.Error
 	}
 	return sectionIDs, nil
