@@ -1,6 +1,7 @@
 package adapters
 
 import (
+	"log"
 	"paperGrader/internal/core/services"
 	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
@@ -11,12 +12,14 @@ import (
 
 // Primary adapters
 type HttpCourseHandler struct {
-	services services.CourseService
+	services     services.CourseService
+	userServices services.UserService
 }
 
-func NewHttpCourseHandler(services services.CourseService) *HttpCourseHandler {
+func NewHttpCourseHandler(services services.CourseService, userService services.UserService) *HttpCourseHandler {
 	return &HttpCourseHandler{
-		services: services,
+		services:     services,
+		userServices: userService,
 	}
 }
 
@@ -29,13 +32,6 @@ func (h *HttpCourseHandler) CreateCourse(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := h.services.CreateCourse(&course); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to create course",
-			"error":   err.Error(),
-		})
-	}
-
 	userID, err := utils.GetUserIDFromJWT(c)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -43,23 +39,49 @@ func (h *HttpCourseHandler) CreateCourse(c *fiber.Ctx) error {
 			"error":   err.Error(),
 		})
 	}
+	log.Println(userID)
 
-	instructorList := models.InstructorList{
-		CourseID: course.CourseID,
-		UserID:   userID,
+	userData, err := h.userServices.GetPersonByUserID(userID)
+	log.Println(userData)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get person data by user_id",
+			"error":   err.Error(),
+		})
 	}
 
-	if err := h.services.CreateInstructorList(course.CourseID, &instructorList); err != nil {
+	if len(userData) == 0 {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"message": "No user data found for the given user_id",
+		})
+	}
+
+	user := userData[0]
+	personalData := models.PersonalData{
+		StudentCode: utils.GetStringPointer(user, "student_id"),
+		FirstName:   utils.GetStringValue(user, "first_name"),
+		LastName:    utils.GetStringValue(user, "last_name"),
+		Email:       utils.GetStringValue(user, "email"),
+		RoleType:    utils.GetStringValue(user, "user_group_name"),
+	}
+
+	enrollment := models.EnrollmentList{
+		CourseID:  course.CourseID,
+		SectionID: nil,
+	}
+
+	if err := h.services.CreateCourse(&course, &personalData, &enrollment); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to create instructor list",
+			"message": "Failed to create course",
 			"error":   err.Error(),
 		})
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"message":         "Course is created",
-		"course":          course,
-		"instructor_list": instructorList,
+		"message":    "Course is created",
+		"course":     course,
+		"enrollment": enrollment,
+		"personal":   personalData,
 	})
 }
 
@@ -140,177 +162,5 @@ func (h *HttpCourseHandler) UpdateCourse(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Course is updated",
 		"course":  course,
-	})
-}
-
-func (h *HttpCourseHandler) DeleteCourse(c *fiber.Ctx) error {
-	courseIDParam := c.Query("course_id")
-	courseID, err := uuid.Parse(courseIDParam)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid course_id",
-			"error":   err.Error(),
-		})
-	}
-
-	course, err := h.services.GetCourseByID(courseID)
-	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	instructorLists, err := h.services.GetInstructorsListByCourseID(courseID)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to get instructor lists by course ID",
-			"error":   err.Error(),
-		})
-	}
-
-	for _, instructorList := range instructorLists {
-		if err := h.services.DeleteInstructorList(instructorList); err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Failed to delete instructor list",
-				"error":   err.Error(),
-			})
-		}
-	}
-
-	err = h.services.DeleteCourse(course)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to delete course",
-			"error":   err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Course is deleted",
-	})
-}
-
-// Under line here be HttpCourseHandler of Instructor list
-func (h *HttpCourseHandler) CreateInstructorList(c *fiber.Ctx) error {
-	courseIDParam := c.Query("course_id")
-	courseID, err := uuid.Parse(courseIDParam)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid course_id",
-			"error":   err.Error(),
-		})
-	}
-
-	var instructorList models.InstructorList
-	if err := c.BodyParser(&instructorList); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Failed to parse request body",
-			"error":   err.Error(),
-		})
-	}
-
-	if err := h.services.CreateInstructorList(courseID, &instructorList); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to create instructor list",
-			"error":   err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"message":         "Instructor list is created",
-		"instructor_list": instructorList,
-	})
-}
-
-func (h *HttpCourseHandler) GetInstructorsList(c *fiber.Ctx) error {
-	instructorLists, err := h.services.GetInstructorsList()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to get instructor lists",
-			"error":   err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message":          "Instructor lists found",
-		"instructor_lists": instructorLists,
-	})
-}
-
-func (h *HttpCourseHandler) GetInstructorsListByCourseID(c *fiber.Ctx) error {
-	courseIDParam := c.Query("course_id")
-	courseID, err := uuid.Parse(courseIDParam)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid course_id",
-			"error":   err.Error(),
-		})
-	}
-
-	instructorLists, err := h.services.GetInstructorsListByCourseID(courseID)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to get instructor lists",
-			"error":   err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message":          "Instructor lists found",
-		"instructor_lists": instructorLists,
-	})
-}
-
-func (h *HttpCourseHandler) GetInstructorsListByListID(c *fiber.Ctx) error {
-	listIDParam := c.Query("list_id")
-	listID, err := uuid.Parse(listIDParam)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid list_id",
-			"error":   err.Error(),
-		})
-	}
-
-	instructorList, err := h.services.GetInstructorsListByListID(listID)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to get instructor list",
-			"error":   err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message":         "Instructor list found",
-		"instructor_list": instructorList,
-	})
-}
-
-func (h *HttpCourseHandler) DeleteInstructorList(c *fiber.Ctx) error {
-	listIDParam := c.Query("list_id")
-	listID, err := uuid.Parse(listIDParam)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid list_id",
-			"error":   err.Error(),
-		})
-	}
-
-	instructorList, err := h.services.GetInstructorsListByListID(listID)
-	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	err = h.services.DeleteInstructorList(instructorList)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to delete instructor list",
-			"error":   err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Instructor list is deleted",
 	})
 }
