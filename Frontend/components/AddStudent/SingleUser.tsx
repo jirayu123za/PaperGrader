@@ -106,11 +106,12 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
           {...form.getInputProps('role_type')}
         >
           <div className="flex gap-4">
-            <Radio value="STUDENT" label="Student" />
             <Radio value="INSTRUCTOR" label="Instructor" />
+            <Radio value="STUDENT" label="Student" />
+            <Radio value="TA" label="TA" />
           </div>
         </RadioGroup>
-        {form.values.role_type === 'STUDENT' && (
+        {(form.values.role_type === 'STUDENT' || form.values.role_type === 'TA') && (
           <div className="mt-4">
             <SectionSelector
               setSections={(sections: string[]) => form.setFieldValue('sections', sections)}
