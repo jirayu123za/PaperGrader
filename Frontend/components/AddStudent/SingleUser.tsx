@@ -15,12 +15,8 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
   const { mutate } = useCreateSingleUser();
   const router = useRouter();
   const { course_id } = router.query;
-
-
   const { isLoading, error } = useFetchSections(course_id as string);
   const sectionsList = useSectionsListStore((state) => state.sectionsList)||[]; 
-
-
   const sortedSections = [...sectionsList].sort((a, b) => a.section_name.localeCompare(b.section_name));
 
   const form = useForm({
