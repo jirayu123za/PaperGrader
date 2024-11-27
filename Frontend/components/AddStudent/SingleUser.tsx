@@ -4,6 +4,10 @@ import { useForm } from '@mantine/form';
 import { useCreateSingleUser } from '../../hooks/useCreate/useCreateSingleUser';
 import { useRouter } from 'next/router';
 import SectionSelector from '../Create/Sections/SectionSelector';
+import { useSelectSectionStore } from '../../store/useSectionStore';
+
+
+
 
 interface SingleUserModalProps {
   isOpen: boolean;
@@ -14,6 +18,7 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
   const { mutate } = useCreateSingleUser();
   const router = useRouter();
   const { course_id } = router.query;
+  const { resetSelectedSections } = useSelectSectionStore();
 
   const capitalizeFirstLetter = (value: string) => {
     return value
@@ -65,13 +70,16 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
     });
   };
 
+  const handleClose = () => {
+    resetSelectedSections(); // รีเซ็ตค่า sections เมื่อปิด Modal
+    form.reset();
+    onClose();
+  };
+
   return (
     <Modal
       opened={isOpen}
-      onClose={() => {
-        form.reset();
-        onClose();
-      }}
+      onClose={handleClose}
       title="Add a User"
     >
       <form onSubmit={form.onSubmit(handleSubmit)}>

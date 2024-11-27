@@ -19,7 +19,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
   const { course_id } = router.query;
   const { files, templateFile, clearFiles } = useFileStore();
   const { mutate } = useCreateAssignment();
-  const { selectedSections, setSelectedSections } = useSelectSectionStore();
+  const { selectedSections, setSelectedSections ,resetSelectedSections} = useSelectSectionStore();
 
   const form = useForm({
     initialValues: {
@@ -75,6 +75,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
     <Modal
       opened={isOpen}
       onClose={() => {
+        resetSelectedSections();
         form.reset();
         clearFiles();
         onClose();
