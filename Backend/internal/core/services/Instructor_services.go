@@ -21,26 +21,29 @@ type InstructorService interface {
 
 	GetRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
 	GetRosterSectionByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
-	CreateSingleUserRoster(CourseID uuid.UUID, Email string, UserGroupName string) error
+	// CreateSingleUserRoster(CourseID uuid.UUID, Email string, UserGroupName string) error
+	CreateSingleUserRoster(personalData *models.PersonalData, enrollment *models.EnrollmentList) error
 
 	GetCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error)
 	GetAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
 	GetActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
-	GetInstructorsNameByCourseID(CourseID uuid.UUID) ([]*models.User, error)
+	GetInstructorsNameByCourseID(courseID uuid.UUID) ([]*models.PersonalData, error)
 }
 
 type InstructorServiceImpl struct {
-	repo       repositories.InstructorRepository
-	courseRepo repositories.CourseRepository
-	minioRepo  repositories.MinIORepository
+	repo        repositories.InstructorRepository
+	courseRepo  repositories.CourseRepository
+	minioRepo   repositories.MinIORepository
+	sectionRepo repositories.SectionRepository
 }
 
 // func instance business logic call
-func NewInstructorService(repo repositories.InstructorRepository, courseRepo repositories.CourseRepository, minioRepo repositories.MinIORepository) InstructorService {
+func NewInstructorService(repo repositories.InstructorRepository, courseRepo repositories.CourseRepository, minioRepo repositories.MinIORepository, sectionRepo repositories.SectionRepository) InstructorService {
 	return &InstructorServiceImpl{
-		repo:       repo,
-		courseRepo: courseRepo,
-		minioRepo:  minioRepo,
+		repo:        repo,
+		courseRepo:  courseRepo,
+		minioRepo:   minioRepo,
+		sectionRepo: sectionRepo,
 	}
 }
 
@@ -86,7 +89,6 @@ func (s *InstructorServiceImpl) GetPDFTemplateWithURL(CourseID uuid.UUID, Assign
 	return fileTemplateURL, nil
 }
 
-// !
 func (s *InstructorServiceImpl) GetFileFormSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, fileURLs []string, err error) {
 	fileNames, err = s.repo.FindFileFormSubmission(CourseID, AssignmentID)
 	if err != nil {
@@ -126,48 +128,23 @@ func (s *InstructorServiceImpl) GetRosterSectionByCourseID(CourseID uuid.UUID) (
 }
 
 // Insert student or instructor to course
-func (s *InstructorServiceImpl) CreateSingleUserRoster(CourseID uuid.UUID, Email string, UserGroupName string) error {
-	user, err := s.repo.FindUserByEmail(Email)
-	if err != nil {
-		return err
-	}
+func (s *InstructorServiceImpl) CreateSingleUserRoster(personalData *models.PersonalData, enrollment *models.EnrollmentList) error {
+	// sectionIDs, err := s.sectionRepo.FindSectionIDsByCourseID(enrollment.CourseID)
+	// if err != nil {
+	// 	return fmt.Errorf("failed to retrieve sections for course: %v", err)
+	// }
+	// for _, sectionID := range sectionIDs {
+	// 	enrollment.SectionID = &sectionID
+	// 	if err := s.repo.AddSingleUserRoster(personalData, enrollment); err != nil {
+	// 		if err.Error() == "user is already enrolled in this course/section" {
+	// 			continue
+	// 		}
+	// 		return fmt.Errorf("failed to add user to section %v: %v", sectionID, err)
+	// 	}
+	// }
+	// return nil
 
-	if user["group_name"] != UserGroupName {
-		return err
-	}
-
-	userID, err := uuid.Parse(user["user_id"].(string))
-	if err != nil {
-		return err
-	}
-
-	if UserGroupName == "INSTRUCTOR" {
-		exists, err := s.repo.FindInstructorExists(userID, CourseID)
-		if err != nil {
-			return err
-		}
-		if exists {
-			return err
-		}
-
-		err = s.repo.AddInstructorToCourse(userID, CourseID)
-		if err != nil {
-			return err
-		}
-	} else if UserGroupName == "STUDENT" {
-		exists, err := s.repo.FindStudentExists(userID, CourseID)
-		if err != nil {
-			return err
-		}
-		if exists {
-			return err
-		}
-
-		err = s.repo.AddStudentToCourse(userID, CourseID)
-		if err != nil {
-			return err
-		}
-	} else {
+	if err := s.repo.AddSingleUserRoster(personalData, enrollment); err != nil {
 		return err
 	}
 	return nil
@@ -197,8 +174,8 @@ func (s *InstructorServiceImpl) GetActiveAssignmentsByCourseID(CourseID uuid.UUI
 	return activeAssignments, nil
 }
 
-func (s *InstructorServiceImpl) GetInstructorsNameByCourseID(CourseID uuid.UUID) ([]*models.User, error) {
-	instructors, err := s.repo.FindInstructorsNameByCourseID(CourseID)
+func (s *InstructorServiceImpl) GetInstructorsNameByCourseID(courseID uuid.UUID) ([]*models.PersonalData, error) {
+	instructors, err := s.repo.FindInstructorsNameByCourseID(courseID)
 	if err != nil {
 		return nil, err
 	}
