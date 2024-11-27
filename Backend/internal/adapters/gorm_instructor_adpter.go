@@ -182,21 +182,24 @@ func (r *GormInstructorRepository) AddSingleUserRoster(personalData *models.Pers
 	tx := r.db.Begin()
 
 	var existingPersonalData models.PersonalData
-	err := tx.Where("email = ?", personalData.Email).First(&existingPersonalData).Error
+	err := tx.Table("personal_data").
+		Select("personal_data.*").
+		Joins("LEFT JOIN enrollment_lists ON personal_data.personal_data_id = enrollment_lists.personal_data_id").
+		Where("personal_data.email = ? AND personal_data.role_type = ? AND enrollment_lists.course_id = ?",
+			personalData.Email, personalData.RoleType, enrollment.CourseID).
+		First(&existingPersonalData).Error
 	if err == nil {
-		tx.Rollback()
-		return fmt.Errorf("email already exists in personal_data")
+		enrollment.PersonalDataID = existingPersonalData.PersonalDataID
 	} else if err != gorm.ErrRecordNotFound {
 		tx.Rollback()
 		return fmt.Errorf("failed to query personal data: %v", err)
+	} else {
+		if err := tx.Create(personalData).Error; err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to create personal data: %v", err)
+		}
+		enrollment.PersonalDataID = personalData.PersonalDataID
 	}
-
-	if err := tx.Create(personalData).Error; err != nil {
-		tx.Rollback()
-		return fmt.Errorf("failed to create personal data: %v", err)
-	}
-
-	enrollment.PersonalDataID = personalData.PersonalDataID
 
 	var count int64
 	if err := tx.Model(&models.EnrollmentList{}).
