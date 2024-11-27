@@ -10,7 +10,7 @@ import (
 type Course struct {
 	CourseID          uuid.UUID        `gorm:"primaryKey" json:"course_id"`
 	CourseName        string           `gorm:"type:varchar(255);not null" json:"course_name"`
-	CourseDescription string           `gorm:"type:varchar(255)" json:"course_description"`
+	CourseDescription *string          `gorm:"type:varchar(255)" json:"course_description"`
 	CourseCode        string           `gorm:"type:varchar(255)" json:"course_code"`
 	Semester          string           `gorm:"type:varchar(50);not null" json:"semester"`
 	AcademicYear      string           `gorm:"type:varchar(50);not null" json:"academic_year"`
