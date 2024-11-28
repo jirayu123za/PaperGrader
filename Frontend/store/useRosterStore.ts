@@ -6,6 +6,7 @@ interface UsersList {
     full_name: string;
     email: string;
     role_type: string;
+    student_code: string;
     section_name: string;
     submissions_count: number;
 }
