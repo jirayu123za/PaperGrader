@@ -18,6 +18,7 @@ type InstructorRepository interface {
 	// CRUD operations for Roster of a course
 	FindRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
 	FindRosterSectionByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
+	FindRosterByCourseIDAndSectionID(CourseID uuid.UUID, SectionID uuid.UUID) ([]map[string]interface{}, error)
 	// AddInstructorToCourse(userID uuid.UUID, courseID uuid.UUID) error
 	// AddStudentToCourse(userID uuid.UUID, courseID uuid.UUID) error
 	AddSingleUserRoster(personalData *models.PersonalData, enrollment *models.EnrollmentList) error
