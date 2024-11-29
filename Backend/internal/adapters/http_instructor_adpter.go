@@ -391,6 +391,39 @@ func (h *HttpInstructorHandler) GetRosterSectionByCourseID(c *fiber.Ctx) error {
 	})
 }
 
+func (h *HttpInstructorHandler) GetRosterByCourseIDAndSectionID(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	sectionIDParam := c.Query("section_id")
+	sectionID, err := uuid.Parse(sectionIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid section_id",
+			"error":   err.Error(),
+		})
+	}
+
+	users, err := h.services.GetRosterByCourseIDAndSectionID(courseID, sectionID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get roster",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Roster of section is retrieved",
+		"roster":  users,
+	})
+}
+
 // handler Insert a single user to course
 func (h *HttpInstructorHandler) CreateSingleUserRoster(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
