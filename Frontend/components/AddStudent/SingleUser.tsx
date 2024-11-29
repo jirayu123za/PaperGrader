@@ -5,6 +5,8 @@ import { useCreateSingleUser } from '../../hooks/useCreate/useCreateSingleUser';
 import { useRouter } from 'next/router';
 import SectionSelector from '../Create/Sections/SectionSelector';
 import { useSelectSectionStore } from '../../store/useSectionStore';
+import { useInstructorListStore } from '../../store/useInstructorListStore'; 
+
 
 interface SingleUserModalProps {
   isOpen: boolean;
@@ -16,6 +18,7 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
   const { course_id } = router.query;
   const { resetSelectedSections } = useSelectSectionStore();
+  const { addInstructor } = useInstructorListStore(); // ใช้ฟังก์ชัน addInstructor
 
   const capitalizeFirstLetter = (value: string) => {
     return value
@@ -58,6 +61,16 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
     mutate(formData, {
       onSuccess: () => {
         console.log('User created successfully');
+
+        // ถ้าผู้ใช้ที่เพิ่มเป็น INSTRUCTOR ให้อัปเดตรายชื่อใน Store
+        if (values.role_type === 'INSTRUCTOR') {
+          addInstructor({
+            personalData_id: Date.now().toString(),
+            instructor_name: name,
+            CourseId: Array.isArray(course_id) ? course_id[0] : course_id || '',
+          });
+        }
+
         form.reset();
         onClose();
       },

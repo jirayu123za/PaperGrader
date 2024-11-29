@@ -9,9 +9,14 @@ interface InstructorList {
 interface InstructorListStore {
     instructorList: InstructorList[];
     setInstructorList: (instructorList: InstructorList[]) => void;
+    addInstructor: (instructor: InstructorList) => void;
 }
 
 export const useInstructorListStore = create<InstructorListStore>((set) => ({
     instructorList: [],
     setInstructorList: (instructorList) => set({ instructorList }),
-}));
+    addInstructor: (instructor) =>
+      set((state) => ({
+        instructorList: [...state.instructorList, instructor],
+      })),
+  }));
