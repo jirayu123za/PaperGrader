@@ -22,6 +22,7 @@ type InstructorRepository interface {
 	// AddStudentToCourse(userID uuid.UUID, courseID uuid.UUID) error
 	AddSingleUserRoster(personalData *models.PersonalData, enrollment *models.EnrollmentList) error
 	//! AddMultipleUserRoster(enrollmentLists []models.EnrollmentList) error
+	FindColumnsAndDataFromUploadedFile(fileBytes []byte) (map[string]interface{}, error)
 
 	FindUserByEmail(email string) (map[string]interface{}, error)
 	FindInstructorExists(userID uuid.UUID, CourseID uuid.UUID) (bool, error)
