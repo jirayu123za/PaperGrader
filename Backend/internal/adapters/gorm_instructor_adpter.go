@@ -1,11 +1,14 @@
 package adapters
 
 import (
+	"bytes"
 	"fmt"
 	"paperGrader/internal/models"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/xuri/excelize/v2"
 	"gorm.io/gorm"
 )
 
@@ -229,6 +232,68 @@ func (r *GormInstructorRepository) AddSingleUserRoster(personalData *models.Pers
 		return fmt.Errorf("failed to commit transaction: %v", err)
 	}
 	return nil
+}
+
+func (r *GormInstructorRepository) FindColumnsAndDataFromUploadedFile(fileBytes []byte) (map[string]interface{}, error) {
+	file, err := excelize.OpenReader(bytes.NewReader(fileBytes))
+	if err != nil {
+		return nil, err
+	}
+
+	defer file.Close()
+
+	sheets := file.GetSheetList()
+	if len(sheets) == 0 {
+		return nil, fmt.Errorf("no sheets found in the file")
+	}
+
+	sheetName := sheets[0]
+
+	rows, err := file.GetRows(sheetName)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(rows) < 5 {
+		return nil, fmt.Errorf("file does not contain enough data")
+	}
+
+	columns := []string{"No", "SectionLec", "SectionLab", "StudentID", "FirstName", "LastName", "Email"}
+
+	data := []map[string]string{}
+	for _, row := range rows[4:] {
+		rowData := map[string]string{}
+
+		if len(row) > 0 {
+			rowData["No"] = row[0]
+		}
+		if len(row) > 1 {
+			rowData["SectionLec"] = row[1]
+		}
+		if len(row) > 2 {
+			rowData["SectionLab"] = row[2]
+		}
+		if len(row) > 3 {
+			rowData["StudentID"] = row[3]
+		}
+		if len(row) > 4 {
+			rowData["FirstName"] = strings.TrimSpace(row[4])
+		}
+		if len(row) > 5 {
+			rowData["LastName"] = strings.TrimSpace(row[5])
+		}
+		if len(row) > 8 {
+			rowData["Email"] = strings.TrimSpace(row[8])
+		} else {
+			rowData["Email"] = ""
+		}
+		data = append(data, rowData)
+	}
+
+	return map[string]interface{}{
+		"columns": columns,
+		"data":    data,
+	}, nil
 }
 
 func (r *GormInstructorRepository) FindCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error) {
