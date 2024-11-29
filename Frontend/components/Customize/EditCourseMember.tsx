@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, TextInput } from '@mantine/core';
+import { Modal, Button, TextInput, Select } from '@mantine/core';
 import SectionSelector from '../Create/Sections/SectionSelector';
 import { useRosterStore } from '../../store/useRosterStore';
 import { useSectionsListStore, useSelectSectionStore } from '../../store/useSectionStore';
@@ -18,21 +18,24 @@ const EditCourseMember: React.FC<EditCourseMemberProps> = ({
   const { usersList } = useRosterStore();
   const { selectedSections, setSelectedSections, resetSelectedSections } = useSelectSectionStore();
 
-  // ดึงข้อมูลของผู้ใช้ที่ต้องการแก้ไข
+ 
   const member = usersList.find((user) => user.personal_data_id === personal_data_id);
 
-  // ตั้งค่าข้อมูลเริ่มต้น
+ 
   const [fullName, setFullName] = useState<string>('');
   const [studentCode, setStudentCode] = useState<string>('');
+  const [role, setRole] = useState<string>(''); // เพิ่ม state สำหรับ role
 
   useEffect(() => {
     if (member) {
       setFullName(member.full_name || '');
       setStudentCode(member.student_code || '');
+      setRole(member.role_type || ''); // ตั้งค่า role เริ่มต้น
       setSelectedSections([member.section_name || '']);
     } else {
       setFullName('');
       setStudentCode('');
+      setRole('');
       resetSelectedSections();
     }
   }, [member, setSelectedSections, resetSelectedSections]);
@@ -42,6 +45,7 @@ const EditCourseMember: React.FC<EditCourseMemberProps> = ({
       personal_data_id,
       full_name: fullName,
       student_code: studentCode,
+      role_type: role, // รวม role ในการบันทึก
       sections: selectedSections,
     };
 
@@ -76,6 +80,14 @@ const EditCourseMember: React.FC<EditCourseMemberProps> = ({
           label="Student ID"
           value={studentCode}
           onChange={(e) => setStudentCode(e.target.value)}
+        />
+
+        <Select
+          label="Role"
+          data={['INSTRUCTOR', 'STUDENT', 'TA']}
+          value={role}
+          onChange={(value) => setRole(value || '')}
+          required
         />
 
         <SectionSelector
