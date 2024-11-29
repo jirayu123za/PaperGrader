@@ -499,6 +499,47 @@ func (h *HttpInstructorHandler) CreateSingleUserRoster(c *fiber.Ctx) error {
 	})
 }
 
+func (h *HttpInstructorHandler) GetColumnsAndDataFromUploadedFile(c *fiber.Ctx) error {
+	file, err := c.FormFile("file")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "File is required",
+			"error":   err.Error(),
+		})
+	}
+
+	fileContent, err := file.Open()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to open file",
+			"error":   err.Error(),
+		})
+	}
+	defer fileContent.Close()
+
+	fileBytes := make([]byte, file.Size)
+	_, err = fileContent.Read(fileBytes)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to read file",
+			"error":   err.Error(),
+		})
+	}
+
+	data, err := h.services.GetColumnsAndDataFromUploadedFile(fileBytes)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to process file",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "File data retrieved successfully",
+		"result":  data,
+	})
+}
+
 func (h *HttpInstructorHandler) GetCoursesByUserID(c *fiber.Ctx) error {
 	userID, err := utils.GetUserIDFromJWT(c)
 	if err != nil {
