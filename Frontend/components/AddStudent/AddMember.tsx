@@ -3,6 +3,7 @@ import { Modal, Button, Divider, Alert } from '@mantine/core';
 import { FaUser, FaUsers } from "react-icons/fa";
 import SingleUser from './SingleUser';
 import CsvFile from './CsvFile';
+import SelectColumn from './SelectColumn';
 import { IconInfoCircle } from '@tabler/icons-react';
 
 interface AddMemberModalProps {
@@ -13,6 +14,8 @@ interface AddMemberModalProps {
 const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose }) => {
   const [isSingleUserOpen, setIsSingleUserOpen] = useState(false);
   const [isCsvOpen, setIsCsvOpen] = useState(false);
+  const [isSelectColumnOpen, setIsSelectColumnOpen] = useState(false);
+  const [csvData, setCsvData] = useState<{ [key: string]: string }[]>([]);
 
   const icon = <IconInfoCircle />;
 
@@ -24,6 +27,12 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose }) => {
   const handleCsvOpen = () => {
     setIsCsvOpen(true);
     onClose();
+  };
+
+  const handleNextFromCsvFile = (data: { [key: string]: string }[]) => {
+    setCsvData(data);
+    setIsCsvOpen(false);
+    setIsSelectColumnOpen(true);
   };
 
   return (
@@ -60,7 +69,12 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose }) => {
       </Modal>
 
       <SingleUser isOpen={isSingleUserOpen} onClose={() => setIsSingleUserOpen(false)} />
-      <CsvFile isOpen={isCsvOpen} onClose={() => setIsCsvOpen(false)} />
+      <CsvFile isOpen={isCsvOpen} onClose={() => setIsCsvOpen(false)} onNext={handleNextFromCsvFile} />
+      <SelectColumn
+        isOpen={isSelectColumnOpen}
+        onClose={() => setIsSelectColumnOpen(false)}
+        csvData={csvData}
+      />
     </>
   );
 };
