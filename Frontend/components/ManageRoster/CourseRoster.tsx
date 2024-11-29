@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Button, Select, Table, Menu } from '@mantine/core';
+import { Button, Table, Menu } from '@mantine/core';
 import AddMember from '../AddStudent/AddMember';
 import { useFetchUsersRoster } from '../../hooks/Roster/useFetchUsersRoster';
 import { useRouter } from 'next/router';
 import { useRosterStore } from '../../store/useRosterStore';
-import EditCourseMember from '../Customize/EditCourseMember'; // Import modal component
+import EditCourseMember from '../Customize/EditCourseMember';
 
 const CourseRoster: React.FC = () => {
   const router = useRouter();
@@ -13,7 +13,7 @@ const CourseRoster: React.FC = () => {
   const { usersList } = useRosterStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedPersonalDataId, setSelectedPersonalDataId] = useState<string | null>(null); // Track selected user's personal_data_id
+  const [selectedPersonalDataId, setSelectedPersonalDataId] = useState<string | null>(null);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -34,20 +34,6 @@ const CourseRoster: React.FC = () => {
     <div className="p-8 bg-white rounded-lg shadow">
       <h1 className="text-2xl font-bold mb-4">Course Roster</h1>
 
-      {/* Search */}
-      <div className="flex justify-between items-center mb-4">
-        <Select
-          placeholder="All"
-          data={['All', 'Instructor', 'Student', 'Staff']}
-          className="w-1/4"
-        />
-        <input
-          type="search"
-          placeholder="Search"
-          className="border rounded-lg px-4 py-2 w-1/3"
-        />
-      </div>
-
       {/* Table */}
       <Table>
         <thead>
@@ -64,18 +50,10 @@ const CourseRoster: React.FC = () => {
             <tr key={member.personal_data_id}>
               <td className="p-2">{member.full_name}</td>
               <td className="p-2">{member.email}</td>
-              <td className="p-2">
-                <Select
-                  value={member.role_type}
-                  data={['INSTRUCTOR', 'STUDENT', 'TA', 'STAFF']}
-                  searchable
-                  nothingFoundMessage="Nothing found..."
-                  style={{ width: '140px' }}
-                />
-              </td>
+              <td className="p-2">{member.role_type}</td>
               <td className="p-2">{member.section_name || 'All'}</td>
               <td className="p-2">
-                {member.role_type === 'INSTRUCTOR' ? '-' : member.submissions_count}
+                {member.role_type === 'INSTRUCTOR' ? '-' : member.submissions_count || 0}
               </td>
               <td className="p-2">
                 <Menu>
@@ -83,9 +61,7 @@ const CourseRoster: React.FC = () => {
                     <Button variant="subtle">•••</Button>
                   </Menu.Target>
                   <Menu.Dropdown>
-                    <Menu.Item
-                      onClick={() => openEditModal(member.personal_data_id)} // Pass personal_data_id to openEditModal
-                    >
+                    <Menu.Item onClick={() => openEditModal(member.personal_data_id)}>
                       Update Information
                     </Menu.Item>
                     <Menu.Item color="red">Remove User</Menu.Item>
@@ -119,7 +95,7 @@ const CourseRoster: React.FC = () => {
       <EditCourseMember
         isOpen={isEditModalOpen}
         onClose={closeEditModal}
-        personal_data_id={selectedPersonalDataId} // Pass the selected personal_data_id
+        personal_data_id={selectedPersonalDataId}
       />
     </div>
   );
