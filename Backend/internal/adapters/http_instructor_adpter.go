@@ -407,7 +407,7 @@ func (h *HttpInstructorHandler) CreateSingleUserRoster(c *fiber.Ctx) error {
 
 	var sectionIDs []uuid.UUID
 
-	if roleType != "INSTRUCTOR" {
+	if roleType != "INSTRUCTOR" && roleType != "TA" {
 		if sectionsName == "" {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"message": "sections name cannot be empty",
@@ -468,7 +468,7 @@ func (h *HttpInstructorHandler) CreateSingleUserRoster(c *fiber.Ctx) error {
 		RoleType:    roleType,
 	}
 
-	if roleType == "INSTRUCTOR" {
+	if roleType == "INSTRUCTOR" || roleType == "TA" {
 		sectionIDs = append(sectionIDs, uuid.Nil)
 	}
 
