@@ -1,5 +1,6 @@
-import React from 'react';
-import { Modal, Button, TextInput, Select } from '@mantine/core';
+import React, { useState } from 'react';
+import { Modal, Button, TextInput } from '@mantine/core';
+import SectionSelector from '../Create/Sections/SectionSelector'; // นำเข้า SectionSelector component
 
 interface EditCourseMemberProps {
   isOpen: boolean;
@@ -8,6 +9,8 @@ interface EditCourseMemberProps {
 }
 
 const EditCourseMember: React.FC<EditCourseMemberProps> = ({ isOpen, onClose, member }) => {
+  const [selectedSections, setSelectedSections] = useState<string[]>(member?.sections || []);
+
   return (
     <Modal opened={isOpen} onClose={onClose} title="Edit Course Member">
       <div className="p-4">
@@ -33,17 +36,22 @@ const EditCourseMember: React.FC<EditCourseMemberProps> = ({ isOpen, onClose, me
           defaultValue={member?.student_code || ''}
         />
 
-        <Select
-          label="Sections"
-          placeholder="Select Sections..."
-          data={['Section A', 'Section B', 'Section C']} // Replace with your dynamic data
+        {/* ใช้ SectionSelector */}
+        <SectionSelector
+          setSections={setSelectedSections}
+          defaultEnabled={true} // เปิดการเลือก Sections ตั้งแต่เริ่มต้น
         />
 
         <div className="flex justify-end mt-6">
           <Button variant="default" onClick={onClose}>
             Cancel
           </Button>
-          <Button variant="filled" color="teal" className="ml-2">
+          <Button
+            variant="filled"
+            color="teal"
+            className="ml-2"
+            onClick={() => console.log('Selected Sections:', selectedSections)}
+          >
             Save
           </Button>
         </div>
