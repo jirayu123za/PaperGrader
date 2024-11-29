@@ -116,7 +116,7 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
             <Radio value="TA" label="TA" />
           </div>
         </RadioGroup>
-        {(form.values.role_type === 'STUDENT' || form.values.role_type === 'TA') && (
+        {(form.values.role_type === 'STUDENT' ) && (
           <div className="mt-4">
             <SectionSelector
               setSections={(sections: string[]) => form.setFieldValue('sections', sections)}

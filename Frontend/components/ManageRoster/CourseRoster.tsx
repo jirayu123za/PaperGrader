@@ -13,16 +13,19 @@ const CourseRoster: React.FC = () => {
   const { usersList } = useRosterStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedMember, setSelectedMember] = useState(null); // Track selected user
+  const [selectedPersonalDataId, setSelectedPersonalDataId] = useState<string | null>(null); // Track selected user's personal_data_id
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  const openEditModal = (member: any) => {
-    setSelectedMember(member);
+  const openEditModal = (personal_data_id: string) => {
+    setSelectedPersonalDataId(personal_data_id);
     setIsEditModalOpen(true);
   };
-  const closeEditModal = () => setIsEditModalOpen(false);
+  const closeEditModal = () => {
+    setSelectedPersonalDataId(null);
+    setIsEditModalOpen(false);
+  };
 
   if (isLoading) return <div>Loading Roster Users list...</div>;
   if (error) return <div>Error loading Roster Users list: {error.message}</div>;
@@ -81,13 +84,11 @@ const CourseRoster: React.FC = () => {
                   </Menu.Target>
                   <Menu.Dropdown>
                     <Menu.Item
-                      onClick={() => openEditModal(member)}
+                      onClick={() => openEditModal(member.personal_data_id)} // Pass personal_data_id to openEditModal
                     >
                       Update Information
                     </Menu.Item>
-                    <Menu.Item color="red">
-                      Remove User
-                    </Menu.Item>
+                    <Menu.Item color="red">Remove User</Menu.Item>
                   </Menu.Dropdown>
                 </Menu>
               </td>
@@ -118,7 +119,7 @@ const CourseRoster: React.FC = () => {
       <EditCourseMember
         isOpen={isEditModalOpen}
         onClose={closeEditModal}
-        member={selectedMember}
+        personal_data_id={selectedPersonalDataId} // Pass the selected personal_data_id
       />
     </div>
   );
