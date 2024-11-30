@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Modal, Button, Image, FileInput, rem  } from '@mantine/core';
+import React from 'react';
+import { Modal, Button, Image, FileInput } from '@mantine/core';
 import { FaFileCsv } from "react-icons/fa";
+import { useUploadFile } from '../../hooks/useFetchDataFormFile';
 import useCSVdataStore from '../../store/add member/useCSVdataStore';
 
 interface CsvFileModalProps {
@@ -10,46 +11,27 @@ interface CsvFileModalProps {
 }
 
 const CsvFile: React.FC<CsvFileModalProps> = ({ isOpen, onClose, onNext }) => {
-  const [file, setFile] = useState<File | null>(null);
-  const { setCsvData, processXlsxData } = useCSVdataStore();
+  const uploadFileMutation = useUploadFile();
+  const { selectedFile, setSelectedFile, setCsvData } = useCSVdataStore();
 
   const handleFileChange = (file: File | null) => {
-    setFile(file);
+    setSelectedFile(file);
   };
 
-  const handleNext = async () => {
-    if (file) {
-      const fileExtension = file.name.split('.').pop()?.toLowerCase();
-
-      if (fileExtension === 'csv') {
-        const mockCsvData = {
-          columns: ['firstName', 'lastName', 'email', 'studentId', 'Section', 'test'],
-          data: [
-            { firstName: 'John', lastName: 'Doe', email: 'john@example.com', studentId: '123', Section: '804', test: '804' },
-            { firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com', studentId: '456', Section: '801', test: '804' },
-            { firstName: 'Alex', lastName: 'Johnson', email: 'alex@example.com', studentId: '789', Section: '801', test: '804' },
-          ],
-        };
-
-        setCsvData(mockCsvData);
-        console.log('CSV data stored:', mockCsvData);
-        onNext(mockCsvData.data);
-        onClose();
-      } else if (fileExtension === 'xlsx') {
-        try {
-          await processXlsxData(file);
-          const csvData = useCSVdataStore.getState().csvData;
-          console.log('XLSX data stored:', csvData);
-          if (csvData) onNext(csvData.data);
-        } catch (error) {
-          console.error('Error processing XLSX file:', error);
-          alert('Error processing the XLSX file. Please try again.');
-        }
-      } else {
-        alert('Invalid file type. Please upload a CSV or XLSX file.');
-      }
+  const handleNext = () => {
+    if (selectedFile) {
+      uploadFileMutation.mutate({ file: selectedFile }, {
+        onSuccess: (data) => {
+          setCsvData(data);
+          onNext(data.data);
+          onClose();
+        },
+        onError: () => {
+          console.log('Failed to upload the file. Please try again.');
+        },
+      });
     } else {
-      alert('No file selected. Please upload a file.');
+      console.log('No file selected. Please upload a file.');      
     }
   };
 
