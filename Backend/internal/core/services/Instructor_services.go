@@ -24,6 +24,7 @@ type InstructorService interface {
 	GetRosterByCourseIDAndSectionID(CourseID uuid.UUID, SectionID uuid.UUID) ([]map[string]interface{}, error)
 	// CreateSingleUserRoster(CourseID uuid.UUID, Email string, UserGroupName string) error
 	CreateSingleUserRoster(personalData *models.PersonalData, enrollment *models.EnrollmentList) error
+	CreateMultipleUserRoster(personalData []models.PersonalData, enrollmentLists []models.EnrollmentList) error
 	GetColumnsAndDataFromUploadedFile(fileBytes []byte) (map[string]interface{}, error)
 
 	GetCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error)
@@ -140,6 +141,13 @@ func (s *InstructorServiceImpl) GetRosterByCourseIDAndSectionID(CourseID uuid.UU
 // Insert student or instructor to course
 func (s *InstructorServiceImpl) CreateSingleUserRoster(personalData *models.PersonalData, enrollment *models.EnrollmentList) error {
 	if err := s.repo.AddSingleUserRoster(personalData, enrollment); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *InstructorServiceImpl) CreateMultipleUserRoster(personalData []models.PersonalData, enrollmentLists []models.EnrollmentList) error {
+	if err := s.repo.AddMultipleUserRoster(personalData, enrollmentLists); err != nil {
 		return err
 	}
 	return nil
