@@ -72,6 +72,7 @@ const SectionSelector: React.FC<SectionSelectorProps> = ({
             comboboxProps={{ shadow: 'md' }}
             clearable
             required
+            splitChars={[' ', ',', '\n']} 
           />
         </div>
       )}
