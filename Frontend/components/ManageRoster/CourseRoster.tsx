@@ -83,13 +83,10 @@ const CourseRoster: React.FC = () => {
         </div>
       )}
 
-      {/* Add Members Button */}
-      <div className="text-center mt-8">
-        <Button onClick={openModal}>Add Members</Button>
-      </div>
-
       {/* AddMember Modal */}
-      <AddMember isOpen={isModalOpen} onClose={closeModal} />
+      <div className="text-center mt-8">
+        <AddMember />
+      </div>
 
       {/* EditCourseMember Modal */}
       <EditCourseMember
