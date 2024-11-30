@@ -532,6 +532,103 @@ func (h *HttpInstructorHandler) CreateSingleUserRoster(c *fiber.Ctx) error {
 	})
 }
 
+func (h *HttpInstructorHandler) CreateMultipleUserRoster(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	firstNames := c.FormValue("first_name")
+	lastNames := c.FormValue("last_name")
+	emails := c.FormValue("email")
+	studentCodes := c.FormValue("student_code")
+	sections := c.FormValue("section")
+	roleType := c.FormValue("role_type")
+
+	firstNameArray := strings.Split(firstNames, ",")
+	lastNameArray := strings.Split(lastNames, ",")
+	emailArray := strings.Split(emails, ",")
+	studentCodeArray := strings.Split(studentCodes, ",")
+	sectionArray := strings.Split(sections, ",")
+
+	totalEntries := len(firstNameArray)
+	if totalEntries != len(lastNameArray) ||
+		totalEntries != len(emailArray) ||
+		totalEntries != len(studentCodeArray) ||
+		totalEntries != len(sectionArray) {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Data arrays must have the same length",
+		})
+	}
+
+	var personalData []models.PersonalData
+	var enrollmentLists []models.EnrollmentList
+
+	for i := 0; i < totalEntries; i++ {
+		firstName := strings.TrimSpace(firstNameArray[i])
+		lastName := strings.TrimSpace(lastNameArray[i])
+		email := strings.TrimSpace(emailArray[i])
+		studentCode := strings.TrimSpace(studentCodeArray[i])
+		sectionName := strings.TrimSpace(sectionArray[i])
+
+		var sectionID *uuid.UUID
+		if sectionName != "" {
+			var section models.Section
+			err := h.sectionServices.GetSectionByCourseAndName(courseID, sectionName, &section)
+			if err != nil {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					newSection := models.Section{
+						CourseID:    courseID,
+						SectionName: sectionName,
+					}
+					if err := h.sectionServices.CreateSections(&newSection); err != nil {
+						return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+							"message": "Failed to create section",
+							"error":   err.Error(),
+						})
+					}
+					sectionID = &newSection.SectionID
+				} else {
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+						"message": "Failed to query section",
+						"error":   err.Error(),
+					})
+				}
+			} else {
+				sectionID = &section.SectionID
+			}
+		}
+
+		personalData = append(personalData, models.PersonalData{
+			StudentCode: &studentCode,
+			FirstName:   firstName,
+			LastName:    lastName,
+			Email:       email,
+			RoleType:    roleType,
+		})
+
+		enrollmentLists = append(enrollmentLists, models.EnrollmentList{
+			CourseID:  courseID,
+			SectionID: sectionID,
+		})
+	}
+
+	if err := h.services.CreateMultipleUserRoster(personalData, enrollmentLists); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to add users to roster",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message": "Users successfully added to the roster",
+	})
+}
+
 func (h *HttpInstructorHandler) GetColumnsAndDataFromUploadedFile(c *fiber.Ctx) error {
 	file, err := c.FormFile("file")
 	if err != nil {
