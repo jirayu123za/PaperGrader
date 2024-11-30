@@ -575,6 +575,13 @@ func (h *HttpInstructorHandler) CreateMultipleUserRoster(c *fiber.Ctx) error {
 		studentCode := strings.TrimSpace(studentCodeArray[i])
 		sectionName := strings.TrimSpace(sectionArray[i])
 
+		var studentCodePtr *string
+		if strings.TrimSpace(studentCode) == "" || studentCode == "\"\"" {
+			studentCodePtr = nil
+		} else {
+			studentCodePtr = &studentCode
+		}
+
 		var sectionID *uuid.UUID
 		if sectionName != "" {
 			var section models.Section
@@ -604,7 +611,7 @@ func (h *HttpInstructorHandler) CreateMultipleUserRoster(c *fiber.Ctx) error {
 		}
 
 		personalData = append(personalData, models.PersonalData{
-			StudentCode: &studentCode,
+			StudentCode: studentCodePtr,
 			FirstName:   firstName,
 			LastName:    lastName,
 			Email:       email,
