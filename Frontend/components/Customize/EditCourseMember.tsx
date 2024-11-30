@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Button, TextInput, Select } from '@mantine/core';
 import SectionSelector from '../Create/Sections/SectionSelector';
 import { useRosterStore } from '../../store/useRosterStore';
-import { useSectionsListStore, useSelectSectionStore } from '../../store/useSectionStore';
+import { useSelectSectionStore } from '../../store/useSectionStore';
 
 interface EditCourseMemberProps {
   isOpen: boolean;
@@ -18,20 +18,24 @@ const EditCourseMember: React.FC<EditCourseMemberProps> = ({
   const { usersList } = useRosterStore();
   const { selectedSections, setSelectedSections, resetSelectedSections } = useSelectSectionStore();
 
- 
   const member = usersList.find((user) => user.personal_data_id === personal_data_id);
 
- 
   const [fullName, setFullName] = useState<string>('');
   const [studentCode, setStudentCode] = useState<string>('');
-  const [role, setRole] = useState<string>(''); // เพิ่ม state สำหรับ role
+  const [role, setRole] = useState<string>('');
 
   useEffect(() => {
     if (member) {
       setFullName(member.full_name || '');
       setStudentCode(member.student_code || '');
-      setRole(member.role_type || ''); // ตั้งค่า role เริ่มต้น
-      setSelectedSections([member.section_name || '']);
+      setRole(member.role_type || '');
+
+      const sections = member.section_name
+        ? member.section_name.includes(',') // ตรวจสอบว่า Section มีหลายค่า
+          ? member.section_name.split(',') // แยก Sections
+          : [member.section_name] // เก็บเป็นอาร์เรย์
+        : ['All Sections']; // ถ้า Section เป็น null หรือ undefined
+      setSelectedSections(sections);
     } else {
       setFullName('');
       setStudentCode('');
@@ -40,18 +44,26 @@ const EditCourseMember: React.FC<EditCourseMemberProps> = ({
     }
   }, [member, setSelectedSections, resetSelectedSections]);
 
+  const capitalizeWords = (value: string) => {
+    return value
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
   const handleSave = () => {
+    const validatedName = capitalizeWords(fullName);
+
     const updatedMember = {
       personal_data_id,
-      full_name: fullName,
+      full_name: validatedName,
       student_code: studentCode,
-      role_type: role, // รวม role ในการบันทึก
+      role_type: role,
       sections: selectedSections,
     };
 
     console.log('Saving member data:', updatedMember);
 
-    // เพิ่มฟังก์ชันสำหรับการบันทึกข้อมูล เช่น การเรียก API
     onClose();
   };
 
@@ -67,6 +79,7 @@ const EditCourseMember: React.FC<EditCourseMemberProps> = ({
           required
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
+          onBlur={(e) => setFullName(capitalizeWords(e.target.value))}
         />
 
         <TextInput
