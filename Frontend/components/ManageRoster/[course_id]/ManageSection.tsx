@@ -27,31 +27,35 @@ const ManageSection: React.FC = () => {
 
   return (
     <div>
-      <Text size="xl" fw={700} className="mb-4">Sections</Text>
-      <Text size="sm" color="dimmed" className="mb-4">
-        {sectionDetails.length > 0 
-          ? `${sectionDetails.length} Sections` 
-          : 'No sections available for this course.'}
-      </Text>
-
-      <Divider className="mb-4" />
+    <div>
+      <div className="flex items-center space-x-2 mb-4">
+        <Text size="xl" fw={700}>
+          Sections
+        </Text>
+        <Text size="xl" color="dimmed">
+          {sectionDetails.length > 0 
+            ? `(${sectionDetails.length} Sections)` 
+            : 'No sections available for this course.'}
+        </Text>
+      </div>
+    </div>
 
       {sectionDetails.length > 0 ? (
-        <Table highlightOnHover>
-          <thead>
-            <tr>
-              <th style={{ textAlign: 'center', padding: '12px 0' }}>Section Name</th>
-              <th style={{ textAlign: 'center', padding: '12px 0' }}>No of Students</th>
-              <th style={{ textAlign: 'center', padding: '12px 0' }}>View</th>
-              <th style={{ textAlign: 'center', padding: '12px 0' }}>Remove</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table highlightOnHover verticalSpacing="sm">
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>Section Name</Table.Th>
+              <Table.Th>No of Students</Table.Th>
+              <Table.Th>View</Table.Th>
+              <Table.Th>Remove</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
             {sectionDetails.map((section) => (
-              <tr key={section.section_id}>
-                <td style={{ textAlign: 'center', padding: '12px 0' }}>{section.section_name}</td>
-                <td style={{ textAlign: 'center', padding: '12px 0' }}>{section.total_students}</td>
-                <td style={{ textAlign: 'center', padding: '12px 0' }}>
+              <Table.Tr key={section.section_id}>
+                <Table.Td>{section.section_name}</Table.Td>
+                <Table.Td>{section.total_students}</Table.Td>
+                <Table.Td>
                   <Button
                     variant="subtle"
                     size="xs"
@@ -59,8 +63,8 @@ const ManageSection: React.FC = () => {
                   >
                     View Student List
                   </Button>
-                </td>
-                <td style={{ textAlign: 'center', padding: '12px 0' }}>
+                </Table.Td>
+                <Table.Td>
                   <Button
                     variant="outline"
                     color="red"
@@ -69,10 +73,10 @@ const ManageSection: React.FC = () => {
                   >
                     Remove
                   </Button>
-                </td>
-              </tr>
+                </Table.Td>
+              </Table.Tr>
             ))}
-          </tbody>
+          </Table.Tbody>
         </Table>
       ) : (
         <Text ta="center" color="dimmed">
