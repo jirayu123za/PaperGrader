@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Text, Button, Divider, Loader } from '@mantine/core';
+import { Table, Text, Button, Divider, Loader, Paper } from '@mantine/core';
 import { useRouter } from 'next/router';
 import { useFetchSections } from '../../../hooks/Roster/useFetchSections';
 import { useSectionDetailsStore } from '../../../store/useRosterStore';
@@ -41,6 +41,7 @@ const ManageSection: React.FC = () => {
     </div>
 
       {sectionDetails.length > 0 ? (
+      <Paper shadow="sm" radius="md" withBorder p="xl">
         <Table highlightOnHover verticalSpacing="sm">
           <Table.Thead>
             <Table.Tr>
@@ -78,6 +79,7 @@ const ManageSection: React.FC = () => {
             ))}
           </Table.Tbody>
         </Table>
+        </Paper>
       ) : (
         <Text ta="center" color="dimmed">
           This course has no sections created yet.
