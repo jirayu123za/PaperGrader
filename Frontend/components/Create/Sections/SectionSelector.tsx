@@ -23,12 +23,28 @@ const SectionSelector: React.FC<SectionSelectorProps> = ({
   const { course_id } = router.query;
   const [isEnabled, { toggle, open }] = useDisclosure(defaultEnabled);
   const { data, isLoading, error } = useFetchSections(course_id as string);
-  const { sectionsList, setSectionsList } = useSectionsListStore();
+  const { sectionsList } = useSectionsListStore();
   const { selectedSections, setSelectedSections } = useSelectSectionStore();
 
+  const sectionsData =
+    sectionsList && sectionsList.length > 0
+      ? sectionsList.map((section: Section) => ({
+          label: section.section_name,
+          value: section.section_id,
+        }))
+      : []; // กำหนดเป็น array ว่างถ้าไม่มีข้อมูล
+
+  // ตรวจสอบว่าค่าที่เพิ่มอยู่ใน sectionsData หรือไม่ (ถ้า sectionsData มีข้อมูล)
+  const validateTag = (tag: string) => {
+    if (sectionsData.length === 0) return true; // ถ้าไม่มีข้อมูล อนุญาตให้เพิ่มแท็กใหม่ได้
+    return sectionsData.some((section) => section.label === tag);
+  };
+
   const handleTagChange = (tags: string[]) => {
-    setSelectedSections(tags);
-    setSections(tags);
+    // ตรวจสอบทุก tag ว่ามีใน sectionsData หรือเป็นแท็กใหม่ได้
+    const validTags = tags.filter((tag) => validateTag(tag));
+    setSelectedSections(validTags);
+    setSections(validTags);
   };
 
   React.useEffect(() => {
@@ -40,19 +56,8 @@ const SectionSelector: React.FC<SectionSelectorProps> = ({
   if (isLoading) return <Loader size="sm" />;
   if (error) return <Text color="red">Error fetching sections: {error.message}</Text>;
 
-  const sectionsData =
-    sectionsList && sectionsList.length > 0
-      ? sectionsList.map((section: Section) => ({
-          label: section.section_name,
-          value: section.section_id,
-        }))
-      : [
-          { value: 'No sections available: Please create section of this course first!', disabled: true },
-        ];
-
   return (
     <div>
-      {/* Checkbox is optional based on defaultEnabled */}
       {!defaultEnabled && (
         <Checkbox
           label="Enable Section Selection"
@@ -72,7 +77,7 @@ const SectionSelector: React.FC<SectionSelectorProps> = ({
             comboboxProps={{ shadow: 'md' }}
             clearable
             required
-            splitChars={[' ', ',', '\n']} 
+            splitChars={[' ', ',', '\n']} // กำหนดตัวอักษรที่แยก tag
           />
         </div>
       )}
