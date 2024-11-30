@@ -253,6 +253,56 @@ func (r *GormInstructorRepository) AddSingleUserRoster(personalData *models.Pers
 	return nil
 }
 
+func (r *GormInstructorRepository) AddMultipleUserRoster(personalData []models.PersonalData, enrollmentLists []models.EnrollmentList) error {
+	tx := r.db.Begin()
+
+	for i, pd := range personalData {
+		var existingPersonalData models.PersonalData
+		err := tx.Table("personal_data").
+			Select("personal_data.*").
+			Joins("LEFT JOIN enrollment_lists ON personal_data.personal_data_id = enrollment_lists.personal_data_id").
+			Where("personal_data.email = ? AND personal_data.role_type = ? AND enrollment_lists.course_id = ?",
+				pd.Email, pd.RoleType, enrollmentLists[i].CourseID).
+			First(&existingPersonalData).Error
+		if err == nil {
+			enrollmentLists[i].PersonalDataID = existingPersonalData.PersonalDataID
+		} else if err != gorm.ErrRecordNotFound {
+			tx.Rollback()
+			return fmt.Errorf("failed to query personal data: %v", err)
+		} else {
+			if err := tx.Create(&pd).Error; err != nil {
+				tx.Rollback()
+				return fmt.Errorf("failed to create personal data: %v", err)
+			}
+			enrollmentLists[i].PersonalDataID = pd.PersonalDataID
+		}
+
+		var count int64
+		if err := tx.Model(&models.EnrollmentList{}).
+			Where("course_id = ? AND personal_data_id = ? AND (section_id = ? OR section_id IS NULL)",
+				enrollmentLists[i].CourseID, enrollmentLists[i].PersonalDataID, enrollmentLists[i].SectionID).
+			Count(&count).Error; err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to query enrollment list: %v", err)
+		}
+
+		if count > 0 {
+			tx.Rollback()
+			return fmt.Errorf("user is already enrolled in this course/section")
+		}
+
+		if err := tx.Create(&enrollmentLists[i]).Error; err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to create enrollment list: %v", err)
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("failed to commit transaction: %v", err)
+	}
+	return nil
+}
+
 func (r *GormInstructorRepository) FindColumnsAndDataFromUploadedFile(fileBytes []byte) (map[string]interface{}, error) {
 	file, err := excelize.OpenReader(bytes.NewReader(fileBytes))
 	if err != nil {
