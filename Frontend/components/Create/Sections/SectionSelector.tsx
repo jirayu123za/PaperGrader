@@ -23,12 +23,26 @@ const SectionSelector: React.FC<SectionSelectorProps> = ({
   const { course_id } = router.query;
   const [isEnabled, { toggle, open }] = useDisclosure(defaultEnabled);
   const { data, isLoading, error } = useFetchSections(course_id as string);
-  const { sectionsList, setSectionsList } = useSectionsListStore();
+  const { sectionsList } = useSectionsListStore();
   const { selectedSections, setSelectedSections } = useSelectSectionStore();
 
+  const sectionsData =
+    sectionsList && sectionsList.length > 0
+      ? sectionsList.map((section: Section) => ({
+          label: section.section_name,
+          value: section.section_id,
+        }))
+      : [];
+
+  const validateTag = (tag: string) => {
+    if (sectionsData.length === 0) return true;
+    return sectionsData.some((section) => section.label === tag);
+  };
+
   const handleTagChange = (tags: string[]) => {
-    setSelectedSections(tags);
-    setSections(tags);
+    const validTags = tags.filter((tag) => validateTag(tag));
+    setSelectedSections(validTags);
+    setSections(validTags);
   };
 
   React.useEffect(() => {
@@ -40,19 +54,8 @@ const SectionSelector: React.FC<SectionSelectorProps> = ({
   if (isLoading) return <Loader size="sm" />;
   if (error) return <Text color="red">Error fetching sections: {error.message}</Text>;
 
-  const sectionsData =
-    sectionsList && sectionsList.length > 0
-      ? sectionsList.map((section: Section) => ({
-          label: section.section_name,
-          value: section.section_id,
-        }))
-      : [
-          { value: 'No sections available: Please create section of this course first!', disabled: true },
-        ];
-
   return (
     <div>
-      {/* Checkbox is optional based on defaultEnabled */}
       {!defaultEnabled && (
         <Checkbox
           label="Enable Section Selection"
@@ -72,6 +75,7 @@ const SectionSelector: React.FC<SectionSelectorProps> = ({
             comboboxProps={{ shadow: 'md' }}
             clearable
             required
+            splitChars={[' ', ',', '\n']}
           />
         </div>
       )}

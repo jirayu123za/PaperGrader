@@ -14,11 +14,15 @@ interface UsersList {
 interface UsersListStore {
     usersList: UsersList[];
     setUsersList: (usersList: UsersList[]) => void;
+    sectionUsersList: UsersList[];
+    setSectionUsersList: (usersList: UsersList[]) => void;
 }
 
 export const useRosterStore = create<UsersListStore>((set) => ({
     usersList: [],
     setUsersList: (usersList: UsersList[]) => set({ usersList }),
+    sectionUsersList: [],
+    setSectionUsersList: (usersList: UsersList[]) => set({ sectionUsersList: usersList }),
 }));
 
 // Store section roster data

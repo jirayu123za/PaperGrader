@@ -20,9 +20,11 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
     section: '',
   });
   const [role, setRole] = useState<string | null>('Student');
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const handleColumnChange = (field: string, value: string) => {
     setSelectedColumns((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: '' }));
   };
 
   const csvHeaders = csvData?.columns || [];
@@ -40,7 +42,22 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
     ));
   };
 
+  const validateColumns = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!selectedColumns.firstName) newErrors.firstName = 'First Name is required';
+    if (!selectedColumns.lastName) newErrors.lastName = 'Last Name is required';
+    if (!selectedColumns.email) newErrors.email = 'Email Address is required';
+    if (!selectedColumns.section) newErrors.section = 'Section is required';
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleImport = () => {
+    if (!validateColumns()) return;
+
     if (csvData) {
       const columnData = {
         first_name: csvData.data.map((row) => row[selectedColumns.firstName]),
@@ -75,8 +92,8 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
             <th>First Name</th>
             <th>Last Name</th>
             <th>Email Address</th>
+            <th>Section</th>
             <th>Student ID (Optional)</th>
-            <th>Section (Optional)</th>
           </tr>
         </thead>
         <tbody>
@@ -87,6 +104,7 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
                 data={csvHeaders}
                 value={selectedColumns.firstName}
                 onChange={(value) => handleColumnChange('firstName', value || '')}
+                error={errors.firstName}
               />
             </td>
             <td>
@@ -95,6 +113,7 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
                 data={csvHeaders}
                 value={selectedColumns.lastName}
                 onChange={(value) => handleColumnChange('lastName', value || '')}
+                error={errors.lastName}
               />
             </td>
             <td>
@@ -103,6 +122,16 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
                 data={csvHeaders}
                 value={selectedColumns.email}
                 onChange={(value) => handleColumnChange('email', value || '')}
+                error={errors.email}
+              />
+            </td>
+            <td>
+              <Select
+                placeholder="Select a section column"
+                data={csvHeaders}
+                value={selectedColumns.section}
+                onChange={(value) => handleColumnChange('section', value || '')}
+                error={errors.section}
               />
             </td>
             <td>
@@ -113,14 +142,6 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
                 onChange={(value) => handleColumnChange('studentId', value || '')}
               />
             </td>
-            <td>
-              <Select
-                placeholder="Select a section column"
-                data={csvHeaders}
-                value={selectedColumns.section}
-                onChange={(value) => handleColumnChange('section', value || '')}
-              />
-            </td>
           </tr>
 
           {/* แสดงข้อมูลตัวอย่างใต้ Select */}
@@ -128,7 +149,7 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
           {csvData && csvData.data.length > 3 && (
             <tr>
               <td colSpan={5}>
-                <Text color="dimmed" size="sm" align="center">
+                <Text color="dimmed" size="sm">
                   ... and {csvData.data.length - 3} other rows
                 </Text>
               </td>
@@ -148,8 +169,8 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
         required
       >
         <div className="flex gap-4">
-          <Radio value="Student" label="Student" />
-          <Radio value="Instructor" label="Instructor" />
+          <Radio value="STUDENT" label="Student" />
+          <Radio value="INSTRUCTOR" label="Instructor" />
           <Radio value="TA" label="TA" />
         </div>
       </RadioGroup>
@@ -159,7 +180,7 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
         <Button color="red" onClick={onClose}>
           Cancel
         </Button>
-        <Button className="ml-2" onClick={handleImport}>
+        <Button className="ml-2" onClick={handleImport} disabled={!csvData}>
           Import
         </Button>
       </div>
