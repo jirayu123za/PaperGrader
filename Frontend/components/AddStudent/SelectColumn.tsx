@@ -14,9 +14,11 @@ const SelectColumn: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
     section: '',
   });
   const [role, setRole] = useState<string | null>('Student');
+  const [errors, setErrors] = useState<{ [key: string]: string }>({}); // สำหรับเก็บข้อผิดพลาด
 
   const handleColumnChange = (field: string, value: string) => {
     setSelectedColumns((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: '' })); // ล้างข้อผิดพลาดเมื่อเลือกใหม่
   };
 
   const csvHeaders = csvData?.columns || []; // ดึงชื่อคอลัมน์จาก store
@@ -34,7 +36,22 @@ const SelectColumn: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
     ));
   };
 
+  const validateColumns = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!selectedColumns.firstName) newErrors.firstName = 'First Name is required';
+    if (!selectedColumns.lastName) newErrors.lastName = 'Last Name is required';
+    if (!selectedColumns.email) newErrors.email = 'Email Address is required';
+    if (!selectedColumns.section) newErrors.section = 'Section is required'; // เพิ่มการตรวจสอบ Section
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleImport = () => {
+    if (!validateColumns()) return; // ตรวจสอบ validation ก่อน
+
     if (csvData) {
       const columnData = {
         first_name: csvData.data.map((row) => row[selectedColumns.firstName]),
@@ -69,8 +86,8 @@ const SelectColumn: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
             <th>First Name</th>
             <th>Last Name</th>
             <th>Email Address</th>
+            <th>Section</th>
             <th>Student ID (Optional)</th>
-            <th>Section (Optional)</th>
           </tr>
         </thead>
         <tbody>
@@ -81,6 +98,7 @@ const SelectColumn: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
                 data={csvHeaders}
                 value={selectedColumns.firstName}
                 onChange={(value) => handleColumnChange('firstName', value || '')}
+                error={errors.firstName} // แสดงข้อผิดพลาด
               />
             </td>
             <td>
@@ -89,6 +107,7 @@ const SelectColumn: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
                 data={csvHeaders}
                 value={selectedColumns.lastName}
                 onChange={(value) => handleColumnChange('lastName', value || '')}
+                error={errors.lastName} // แสดงข้อผิดพลาด
               />
             </td>
             <td>
@@ -97,14 +116,7 @@ const SelectColumn: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
                 data={csvHeaders}
                 value={selectedColumns.email}
                 onChange={(value) => handleColumnChange('email', value || '')}
-              />
-            </td>
-            <td>
-              <Select
-                placeholder="Select a student ID column"
-                data={csvHeaders}
-                value={selectedColumns.studentId}
-                onChange={(value) => handleColumnChange('studentId', value || '')}
+                error={errors.email} // แสดงข้อผิดพลาด
               />
             </td>
             <td>
@@ -113,6 +125,15 @@ const SelectColumn: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
                 data={csvHeaders}
                 value={selectedColumns.section}
                 onChange={(value) => handleColumnChange('section', value || '')}
+                error={errors.section} // แสดงข้อผิดพลาด
+              />
+            </td>
+            <td>
+              <Select
+                placeholder="Select a student ID column"
+                data={csvHeaders}
+                value={selectedColumns.studentId}
+                onChange={(value) => handleColumnChange('studentId', value || '')}
               />
             </td>
           </tr>
@@ -142,8 +163,8 @@ const SelectColumn: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
         required
       >
         <div className="flex gap-4">
-          <Radio value="Student" label="Student" />
-          <Radio value="Instructor" label="Instructor" />
+          <Radio value="STUDENT" label="Student" />
+          <Radio value="INSTRUCTOR" label="Instructor" />
           <Radio value="TA" label="TA" />
         </div>
       </RadioGroup>
@@ -153,7 +174,7 @@ const SelectColumn: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
         <Button color="red" onClick={onClose}>
           Cancel
         </Button>
-        <Button className="ml-2" onClick={handleImport}>
+        <Button className="ml-2" onClick={handleImport} disabled={!csvData}>
           Import
         </Button>
       </div>
