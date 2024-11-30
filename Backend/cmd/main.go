@@ -133,6 +133,7 @@ func main() {
 	apiGroup.Get("/instructor/roster/section", instructorHandler.GetRosterSectionByCourseID)
 	apiGroup.Get("/instructor/roster/section/user", instructorHandler.GetRosterByCourseIDAndSectionID)
 	apiGroup.Post("/instructor/roster", instructorHandler.CreateSingleUserRoster)
+	apiGroup.Post("/instructor/rosters", instructorHandler.CreateMultipleUserRoster)
 
 	// File form add multiple users
 	apiGroup.Post("/instructor/roster/file", instructorHandler.GetColumnsAndDataFromUploadedFile)
