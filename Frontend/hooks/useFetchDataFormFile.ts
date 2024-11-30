@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
+import useCSVdataStore from '../store/add member/useCSVdataStore';
 
 interface FileUploadParams {
     file: File;
@@ -17,14 +18,17 @@ const uploadFile = async ({ file }: FileUploadParams) => {
         },
     });
 
-    return data;
+    return data.result;
 };
 
 export const useUploadFile = () => {
+    const { setCsvData } = useCSVdataStore();
+
     return useMutation({
         mutationFn: uploadFile,
         onSuccess: (data) => {
             console.log('Upload successful:', data);
+            setCsvData(data);
             alert('File uploaded successfully!');
         },
         onError: (error) => {
