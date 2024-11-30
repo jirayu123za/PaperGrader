@@ -22,7 +22,7 @@ type InstructorRepository interface {
 	// AddInstructorToCourse(userID uuid.UUID, courseID uuid.UUID) error
 	// AddStudentToCourse(userID uuid.UUID, courseID uuid.UUID) error
 	AddSingleUserRoster(personalData *models.PersonalData, enrollment *models.EnrollmentList) error
-	//! AddMultipleUserRoster(enrollmentLists []models.EnrollmentList) error
+	AddMultipleUserRoster(personalData []models.PersonalData, enrollmentLists []models.EnrollmentList) error
 	FindColumnsAndDataFromUploadedFile(fileBytes []byte) (map[string]interface{}, error)
 
 	FindUserByEmail(email string) (map[string]interface{}, error)
