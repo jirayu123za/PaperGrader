@@ -10,9 +10,9 @@ interface ColumnData {
 }
 
 interface ColumnSelectStore {
-  importData: ColumnData[]; // เก็บข้อมูล Import
-  setImportData: (data: ColumnData) => void; // สำหรับตั้งค่าข้อมูล Import
-  clearImportData: () => void; // สำหรับล้างข้อมูล Import
+  importData: ColumnData[];
+  setImportData: (data: ColumnData) => void;
+  clearImportData: () => void;
 }
 
 const useColumnSelectStore = create<ColumnSelectStore>((set) => ({
