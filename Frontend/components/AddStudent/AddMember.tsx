@@ -24,7 +24,6 @@ const AddMemberModal: React.FC = () => {
   return (
     <>
      <Button onClick={open}>Add Members</Button>
-      {/* <Modal opened={isOpen} onClose={onClose} title="Add Students or Staff"> */}
       <Modal opened={opened} onClose={close} title="Add Students or Staff">
         <Alert variant="light" color="blue" icon={<IconInfoCircle />}>
           Add a single user or upload a CSV file to add multiple users at once.
