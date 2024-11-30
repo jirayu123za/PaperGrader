@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { Modal, Button, Image } from '@mantine/core';
-import useCSVdataStore from '../../store/add member/useCSVdataStore'; // Import Zustand store
+import useCSVdataStore from '../../store/add member/useCSVdataStore';
 
 interface CsvFileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onNext: (csvData: { [key: string]: string }[]) => void; // Callback to open SelectColumn modal
+  onNext: (csvData: { [key: string]: string }[]) => void;
 }
 
 const CsvFile: React.FC<CsvFileModalProps> = ({ isOpen, onClose, onNext }) => {
   const [file, setFile] = useState<File | null>(null);
-  const setCsvData = useCSVdataStore((state) => state.setCsvData); // ใช้ฟังก์ชัน setCsvData จาก Zustand store
+  const setCsvData = useCSVdataStore((state) => state.setCsvData);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.currentTarget.files) {
@@ -20,7 +20,6 @@ const CsvFile: React.FC<CsvFileModalProps> = ({ isOpen, onClose, onNext }) => {
 
   const handleNext = () => {
     if (file) {
-      // Mock data สำหรับการทดสอบ
       const mockCsvData = {
         columns: ['firstName', 'lastName', 'email', 'studentId', 'Section', 'test'],
         data: [
@@ -29,12 +28,10 @@ const CsvFile: React.FC<CsvFileModalProps> = ({ isOpen, onClose, onNext }) => {
           { firstName: 'Alex', lastName: 'Johnson', email: 'alex@example.com', studentId: '789', Section: '801', test: '804' },
         ],
       };
-
-      // บันทึกข้อมูล CSV ลงใน Zustand store
       setCsvData(mockCsvData);
-
       console.log('CSV data stored:', mockCsvData);
-      onNext(mockCsvData.data); // ส่งข้อมูลไปยัง SelectColumn modal
+      onNext(mockCsvData.data);
+      onClose();
     }
   };
 
