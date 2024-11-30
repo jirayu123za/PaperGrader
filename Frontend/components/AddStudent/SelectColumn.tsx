@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import { Modal, Button, Select, RadioGroup, Radio, Text, Table } from '@mantine/core';
-import useCSVdataStore from '../../store/add member/useCSVdataStore'; // ดึงข้อมูล CSV จาก Store
-import useColumnSelectStore from '../../store/add member/useColumnSelectStore'; // นำเข้า Store สำหรับคอลัมน์
+import useCSVdataStore from '../../store/add member/useCSVdataStore';
+import useColumnSelectStore from '../../store/add member/useColumnSelectStore';
 
-const SelectColumn: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
-  const csvData = useCSVdataStore((state) => state.csvData); // ดึงข้อมูล CSV จาก Zustand store
-  const setImportData = useColumnSelectStore((state) => state.setImportData); // ดึงฟังก์ชันจาก Store
+interface SelectColumnProps {
+  isOpen: boolean;
+  onClose: () => void;
+  csvData: { [key: string]: string }[];
+}
+
+const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {  
+  const csvData = useCSVdataStore((state) => state.csvData);
+  const setImportData = useColumnSelectStore((state) => state.setImportData);
   const [selectedColumns, setSelectedColumns] = useState({
     firstName: '',
     lastName: '',
@@ -19,10 +25,10 @@ const SelectColumn: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
     setSelectedColumns((prev) => ({ ...prev, [field]: value }));
   };
 
-  const csvHeaders = csvData?.columns || []; // ดึงชื่อคอลัมน์จาก store
+  const csvHeaders = csvData?.columns || [];
 
   const renderPreviewRows = () => {
-    const previewRows = csvData?.data.slice(0, 3) || []; // ดึงข้อมูล 3 แถวแรกจาก store
+    const previewRows = csvData?.data.slice(0, 3) || [];
     return previewRows.map((row, index) => (
       <tr key={index}>
         <td>{row[selectedColumns.firstName] || '-'}</td>
@@ -45,9 +51,9 @@ const SelectColumn: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
         role_type: role || 'Student',
       };
 
-      // บันทึกข้อมูลลง Store
       setImportData(columnData);
       console.log('Import Data:', columnData);
+      onClose();
     }
   };
 
@@ -62,7 +68,7 @@ const SelectColumn: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
         Match columns from your CSV file to the required fields, and select the role of the new members.
       </Text>
 
-      {/* ส่วนของการเลือก Column แบบรวมกับ Table */}
+      {/* Part of Column and Table */}
       <Table highlightOnHover>
         <thead>
           <tr>
