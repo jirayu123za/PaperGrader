@@ -7,7 +7,7 @@ import useCSVdataStore from '../../store/add member/useCSVdataStore';
 interface CsvFileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onNext: (csvData: { [key: string]: string }[]) => void;
+  onNext: () => void;
 }
 
 const CsvFile: React.FC<CsvFileModalProps> = ({ isOpen, onClose, onNext }) => {
@@ -23,7 +23,7 @@ const CsvFile: React.FC<CsvFileModalProps> = ({ isOpen, onClose, onNext }) => {
       uploadFileMutation.mutate({ file: selectedFile }, {
         onSuccess: (data) => {
           setCsvData(data);
-          onNext(data.data);
+          onNext();
           onClose();
         },
         onError: () => {
