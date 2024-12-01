@@ -1,7 +1,9 @@
 import React from 'react';
 import { Modal, Button, Select, RadioGroup, Radio, Text, Table } from '@mantine/core';
+import { useCreateMultipleUser } from '../../hooks/useCreate/useCreateMultipleUser';
+import { useForm } from '@mantine/form';
+import { useRouter } from 'next/router';
 import useCSVdataStore from '../../store/add member/useCSVdataStore';
-import useColumnSelectStore, { ColumnSelectStore } from '../../store/add member/useColumnSelectStore';
 
 interface SelectColumnProps {
   isOpen: boolean;
@@ -10,52 +12,69 @@ interface SelectColumnProps {
 
 const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {  
   const csvData = useCSVdataStore((state) => state.csvData);
-  const { selectedColumns, role, setSelectedColumn, setRole, setImportData, errors, setErrors, clearErrors, } = useColumnSelectStore();
   const csvHeaders = csvData?.columns || [];
+  const router = useRouter();
+  const { mutate: createMultipleUser } = useCreateMultipleUser();
+  const { course_id } = router.query;
 
-  const validateColumns = () => {
-    const requiredFields = ['firstName', 'lastName', 'email', 'section'] as const;
-    const errors: Partial<ColumnSelectStore['errors']> = {};
-
-    requiredFields.forEach((field) => {
-      if (!selectedColumns[field]) {
-        errors[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
-      }
-    });
-    setErrors(errors);
-  
-    return Object.keys(errors).length === 0;
-  };
+  const form = useForm({
+    initialValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      studentId: '',
+      section: '',
+      role: 'STUDENT',
+    },
+    validate: {
+      firstName: (value) => (value ? null : 'First Name is required'),
+      lastName: (value) => (value ? null : 'Last Name is required'),
+      email: (value) => (value ? null : 'Email is required'),
+      section: (value) => (value ? null : 'Section is required'),
+    },
+  });
 
   const renderPreviewRows = () => {
     const previewRows = csvData?.data.slice(0, 3) || [];
     return previewRows.map((row, index) => (
       <tr key={index}>
-        <td>{row[selectedColumns.firstName] || '-'}</td>
-        <td>{row[selectedColumns.lastName] || '-'}</td>
-        <td>{row[selectedColumns.email] || '-'}</td>
-        <td>{row[selectedColumns.studentId] || '-'}</td>
-        <td>{row[selectedColumns.section] || '-'}</td>
+        <td>{row[form.values.firstName] || '-'}</td>
+        <td>{row[form.values.lastName] || '-'}</td>
+        <td>{row[form.values.email] || '-'}</td>
+        <td>{row[form.values.studentId] || '-'}</td>
+        <td>{row[form.values.section] || '-'}</td>
       </tr>
     ));
   };
 
   const handleImport = () => {
-    clearErrors();
-    if (!validateColumns()) return;
+    const isValid = form.validate();
 
-    if (csvData) {
+    if (!isValid.hasErrors && csvData) {
+      const formData = new FormData();
+
       const columnData = {
-        first_name: csvData.data.map((row) => row[selectedColumns.firstName]),
-        last_name: csvData.data.map((row) => row[selectedColumns.lastName]),
-        email: csvData.data.map((row) => row[selectedColumns.email]),
-        student_code: csvData.data.map((row) => row[selectedColumns.studentId]),
-        section: csvData.data.map((row) => row[selectedColumns.section]),
-        role_type: role || 'STUDENT',
+        first_name: csvData.data.map((row) => row[form.values.firstName]),
+        last_name: csvData.data.map((row) => row[form.values.lastName]),
+        email: csvData.data.map((row) => row[form.values.email]),
+        section: csvData.data.map((row) => row[form.values.section]),
+        student_code: csvData.data.map((row) => row[form.values.studentId]),
+        role_type: form.values.role,
       };
-      setImportData(columnData);
-      console.log('Import Data:', columnData);
-      onClose();
+
+      formData.append('data', JSON.stringify(columnData));
+
+      console.log('Prepared FormData:', columnData); 
+
+      createMultipleUser({ formData, course_id: Array.isArray(course_id) ? course_id[0] : course_id || '' }, {
+        onSuccess: () => {
+          console.log('Users imported successfully');
+          onClose();
+        },
+        onError: (error) => {
+          console.error('Error importing users:', error);
+        },
+      });
     }
   };
 
@@ -87,44 +106,35 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
               <Select
                 placeholder="Select a first name column"
                 data={csvHeaders}
-                value={selectedColumns.firstName}
-                onChange={(value) => setSelectedColumn('firstName', value || '')}
-                error={errors.firstName}
+                {...form.getInputProps('firstName')}
               />
             </td>
             <td>
               <Select
                 placeholder="Select a last name column"
                 data={csvHeaders}
-                value={selectedColumns.lastName}
-                onChange={(value) => setSelectedColumn('lastName', value || '')}
-                error={errors.lastName}
+                {...form.getInputProps('lastName')}
               />
             </td>
             <td>
               <Select
                 placeholder="Select an email column"
                 data={csvHeaders}
-                value={selectedColumns.email}
-                onChange={(value) => setSelectedColumn('email', value || '')}
-                error={errors.email}
+                {...form.getInputProps('email')}
               />
             </td>
             <td>
               <Select
                 placeholder="Select a section column"
                 data={csvHeaders}
-                value={selectedColumns.section}
-                onChange={(value) => setSelectedColumn('section', value || '')}
-                error={errors.section}
+                {...form.getInputProps('section')}
               />
             </td>
             <td>
               <Select
                 placeholder="Select a student ID column"
                 data={csvHeaders}
-                value={selectedColumns.studentId}
-                onChange={(value) => setSelectedColumn('studentId', value || '')}
+                {...form.getInputProps('studentId')}
               />
             </td>
           </tr>
@@ -148,15 +158,14 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
         Role
       </Text>
       <RadioGroup
-        value={role}
-        onChange={setRole}
+        {...form.getInputProps('role')}
         className="mt-2"
         required
       >
         <div className="flex gap-4">
           <Radio value="STUDENT" label="Student" />
-          <Radio value="INSTRUCTOR" label="Instructor" />
-          <Radio value="TA" label="TA" />
+          <Radio value="INSTRUCTOR" label="Instructor" disabled/>
+          <Radio value="TA" label="TA" disabled/>
         </div>
       </RadioGroup>
 
