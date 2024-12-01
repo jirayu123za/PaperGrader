@@ -6,7 +6,6 @@ import useColumnSelectStore from '../../store/add member/useColumnSelectStore';
 interface SelectColumnProps {
   isOpen: boolean;
   onClose: () => void;
-  csvData: { [key: string]: string }[];
 }
 
 const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {  
