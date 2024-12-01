@@ -542,48 +542,53 @@ func (h *HttpInstructorHandler) CreateMultipleUserRoster(c *fiber.Ctx) error {
 		})
 	}
 
-	firstNames := c.FormValue("first_name")
-	lastNames := c.FormValue("last_name")
-	emails := c.FormValue("email")
-	studentCodes := c.FormValue("student_code")
-	sections := c.FormValue("section")
-	roleType := c.FormValue("role_type")
-
-	firstNameArray := strings.Split(firstNames, ",")
-	lastNameArray := strings.Split(lastNames, ",")
-	emailArray := strings.Split(emails, ",")
-	studentCodeArray := strings.Split(studentCodes, ",")
-	sectionArray := strings.Split(sections, ",")
-
-	totalEntries := len(firstNameArray)
-	if totalEntries != len(lastNameArray) ||
-		totalEntries != len(emailArray) ||
-		totalEntries != len(studentCodeArray) ||
-		totalEntries != len(sectionArray) {
+	data := c.FormValue("data")
+	if data == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Data arrays must have the same length",
+			"message": "Missing 'data' field in the request",
 		})
 	}
 
-	var personalData []models.PersonalData
-	var enrollmentLists []models.EnrollmentList
+	var inputData struct {
+		FirstName   []string `json:"first_name"`
+		LastName    []string `json:"last_name"`
+		Email       []string `json:"email"`
+		StudentCode []string `json:"student_code"`
+		Section     []string `json:"section"`
+		RoleType    string   `json:"role_type"`
+	}
 
-	for i := 0; i < totalEntries; i++ {
-		firstName := strings.TrimSpace(firstNameArray[i])
-		lastName := strings.TrimSpace(lastNameArray[i])
-		email := strings.TrimSpace(emailArray[i])
-		studentCode := strings.TrimSpace(studentCodeArray[i])
-		sectionName := strings.TrimSpace(sectionArray[i])
+	if err := json.Unmarshal([]byte(data), &inputData); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid JSON format in 'data'",
+			"error":   err.Error(),
+		})
+	}
 
-		var studentCodePtr *string
-		if strings.TrimSpace(studentCode) == "" || studentCode == "\"\"" {
-			studentCodePtr = nil
-		} else {
-			studentCodePtr = &studentCode
-		}
+	if len(inputData.FirstName) == 0 || len(inputData.LastName) == 0 || len(inputData.Email) == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Missing required fields in 'data'",
+		})
+	}
 
-		var sectionID *uuid.UUID
-		if sectionName != "" {
+	if len(inputData.FirstName) != len(inputData.LastName) || len(inputData.FirstName) != len(inputData.Email) {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Inconsistent array lengths in 'data'",
+		})
+	}
+
+	for i := range inputData.FirstName {
+		studentCode := inputData.StudentCode[i]
+		sectionName := inputData.Section[i]
+
+		var sectionIDs []uuid.UUID
+		if inputData.RoleType != "INSTRUCTOR" && inputData.RoleType != "TA" {
+			if sectionName == "" {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+					"message": "sections name cannot be empty",
+				})
+			}
+
 			var section models.Section
 			err := h.sectionServices.GetSectionByCourseAndName(courseID, sectionName, &section)
 			if err != nil {
@@ -598,7 +603,7 @@ func (h *HttpInstructorHandler) CreateMultipleUserRoster(c *fiber.Ctx) error {
 							"error":   err.Error(),
 						})
 					}
-					sectionID = &newSection.SectionID
+					sectionIDs = append(sectionIDs, newSection.SectionID)
 				} else {
 					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 						"message": "Failed to query section",
@@ -606,33 +611,54 @@ func (h *HttpInstructorHandler) CreateMultipleUserRoster(c *fiber.Ctx) error {
 					})
 				}
 			} else {
-				sectionID = &section.SectionID
+				sectionIDs = append(sectionIDs, section.SectionID)
 			}
 		}
 
-		personalData = append(personalData, models.PersonalData{
+		var studentCodePtr *string
+		if studentCode == "" {
+			studentCodePtr = nil
+		} else {
+			studentCodePtr = &studentCode
+		}
+
+		personalData := models.PersonalData{
 			StudentCode: studentCodePtr,
-			FirstName:   firstName,
-			LastName:    lastName,
-			Email:       email,
-			RoleType:    roleType,
-		})
+			FirstName:   inputData.FirstName[i],
+			LastName:    inputData.LastName[i],
+			Email:       inputData.Email[i],
+			RoleType:    inputData.RoleType,
+		}
 
-		enrollmentLists = append(enrollmentLists, models.EnrollmentList{
-			CourseID:  courseID,
-			SectionID: sectionID,
-		})
-	}
+		if inputData.RoleType == "INSTRUCTOR" || inputData.RoleType == "TA" {
+			sectionIDs = append(sectionIDs, uuid.Nil)
+		}
 
-	if err := h.services.CreateMultipleUserRoster(personalData, enrollmentLists); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to add users to roster",
-			"error":   err.Error(),
-		})
+		for _, sectionID := range sectionIDs {
+			var sectionIDPtr *uuid.UUID
+
+			if sectionID != uuid.Nil {
+				sectionIDPtr = &sectionID
+			} else {
+				sectionIDPtr = nil
+			}
+
+			enrollment := models.EnrollmentList{
+				CourseID:  courseID,
+				SectionID: sectionIDPtr,
+			}
+
+			if err := h.services.CreateSingleUserRoster(&personalData, &enrollment); err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"message": "Failed to add user to section",
+					"error":   err.Error(),
+				})
+			}
+		}
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"message": "Users successfully added to the roster",
+		"message": "Users successfully added to the course",
 	})
 }
 
