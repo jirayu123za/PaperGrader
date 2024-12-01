@@ -43,7 +43,7 @@ const useColumnSelectStore = create<ColumnSelectStore>((set) => ({
     studentId: '',
     section: '',
   },
-  role: 'Student',
+  role: 'STUDENT',
   errors: {},
   setImportData: (data) =>
     set((state) => ({

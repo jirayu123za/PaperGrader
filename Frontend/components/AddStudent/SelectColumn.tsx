@@ -51,7 +51,7 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
         email: csvData.data.map((row) => row[selectedColumns.email]),
         student_code: csvData.data.map((row) => row[selectedColumns.studentId]),
         section: csvData.data.map((row) => row[selectedColumns.section]),
-        role_type: role || 'Student',
+        role_type: role || 'STUDENT',
       };
       setImportData(columnData);
       console.log('Import Data:', columnData);
