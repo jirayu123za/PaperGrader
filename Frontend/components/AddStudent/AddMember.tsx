@@ -12,14 +12,6 @@ const AddMemberModal: React.FC = () => {
   const [singleUserOpened, { open: openSingleUser, close: closeSingleUser }] = useDisclosure(false);
   const [csvOpened, { open: openCsv, close: closeCsv }] = useDisclosure(false);
   const [selectColumnOpened, { open: openSelectColumn, close: closeSelectColumn }] = useDisclosure(false);
-  // const [csvData, setCsvData] = useState<{ [key: string]: string }[]>([]);
-
-  // const handleNextFromCsvFile = (data: { [key: string]: string }[]) => {
-  //   console.log('Next button clicked, received data:', data);
-  //   setCsvData(data);
-  //   closeCsv();
-  //   openSelectColumn();
-  // };
 
   const handleNextFromCsvFile = () => {
     closeCsv();
