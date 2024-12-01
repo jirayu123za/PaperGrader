@@ -74,7 +74,6 @@ const AddMemberModal: React.FC = () => {
       />
       {/* Select Column Modal */}
       <SelectColumn 
-        csvData={csvData} 
         isOpen={selectColumnOpened} 
         onClose={closeSelectColumn} />
     </>
