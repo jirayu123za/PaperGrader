@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Button, Select, RadioGroup, Radio, Text, Table } from '@mantine/core';
+import { Modal, Button, Select, RadioGroup, Radio, Text, Table, Loader } from '@mantine/core';
 import { useCreateMultipleUser } from '../../hooks/useCreate/useCreateMultipleUser';
 import { useForm } from '@mantine/form';
 import { useRouter } from 'next/router';
@@ -14,7 +14,7 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
   const csvData = useCSVdataStore((state) => state.csvData);
   const csvHeaders = csvData?.columns || [];
   const router = useRouter();
-  const { mutate: createMultipleUser } = useCreateMultipleUser();
+  const { mutate: createMultipleUser, status } = useCreateMultipleUser();
   const { course_id } = router.query;
 
   const form = useForm({
@@ -171,11 +171,11 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
 
       {/* ปุ่มสำหรับ Cancel และ Import */}
       <div className="flex justify-end mt-6">
-        <Button color="red" onClick={onClose}>
+        <Button color="red" onClick={onClose} disabled={status == "pending"}>
           Cancel
         </Button>
-        <Button className="ml-2" onClick={handleImport} disabled={!csvData}>
-          Import
+        <Button className="ml-2" onClick={handleImport} disabled={!csvData || status == "pending"}>
+          {status == "pending" ? <Loader size="xs" /> : 'Import'}
         </Button>
       </div>
     </Modal>
