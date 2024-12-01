@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Modal, Button, Select, RadioGroup, Radio, Text, Table } from '@mantine/core';
 import useCSVdataStore from '../../store/add member/useCSVdataStore';
-import useColumnSelectStore from '../../store/add member/useColumnSelectStore';
+import useColumnSelectStore, { ColumnSelectStore } from '../../store/add member/useColumnSelectStore';
 
 interface SelectColumnProps {
   isOpen: boolean;
@@ -10,23 +10,22 @@ interface SelectColumnProps {
 
 const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {  
   const csvData = useCSVdataStore((state) => state.csvData);
-  const setImportData = useColumnSelectStore((state) => state.setImportData);
-  const [selectedColumns, setSelectedColumns] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    studentId: '',
-    section: '',
-  });
-  const [role, setRole] = useState<string | null>('Student');
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-  const handleColumnChange = (field: string, value: string) => {
-    setSelectedColumns((prev) => ({ ...prev, [field]: value }));
-    setErrors((prev) => ({ ...prev, [field]: '' }));
-  };
-
+  const { selectedColumns, role, setSelectedColumn, setRole, setImportData, errors, setErrors, clearErrors, } = useColumnSelectStore();
   const csvHeaders = csvData?.columns || [];
+
+  const validateColumns = () => {
+    const requiredFields = ['firstName', 'lastName', 'email', 'section'] as const;
+    const errors: Partial<ColumnSelectStore['errors']> = {};
+
+    requiredFields.forEach((field) => {
+      if (!selectedColumns[field]) {
+        errors[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
+      }
+    });
+    setErrors(errors);
+  
+    return Object.keys(errors).length === 0;
+  };
 
   const renderPreviewRows = () => {
     const previewRows = csvData?.data.slice(0, 3) || [];
@@ -41,20 +40,8 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
     ));
   };
 
-  const validateColumns = () => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!selectedColumns.firstName) newErrors.firstName = 'First Name is required';
-    if (!selectedColumns.lastName) newErrors.lastName = 'Last Name is required';
-    if (!selectedColumns.email) newErrors.email = 'Email Address is required';
-    if (!selectedColumns.section) newErrors.section = 'Section is required';
-
-    setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleImport = () => {
+    clearErrors();
     if (!validateColumns()) return;
 
     if (csvData) {
@@ -66,7 +53,6 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
         section: csvData.data.map((row) => row[selectedColumns.section]),
         role_type: role || 'Student',
       };
-
       setImportData(columnData);
       console.log('Import Data:', columnData);
       onClose();
@@ -102,7 +88,7 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
                 placeholder="Select a first name column"
                 data={csvHeaders}
                 value={selectedColumns.firstName}
-                onChange={(value) => handleColumnChange('firstName', value || '')}
+                onChange={(value) => setSelectedColumn('firstName', value || '')}
                 error={errors.firstName}
               />
             </td>
@@ -111,7 +97,7 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
                 placeholder="Select a last name column"
                 data={csvHeaders}
                 value={selectedColumns.lastName}
-                onChange={(value) => handleColumnChange('lastName', value || '')}
+                onChange={(value) => setSelectedColumn('lastName', value || '')}
                 error={errors.lastName}
               />
             </td>
@@ -120,7 +106,7 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
                 placeholder="Select an email column"
                 data={csvHeaders}
                 value={selectedColumns.email}
-                onChange={(value) => handleColumnChange('email', value || '')}
+                onChange={(value) => setSelectedColumn('email', value || '')}
                 error={errors.email}
               />
             </td>
@@ -129,7 +115,7 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
                 placeholder="Select a section column"
                 data={csvHeaders}
                 value={selectedColumns.section}
-                onChange={(value) => handleColumnChange('section', value || '')}
+                onChange={(value) => setSelectedColumn('section', value || '')}
                 error={errors.section}
               />
             </td>
@@ -138,7 +124,7 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
                 placeholder="Select a student ID column"
                 data={csvHeaders}
                 value={selectedColumns.studentId}
-                onChange={(value) => handleColumnChange('studentId', value || '')}
+                onChange={(value) => setSelectedColumn('studentId', value || '')}
               />
             </td>
           </tr>
