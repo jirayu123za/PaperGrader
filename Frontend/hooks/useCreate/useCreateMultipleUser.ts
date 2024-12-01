@@ -1,10 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
-const createMultipleUser = async (from: FormData) => {
-    const course_id = from.get('course_id');
-    const { data: response } = await axios.post('/api/api/instructor/roster',
-        from, {
+const createMultipleUser = async ({ formData, course_id }: { formData: FormData; course_id: string }) => {
+    const { data: response } = await axios.post('/api/api/instructor/rosters',
+        formData, {
         params: { course_id },
         headers: {
             'Content-Type': 'multipart/form-data',
