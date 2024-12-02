@@ -14,15 +14,15 @@ const ViewStudentLists: React.FC = () => {
 
     useEffect(() => {
         if (isOpen) {
-          refetch();
+            refetch();
         }
-      }, [isOpen, refetch]);
+    }, [isOpen, refetch]);
 
     return (
         <Modal
             opened={isOpen}
             onClose={closeModal}
-            title={`Students in ${selectedSection?.sectionName}`}
+            title={`Students in ${selectedSection?.sectionName || 'N/A'}`}
             size="lg"
             overlayProps={{
                 color: 'rgba(0, 0, 0, 0.5)',
@@ -38,21 +38,21 @@ const ViewStudentLists: React.FC = () => {
                 <Text ta="center">Loading...</Text>
             ) : error ? (
                 <Text ta="center" color="red">Error fetching student list</Text>
-            ) : sectionUsersList.length > 0 ? (
+            ) : sectionUsersList && sectionUsersList.length > 0 ? (
                 <Table striped highlightOnHover>
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Submissions</th>
+                            <th style={{ textAlign: 'left' }}>Name</th> 
+                            <th style={{ textAlign: 'left' }}>Email</th> 
+                            <th style={{ textAlign: 'center' }}>Submissions</th> 
                         </tr>
                     </thead>
                     <tbody>
                         {sectionUsersList.map((student, index) => (
                             <tr key={index}>
-                                <td>{student.full_name}</td>
-                                <td>{student.email}</td>
-                                <td>{student.submissions_count}</td>
+                                <td style={{ textAlign: 'left' }}>{student.full_name || 'N/A'}</td> 
+                                <td style={{ textAlign: 'left' }}>{student.email || 'N/A'}</td> 
+                                <td style={{ textAlign: 'center' }}>{student.submissions_count ?? 0}</td> 
                             </tr>
                         ))}
                     </tbody>
