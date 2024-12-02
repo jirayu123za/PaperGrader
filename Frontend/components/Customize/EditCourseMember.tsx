@@ -65,6 +65,8 @@ const EditCourseMember: React.FC<EditCourseMemberProps> = ({
     onClose();
   };
 
+  const isSectionDisabled = role === 'INSTRUCTOR' || role === 'TA';
+
   return (
     <Modal opened={isOpen} onClose={onClose} title="Edit Course Member">
       <div className="p-4">
@@ -97,14 +99,21 @@ const EditCourseMember: React.FC<EditCourseMemberProps> = ({
           label="Role"
           data={['INSTRUCTOR', 'STUDENT', 'TA']}
           value={role}
-          onChange={(value) => setRole(value || '')}
+          onChange={(value) => {
+            setRole(value || '');
+            if (value === 'INSTRUCTOR' || value === 'TA') {
+              resetSelectedSections(); // Reset section selection if the role is INSTRUCTOR or TA
+            }
+          }}
           required
         />
 
-        <SectionSelector
-          setSections={setSelectedSections}
-          defaultEnabled={true}
-        />
+        {!isSectionDisabled && (
+          <SectionSelector
+            setSections={setSelectedSections}
+            defaultEnabled={true}
+          />
+        )}
 
         <div className="flex justify-end mt-6">
           <Button variant="default" onClick={onClose}>
