@@ -102,7 +102,7 @@ const EditCourseMember: React.FC<EditCourseMemberProps> = ({
           onChange={(value) => {
             setRole(value || '');
             if (value === 'INSTRUCTOR' || value === 'TA') {
-              resetSelectedSections(); // Reset section selection if the role is INSTRUCTOR or TA
+              resetSelectedSections();
             }
           }}
           required
@@ -110,7 +110,6 @@ const EditCourseMember: React.FC<EditCourseMemberProps> = ({
 
         {!isSectionDisabled && (
           <SectionSelector
-            setSections={setSelectedSections}
             defaultEnabled={true}
           />
         )}
