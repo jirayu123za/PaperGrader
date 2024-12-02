@@ -11,12 +11,10 @@ interface Section {
 }
 
 interface SectionSelectorProps {
-  setSections: (sections: string[]) => void;
   defaultEnabled?: boolean;
 }
 
 const SectionSelector: React.FC<SectionSelectorProps> = ({
-  setSections,
   defaultEnabled = false,
 }) => {
   const router = useRouter();
@@ -33,17 +31,6 @@ const SectionSelector: React.FC<SectionSelectorProps> = ({
           value: section.section_id,
         }))
       : [];
-
-  const validateTag = (tag: string) => {
-    if (sectionsData.length === 0) return true;
-    return sectionsData.some((section) => section.label === tag);
-  };
-
-  const handleTagChange = (tags: string[]) => {
-    const validTags = tags.filter((tag) => validateTag(tag));
-    setSelectedSections(validTags);
-    setSections(validTags);
-  };
 
   React.useEffect(() => {
     if (defaultEnabled) {
@@ -69,7 +56,9 @@ const SectionSelector: React.FC<SectionSelectorProps> = ({
             data={sectionsData}
             placeholder="Add or select sections"
             value={selectedSections}
-            onChange={handleTagChange}
+            onChange={(tags) => {
+              setSelectedSections(tags);
+            }}
             label="Select Sections"
             maxDropdownHeight={100}
             comboboxProps={{ shadow: 'md' }}
