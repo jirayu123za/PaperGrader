@@ -130,6 +130,7 @@ func main() {
 
 	// Roster management
 	apiGroup.Get("/instructors/roster", instructorHandler.GetRosterByCourseID)
+	apiGroup.Get("/instructor/roster/personal", instructorHandler.GetPersonalDataByIDAndCourseID)
 	apiGroup.Get("/instructor/roster/section", instructorHandler.GetRosterSectionByCourseID)
 	apiGroup.Get("/instructor/roster/section/user", instructorHandler.GetRosterByCourseIDAndSectionID)
 	apiGroup.Post("/instructor/roster", instructorHandler.CreateSingleUserRoster)
