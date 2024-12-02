@@ -11,12 +11,8 @@ const CourseRoster: React.FC = () => {
   const { course_id } = router.query;
   const { data, isLoading, error } = useFetchUsersRoster(course_id as string);
   const { usersList } = useRosterStore();
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedPersonalDataId, setSelectedPersonalDataId] = useState<string | null>(null);
-
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
 
   const openEditModal = (personal_data_id: string) => {
     setSelectedPersonalDataId(personal_data_id);
@@ -72,16 +68,6 @@ const CourseRoster: React.FC = () => {
           ))}
         </tbody>
       </Table>
-
-      {/* No members */}
-      {usersList.length === 0 && (
-        <div className="text-center mt-8">
-          <p>You haven't added anyone to your course yet.</p>
-          <Button variant="default" onClick={openModal}>
-            Add Members
-          </Button>
-        </div>
-      )}
 
       {/* AddMember Modal */}
       <div className="text-center mt-8">
