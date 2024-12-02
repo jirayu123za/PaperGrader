@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Table, Menu } from '@mantine/core';
+import { Button, Table, Menu, Paper, Text, TextInput, Select } from '@mantine/core';
 import AddMember from '../AddStudent/AddMember';
 import { useFetchUsersRoster } from '../../hooks/Roster/useFetchUsersRoster';
 import { useRouter } from 'next/router';
@@ -14,71 +14,119 @@ const CourseRoster: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedPersonalDataId, setSelectedPersonalDataId] = useState<string | null>(null);
 
+  const [searchTerm, setSearchTerm] = useState<string>(''); // สำหรับค้นหา
+  const [roleFilter, setRoleFilter] = useState<string | null>(null); // สำหรับกรองประเภท
+
   const openEditModal = (personal_data_id: string) => {
     setSelectedPersonalDataId(personal_data_id);
     setIsEditModalOpen(true);
   };
+
   const closeEditModal = () => {
     setSelectedPersonalDataId(null);
     setIsEditModalOpen(false);
   };
 
+  const filteredUsers = usersList.filter((member) => {
+    const matchesSearch = searchTerm
+      ? member.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.email.toLowerCase().includes(searchTerm.toLowerCase())
+      : true;
+
+    const matchesRole = roleFilter ? member.role_type === roleFilter : true;
+
+    return matchesSearch && matchesRole;
+  });
+
   if (isLoading) return <div>Loading Roster Users list...</div>;
   if (error) return <div>Error loading Roster Users list: {error.message}</div>;
 
   return (
-    <div className="p-8 bg-white rounded-lg shadow">
-      <h1 className="text-2xl font-bold mb-4">Course Roster</h1>
+    <div className="p-8">
+      <div className="flex items-center space-x-2 mb-4">
+        <Text size="xl" fw={700}>
+          Course Roster
+        </Text>
+        <Text size="xl" color="dimmed">
+          {usersList.length > 0 
+            ? `(${usersList.length} Members)` 
+            : 'No members available for this course.'}
+        </Text>
+      </div>
+
+      {/* Search and Filter */}
+      <div className="flex gap-4 mb-4">
+        <TextInput
+          placeholder="Search by name or email"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.currentTarget.value)}
+          style={{ flex: 1 }}
+        />
+        <Select
+          placeholder="Filter by role"
+          data={[
+            { value: 'INSTRUCTOR', label: 'Instructor' },
+            { value: 'STUDENT', label: 'Student' },
+            { value: 'TA', label: 'TA' },
+          ]}
+          value={roleFilter}
+          onChange={(value) => setRoleFilter(value)}
+          clearable
+          style={{ width: 200 }}
+        />
+      </div>
 
       {/* Table */}
-      <Table>
-        <thead>
-          <tr>
-            <th className="text-left p-2">Name</th>
-            <th className="text-left p-2">Email</th>
-            <th className="text-left p-2">Role</th>
-            <th className="text-left p-2">Section</th>
-            <th className="text-left p-2">Submissions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {usersList.map((member) => (
-            <tr key={member.personal_data_id}>
-              <td className="p-2">{member.full_name}</td>
-              <td className="p-2">{member.email}</td>
-              <td className="p-2">{member.role_type}</td>
-              <td className="p-2">{member.section_name || 'All'}</td>
-              <td className="p-2">
-                {member.role_type === 'INSTRUCTOR' ? '-' : member.submissions_count || 0}
-              </td>
-              <td className="p-2">
-                <Menu>
-                  <Menu.Target>
-                    <Button variant="subtle">•••</Button>
-                  </Menu.Target>
-                  <Menu.Dropdown>
-                    <Menu.Item onClick={() => openEditModal(member.personal_data_id)}>
-                      Update Information
-                    </Menu.Item>
-                    <Menu.Item color="red">Remove User</Menu.Item>
-                  </Menu.Dropdown>
-                </Menu>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+      <Paper shadow="sm" radius="md" withBorder p="xl">
+        <Table highlightOnHover verticalSpacing="sm">
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>Name</Table.Th>
+              <Table.Th>Email</Table.Th>
+              <Table.Th>Role</Table.Th>
+              <Table.Th style={{ textAlign: 'center' }}>Section</Table.Th>
+              <Table.Th style={{ textAlign: 'center' }}>Submissions</Table.Th>
+              <Table.Th></Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {filteredUsers.map((member) => (
+              <Table.Tr key={member.personal_data_id}>
+                <Table.Td>{member.full_name}</Table.Td>
+                <Table.Td>{member.email}</Table.Td>
+                <Table.Td>{member.role_type}</Table.Td>
+                <Table.Td style={{ textAlign: 'center' }}>{member.section_name || 'All'}</Table.Td>
+                <Table.Td style={{ textAlign: 'center' }}>
+                  {member.role_type === 'INSTRUCTOR' ? '-' : member.submissions_count || 0}
+                </Table.Td>
+                <Table.Td>
+                  <Menu>
+                    <Menu.Target>
+                      <Button variant="subtle" size="xs">•••</Button>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      <Menu.Item onClick={() => openEditModal(member.personal_data_id)}>
+                        Update Information
+                      </Menu.Item>
+                      <Menu.Item color="red">Remove User</Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                </Table.Td>
+              </Table.Tr>
+            ))}
+          </Table.Tbody>
+        </Table>
+      </Paper>
 
-      {/* AddMember Modal */}
       <div className="text-center mt-8">
         <AddMember />
       </div>
 
-      {/* EditCourseMember Modal */}
       <EditCourseMember
         isOpen={isEditModalOpen}
         onClose={closeEditModal}
         personal_data_id={selectedPersonalDataId}
+        course_id={course_id as string}
       />
     </div>
   );

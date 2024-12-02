@@ -20,7 +20,7 @@
     "@react-pdf-viewer/page-navigation": "^3.12.0",
     "@react-pdf-viewer/scroll-mode": "^3.12.0",
     "@tabler/icons-react": "^3.19.0",
-    "@tanstack/react-query": "^5.56.2",
+    "@tanstack/react-query": "^5.62.0",
     "@tanstack/react-query-devtools": "^5.58.0",
     "@tiptap/extension-highlight": "^2.9.1",
     "@tiptap/extension-link": "^2.9.1",
