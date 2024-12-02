@@ -162,7 +162,26 @@ func (r *GormInstructorRepository) FindRosterByCourseIDAndSectionID(CourseID uui
 	return users, nil
 }
 
-// Add student or instructor to course
+func (r *GormInstructorRepository) FindPersonalDataByIDAndCourseID(PersonalDataID uuid.UUID, CourseID uuid.UUID) ([]map[string]interface{}, error) {
+	var user []map[string]interface{}
+
+	if err := r.db.Table("enrollment_lists").
+		Select(`personal_data.personal_data_id,
+				CONCAT(personal_data.first_name, ' ', personal_data.last_name) AS full_name,
+		        personal_data.email,
+		        personal_data.student_code,
+		        personal_data.role_type,
+		        STRING_AGG(DISTINCT sections.section_name, ', ') AS section_name`).
+		Joins("JOIN personal_data ON enrollment_lists.personal_data_id = personal_data.personal_data_id").
+		Joins("LEFT JOIN sections ON enrollment_lists.section_id = sections.section_id").
+		Where("enrollment_lists.course_id = ? AND enrollment_lists.personal_data_id = ? AND enrollment_lists.deleted_at IS NULL", CourseID, PersonalDataID).
+		Group("personal_data.personal_data_id, personal_data.first_name, personal_data.last_name, personal_data.email, personal_data.role_type").
+		Scan(&user).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
 // FindUserByEmail finds a user by their email address
 func (r *GormInstructorRepository) FindUserByEmail(email string) (map[string]interface{}, error) {
 	var result map[string]interface{}
@@ -176,28 +195,6 @@ func (r *GormInstructorRepository) FindUserByEmail(email string) (map[string]int
 	}
 
 	return result, nil
-}
-
-func (r *GormInstructorRepository) FindInstructorExists(userID, courseID uuid.UUID) (bool, error) {
-	var count int64
-	err := r.db.Table("instructor_lists").
-		Where("user_id = ? AND course_id = ?", userID, courseID).
-		Count(&count).Error
-	if err != nil {
-		return false, err
-	}
-	return count > 0, nil
-}
-
-func (r *GormInstructorRepository) FindStudentExists(userID, courseID uuid.UUID) (bool, error) {
-	var count int64
-	err := r.db.Table("enrollments").
-		Where("user_id = ? AND course_id = ?", userID, courseID).
-		Count(&count).Error
-	if err != nil {
-		return false, err
-	}
-	return count > 0, nil
 }
 
 // AddSingleUserRoster adds a single user to a course
