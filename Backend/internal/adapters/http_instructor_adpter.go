@@ -54,31 +54,11 @@ func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 	assignmentDescription := c.FormValue("assignment_description")
 	submissBy := c.FormValue("submiss_by")
 
-	// lateSubmissStr := c.FormValue("late_submiss")
-	// lateSubmiss, err := strconv.ParseBool(lateSubmissStr)
-	// if err != nil {
-	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-	// 		"message": "Invalid value for late_submiss",
-	// 		"error":   err.Error(),
-	// 	})
-	// }
-
-	groupSubmissStr := c.FormValue("group_submiss")
-	groupSubmiss, err := strconv.ParseBool(groupSubmissStr)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid value for group_submiss",
-			"error":   err.Error(),
-		})
-	}
-
 	assignment := models.Assignment{
 		CourseID:              courseID,
 		AssignmentName:        assignmentName,
 		AssignmentDescription: assignmentDescription,
 		SubmissBy:             submissBy,
-		// LateSubmiss:           lateSubmiss,
-		GroupSubmiss: groupSubmiss,
 	}
 
 	if err := h.services.CreateAssignment(courseID, &assignment); err != nil {
@@ -88,95 +68,76 @@ func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 		})
 	}
 
-	// sectionID, err := h.sectionServices.GetSectionIDsByCourseID(courseID)
-	// if err != nil {
-	// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-	// 		"message": "Failed to retrieve section_id",
-	// 		"error":   err.Error(),
-	// 	})
-	// }
-
-	sectionIDsParam := c.FormValue("section_id")
 	var sectionIDs []uuid.UUID
-	if err := json.Unmarshal([]byte(sectionIDsParam), &sectionIDs); err != nil {
+	sectionsName := c.FormValue("sections")
+	if sectionsName == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid section_ids format",
-			"error":   err.Error(),
+			"message": "sections name cannot be empty",
 		})
 	}
 
-	// releaseDateStr := c.FormValue("release_date")
-	// dueDateStr := c.FormValue("due_date")
+	sectionsSplit := strings.Split(sectionsName, ",")
+	for _, sectionName := range sectionsSplit {
+		sectionName = strings.TrimSpace(sectionName)
+		if sectionName == "" {
+			continue
+		}
 
-	// releaseDate, err := time.Parse("02/01/2006 15:04", releaseDateStr)
-	// if err != nil {
-	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-	// 		"message": "Invalid release_date format",
-	// 		"error":   err.Error(),
-	// 	})
-	// }
+		var section models.Section
 
-	// dueDate, err := time.Parse("02/01/2006 15:04", dueDateStr)
-	// if err != nil {
-	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-	// 		"message": "Invalid due_date format",
-	// 		"error":   err.Error(),
-	// 	})
-	// }
-
-	// var cutOffDate *time.Time
-	// if cutOffDateStr := c.FormValue("cut_off_date"); cutOffDateStr != "" {
-	// 	parsedCutOffDate, err := time.Parse("02/01/2006 15:04", cutOffDateStr)
-	// 	if err != nil {
-	// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-	// 			"message": "Invalid cut_off_date format",
-	// 			"error":   err.Error(),
-	// 		})
-	// 	}
-	// 	cutOffDate = &parsedCutOffDate
-	// }
-
-	// var assignmentSections []models.AssignmentSection
-	// for _, secID := range sectionID {
-	// 	assignmentSection := models.AssignmentSection{
-	// 		SectionID:   secID,
-	// 		ReleaseDate: releaseDate,
-	// 		DueDate:     dueDate,
-	// 		CutOffDate:  cutOffDate,
-	// 	}
-	// 	assignmentSections = append(assignmentSections, assignmentSection)
-	// }
-
-	var releaseDate, dueDate, cutOffDate *time.Time
+		err := h.sectionServices.GetSectionByCourseAndName(courseID, sectionName, &section)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				newSection := models.Section{
+					CourseID:    courseID,
+					SectionName: sectionName,
+				}
+				if err := h.sectionServices.CreateSections(&newSection); err != nil {
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+						"message": "Failed to create section",
+						"error":   err.Error(),
+					})
+				}
+				sectionIDs = append(sectionIDs, newSection.SectionID)
+			} else {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"message": "Failed to query section",
+					"error":   err.Error(),
+				})
+			}
+		} else {
+			sectionIDs = append(sectionIDs, section.SectionID)
+		}
+	}
 
 	var assignmentSections []models.AssignmentSection
 	for _, secID := range sectionIDs {
 		assignmentSection := models.AssignmentSection{
-			SectionID:   secID,
-			ReleaseDate: releaseDate,
-			DueDate:     dueDate,
-			CutOffDate:  cutOffDate,
+			SectionID: secID,
 		}
 		assignmentSections = append(assignmentSections, assignmentSection)
 	}
 
 	// Handle files uploaded
-	formFiles, err := c.MultipartForm()
+	form, err := c.MultipartForm()
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Failed to get files from form-data",
-			"error":   err.Error(),
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Failed to parse form data",
 		})
 	}
 
-	files := formFiles.File["files"]
+	files := form.File["files"]
+	if len(files) == 0 {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "No files uploaded",
+		})
+	}
+
 	var assignmentFiles []models.AssignmentFile
 	var uploads []models.Upload
-
 	for i, file := range files {
 		isTemplateStr := c.FormValue(fmt.Sprintf("is_template[%d]", i))
 		isTemplate, err := strconv.ParseBool(isTemplateStr)
-
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"message": "Invalid is_template value",
