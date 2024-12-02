@@ -53,8 +53,6 @@ func (r *GormCourseRepository) AddCourse(Course *models.Course, personalData *mo
 func (r *GormCourseRepository) FindCourseByID(courseID uuid.UUID) (*models.Course, error) {
 	var course *models.Course
 	if result := r.db.Preload("Assignments").
-		Preload("InstructorLists").
-		Preload("Enrollments").
 		First(&course, "course_id = ?", courseID); result.Error != nil {
 		return nil, result.Error
 	}
