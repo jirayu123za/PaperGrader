@@ -424,6 +424,39 @@ func (h *HttpInstructorHandler) GetRosterByCourseIDAndSectionID(c *fiber.Ctx) er
 	})
 }
 
+func (h *HttpInstructorHandler) GetPersonalDataByIDAndCourseID(c *fiber.Ctx) error {
+	personalDataIDParam := c.Query("personal_data_id")
+	personalDataID, err := uuid.Parse(personalDataIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid personal_data_id",
+			"error":   err.Error(),
+		})
+	}
+
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	personalData, err := h.services.GetPersonalDataByIDAndCourseID(personalDataID, courseID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get personal data",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":      "Personal data is retrieved",
+		"personalData": personalData,
+	})
+}
+
 // handler Insert a single user to course
 func (h *HttpInstructorHandler) CreateSingleUserRoster(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
