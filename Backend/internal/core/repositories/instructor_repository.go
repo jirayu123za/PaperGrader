@@ -19,15 +19,13 @@ type InstructorRepository interface {
 	FindRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
 	FindRosterSectionByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
 	FindRosterByCourseIDAndSectionID(CourseID uuid.UUID, SectionID uuid.UUID) ([]map[string]interface{}, error)
-	// AddInstructorToCourse(userID uuid.UUID, courseID uuid.UUID) error
-	// AddStudentToCourse(userID uuid.UUID, courseID uuid.UUID) error
+	FindPersonalDataByIDAndCourseID(PersonalDataID uuid.UUID, CourseID uuid.UUID) ([]map[string]interface{}, error)
+
 	AddSingleUserRoster(personalData *models.PersonalData, enrollment *models.EnrollmentList) error
 	AddMultipleUserRoster(personalData []models.PersonalData, enrollmentLists []models.EnrollmentList) error
 	FindColumnsAndDataFromUploadedFile(fileBytes []byte) (map[string]interface{}, error)
 
 	FindUserByEmail(email string) (map[string]interface{}, error)
-	FindInstructorExists(userID uuid.UUID, CourseID uuid.UUID) (bool, error)
-	FindStudentExists(userID, courseID uuid.UUID) (bool, error)
 
 	FindCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error)
 	FindAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
