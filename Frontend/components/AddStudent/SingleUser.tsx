@@ -3,10 +3,9 @@ import { Modal, Button, TextInput, RadioGroup, Radio } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useCreateSingleUser } from '../../hooks/useCreate/useCreateSingleUser';
 import { useRouter } from 'next/router';
-import SectionSelector from '../Create/Sections/SectionSelector';
 import { useSelectSectionStore } from '../../store/useSectionStore';
 import { useInstructorListStore } from '../../store/useInstructorListStore'; 
-
+import SectionSelector from '../Create/Sections/SectionSelector';
 
 interface SingleUserModalProps {
   isOpen: boolean;
@@ -14,11 +13,11 @@ interface SingleUserModalProps {
 }
 
 const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
-  const { mutate } = useCreateSingleUser();
   const router = useRouter();
   const { course_id } = router.query;
-  const { resetSelectedSections } = useSelectSectionStore();
-  const { addInstructor } = useInstructorListStore(); // ใช้ฟังก์ชัน addInstructor
+  const { mutate } = useCreateSingleUser();
+  const { resetSelectedSections, selectedSections } = useSelectSectionStore();
+  const { addInstructor } = useInstructorListStore();
 
   const capitalizeFirstLetter = (value: string) => {
     return value
@@ -33,7 +32,7 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
       email: '',
       student_code: '',
       role_type: '',
-      sections: [] as string[],
+      sections: selectedSections,
     },
 
     validate: {
@@ -62,7 +61,6 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
       onSuccess: () => {
         console.log('User created successfully');
 
-        // ถ้าผู้ใช้ที่เพิ่มเป็น INSTRUCTOR ให้อัปเดตรายชื่อใน Store
         if (values.role_type === 'INSTRUCTOR') {
           addInstructor({
             personalData_id: Date.now().toString(),
@@ -132,7 +130,7 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
         {(form.values.role_type === 'STUDENT' ) && (
           <div className="mt-4">
             <SectionSelector
-              setSections={(sections: string[]) => form.setFieldValue('sections', sections)}
+              {...form.getInputProps('sections')}
               defaultEnabled={true}
             />
           </div>
