@@ -41,8 +41,8 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
         <td>{row[form.values.firstName] || '-'}</td>
         <td>{row[form.values.lastName] || '-'}</td>
         <td>{row[form.values.email] || '-'}</td>
-        <td>{row[form.values.studentId] || '-'}</td>
         <td>{row[form.values.section] || '-'}</td>
+        <td>{row[form.values.studentId] || '-'}</td>
       </tr>
     ));
   };
