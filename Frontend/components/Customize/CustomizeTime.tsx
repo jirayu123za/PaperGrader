@@ -62,7 +62,7 @@ const CustomizeTimeModal: React.FC<CustomizeTimeModalProps> = ({ isOpen, onClose
       <form onSubmit={form.onSubmit(handleSubmit)}>
         {/* Section Selector */}
         <div className="mb-6">
-          <SectionSelector setSections={handleSectionsChange} defaultEnabled={true} />
+          <SectionSelector defaultEnabled={true} />
         </div>
 
         {/* Date Pickers */}
