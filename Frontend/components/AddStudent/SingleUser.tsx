@@ -39,14 +39,15 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
       name: (value) => (value.length < 2 ? 'Name must have at least 2 characters' : null),
       email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email format'),
       role_type: (value) => (value ? null : 'Please select a role'),
-      sections: (value, values) =>
-        values.role_type === 'STUDENT' && value.length === 0 ? 'Please select at least one section' : null,
+      // sections: (value, values) =>
+      //   values.role_type === 'STUDENT' && value.length === 0 ? 'Please select at least one section' : null,
     },
   });
 
   const handleSubmit = (values: typeof form.values) => {
     const name = capitalizeFirstLetter(values.name);
     const [first_name, last_name] = name.split(' ');
+    form.setFieldValue('sections', selectedSections); 
 
     const formData = new FormData();
     formData.append('course_id', Array.isArray(course_id) ? course_id[0] : course_id || '');
@@ -55,7 +56,7 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
     formData.append('email', values.email);
     formData.append('student_code', values.student_code);
     formData.append('role_type', values.role_type);
-    formData.append('sections', values.sections.join(','));
+    formData.append('sections', selectedSections.join(','));
 
     mutate(formData, {
       onSuccess: () => {
@@ -69,6 +70,7 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
           });
         }
 
+        resetSelectedSections();
         form.reset();
         onClose();
       },
@@ -77,7 +79,7 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
       },
     });
   };
-
+  
   const handleClose = () => {
     resetSelectedSections();
     form.reset();
@@ -130,7 +132,6 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
         {(form.values.role_type === 'STUDENT' ) && (
           <div className="mt-4">
             <SectionSelector
-              {...form.getInputProps('sections')}
               defaultEnabled={true}
             />
           </div>
