@@ -7,6 +7,8 @@ interface ActiveAssignments {
     regrades: boolean;
     assignment_release_date: string;
     assignment_due_date: string;
+    assignment_cut_off_date: string;
+    created_at: string;
     assignment_description: string;
 }
 
