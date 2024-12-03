@@ -1,29 +1,23 @@
 import React from 'react';
-import { Button, Table, Menu, Paper, Text, TextInput, Select, Skeleton } from '@mantine/core';
 import AddMember from '../AddStudent/AddMember';
+import EditCourseMember from '../Customize/EditCourseMember';
+import { Button, Table, Menu, Paper, Text, TextInput, Select, Skeleton } from '@mantine/core';
 import { useFetchUsersRoster } from '../../hooks/Roster/useFetchUsersRoster';
 import { useRouter } from 'next/router';
 import { useRosterStore } from '../../store/useRosterStore';
-import EditCourseMember from '../Customize/EditCourseMember';
+import { useModalEditRosterMemberStore } from '../../store/modal/useRosterModalStore';
 
 const CourseRoster: React.FC = () => {
   const router = useRouter();
   const { course_id } = router.query;
   const { isLoading, error } = useFetchUsersRoster(course_id as string);
-  const { usersList } = useRosterStore();
-  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
-  const [selectedPersonalDataId, setSelectedPersonalDataId] = React.useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = React.useState<string>('');
-  const [roleFilter, setRoleFilter] = React.useState<string | null>(null);
+  const { usersList, searchTerm, setSearchTerm, roleFilter, setRoleFilter } = useRosterStore();
+  const { openModal } = useModalEditRosterMemberStore();
 
-  const openEditModal = (personal_data_id: string) => {
-    setSelectedPersonalDataId(personal_data_id);
-    setIsEditModalOpen(true);
-  };
-
-  const closeEditModal = () => {
-    setSelectedPersonalDataId(null);
-    setIsEditModalOpen(false);
+  const handleEditClick = (personal_data_id: string) => {
+    console.time('handleEditClick');
+    openModal(personal_data_id);
+    console.timeEnd('handleEditClick');
   };
 
   const filteredUsers = usersList.filter((member) => {
@@ -84,9 +78,6 @@ const CourseRoster: React.FC = () => {
 
       {/* Table */}
       <Paper shadow="sm" radius="md" withBorder p="xl">
-        {isLoading ? (
-          <Skeleton visible={isLoading} height={400} radius="md" />
-        ) : (
           <Table highlightOnHover verticalSpacing="sm">
             <Table.Thead>
               <Table.Tr>
@@ -99,7 +90,30 @@ const CourseRoster: React.FC = () => {
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {filteredUsers.map((member) => (
+              {isLoading
+                ? Array.from({ length: 5 }).map((_, index) => (
+                  <Table.Tr key={`skeleton-row-${index}`}>
+                    <Table.Td>
+                      <Skeleton visible height={20} width="80%" />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton visible height={20} width="60%" />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton visible height={20} width="40%" />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton visible height={20} width="50%" />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton visible height={20} width="30%" />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton visible height={20} width="20%" />
+                    </Table.Td>
+                  </Table.Tr>
+                ))
+              : filteredUsers.map((member) => (
                 <Table.Tr key={member.personal_data_id}>
                   <Table.Td>{member.full_name}</Table.Td>
                   <Table.Td>{member.email}</Table.Td>
@@ -114,7 +128,7 @@ const CourseRoster: React.FC = () => {
                         <Button variant="subtle" size="xs">•••</Button>
                       </Menu.Target>
                       <Menu.Dropdown>
-                        <Menu.Item onClick={() => openEditModal(member.personal_data_id)}>
+                        <Menu.Item onClick={() => handleEditClick(member.personal_data_id)}>
                           Update Information
                         </Menu.Item>
                         <Menu.Item color="red">Remove User</Menu.Item>
@@ -125,19 +139,13 @@ const CourseRoster: React.FC = () => {
               ))}
             </Table.Tbody>
           </Table>
-        )}
       </Paper>
 
       <div className="text-center mt-8">
         <AddMember />
       </div>
 
-      <EditCourseMember
-        isOpen={isEditModalOpen}
-        onClose={closeEditModal}
-        personal_data_id={selectedPersonalDataId || ''}
-        course_id={course_id as string}
-      />
+      <EditCourseMember />
     </div>
   );
 };
