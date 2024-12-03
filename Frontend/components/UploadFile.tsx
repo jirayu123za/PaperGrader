@@ -1,24 +1,27 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useFileStore } from '../store/useFileStore';
 import { Button, Checkbox, Input } from '@mantine/core';
 
 const UploadFile: React.FC = () => {
-   const { files, addFile, templateFile, setTemplateFile } = useFileStore();
-   const [error, setError] = useState<string | null>(null);
+  const { files, setFiles, templateFile, setTemplateFile } = useFileStore();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.currentTarget.files) {
-      const newFiles = Array.from(event.currentTarget.files);
-      
-      newFiles.forEach(file => {
-        addFile(file);
-      });
-      setError(null);
+      const newFiles = Array.from(event.currentTarget.files).filter(
+        (file) => file instanceof File
+      ) as File[];
+      setFiles([...files, ...newFiles]);
+      console.log('Updated files:', [...files, ...newFiles]);
     }
   };
 
   const handleTemplateSelect = (index: number) => {
-    setTemplateFile(files[index]);
+    if (files[index] instanceof File) {
+      setTemplateFile(files[index]);
+      console.log('Template file set to:', files[index].name);
+    } else {
+      console.error('Invalid template file selected:', files[index]);
+    }
   };
 
   return (

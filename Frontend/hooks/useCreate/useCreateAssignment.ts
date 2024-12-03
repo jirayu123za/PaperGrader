@@ -2,8 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAssignmentStore } from '../../store/useCreateAssignmentStore';
 
-const createAssignment = async (formData: FormData) => {
-  const course_id = formData.get('course_id');
+const createAssignment = async ({ formData, course_id }: { formData: FormData; course_id: string }) => {
   const { data: assignmentResponse } = await axios.post('/api/api/instructor/assignment/files',
     formData, {
     params: { course_id },
@@ -11,7 +10,6 @@ const createAssignment = async (formData: FormData) => {
       'Content-Type': 'multipart/form-data',
     },
   });
-
   return assignmentResponse;
 };
 
