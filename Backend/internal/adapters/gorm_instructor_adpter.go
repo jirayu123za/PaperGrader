@@ -400,7 +400,7 @@ func (r *GormInstructorRepository) FindActiveAssignmentsByCourseID(CourseID uuid
 
 	if err := r.db.
 		Table("assignments").
-		Select("DISTINCT ON (assignments.assignment_id) assignments.assignment_id, assignments.assignment_name, assignments.assignment_description, assignments.submiss_by, assignments.published, assignments.regrades, assignment_sections.release_date AS assignment_release_date, assignment_sections.due_date AS assignment_due_date").
+		Select("DISTINCT ON (assignments.assignment_id) assignments.assignment_id, assignments.assignment_name, assignments.assignment_description, assignments.submiss_by, assignments.published, assignments.regrades, assignments.created_at, assignment_sections.release_date AS assignment_release_date, assignment_sections.due_date AS assignment_due_date, assignment_sections.cut_off_date AS assignment_cut_off_date").
 		Joins("JOIN assignment_sections ON assignments.assignment_id = assignment_sections.assignment_id").
 		Where("assignment_sections.release_date <= ? AND (assignment_sections.cut_off_date IS NULL OR assignment_sections.cut_off_date > ?) AND assignments.course_id = ? AND assignments.deleted_at IS NULL", currentDate, currentDate, CourseID).
 		Order("assignments.assignment_id, assignment_sections.release_date ASC").
