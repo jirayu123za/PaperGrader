@@ -16,6 +16,11 @@ interface UsersListStore {
     setUsersList: (usersList: UsersList[]) => void;
     sectionUsersList: UsersList[];
     setSectionUsersList: (usersList: UsersList[]) => void;
+
+    searchTerm: string;
+    setSearchTerm: (term: string) => void;
+    roleFilter: string | null;
+    setRoleFilter: (role: string | null) => void;
 }
 
 export const useRosterStore = create<UsersListStore>((set) => ({
@@ -23,6 +28,11 @@ export const useRosterStore = create<UsersListStore>((set) => ({
     setUsersList: (usersList: UsersList[]) => set({ usersList }),
     sectionUsersList: [],
     setSectionUsersList: (usersList: UsersList[]) => set({ sectionUsersList: usersList }),
+
+    searchTerm: '',
+    setSearchTerm: (term) => set({ searchTerm: term }),
+    roleFilter: null,
+    setRoleFilter: (role) => set({ roleFilter: role }),
 }));
 
 // Store section roster data
