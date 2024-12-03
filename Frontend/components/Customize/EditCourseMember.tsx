@@ -25,8 +25,9 @@ const EditCourseMember: React.FC<EditCourseMemberProps> = ({
 
   const { isLoading, isSuccess } = useFetchEditCourseMember(course_id, personal_data_id);
 
-  React.useEffect(() => {
-    if (isOpen && isSuccess && editMember) {
+  if (isOpen && isSuccess && editMember) {
+    if (fullName === '' && studentCode === '' && role === '') {
+      // อัปเดตค่าฟอร์มเมื่อข้อมูลพร้อมและฟิลด์ยังไม่ได้ตั้งค่า
       setFullName(editMember.full_name || '');
       setStudentCode(editMember.student_code || '');
       setRole(editMember.role_type || '');
@@ -38,7 +39,7 @@ const EditCourseMember: React.FC<EditCourseMemberProps> = ({
         : ['All Sections'];
       setSelectedSections(sections);
     }
-  }, [isOpen, isSuccess, editMember, setFullName, setStudentCode, setRole, setSelectedSections]);
+  }
 
   const handleSave = () => {
     const updatedMember = {
@@ -51,6 +52,7 @@ const EditCourseMember: React.FC<EditCourseMemberProps> = ({
 
     console.log('Saving member data:', updatedMember);
     resetForm();
+    resetSelectedSections();
     onClose();
   };
 
@@ -69,13 +71,22 @@ const EditCourseMember: React.FC<EditCourseMemberProps> = ({
       <div className="p-4">
         {/* Skeleton loading */}
         <Skeleton visible={isLoading}>
-          <TextInput label="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+          <TextInput
+            label="Full Name"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+          />
         </Skeleton>
         <Skeleton visible={isLoading}>
           <TextInput label="Email Address" value={editMember?.email || ''} disabled />
         </Skeleton>
         <Skeleton visible={isLoading}>
-          <TextInput label="Student ID" value={studentCode} onChange={(e) => setStudentCode(e.target.value)} />
+          <TextInput
+            label="Student ID"
+            value={studentCode}
+            onChange={(e) => setStudentCode(e.target.value)}
+          />
         </Skeleton>
         <Skeleton visible={isLoading}>
           <Select
