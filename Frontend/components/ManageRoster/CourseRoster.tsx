@@ -1,11 +1,12 @@
 import React from 'react';
 import AddMember from '../AddStudent/AddMember';
 import EditCourseMember from '../Customize/EditCourseMember';
-import { Button, Table, Menu, Paper, Text, TextInput, Select, Skeleton } from '@mantine/core';
+import { Button, Table, Menu, Paper, Text, TextInput, Select, Skeleton, Pagination } from '@mantine/core';
 import { useFetchUsersRoster } from '../../hooks/Roster/useFetchUsersRoster';
 import { useRouter } from 'next/router';
 import { useRosterStore } from '../../store/useRosterStore';
 import { useModalEditRosterMemberStore } from '../../store/modal/useRosterModalStore';
+import { usePagination } from '@mantine/hooks';
 
 const CourseRoster: React.FC = () => {
   const router = useRouter();
@@ -28,6 +29,21 @@ const CourseRoster: React.FC = () => {
 
     return matchesSearch && matchesRole;
   });
+
+  const pageSize = 10;
+  const totalPages = Math.ceil(filteredUsers.length / pageSize);
+  
+  const pagination = usePagination({
+    total: totalPages,
+    initialPage: 1,
+    siblings: 1,
+    boundaries: 1,
+  });
+  
+  const paginatedData = filteredUsers.slice(
+    (pagination.active - 1) * pageSize,
+    pagination.active * pageSize
+  );
 
   return (
     <div className="p-8">
@@ -111,7 +127,7 @@ const CourseRoster: React.FC = () => {
                     </Table.Td>
                   </Table.Tr>
                 ))
-              : filteredUsers.map((member) => (
+              : paginatedData.map((member) => (
                 <Table.Tr key={member.personal_data_id}>
                   <Table.Td>{member.full_name}</Table.Td>
                   <Table.Td>{member.email}</Table.Td>
@@ -137,6 +153,16 @@ const CourseRoster: React.FC = () => {
               ))}
             </Table.Tbody>
           </Table>
+
+          <div className="flex justify-center mt-4">
+            <Pagination
+              total={totalPages}
+              siblings={1}
+              boundaries={1}
+              value={pagination.active}
+              onChange={pagination.setPage}
+            />
+          </div>
       </Paper>
 
       <div className="text-center mt-8">
