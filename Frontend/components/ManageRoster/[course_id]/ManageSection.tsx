@@ -1,10 +1,11 @@
 import React from 'react';
-import { Table, Text, Button, Divider, Loader, Paper } from '@mantine/core';
+import { Table, Text, Button, Loader, Paper, Pagination } from '@mantine/core';
 import { useRouter } from 'next/router';
 import { useFetchSections } from '../../../hooks/Roster/useFetchSections';
 import { useSectionDetailsStore } from '../../../store/useRosterStore';
 import ViewStudentLists from '../../ViewStudentList';
 import { useModalStore } from '../../../store/modal/useRosterModalStore';
+import { usePagination } from '@mantine/hooks';
 
 const ManageSection: React.FC = () => {
   const router = useRouter();
@@ -24,6 +25,21 @@ const ManageSection: React.FC = () => {
   if (error) {
     return <Text color="red">Error loading sections: {error.message}</Text>;
   }
+
+  const pageSize = 10;
+  const totalPages = Math.ceil(sectionDetails.length / pageSize);
+
+  const pagination = usePagination({
+    total: totalPages,
+    initialPage: 1,
+    siblings: 1,
+    boundaries: 1,
+  });
+  
+  const paginatedData = sectionDetails.slice(
+    (pagination.active - 1) * pageSize,
+    pagination.active * pageSize
+  );
 
   return (
     <div>
@@ -52,7 +68,7 @@ const ManageSection: React.FC = () => {
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {sectionDetails.map((section) => (
+            {paginatedData.map((section) => (
               <Table.Tr key={section.section_id}>
                 <Table.Td>{section.section_name}</Table.Td>
                 <Table.Td>{section.total_students}</Table.Td>
@@ -79,6 +95,16 @@ const ManageSection: React.FC = () => {
             ))}
           </Table.Tbody>
         </Table>
+
+        <div className="flex justify-center mt-4">
+          <Pagination
+            total={totalPages}
+            siblings={1}
+            boundaries={1}
+            value={pagination.active}
+            onChange={pagination.setPage}
+          />
+        </div>
         </Paper>
       ) : (
         <Text ta="center" color="dimmed">
