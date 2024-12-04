@@ -105,7 +105,7 @@ const CourseRoster: React.FC = () => {
             </Table.Thead>
             <Table.Tbody>
               {isLoading
-                ? Array.from({ length: 5 }).map((_, index) => (
+                ? Array.from({ length: 10 }).map((_, index) => (
                   <Table.Tr key={`skeleton-row-${index}`}>
                     <Table.Td>
                       <Skeleton visible height={20} width="80%" />

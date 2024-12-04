@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Text, Button, Loader, Paper, Pagination } from '@mantine/core';
+import { Table, Text, Button, Loader, Paper, Pagination, Skeleton } from '@mantine/core';
 import { useRouter } from 'next/router';
 import { useFetchSections } from '../../../hooks/Roster/useFetchSections';
 import { useSectionDetailsStore } from '../../../store/useRosterStore';
@@ -14,18 +14,6 @@ const ManageSection: React.FC = () => {
   const { sectionDetails } = useSectionDetailsStore();
   const openModal = useModalStore((state) => state.openModal);
   
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-[200px]">
-        <Loader size="md" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return <Text color="red">Error loading sections: {error.message}</Text>;
-  }
-
   const pageSize = 10;
   const totalPages = Math.ceil(sectionDetails.length / pageSize);
 
@@ -68,7 +56,30 @@ const ManageSection: React.FC = () => {
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {paginatedData.map((section) => (
+            {isLoading
+                ? Array.from({ length: 10 }).map((_, index) => (
+                  <Table.Tr key={`skeleton-row-${index}`}>
+                    <Table.Td>
+                      <Skeleton visible height={20} width="80%" />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton visible height={20} width="60%" />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton visible height={20} width="40%" />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton visible height={20} width="50%" />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton visible height={20} width="30%" />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton visible height={20} width="20%" />
+                    </Table.Td>
+                  </Table.Tr>
+                ))
+            :paginatedData.map((section) => (
               <Table.Tr key={section.section_id}>
                 <Table.Td>{section.section_name}</Table.Td>
                 <Table.Td>{section.total_students}</Table.Td>
