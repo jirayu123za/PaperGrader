@@ -24,8 +24,6 @@ const EditCourseMember: React.FC = () => {
       .join(' ');
   };
 
-  console.log('Modal state:', { personal_data_id, opened });
-
   const form = useForm({
     initialValues: {
       fullName: '',

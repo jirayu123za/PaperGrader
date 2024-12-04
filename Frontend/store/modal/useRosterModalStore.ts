@@ -34,11 +34,9 @@ export const useModalEditRosterMemberStore = create<EditCourseMember>((set) => (
     personal_data_id: '',
     opened: false,
     openModal: (id: string) => {
-        console.log('Opening modal with ID:', id);
         set({ personal_data_id: id, opened: true });
     },
     closeModal: () => {
-        console.log('Closing modal');
         set({ personal_data_id: '', opened: false });
     },
 }));
