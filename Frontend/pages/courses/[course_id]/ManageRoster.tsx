@@ -2,18 +2,18 @@ import React, { useState } from 'react';
 import LeftMain from '../../../components/LeftINS/LeftMain';
 import CourseRoster from '../../../components/ManageRoster/CourseRoster';
 import ManageSection from '../../../components/ManageRoster/[course_id]/ManageSection';
+import CreateSection from '../../../components/Create/CreateSection';
 import { useRouter } from 'next/router';
 import { useCourseStore } from '../../../store/useCourseStore';
 import { Button } from '@mantine/core';
-import CreateSection from '../../../components/Create/CreateSection';
+import { useDisclosure } from '@mantine/hooks';
 
 const ManageRoster: React.FC = () => {
   const router = useRouter();
   const { courseId } = router.query;
   const selectedCourseId = useCourseStore((state) => state.selectedCourseId);
   const actualCourseId = Array.isArray(courseId) ? courseId[0] : courseId || selectedCourseId;
-  const [isRosterView, setIsRosterView] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRosterView, { open: showRoster, close: showSection }] = useDisclosure(true);
 
   if (!actualCourseId) {
     return <div>Please select a course first!</div>;
@@ -29,39 +29,20 @@ const ManageRoster: React.FC = () => {
         <div className="flex justify-end space-x-4 mb-4">
           <Button
             variant={isRosterView ? 'filled' : 'outline'}
-            onClick={() => setIsRosterView(true)}
+            onClick={showRoster}
           >
             Manage Roster
           </Button>
           <Button
             variant={!isRosterView ? 'filled' : 'outline'}
-            onClick={() => setIsRosterView(false)}
+            onClick={showSection}
           >
             Manage Section
           </Button>
         </div>
 
-        {/* แสดง component ตาม state */}
         {isRosterView ? <CourseRoster /> : <ManageSection />}
-
-        {/* ปุ่ม Create Section ที่มุมล่างขวาเมื่ออยู่ใน Manage Section */}
-        {!isRosterView && (
-          <div className="fixed bottom-6 right-6">
-            <Button
-              variant="filled"
-              color="blue"
-              onClick={() => setIsModalOpen(true)}
-            >
-              Create Section
-            </Button>
-          </div>
-        )}
-
-        {/* Modal สำหรับสร้าง Section */}
-        <CreateSection
-          opened={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-        />
+        {!isRosterView && ( <CreateSection />)}
       </div>
     </div>
   );
