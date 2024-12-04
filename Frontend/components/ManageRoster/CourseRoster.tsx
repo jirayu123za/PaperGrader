@@ -15,9 +15,7 @@ const CourseRoster: React.FC = () => {
   const { openModal } = useModalEditRosterMemberStore();
 
   const handleEditClick = (personal_data_id: string) => {
-    console.time('handleEditClick');
     openModal(personal_data_id);
-    console.timeEnd('handleEditClick');
   };
 
   const filteredUsers = usersList.filter((member) => {
