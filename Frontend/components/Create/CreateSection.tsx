@@ -4,15 +4,12 @@ import { useForm } from '@mantine/form';
 import { TagsInput } from '@mantine/core';
 import { useCreateSections } from '../../hooks/useCreate/useCreateSection';
 import { useRouter } from 'next/router';
+import { useDisclosure } from '@mantine/hooks';
 
-interface CreateSectionProps {
-  opened: boolean;
-  onClose: () => void;
-}
-
-const CreateSection: React.FC<CreateSectionProps> = ({ opened, onClose }) => {
+const CreateSection: React.FC = () => {
   const router = useRouter();
   const { course_id } = router.query;
+  const [opened, { open, close }] = useDisclosure(false);
   const { mutate } = useCreateSections();
 
   const form = useForm({
@@ -25,13 +22,11 @@ const CreateSection: React.FC<CreateSectionProps> = ({ opened, onClose }) => {
   });
 
   const handleSubmit = (values: typeof form.values) => {
-    const sectionNames = values.section_name; 
-
-    console.log('handleSubmit:', sectionNames);
+    const sectionNames = values.section_name;
 
     mutate({ section_name: sectionNames, course_id: course_id as string }, {
       onSuccess: () => {
-        onClose();
+        close();
         form.reset();
       },
       onError: (error) => {
@@ -41,31 +36,41 @@ const CreateSection: React.FC<CreateSectionProps> = ({ opened, onClose }) => {
   };
 
   return (
-    <Modal
-      opened={opened}
-      onClose={onClose}
-      title="Create New Section"
-      centered
-      overlayProps={{
-        color: 'rgba(0, 0, 0, 0.5)',
-        blur: 3,
-      }}
-      styles={{
-        header: {
-          backgroundColor: '#7E60BF',
-          padding: '16px',
-          color: '#fff',
-          textAlign: 'center',
-          fontWeight: 700,
-        },
-        title: {
-          color: '#fff',
-        },
-        content: {
-          backgroundColor: '#f5f5dc',
-        },
-      }}
-    >
+    <>
+      <div className="fixed bottom-6 right-6">
+        <Button
+          variant="filled"
+          color="blue"
+          onClick={open}
+        >
+          Create Section
+        </Button>
+      </div>
+      <Modal
+        opened={opened}
+        onClose={close}
+        title="Create New Section"
+        centered
+        overlayProps={{
+          color: 'rgba(0, 0, 0, 0.5)',
+          blur: 3,
+        }}
+        styles={{
+          header: {
+            backgroundColor: '#7E60BF',
+            padding: '16px',
+            color: '#fff',
+            textAlign: 'center',
+            fontWeight: 700,
+          },
+          title: {
+            color: '#fff',
+          },
+          content: {
+            backgroundColor: '#f5f5dc',
+          },
+        }}
+      >
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Text fw={500} mb={4}>Section Tags</Text>
         <TagsInput
@@ -79,6 +84,7 @@ const CreateSection: React.FC<CreateSectionProps> = ({ opened, onClose }) => {
         </Button>
       </form>
     </Modal>
+    </>
   );
 };
 
