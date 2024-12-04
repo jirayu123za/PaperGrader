@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 
 // store section list data on create assignment component
 interface SectionsList {

@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 
 interface StudentAssignment {
   assignment_id: string;

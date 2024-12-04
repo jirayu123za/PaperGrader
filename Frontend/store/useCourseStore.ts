@@ -1,4 +1,4 @@
-import create, { StateCreator } from 'zustand';
+import { create, StateCreator } from 'zustand';
 import { persist, PersistOptions } from 'zustand/middleware';
 
 // สร้าง interface ของ course ให้รองรับข้อมูลที่ดึงมา

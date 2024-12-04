@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 
 // Define the interface for the combined state
 interface UserState {

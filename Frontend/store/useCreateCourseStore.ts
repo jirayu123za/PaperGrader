@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 
 // Interface สำหรับการสร้างคอร์ส
 interface CreateCourseParams {

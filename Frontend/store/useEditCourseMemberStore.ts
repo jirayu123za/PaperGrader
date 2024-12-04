@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 
 interface EditCourseMember {
   personal_data_id: string;

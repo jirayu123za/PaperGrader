@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 
 // สร้าง interface สำหรับ assignment
 interface Assignment {

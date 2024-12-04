@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 
 interface universityState {
   universities: any[];
@@ -6,7 +6,7 @@ interface universityState {
 }
 
 export const useUniversityStore = create<universityState>((set) => ({
-    universities: [], 
-    setUniversities: (universities) => set(() => ({ universities })),
-  }));
+  universities: [],
+  setUniversities: (universities) => set(() => ({ universities })),
+}));
 
