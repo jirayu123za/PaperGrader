@@ -13,5 +13,7 @@ export const useFileStore = create<FileStoreState>((set) => ({
   setFiles: (files) => set({ files }),
   templateFile: null,
   setTemplateFile: (file) => set({ templateFile: file }),
-  clearFiles: () => set({ files: [] }),
+  clearFiles: () => set({ files: [], templateFile: null }),
 }));
+
+
