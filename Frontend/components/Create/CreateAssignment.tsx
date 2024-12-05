@@ -45,13 +45,14 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
     files.forEach((file, index) => {
       if (file instanceof File) {
         formData.append(`is_template[${index}]`, file === templateFile ? 'true' : 'false');
-        formData.append('files', file.name);
+        formData.append('files', file); // <-- ใช้ตัวไฟล์จริง
         console.log(`File added: ${file.name}`);
       } else {
         console.error('Invalid file in list:', file);
       }
     });
-
+    
+    
     mutate({formData, course_id: Array.isArray(course_id) ? course_id[0] : course_id || ''}, {
       onSuccess: () => {
         onClose();
