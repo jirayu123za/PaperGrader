@@ -3,7 +3,7 @@ import { Table, Text, Button, Loader, Paper, Pagination, Skeleton } from '@manti
 import { useRouter } from 'next/router';
 import { useFetchSections } from '../../../hooks/Roster/useFetchSections';
 import { useSectionDetailsStore } from '../../../store/useRosterStore';
-import ViewStudentLists from '../../ViewStudentList';
+import ViewStudentLists from '../ViewStudentList';
 import { useModalStore } from '../../../store/modal/useRosterModalStore';
 import { usePagination } from '@mantine/hooks';
 
