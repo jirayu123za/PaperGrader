@@ -31,6 +31,8 @@ type InstructorService interface {
 	GetCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error)
 	GetAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
 	GetActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
+	GetAssignmentByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error)
+
 	GetInstructorsNameByCourseID(courseID uuid.UUID) ([]*models.PersonalData, error)
 }
 
@@ -192,6 +194,47 @@ func (s *InstructorServiceImpl) GetActiveAssignmentsByCourseID(CourseID uuid.UUI
 		return nil, err
 	}
 	return activeAssignments, nil
+}
+
+func (s *InstructorServiceImpl) GetAssignmentByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error) {
+	data, err := s.repo.FindAssignmentByCourseIDAndAssignmentID(CourseID, AssignmentID)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(data) == 0 {
+		return nil, nil
+	}
+
+	assignment := map[string]interface{}{
+		"assignment_id":          data[0]["assignment_id"],
+		"assignment_name":        data[0]["assignment_name"],
+		"assignment_description": data[0]["assignment_description"],
+		"submiss_by":             data[0]["submiss_by"],
+		"grading_type":           data[0]["grading_type"],
+		"late_submiss":           data[0]["late_submiss"],
+		"published":              data[0]["published"],
+		"regrades":               data[0]["regrades"],
+		"group_submiss":          data[0]["group_submiss"],
+	}
+
+	assignmentSections := []map[string]interface{}{}
+	for _, row := range data {
+		section := map[string]interface{}{
+			"assignment_section_id": row["assignment_section_id"],
+			"release_date":          row["release_date"],
+			"due_date":              row["due_date"],
+			"cut_off_date":          row["cut_off_date"],
+			"section_id":            row["section_id"],
+			"section_name":          row["section_name"],
+		}
+		assignmentSections = append(assignmentSections, section)
+	}
+
+	return map[string]interface{}{
+		"assignment":          assignment,
+		"assignment_sections": assignmentSections,
+	}, nil
 }
 
 func (s *InstructorServiceImpl) GetInstructorsNameByCourseID(courseID uuid.UUID) ([]*models.PersonalData, error) {
