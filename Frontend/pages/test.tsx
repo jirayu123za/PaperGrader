@@ -1,16 +1,13 @@
-import React, { useState } from 'react';
-import { Button } from '@mantine/core';
-import CreateSection from '../components/Create/CreateSection';
+import React from 'react';
+import AssignmentSetting from '../components/Customize/AssignmentSetting'; // อัปเดต path ให้ตรงกับตำแหน่งของไฟล์ AssignmentSetting
 
-const YourComponent = () => {
-  const [modalOpened, setModalOpened] = useState(false);
-
+const TestPage: React.FC = () => {
   return (
     <div>
-      <Button onClick={() => setModalOpened(true)}>Open Create Section</Button>
-      <CreateSection opened={modalOpened} onClose={() => setModalOpened(false)} />
+      <h1 style={{ textAlign: 'center', margin: '20px 0' }}>Test Assignment Setting</h1>
+      <AssignmentSetting />
     </div>
   );
 };
 
-export default YourComponent;
+export default TestPage;
