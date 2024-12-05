@@ -1,9 +1,8 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-import { Checkbox, TagsInput, Text, Loader } from '@mantine/core';
+import { TagsInput, Text, Loader } from '@mantine/core';
 import { useFetchSections } from '../../../hooks/useFetchSelectSection';
 import { useSectionsListStore, useSelectSectionStore } from '../../../store/useSectionStore';
-import { useDisclosure } from '@mantine/hooks';
 
 interface Section {
   section_id: string;
@@ -14,12 +13,9 @@ interface SectionSelectorProps {
   defaultEnabled?: boolean;
 }
 
-const SectionSelector: React.FC<SectionSelectorProps> = ({
-  defaultEnabled = false,
-}) => {
+const SectionSelector: React.FC<SectionSelectorProps> = () => {
   const router = useRouter();
   const { course_id } = router.query;
-  const [isEnabled, { toggle, open }] = useDisclosure(defaultEnabled);
   const { data, isLoading, error } = useFetchSections(course_id as string);
   const { sectionsList } = useSectionsListStore();
   const { selectedSections, setSelectedSections } = useSelectSectionStore();
@@ -32,42 +28,25 @@ const SectionSelector: React.FC<SectionSelectorProps> = ({
         }))
       : [];
 
-  React.useEffect(() => {
-    if (defaultEnabled) {
-      open();
-    }
-  }, [defaultEnabled, open]);
-
   if (isLoading) return <Loader size="sm" />;
   if (error) return <Text color="red">Error fetching sections: {error.message}</Text>;
 
   return (
-    <div>
-      {!defaultEnabled && (
-        <Checkbox
-          label="Enable Section Selection"
-          checked={isEnabled}
-          onChange={toggle}
-        />
-      )}
-      {(isEnabled || defaultEnabled) && (
-        <div className="mt-4">
-          <TagsInput
-            data={sectionsData}
-            placeholder="Add or select sections"
-            value={selectedSections}
-            onChange={(tags) => {
-              setSelectedSections(tags);
-            }}
-            label="Select Sections"
-            maxDropdownHeight={100}
-            comboboxProps={{ shadow: 'md' }}
-            clearable
-            required
-            splitChars={[' ', ',', '\n']}
-          />
-        </div>
-      )}
+    <div className="mt-4">
+      <TagsInput
+        data={sectionsData}
+        placeholder="Add or select sections"
+        value={selectedSections}
+        onChange={(tags) => {
+          setSelectedSections(tags);
+        }}
+        label="Select Sections"
+        maxDropdownHeight={100}
+        comboboxProps={{ shadow: 'md' }}
+        clearable
+        required
+        splitChars={[' ', ',', '\n']}
+      />
     </div>
   );
 };
