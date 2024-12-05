@@ -410,6 +410,23 @@ func (r *GormInstructorRepository) FindActiveAssignmentsByCourseID(CourseID uuid
 	return activeAssignments, nil
 }
 
+func (r *GormInstructorRepository) FindAssignmentByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]map[string]interface{}, error) {
+	var assignmentDetails []map[string]interface{}
+
+	if err := r.db.
+		Table("assignments").
+		Select(`assignments.assignment_id, assignments.assignment_name, assignments.assignment_description, assignments.submiss_by, assignments.grading_type, assignments.late_submiss, assignments.published, assignments.regrades, assignments.group_submiss,
+				assignment_sections.assignment_section_id, assignment_sections.release_date, assignment_sections.due_date, assignment_sections.cut_off_date, 
+                sections.section_id, sections.section_name`).
+		Joins(`LEFT JOIN assignment_sections ON assignments.assignment_id = assignment_sections.assignment_id`).
+		Joins(`LEFT JOIN sections ON assignment_sections.section_id = sections.section_id`).
+		Where("assignments.course_id = ? AND assignments.assignment_id = ? AND assignments.deleted_at IS NULL", CourseID, AssignmentID).
+		Find(&assignmentDetails).Error; err != nil {
+		return nil, err
+	}
+	return assignmentDetails, nil
+}
+
 func (r *GormInstructorRepository) FindInstructorsNameByCourseID(courseID uuid.UUID) ([]*models.PersonalData, error) {
 	var instructors []*models.PersonalData
 
