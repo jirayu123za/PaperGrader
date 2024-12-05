@@ -1,146 +1,221 @@
 import React from 'react';
-import {Tabs,Button,TextInput,Checkbox,Radio,Group,Paper,Select,} from '@mantine/core';
+import {Tabs, Button, TextInput, Checkbox, Radio, Group, Paper, Select, Flex,} from '@mantine/core';
+import { RiDeleteBinLine, RiFilePaper2Line  } from "react-icons/ri";
+import { CiSettings } from "react-icons/ci";
+import { LuPenLine } from "react-icons/lu";
+import { GrShareOption } from "react-icons/gr";
+import { FiEye } from "react-icons/fi";
 
 const AssignmentSetting: React.FC = () => {
   const handleSaveSettings = () => {
     console.log('Save Assignment Settings');
   };
 
+  const binIcon = <RiDeleteBinLine />;
+  const settingsIcon = <CiSettings />;
+  const paperIcon = <RiFilePaper2Line />;
+  const penIcon = <LuPenLine />;
+  const choiceIcon = <GrShareOption />;
+  const eyeIcon = <FiEye />;
+
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-4">Edit Assignment</h1>
 
       {/* Tabs Navigation */}
-      <Tabs defaultValue="basic-settings">
+      <Tabs defaultValue="basic-settings" color="gray" variant="outline">
         <Tabs.List>
-          <Tabs.Tab value="basic-settings">Basic Settings</Tabs.Tab>
-          <Tabs.Tab value="submission-settings">Submission Settings</Tabs.Tab>
-          <Tabs.Tab value="grading-defaults">Grading Defaults</Tabs.Tab>
-          <Tabs.Tab value="rubric-settings">Rubric Settings</Tabs.Tab>
-          <Tabs.Tab value="student-visibility">Student Visibility</Tabs.Tab>
+          <Tabs.Tab value="basic-settings" leftSection={settingsIcon}>Basic Settings</Tabs.Tab>
+          <Tabs.Tab value="submission-settings" leftSection={paperIcon}>Submission Settings</Tabs.Tab>
+          <Tabs.Tab value="grading-defaults" leftSection={penIcon}>Grading Defaults</Tabs.Tab>
+          <Tabs.Tab value="rubric-settings" leftSection={choiceIcon}>Rubric Settings</Tabs.Tab>
+          <Tabs.Tab value="student-visibility" leftSection={eyeIcon}>Student Visibility</Tabs.Tab>
         </Tabs.List>
 
         {/* Tab 1: Basic Settings */}
-               {/* Tab 1: Basic Settings */}
-               <Tabs.Panel value="basic-settings" className="mt-4">
+        <Tabs.Panel value="basic-settings">
           <Paper withBorder shadow="md" p="lg">
             {/* Assignment Name */}
-            <TextInput 
-              label="Assignment Name *" 
+            <TextInput
+              label="Assignment Name" 
               required 
               placeholder="Enter assignment name" 
             />
 
             {/* Assignment Description */}
             <TextInput 
-              label="Description" 
+              label="Assignment Description" 
               placeholder="Enter a short description of the assignment" 
               mt="md"
             />
 
             {/* Who will submit */}
-            <Radio.Group 
+            <Radio.Group
               label="Who will upload submissions?" 
               required 
               mt="md"
             >
-              <Radio value="instructor" label="Instructor" />
-              <Radio value="student" label="Student" />
+              <Flex gap="md" pt={4}>
+                <Radio value="instructor" label="Instructor" />
+                <Radio value="student" label="Student" />                
+              </Flex>
+
             </Radio.Group>
 
             {/* Grading Type */}
             <Select
-              label="Grading Type"
-              placeholder="Select grading type"
+              label="Scoring Method"
+              placeholder="Select Default Scoring Method"
               data={[
-                { value: 'manual', label: 'Manual Grading' },
-                { value: 'automatic', label: 'Automatic Grading' },
+                { value: 'negative', label: 'Negative scoring' },
+                { value: 'positive', label: 'Positive scoring' },
               ]}
+              clearable
               mt="md"
             />
 
-            {/* Late Submission */}
-            <Checkbox 
-              label="Allow Late Submissions" 
-              mt="md" 
-            />
+            <Checkbox.Group
+              label="Other Settings"
+              mt="md"
+              >
+              <Group mt={4}>
+                {/* Late Submission */}
+                <Checkbox
+                  value="false"
+                  label="Allow Late Submissions"
+                />
+                {/* Published */}
+                <Checkbox 
+                  value="false"
+                  label="Published" 
+                />
+                {/* Regrades */}
+                <Checkbox 
+                  value="false"
+                  label="Enable Regrades" 
+                />
+              </Group>
+            </Checkbox.Group>
 
-            {/* Group Submission */}
-            <Checkbox 
-              label="Enable Group Submission" 
-              mt="md" 
-            />
-
-            {/* Published */}
-            <Checkbox 
-              label="Published" 
-              mt="md" 
-            />
-
-            {/* Regrades */}
-            <Checkbox 
-              label="Enable Regrades" 
-              mt="md" 
-            />
+            <Checkbox.Group
+              label="Group Settings"
+              mt="md"
+            >
+              <Group mt={4}>
+                {/* Group Submission */}
+                <Checkbox 
+                  value="false" 
+                  label="Enable Group Submission" 
+                />
+              </Group>
+              <TextInput 
+                mt={4} 
+                label="Limit Group Size" 
+                placeholder="No Max" 
+              />
+            </Checkbox.Group>
           </Paper>
         </Tabs.Panel>
 
         {/* Tab 2: Submission Settings */}
-        <Tabs.Panel value="submission-settings" className="mt-4">
+        <Tabs.Panel value="submission-settings">
           <Paper withBorder shadow="md" p="lg">
             <Radio.Group label="Submission Type" required>
-              <Radio value="variable" label="Variable length" />
-              <Radio value="fixed" label="Templated (fixed length)" />
+              <Radio 
+                value="variable" 
+                label="Variable length" 
+                mt={4}
+              />
+              <Radio 
+                value="fixed" 
+                label="Templated (fixed length)" 
+                mt={4}
+              />
             </Radio.Group>
-            <Checkbox mt="md" label="Enable group submission" />
-            <TextInput mt="md" label="Limit Group Size" placeholder="No Max" />
-            <Checkbox mt="md" label="Allow students to view and download the template" />
+            <Checkbox.Group label="Template Visibility" mt="md">
+              <Checkbox 
+                mt={4}
+                value="false" 
+                label="Allow students to view and download the template" 
+              />
+            </Checkbox.Group>
           </Paper>
         </Tabs.Panel>
 
         {/* Tab 3: Grading Defaults */}
-        <Tabs.Panel value="grading-defaults" className="mt-4">
+        <Tabs.Panel value="grading-defaults">
           <Paper withBorder shadow="md" p="lg">
-            <Radio.Group label="Default Scoring Method" required>
-              <Radio value="negative" label="Negative scoring" />
-              <Radio value="positive" label="Positive scoring" />
-            </Radio.Group>
-            <Checkbox mt="md" label="Ceiling (maximum score is determined by points on the Outline)" />
-            <Checkbox mt="md" label="Floor (minimum score is 0.0)" />
-            <Checkbox mt="md" label="Apply these settings to all questions" />
+            <Checkbox.Group label="Default Grading Settings">
+              <Checkbox mt={4} 
+                label="Ceiling (maximum score is determined by points on the Outline)" 
+                value="false"
+              />
+              <Checkbox mt={4} 
+                label="Floor (minimum score is 0.0)"
+                value="false"
+              />
+              <Checkbox mt={4} 
+                label="Apply these settings to all questions"
+                value="false" 
+              />              
+            </Checkbox.Group>
           </Paper>
         </Tabs.Panel>
 
         {/* Tab 4: Rubric Settings */}
-        <Tabs.Panel value="rubric-settings" className="mt-4">
+        <Tabs.Panel value="rubric-settings">
           <Paper withBorder shadow="md" p="lg">
             <Radio.Group label="Default Selection Style" required>
-              <Radio value="single" label="Select one" />
-              <Radio value="multiple" label="Select many" />
+              <Radio mt={4}
+                value="single" 
+                label="Select one" 
+              />
+              <Radio mt={4}
+                value="multiple" 
+                label="Select many" 
+              />
             </Radio.Group>
             <Radio.Group mt="md" label="Create your Rubric">
-              <Radio value="before" label="Before student submission" />
-              <Radio value="during" label="While grading submissions" />
+              <Radio mt={4}
+                value="before" 
+                label="Before student submission" 
+              />
+              <Radio mt={4}
+                value="during" 
+                label="While grading submissions" 
+              />
             </Radio.Group>
           </Paper>
         </Tabs.Panel>
 
         {/* Tab 5: Student Visibility */}
-        <Tabs.Panel value="student-visibility" className="mt-4">
+        <Tabs.Panel value="student-visibility">
           <Paper withBorder shadow="md" p="lg">
             <Radio.Group label="Rubric Item Visibility" required>
-              <Radio value="show-all" label="Show all rubric items" />
-              <Radio value="applied-only" label="Show applied rubric items only" />
-              <Radio value="positive-negative" label="Show all rubric items for positive and applied rubric items for negative scoring" />
-              <Radio value="hide-all" label="Hide all rubric items" />
+              <Radio mt={4} 
+                value="show-all" 
+                label="Show all rubric items" 
+              />
+              <Radio mt={4}
+                value="applied-only" 
+                label="Show applied rubric items only" 
+              />
+              <Radio mt={4}
+                value="positive-negative" 
+                label="Show all rubric items for positive and applied rubric items for negative scoring" 
+              />
+              <Radio mt={4}
+                value="hide-all" 
+                label="Hide all rubric items" 
+              />
             </Radio.Group>
           </Paper>
         </Tabs.Panel>
       </Tabs>
 
       {/* Save and Delete Buttons */}
-      <Group position="apart" mt="lg">
-        <Button color="red" variant="outline">
+      <Group mt="lg">
+        <Button color="red" variant="outline" leftSection={binIcon}>
           Delete Assignment
         </Button>
         <Button onClick={handleSaveSettings}>Save</Button>
