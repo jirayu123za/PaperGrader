@@ -1,67 +1,91 @@
 import React from 'react';
 import { useFileStore } from '../store/useFileStore';
-import { Button, Checkbox, Input } from '@mantine/core';
+import { FileInput, Group, Text, Box } from '@mantine/core';
+import { FaRegFilePdf } from "react-icons/fa6";
+import { rem } from '@mantine/core';
 
 const UploadFile: React.FC = () => {
-  const { files, setFiles, templateFile, setTemplateFile } = useFileStore();
+  const { files, setFiles, templateFile, setTemplateFile, clearFiles } = useFileStore();
+  const icon = <FaRegFilePdf style={{ width: rem(18).toString(), height: rem(18).toString() }} />;
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.currentTarget.files) {
-      const newFiles = Array.from(event.currentTarget.files).filter(
-        (file) => file instanceof File
-      ) as File[];
-      setFiles([...files, ...newFiles]);
-      console.log('Updated files:', [...files, ...newFiles]);
+  const handleTemplateFileChange = (newFile: File | null) => {
+    if (newFile) {
+      setTemplateFile(newFile); // Set the template file
+      if (!files.find((file) => file.name === newFile.name)) {
+        setFiles([...files, newFile]); // Add the template file to files if not already present
+      }
+      console.log('Template file uploaded and set to:', newFile.name); // Log template file
     }
   };
 
-  const handleTemplateSelect = (index: number) => {
-    if (files[index] instanceof File) {
-      setTemplateFile(files[index]);
-      console.log('Template file set to:', files[index].name);
-    } else {
-      console.error('Invalid template file selected:', files[index]);
-    }
+  const handleAdditionalFilesChange = (newFiles: File[]) => {
+    const validFiles = newFiles.filter((file) => file instanceof File && !files.find((f) => f.name === file.name));
+    setFiles([...files, ...validFiles]); // Update store with new files
+    console.log('Additional files uploaded:', validFiles.map((file) => file.name)); // Log additional files
   };
 
   return (
-    <div className="flex flex-col gap-4">
-    <div className="flex items-start gap-4 justify-between">
-      <Button
-        onClick={() => document.getElementById('fileInput')?.click()}
-        variant="default"
-        size="xs"
-      >
-        Select PDF(s)
-      </Button>
+    <Box>
+      {/* Template File Upload Section */}
+      <Box mb="md">
+        <Text size="sm" fw={500}>
+          Template File
+        </Text>
+        <Group>
+          <FileInput
+            leftSection={icon}
+            placeholder="Select Template File"
+            accept=".pdf"
+            onChange={(file) => handleTemplateFileChange(file)}
+          />
+        </Group>
+        <Box mt="md">
+          {templateFile ? (
+            <Text size="sm" color="blue">
+              {templateFile.name} (Template)
+            </Text>
+          ) : (
+            <Text color="dimmed" size="sm">
+              No template file selected.
+            </Text>
+          )}
+        </Box>
+      </Box>
 
-      {/* ส่วนแสดงไฟล์ทั้งหมดทางขวา */}
-      <div className="flex flex-col gap-2">
-        {files.length > 0 ? (
-          files.map((file, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <Checkbox
-                checked={templateFile === file}
-                onChange={() => handleTemplateSelect(index)}
-                label={file.name}
-              />
-            </div>
-          ))
-        ) : (
-          <p className="text-sm text-gray-700">No files uploaded yet.</p>
-        )}
-      </div>
-    </div>
+      {/* Additional Files Upload Section */}
+      <Box>
+        <Text size="sm" fw={500}>
+          Additional Files
+        </Text>
+        <Group>
+          <FileInput
+            leftSection={icon}
+            placeholder="Select Additional Files"
+            accept=".pdf"
+            multiple
+            onChange={(files) =>
+              handleAdditionalFilesChange(files ? Array.from(files) : [])
+            }
+          />
+        </Group>
 
-    <Input
-      type="file"
-      id="fileInput"
-      accept=".pdf"
-      multiple
-      style={{ display: 'none' }}
-      onChange={handleFileChange}
-    />
-  </div>
+        <Box mt="md">
+          {files.length > 0 ? (
+            <Box>
+              {files.map((file, index) => (
+                <Text key={index} size="sm" color={file === templateFile ? 'blue' : 'black'}>
+                  {file.name} {file === templateFile && '(Template)'}
+                </Text>
+              ))}
+            </Box>
+          ) : (
+            <Text color="dimmed" size="sm">
+              No files uploaded.
+            </Text>
+          )}
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
