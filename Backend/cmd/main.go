@@ -141,8 +141,10 @@ func main() {
 
 	apiGroup.Post("/instructor/assignment/files", instructorHandler.CreateAssignmentWithFiles)
 	apiGroup.Get("/instructor/assignments", instructorHandler.GetAssignmentsByCourseID)
-	apiGroup.Get("/instructor/courses", instructorHandler.GetCoursesByUserID)
 	apiGroup.Get("/instructor/assignments/active", instructorHandler.GetActiveAssignmentsByCourseID)
+	apiGroup.Get("/instructor/assignment", instructorHandler.GetAssignmentByCourseIDAndAssignmentID)
+
+	apiGroup.Get("/instructor/courses", instructorHandler.GetCoursesByUserID)
 
 	// test api get template file name
 	apiGroup.Get("/instructor/template/name", instructorHandler.GetAssignmentNameTemplate)
