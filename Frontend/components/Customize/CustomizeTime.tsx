@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Button, Text, Checkbox } from '@mantine/core';
+import { Button, Text, Checkbox, Paper } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { useCustomizeTime } from '../../hooks/useCustomizeTime';
@@ -7,65 +7,47 @@ import { useCustomizeTimeStore } from '../../store/useCustomizeTimeStore';
 import SectionSelector from '../Create/Sections/SectionSelector';
 import '@mantine/dates/styles.css';
 
-interface CustomizeTimeModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface CustomizeTimeProps {
   assignmentId: string;
 }
 
-const CustomizeTimeModal: React.FC<CustomizeTimeModalProps> = ({ isOpen, onClose, assignmentId }) => {
+const CustomizeTime: React.FC<CustomizeTimeProps> = ({ assignmentId }) => {
   const { releaseDate, dueDate, cutOffDate } = useCustomizeTimeStore();
   const { isFetching, updateCustomizeTime } = useCustomizeTime(assignmentId);
-  const [isLateSubmissionEnabled, setIsLateSubmissionEnabled] = useState(false); // State to control Cut Off Date visibility
+  const [isLateSubmissionEnabled, setIsLateSubmissionEnabled] = useState(false);
 
   const form = useForm({
     initialValues: {
       selectedSections: [] as string[],
-      release_date: releaseDate || '', // Ensure no null values
+      release_date: releaseDate || '',
       due_date: dueDate || '',
       cut_off_date: cutOffDate || '',
     },
   });
 
   useEffect(() => {
-    form.setValues({  
-      release_date: releaseDate || '', // Ensure no null values
+    form.setValues({
+      release_date: releaseDate || '',
       due_date: dueDate || '',
       cut_off_date: cutOffDate || '',
     });
   }, [releaseDate, dueDate, cutOffDate]);
-
-  const handleSectionsChange = (sections: string[]) => {
-    form.setFieldValue('selectedSections', sections);
-  };
 
   const handleSubmit = (values: typeof form.values) => {
     updateCustomizeTime({
       sections: values.selectedSections,
       releaseDate: values.release_date,
       dueDate: values.due_date,
-      cutOffDate: isLateSubmissionEnabled ? values.cut_off_date : '', // แปลง null เป็น empty string
+      cutOffDate: isLateSubmissionEnabled ? values.cut_off_date : '',
     });
-    onClose();
   };
 
   if (isFetching) return <div>Loading...</div>;
 
   return (
-    <Modal
-      opened={isOpen}
-      onClose={onClose}
-      title="Customize Dates & Student Visibility"
-      size="lg"
-      overlayProps={{ opacity: 0.55, blur: 3 }}
-    >
       <form onSubmit={form.onSubmit(handleSubmit)}>
-        {/* Section Selector */}
-        <div className="mb-6">
-          <SectionSelector defaultEnabled={true} />
-        </div>
+        <SectionSelector defaultEnabled={true} />
 
-        {/* Date Pickers */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <DateTimePicker
             label="Release Date"
@@ -81,7 +63,6 @@ const CustomizeTimeModal: React.FC<CustomizeTimeModalProps> = ({ isOpen, onClose
           />
         </div>
 
-        {/* Late Submission Checkbox and Cut Off Date */}
         <div className="mb-6">
           <Checkbox
             label="Allow late submissions"
@@ -99,25 +80,21 @@ const CustomizeTimeModal: React.FC<CustomizeTimeModalProps> = ({ isOpen, onClose
           )}
         </div>
 
-        {/* Action Buttons */}
         <div className="flex justify-end space-x-4">
           <Button
             variant="default"
             onClick={() => {
               form.reset();
-              setIsLateSubmissionEnabled(false); // Reset late submission checkbox
-              onClose();
+              setIsLateSubmissionEnabled(false);
             }}
           >
-            Cancel
+            Reset
           </Button>
-          <Button type="submit">
-            Apply
-          </Button>
+          <Button type="submit">Save</Button>
         </div>
       </form>
-    </Modal>
+
   );
 };
 
-export default CustomizeTimeModal;
+export default CustomizeTime;

@@ -1,14 +1,37 @@
 import React from 'react';
-import {Tabs, Button, TextInput, Checkbox, Radio, Group, Paper, Select, Flex,} from '@mantine/core';
-import { RiDeleteBinLine, RiFilePaper2Line  } from "react-icons/ri";
-import { CiSettings } from "react-icons/ci";
-import { LuPenLine } from "react-icons/lu";
-import { GrShareOption } from "react-icons/gr";
-import { FiEye } from "react-icons/fi";
+import { Tabs, Button, TextInput, Checkbox, Radio, Group, Select, Flex, Modal } from '@mantine/core';
+import { RiDeleteBinLine, RiFilePaper2Line } from 'react-icons/ri';
+import { CiSettings } from 'react-icons/ci';
+import { LuPenLine } from 'react-icons/lu';
+import { GrShareOption } from 'react-icons/gr';
+import { FiEye } from 'react-icons/fi';
+import { LuClock } from 'react-icons/lu';
+import CustomizeTime from './CustomizeTime';
+import { useForm } from '@mantine/form';
 
-const AssignmentSetting: React.FC = () => {
-  const handleSaveSettings = () => {
-    console.log('Save Assignment Settings');
+interface AssignmentSettingProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const AssignmentSetting: React.FC<AssignmentSettingProps> = ({ isOpen, onClose }) => {
+  const form = useForm({
+    initialValues: {
+      assignmentName: '',
+      assignmentDescription: '',
+      uploadBy: '',
+      scoringMethod: '',
+      allowLateSubmissions: false,
+      published: false,
+      enableRegrades: false,
+      submissionType: '',
+      rubricVisibility: '',
+    },
+  });
+
+  const handleSaveSettings = (values: typeof form.values) => {
+    console.log('Saved Form Values:', values);
+    onClose();
   };
 
   const binIcon = <RiDeleteBinLine />;
@@ -17,52 +40,82 @@ const AssignmentSetting: React.FC = () => {
   const penIcon = <LuPenLine />;
   const choiceIcon = <GrShareOption />;
   const eyeIcon = <FiEye />;
+  const clockIcon = <LuClock />;
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Edit Assignment</h1>
+    <Modal
+      opened={isOpen}
+      onClose={onClose}
+      title="Edit Assignment"
+      size="lg"
+      overlayProps={{ opacity: 0.55, blur: 3 }}
+    >
+      <form onSubmit={form.onSubmit(handleSaveSettings)}>
+        <Tabs
+          defaultValue="basic-settings"
+          color="gray"
+          variant="outline"
+          styles={{
+            tab: {
+              fontSize: '0.7rem',
+              padding: '4px 8px',
+              whiteSpace: 'nowrap',
+            },
+            list: {
+              display: 'flex',
+              flexWrap: 'nowrap',
+              gap: '1px',
+              overflowX: 'auto',
+              scrollbarWidth: 'thin',
+            },
+          }}
+        >
+          <Tabs.List>
+            <Tabs.Tab value="basic-settings" leftSection={settingsIcon}>
+              Basic Settings
+            </Tabs.Tab>
+            <Tabs.Tab value="customize-time" leftSection={clockIcon}>
+              Customize Time
+            </Tabs.Tab>
+            <Tabs.Tab value="submission-settings" leftSection={paperIcon}>
+              Submission Settings
+            </Tabs.Tab>
+            <Tabs.Tab value="grading-defaults" leftSection={penIcon}>
+              Grading Defaults
+            </Tabs.Tab>
+            <Tabs.Tab value="rubric-settings" leftSection={choiceIcon}>
+              Rubric Settings
+            </Tabs.Tab>
+            <Tabs.Tab value="student-visibility" leftSection={eyeIcon}>
+              Student Visibility
+            </Tabs.Tab>
+          </Tabs.List>
 
-      {/* Tabs Navigation */}
-      <Tabs defaultValue="basic-settings" color="gray" variant="outline">
-        <Tabs.List>
-          <Tabs.Tab value="basic-settings" leftSection={settingsIcon}>Basic Settings</Tabs.Tab>
-          <Tabs.Tab value="submission-settings" leftSection={paperIcon}>Submission Settings</Tabs.Tab>
-          <Tabs.Tab value="grading-defaults" leftSection={penIcon}>Grading Defaults</Tabs.Tab>
-          <Tabs.Tab value="rubric-settings" leftSection={choiceIcon}>Rubric Settings</Tabs.Tab>
-          <Tabs.Tab value="student-visibility" leftSection={eyeIcon}>Student Visibility</Tabs.Tab>
-        </Tabs.List>
-
-        {/* Tab 1: Basic Settings */}
-        <Tabs.Panel value="basic-settings">
-          <Paper withBorder shadow="md" p="lg">
-            {/* Assignment Name */}
+          {/* Tab 1: Basic Settings */}
+          <Tabs.Panel value="basic-settings">
             <TextInput
-              label="Assignment Name" 
-              required 
-              placeholder="Enter assignment name" 
+              label="Assignment Name"
+              required
+              placeholder="Enter assignment name"
+              {...form.getInputProps('assignmentName')}
             />
-
-            {/* Assignment Description */}
-            <TextInput 
-              label="Assignment Description" 
-              placeholder="Enter a short description of the assignment" 
+            <TextInput
+              label="Assignment Description"
+              placeholder="Enter a short description of the assignment"
               mt="md"
+              {...form.getInputProps('assignmentDescription')}
             />
-
-            {/* Who will submit */}
             <Radio.Group
-              label="Who will upload submissions?" 
-              required 
+              label="Who will upload submissions?"
+              required
               mt="md"
+              {...form.getInputProps('uploadBy')}
             >
               <Flex gap="md" pt={4}>
                 <Radio value="instructor" label="Instructor" />
-                <Radio value="student" label="Student" />                
+                <Radio value="student" label="Student" />
               </Flex>
-
             </Radio.Group>
-
-            {/* Grading Type */}
             <Select
               label="Scoring Method"
               placeholder="Select Default Scoring Method"
@@ -72,155 +125,96 @@ const AssignmentSetting: React.FC = () => {
               ]}
               clearable
               mt="md"
+              {...form.getInputProps('scoringMethod')}
             />
-
-            <Checkbox.Group
-              label="Other Settings"
-              mt="md"
-              >
+            <Checkbox.Group label="Other Settings" mt="md">
               <Group mt={4}>
-                {/* Late Submission */}
                 <Checkbox
-                  value="false"
+                  value="allowLateSubmissions"
                   label="Allow Late Submissions"
+                  {...form.getInputProps('allowLateSubmissions', { type: 'checkbox' })}
                 />
-                {/* Published */}
-                <Checkbox 
-                  value="false"
-                  label="Published" 
+                <Checkbox
+                  value="published"
+                  label="Published"
+                  {...form.getInputProps('published', { type: 'checkbox' })}
                 />
-                {/* Regrades */}
-                <Checkbox 
-                  value="false"
-                  label="Enable Regrades" 
+                <Checkbox
+                  value="enableRegrades"
+                  label="Enable Regrades"
+                  {...form.getInputProps('enableRegrades', { type: 'checkbox' })}
                 />
               </Group>
             </Checkbox.Group>
+          </Tabs.Panel>
 
-            <Checkbox.Group
-              label="Group Settings"
-              mt="md"
+          {/* Tab 2: Customize Time */}
+          <Tabs.Panel value="customize-time">
+            <CustomizeTime assignmentId="example-assignment-id" />
+          </Tabs.Panel>
+
+          {/* Tab 3: Submission Settings */}
+          <Tabs.Panel value="submission-settings">
+            <Radio.Group
+              label="Submission Type"
+              required
+              {...form.getInputProps('submissionType')}
             >
-              <Group mt={4}>
-                {/* Group Submission */}
-                <Checkbox 
-                  value="false" 
-                  label="Enable Group Submission" 
-                />
-              </Group>
-              <TextInput 
-                mt={4} 
-                label="Limit Group Size" 
-                placeholder="No Max" 
-              />
-            </Checkbox.Group>
-          </Paper>
-        </Tabs.Panel>
-
-        {/* Tab 2: Submission Settings */}
-        <Tabs.Panel value="submission-settings">
-          <Paper withBorder shadow="md" p="lg">
-            <Radio.Group label="Submission Type" required>
-              <Radio 
-                value="variable" 
-                label="Variable length" 
-                mt={4}
-              />
-              <Radio 
-                value="fixed" 
-                label="Templated (fixed length)" 
-                mt={4}
-              />
+              <Radio value="variable" label="Variable length" mt={4} />
+              <Radio value="fixed" label="Templated (fixed length)" mt={4} />
             </Radio.Group>
             <Checkbox.Group label="Template Visibility" mt="md">
-              <Checkbox 
+              <Checkbox
                 mt={4}
-                value="false" 
-                label="Allow students to view and download the template" 
+                value="false"
+                label="Allow students to view and download the template"
               />
             </Checkbox.Group>
-          </Paper>
-        </Tabs.Panel>
+          </Tabs.Panel>
 
-        {/* Tab 3: Grading Defaults */}
-        <Tabs.Panel value="grading-defaults">
-          <Paper withBorder shadow="md" p="lg">
+          {/* Tab 4: Grading Defaults */}
+          <Tabs.Panel value="grading-defaults">
             <Checkbox.Group label="Default Grading Settings">
-              <Checkbox mt={4} 
-                label="Ceiling (maximum score is determined by points on the Outline)" 
+              <Checkbox
+                mt={4}
+                label="Ceiling (maximum score is determined by points on the Outline)"
                 value="false"
               />
-              <Checkbox mt={4} 
-                label="Floor (minimum score is 0.0)"
-                value="false"
-              />
-              <Checkbox mt={4} 
+              <Checkbox mt={4} label="Floor (minimum score is 0.0)" value="false" />
+              <Checkbox
+                mt={4}
                 label="Apply these settings to all questions"
-                value="false" 
-              />              
+                value="false"
+              />
             </Checkbox.Group>
-          </Paper>
-        </Tabs.Panel>
+          </Tabs.Panel>
 
-        {/* Tab 4: Rubric Settings */}
-        <Tabs.Panel value="rubric-settings">
-          <Paper withBorder shadow="md" p="lg">
-            <Radio.Group label="Default Selection Style" required>
-              <Radio mt={4}
-                value="single" 
-                label="Select one" 
+          {/* Tab 5: Rubric Settings */}
+          <Tabs.Panel value="rubric-settings">
+            <Radio.Group
+              label="Default Selection Style"
+              required
+              {...form.getInputProps('rubricVisibility')}
+            >
+              <Radio mt={4} value="show-all" label="Show all rubric items" />
+              <Radio mt={4} value="applied-only" label="Show applied rubric items only" />
+              <Radio
+                mt={4}
+                value="positive-negative"
+                label="Show all rubric items for positive and applied rubric items for negative scoring"
               />
-              <Radio mt={4}
-                value="multiple" 
-                label="Select many" 
-              />
+              <Radio mt={4} value="hide-all" label="Hide all rubric items" />
             </Radio.Group>
-            <Radio.Group mt="md" label="Create your Rubric">
-              <Radio mt={4}
-                value="before" 
-                label="Before student submission" 
-              />
-              <Radio mt={4}
-                value="during" 
-                label="While grading submissions" 
-              />
-            </Radio.Group>
-          </Paper>
-        </Tabs.Panel>
-
-        {/* Tab 5: Student Visibility */}
-        <Tabs.Panel value="student-visibility">
-          <Paper withBorder shadow="md" p="lg">
-            <Radio.Group label="Rubric Item Visibility" required>
-              <Radio mt={4} 
-                value="show-all" 
-                label="Show all rubric items" 
-              />
-              <Radio mt={4}
-                value="applied-only" 
-                label="Show applied rubric items only" 
-              />
-              <Radio mt={4}
-                value="positive-negative" 
-                label="Show all rubric items for positive and applied rubric items for negative scoring" 
-              />
-              <Radio mt={4}
-                value="hide-all" 
-                label="Hide all rubric items" 
-              />
-            </Radio.Group>
-          </Paper>
-        </Tabs.Panel>
-      </Tabs>
-
-      {/* Save and Delete Buttons */}
-      <Group mt="lg">
-        <Button color="red" variant="outline" leftSection={binIcon}>
-          Delete Assignment
-        </Button>
-        <Button onClick={handleSaveSettings}>Save</Button>
-      </Group>
-    </div>
+          </Tabs.Panel>
+        </Tabs>
+        <Group mt="lg">
+          <Button color="red" variant="outline" leftSection={binIcon}>
+            Delete Assignment
+          </Button>
+          <Button type="submit">Save</Button>
+        </Group>
+      </form>
+    </Modal>
   );
 };
 
