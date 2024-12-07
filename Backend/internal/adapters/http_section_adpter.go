@@ -113,6 +113,30 @@ func (h *HttpSectionHandler) GetSectionsDetailsByCourseID(c *fiber.Ctx) error {
 // 	})
 // }
 
+func (h *HttpSectionHandler) GetSectionsByAssignmentID(c *fiber.Ctx) error {
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	sections, err := h.services.GetSectionsByAssignmentID(assignmentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get sections",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":  "Sections are retrieved",
+		"sections": sections,
+	})
+}
+
 func (h *HttpSectionHandler) GetSectionsNameByCourseID(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
