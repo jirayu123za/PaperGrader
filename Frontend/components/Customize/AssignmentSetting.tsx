@@ -1,13 +1,14 @@
 import React from 'react';
-import { Tabs, Button, TextInput, Checkbox, Radio, Group, Select, Flex, Modal } from '@mantine/core';
+import { Tabs, Button, Modal, Group, Checkbox, Radio } from '@mantine/core';
 import { RiDeleteBinLine, RiFilePaper2Line } from 'react-icons/ri';
 import { CiSettings } from 'react-icons/ci';
 import { LuPenLine } from 'react-icons/lu';
 import { GrShareOption } from 'react-icons/gr';
 import { FiEye } from 'react-icons/fi';
 import { LuClock } from 'react-icons/lu';
-import CustomizeTime from './CustomizeTime';
-import { useForm } from '@mantine/form';
+import CustomizeTime from './AssignmentSetting/CustomizeTime';
+import BasicSettings from './AssignmentSetting/BasicSettings';
+import { useForm, UseFormReturnType } from '@mantine/form';
 
 interface AssignmentSettingProps {
   isOpen: boolean;
@@ -15,7 +16,19 @@ interface AssignmentSettingProps {
 }
 
 const AssignmentSetting: React.FC<AssignmentSettingProps> = ({ isOpen, onClose }) => {
-  const form = useForm({
+  const form = useForm<{
+    assignmentName: string;
+    assignmentDescription: string;
+    uploadBy: string;
+    scoringMethod: string;
+    allowLateSubmissions: boolean;
+    published: boolean;
+    enableRegrades: boolean;
+    submissionType: string;
+    rubricVisibility: string;
+    enableGroupSubmission: boolean;
+    groupSizeLimit: string;
+  }>({
     initialValues: {
       assignmentName: '',
       assignmentDescription: '',
@@ -24,6 +37,8 @@ const AssignmentSetting: React.FC<AssignmentSettingProps> = ({ isOpen, onClose }
       allowLateSubmissions: false,
       published: false,
       enableRegrades: false,
+      enableGroupSubmission: false, 
+      groupSizeLimit: '',
       submissionType: '',
       rubricVisibility: '',
     },
@@ -91,67 +106,14 @@ const AssignmentSetting: React.FC<AssignmentSettingProps> = ({ isOpen, onClose }
             </Tabs.Tab>
           </Tabs.List>
 
-          {/* Tab 1: Basic Settings */}
           <Tabs.Panel value="basic-settings">
-            <TextInput
-              label="Assignment Name"
-              required
-              placeholder="Enter assignment name"
-              {...form.getInputProps('assignmentName')}
-            />
-            <TextInput
-              label="Assignment Description"
-              placeholder="Enter a short description of the assignment"
-              mt="md"
-              {...form.getInputProps('assignmentDescription')}
-            />
-            <Radio.Group
-              label="Who will upload submissions?"
-              required
-              mt="md"
-              {...form.getInputProps('uploadBy')}
-            >
-              <Flex gap="md" pt={4}>
-                <Radio value="instructor" label="Instructor" />
-                <Radio value="student" label="Student" />
-              </Flex>
-            </Radio.Group>
-            <Select
-              label="Scoring Method"
-              placeholder="Select Default Scoring Method"
-              data={[
-                { value: 'negative', label: 'Negative scoring' },
-                { value: 'positive', label: 'Positive scoring' },
-              ]}
-              clearable
-              mt="md"
-              {...form.getInputProps('scoringMethod')}
-            />
-            <Checkbox.Group label="Other Settings" mt="md">
-              <Group mt={4}>
-                <Checkbox
-                  value="allowLateSubmissions"
-                  label="Allow Late Submissions"
-                  {...form.getInputProps('allowLateSubmissions', { type: 'checkbox' })}
-                />
-                <Checkbox
-                  value="published"
-                  label="Published"
-                  {...form.getInputProps('published', { type: 'checkbox' })}
-                />
-                <Checkbox
-                  value="enableRegrades"
-                  label="Enable Regrades"
-                  {...form.getInputProps('enableRegrades', { type: 'checkbox' })}
-                />
-              </Group>
-            </Checkbox.Group>
+            <BasicSettings form={form} />
           </Tabs.Panel>
 
-          {/* Tab 2: Customize Time */}
           <Tabs.Panel value="customize-time">
             <CustomizeTime assignmentId="example-assignment-id" />
           </Tabs.Panel>
+
 
           {/* Tab 3: Submission Settings */}
           <Tabs.Panel value="submission-settings">
@@ -206,6 +168,7 @@ const AssignmentSetting: React.FC<AssignmentSettingProps> = ({ isOpen, onClose }
               <Radio mt={4} value="hide-all" label="Hide all rubric items" />
             </Radio.Group>
           </Tabs.Panel>
+          
         </Tabs>
         <Group mt="lg">
           <Button color="red" variant="outline" leftSection={binIcon}>
