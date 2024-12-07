@@ -115,6 +115,7 @@ func main() {
 	apiGroup.Put("/course", courseHandler.UpdateCourse)
 
 	apiGroup.Get("/sections", sectionHandler.GetSectionsDetailsByCourseID)
+	apiGroup.Get("/sections/assignment", sectionHandler.GetSectionsByAssignmentID)
 	apiGroup.Get("/sections/name", sectionHandler.GetSectionsNameByCourseID)
 	apiGroup.Post("/sections", sectionHandler.CreateSection)
 
