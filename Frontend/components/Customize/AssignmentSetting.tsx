@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import CustomizeTime from './AssignmentSetting/CustomizeTime';
 import BasicSettings from './AssignmentSetting/BasicSettings';
 import { Tabs, Button, Modal, Group, Checkbox, Radio } from '@mantine/core';
@@ -8,13 +8,18 @@ import { LuPenLine, LuClock } from 'react-icons/lu';
 import { GrShareOption } from 'react-icons/gr';
 import { FiEye } from 'react-icons/fi';
 import { useForm } from '@mantine/form';
+import { useRouter } from 'next/router';
+import { useModalAssignmentSettingStore } from '../../store/modal/useAssignmentSettingModal';
+import { useFetchAssignmentSetting } from '../../hooks/AssignmentSetting/useFetchAssignmentSetting';
+import { useAssignmentSettingStore } from '../../store/useAssignmentSettingStore';
 
-interface AssignmentSettingProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+const AssignmentSetting: React.FC = () => {
+  const router = useRouter();
+  const { course_id } = router.query;
+  const { assignmentSetting } = useAssignmentSettingStore();
+  const { assignment_id, opened, closeModal } = useModalAssignmentSettingStore();
+  const { isLoading, isSuccess } = useFetchAssignmentSetting(course_id as string, assignment_id as string);
 
-const AssignmentSetting: React.FC<AssignmentSettingProps> = ({ isOpen, onClose }) => {
   const form = useForm<{
     assignmentName: string;
     assignmentDescription: string;
@@ -45,9 +50,40 @@ const AssignmentSetting: React.FC<AssignmentSettingProps> = ({ isOpen, onClose }
     },
   });
 
-  const handleSaveSettings = (values: typeof form.values) => {
+  useEffect(() => {
+    if (opened && isSuccess && assignmentSetting) {
+      form.setValues({
+        assignmentName: assignmentSetting.assignment?.assignmentName || '',
+        assignmentDescription: assignmentSetting.assignment?.assignmentDescription || '',
+        uploadBy: assignmentSetting.assignment?.submissBy || '',
+        scoringMethod: assignmentSetting.assignment?.gradingType || '',
+        allowLateSubmissions: assignmentSetting.assignment?.lateSubmiss || false,
+        published: assignmentSetting.assignment?.published || false,
+        enableRegrades: assignmentSetting.assignment?.regrades || false,
+        enableGroupSubmission: assignmentSetting.assignment?.groupSubmiss || false,
+        
+        // groupSizeLimit: assignmentSetting.group_size_limit || '',
+        // submissionType: assignmentSetting.assignment?.submit_type || '',
+        // rubricVisibility: assignmentSetting.rubric_visibility || '',
+        // studentVisibility: assignmentSetting.student_visibility || '',
+      });
+    }
+  }, [isLoading, isSuccess, assignmentSetting]);
+
+  const handleUpdateSettings = (values: typeof form.values) => {
+    const formData = new FormData();
+    formData.append('assignment_name', values.assignmentName);
+    formData.append('assignment_description', values.assignmentDescription);
+    formData.append('submiss_by', values.uploadBy);
+    formData.append('grading_type', values.scoringMethod);
+    formData.append('late_submiss', values.allowLateSubmissions.toString());
+    formData.append('group_submiss', values.enableGroupSubmission.toString());
+    formData.append('published', values.published.toString());
+    formData.append('regrades', values.enableRegrades.toString());
+
     console.log('Saved Form Values:', values);
-    onClose();
+    form.reset();
+    closeModal();
   };
 
   const binIcon = <RiDeleteBinLine />;
@@ -60,31 +96,21 @@ const AssignmentSetting: React.FC<AssignmentSettingProps> = ({ isOpen, onClose }
 
   return (
     <Modal
-      opened={isOpen}
-      onClose={onClose}
+      opened={opened}
+      onClose={() => {
+        form.reset();
+        closeModal();
+      }}
       title="Edit Assignment"
       size="lg"
       overlayProps={{ opacity: 0.55, blur: 3 }}
     >
-      <form onSubmit={form.onSubmit(handleSaveSettings)}>
+      <form onSubmit={form.onSubmit(handleUpdateSettings)}>
         <Tabs
           defaultValue="basic-settings"
           color="gray"
           variant="outline"
-          styles={{
-            tab: {
-              fontSize: '0.7rem',
-              padding: '4px 8px',
-              whiteSpace: 'nowrap',
-            },
-            list: {
-              display: 'flex',
-              flexWrap: 'nowrap',
-              gap: '1px',
-              overflowX: 'auto',
-              scrollbarWidth: 'thin',
-            },
-          }}
+          p={16}
         >
           <Tabs.List>
             <Tabs.Tab value="basic-settings" leftSection={settingsIcon}>
@@ -117,7 +143,7 @@ const AssignmentSetting: React.FC<AssignmentSettingProps> = ({ isOpen, onClose }
 
 
           {/* Tab 3: Submission Settings */}
-          <Tabs.Panel value="submission-settings">
+          <Tabs.Panel mt="md" value="submission-settings">
             <Radio.Group
               label="Submission Type"
               required
@@ -136,7 +162,7 @@ const AssignmentSetting: React.FC<AssignmentSettingProps> = ({ isOpen, onClose }
           </Tabs.Panel>
 
           {/* Tab 4: Grading Defaults */}
-          <Tabs.Panel value="grading-defaults">
+          <Tabs.Panel mt="md" value="grading-defaults">
             <Checkbox.Group label="Default Grading Settings">
               <Checkbox
                 mt={4}
@@ -153,7 +179,7 @@ const AssignmentSetting: React.FC<AssignmentSettingProps> = ({ isOpen, onClose }
           </Tabs.Panel>
 
           {/* Tab 5: Rubric Settings */}
-          <Tabs.Panel value="rubric-settings">
+          <Tabs.Panel mt="md" value="rubric-settings">
             <Radio.Group
               label="Default Selection Style"
               required
@@ -171,7 +197,7 @@ const AssignmentSetting: React.FC<AssignmentSettingProps> = ({ isOpen, onClose }
           </Tabs.Panel>
 
           {/* Tab 5: Student Visibility */}
-          <Tabs.Panel value="student-visibility">
+          <Tabs.Panel mt="md" value="student-visibility">
             <Radio.Group 
               label="Rubric Item Visibility" 
               required
