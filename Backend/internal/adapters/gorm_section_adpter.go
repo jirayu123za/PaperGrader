@@ -92,6 +92,18 @@ func (r *GormSectionRepository) FindSectionByCourseAndName(courseID uuid.UUID, s
 	return r.db.Where("course_id = ? AND section_name = ?", courseID, sectionName).First(section).Error
 }
 
+func (r *GormSectionRepository) FindSectionsByAssignmentID(AssignmentID uuid.UUID) ([]map[string]interface{}, error) {
+	var sections []map[string]interface{}
+	if result := r.db.Model(&models.Section{}).
+		Select("sections.section_id, sections.section_name").
+		Joins("JOIN assignment_sections ON assignment_sections.section_id = sections.section_id").
+		Where("assignment_sections.assignment_id = ?", AssignmentID).
+		Find(&sections); result.Error != nil {
+		return nil, result.Error
+	}
+	return sections, nil
+}
+
 func (r *GormSectionRepository) AddSections(section *models.Section) error {
 	return r.db.Create(section).Error
 }
