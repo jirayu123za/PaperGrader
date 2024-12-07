@@ -1,14 +1,13 @@
 import React from 'react';
+import CustomizeTime from './AssignmentSetting/CustomizeTime';
+import BasicSettings from './AssignmentSetting/BasicSettings';
 import { Tabs, Button, Modal, Group, Checkbox, Radio } from '@mantine/core';
 import { RiDeleteBinLine, RiFilePaper2Line } from 'react-icons/ri';
 import { CiSettings } from 'react-icons/ci';
-import { LuPenLine } from 'react-icons/lu';
+import { LuPenLine, LuClock } from 'react-icons/lu';
 import { GrShareOption } from 'react-icons/gr';
 import { FiEye } from 'react-icons/fi';
-import { LuClock } from 'react-icons/lu';
-import CustomizeTime from './AssignmentSetting/CustomizeTime';
-import BasicSettings from './AssignmentSetting/BasicSettings';
-import { useForm, UseFormReturnType } from '@mantine/form';
+import { useForm } from '@mantine/form';
 
 interface AssignmentSettingProps {
   isOpen: boolean;
@@ -28,6 +27,7 @@ const AssignmentSetting: React.FC<AssignmentSettingProps> = ({ isOpen, onClose }
     rubricVisibility: string;
     enableGroupSubmission: boolean;
     groupSizeLimit: string;
+    studentVisibility: string;
   }>({
     initialValues: {
       assignmentName: '',
@@ -41,6 +41,7 @@ const AssignmentSetting: React.FC<AssignmentSettingProps> = ({ isOpen, onClose }
       groupSizeLimit: '',
       submissionType: '',
       rubricVisibility: '',
+      studentVisibility: '',
     },
   });
 
@@ -168,6 +169,32 @@ const AssignmentSetting: React.FC<AssignmentSettingProps> = ({ isOpen, onClose }
               <Radio mt={4} value="hide-all" label="Hide all rubric items" />
             </Radio.Group>
           </Tabs.Panel>
+
+          {/* Tab 5: Student Visibility */}
+          <Tabs.Panel value="student-visibility">
+            <Radio.Group 
+              label="Rubric Item Visibility" 
+              required
+              {...form.getInputProps('studentVisibility')}
+            >
+              <Radio mt={4} 
+                value="show-all" 
+                label="Show all rubric items" 
+              />
+              <Radio mt={4}
+                value="applied-only" 
+                label="Show applied rubric items only" 
+              />
+              <Radio mt={4}
+                value="positive-negative" 
+                label="Show all rubric items for positive and applied rubric items for negative scoring" 
+              />
+              <Radio mt={4}
+                value="hide-all" 
+                label="Hide all rubric items" 
+              />
+            </Radio.Group>
+        </Tabs.Panel>
           
         </Tabs>
         <Group mt="lg">

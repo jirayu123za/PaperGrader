@@ -15,6 +15,7 @@ interface BasicSettingsProps {
         groupSizeLimit: string;
         submissionType: string;
         rubricVisibility: string;
+        studentVisibility: string;
     }>;
 }
 
