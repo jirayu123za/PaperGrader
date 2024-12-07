@@ -2,7 +2,7 @@ import React from 'react';
 import { useAssignmentStore } from '../../store/useAssignmentStore';
 import { useFetchAssignments } from '../../hooks/useFetchAssignments';
 import { useRouter } from 'next/router';
-import { Menu, Button } from '@mantine/core';
+import { Menu, Button, Paper, Table } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import AssignmentSetting from '../Customize/AssignmentSetting';
 
@@ -26,34 +26,34 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
   }
 
   return (
-    <div className="p-6 bg-white shadow rounded-lg">
+    <Paper shadow="sm" radius="md" withBorder p="xl">
       <h2 className="text-2xl font-semibold mb-4">{assignments.length} Assignments</h2>
-      <table className="min-w-full bg-white">
-        <thead>
-          <tr className="border-b">
-            <th className="py-2 px-4 text-left">NAME</th>
-            <th className="py-2 px-4 text-left">RELEASED</th>
-            <th className="py-2 px-4 text-left">DUE</th>
-            <th className="py-2 px-4 text-center">PUBLISHED</th>
-            <th className="py-2 px-4 text-center">REGRADES</th>
-            <th className="py-2 px-4 text-center">SUBMISS BY</th>
-          </tr>
-        </thead>
-        <tbody>
+      <Table highlightOnHover verticalSpacing="sm" className="min-w-full bg-white">
+        <Table.Thead>
+          <Table.Tr className="border-b">
+            <Table.Th className="py-2 px-4 text-left">NAME</Table.Th>
+            <Table.Th className="py-2 px-4 text-left">RELEASED</Table.Th>
+            <Table.Th className="py-2 px-4 text-left">DUE</Table.Th>
+            <Table.Th className="py-2 px-4 text-center">PUBLISHED</Table.Th>
+            <Table.Th className="py-2 px-4 text-center">REGRADES</Table.Th>
+            <Table.Th className="py-2 px-4 text-center">SUBMISS BY</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
           {assignments.map((assignment) => (
-            <tr key={assignment.assignment_id} className="border-b">
-              <td
+            <Table.Tr key={assignment.assignment_id} className="border-b">
+              <Table.Td
                 className="py-2 px-4 cursor-pointer hover:underline"
                 onClick={() => router.push(`/courses/${courseId}/process/${assignment.assignment_id}/CreateOutline`)}
               >
                 {assignment.assignment_name}
-              </td>
-              <td className="py-2 px-4">{assignment.assignment_release_date || '-'}</td>
-              <td className="py-2 px-4">{assignment.assignment_due_date || '-'}</td>
-              <td className="py-2 px-4 text-center">{assignment.published ? 'Yes' : 'No'}</td>
-              <td className="py-2 px-4 text-center">{assignment.regrades ? 'Yes' : 'No'}</td>
-              <td className="py-2 px-4 text-center">{assignment.submiss_by}</td>
-              <td className="py-2 px-4 text-center">
+              </Table.Td>
+              <Table.Td className="py-2 px-4">{assignment.assignment_release_date || '-'}</Table.Td>
+              <Table.Td className="py-2 px-4">{assignment.assignment_due_date || '-'}</Table.Td>
+              <Table.Td className="py-2 px-4">{assignment.published ? 'Yes' : 'No'}</Table.Td>
+              <Table.Td className="py-2 px-4">{assignment.regrades ? 'Yes' : 'No'}</Table.Td>
+              <Table.Td className="py-2 px-4">{assignment.submiss_by}</Table.Td>
+              <Table.Td className="py-2 px-4 text-center">
                 <Menu>
                   <Menu.Target>
                     <Button variant="subtle">•••</Button>
@@ -61,7 +61,7 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
                   <Menu.Dropdown>
                     <Menu.Item
                       onClick={() => {
-                        openAssignmentSetting(); // เปิดโมดัล AssignmentSetting
+                        openAssignmentSetting();
                       }}
                     >
                       Assignment Setting
@@ -69,15 +69,15 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
                     <Menu.Item color="red">Delete Assignment</Menu.Item>
                   </Menu.Dropdown>
                 </Menu>
-              </td>
-            </tr>
+              </Table.Td>
+            </Table.Tr>
           ))}
-        </tbody>
-      </table>
+        </Table.Tbody>
+      </Table>
 
       {/* Assignment Setting Modal */}
       <AssignmentSetting isOpen={isAssignmentSettingOpen} onClose={closeAssignmentSetting} />
-    </div>
+    </Paper>
   );
 };
 
