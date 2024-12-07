@@ -1,6 +1,7 @@
 import React from 'react';
-import { TextInput, Checkbox, Radio, Group, Select, Flex } from '@mantine/core';
+import { TextInput, Checkbox, Radio, Group, Select, Flex, Text } from '@mantine/core';
 import { UseFormReturnType } from '@mantine/form';
+import { Editor } from '../../Create/Editor.tsx/AssignmentEditor';
 
 interface BasicSettingsProps {
     form: UseFormReturnType<{
@@ -21,18 +22,22 @@ interface BasicSettingsProps {
 
 const BasicSettings: React.FC<BasicSettingsProps> = ({ form }) => {
     return (
-        <div>
+        <>
             <TextInput
+                mt="md"
                 label="Assignment Name"
                 required
                 placeholder="Enter assignment name"
                 {...form.getInputProps('assignmentName')}
             />
-            <TextInput
-                label="Assignment Description"
-                placeholder="Enter a short description of the assignment"
-                mt="md"
-                {...form.getInputProps('assignmentDescription')}
+            <Text size="sm" fw={500} mb={2} mt="md">
+                Assignment Description
+            </Text>
+            <Editor 
+                value={form.values.assignmentDescription}
+                onChange={(value: string) => 
+                    form.setFieldValue('assignmentDescription', value)
+                }
             />
             <Radio.Group
                 label="Who will upload submissions?"
@@ -76,17 +81,15 @@ const BasicSettings: React.FC<BasicSettingsProps> = ({ form }) => {
                 </Group>
             </Checkbox.Group>
             <Checkbox.Group label="Group Settings" mt="md">
-                {/* Checkbox สำหรับเปิดใช้งาน Group Submission */}
+                {/* Checkbox for Group Submission */}
                 <Checkbox
+                    mt={4}
+                    value="enableGroupSubmission"
                     label="Enable Group Submission"
-                    checked={form.values.enableGroupSubmission} // ผูกสถานะกับ form
-                    onChange={(event) => {
-                        const isChecked = event.currentTarget.checked; // อ่านสถานะ checkbox
-                        form.setFieldValue('enableGroupSubmission', isChecked); // อัปเดตค่าใน form
-                    }}
+                    {...form.getInputProps('enableGroupSubmission', { type: 'checkbox' })}
                 />
 
-                {/* แสดง TextInput เมื่อ Group Submission ถูกเปิดใช้งาน */}
+                {/* show TextInput when Group Submission opened */}
                 {form.values.enableGroupSubmission && (
                     <TextInput
                         label="Limit Group Size"
@@ -96,8 +99,7 @@ const BasicSettings: React.FC<BasicSettingsProps> = ({ form }) => {
                     />
                 )}
             </Checkbox.Group>
-
-        </div>
+        </>
     );
 };
 
