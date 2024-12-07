@@ -1,23 +1,25 @@
 import React from 'react';
+import AssignmentSetting from '../Customize/AssignmentSetting';
 import { useAssignmentStore } from '../../store/useAssignmentStore';
 import { useFetchAssignments } from '../../hooks/useFetchAssignments';
 import { useRouter } from 'next/router';
 import { Menu, Button, Paper, Table } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import AssignmentSetting from '../Customize/AssignmentSetting';
+import { useModalAssignmentSettingStore } from '../../store/modal/useAssignmentSettingModal';
 
 interface INTAssignmentProps {
   courseId: string;
 }
 
 const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
-  const { isLoading, error } = useFetchAssignments(courseId, false); // isStudent = false
-  const assignments = useAssignmentStore((state) => state.assignments);
+  const { isLoading, error } = useFetchAssignments(courseId, false);
   const router = useRouter();
 
-  // ใช้ useDisclosure สำหรับโมดัล AssignmentSetting
-  const [isAssignmentSettingOpen, { open: openAssignmentSetting, close: closeAssignmentSetting }] =
-    useDisclosure(false);
+  const assignments = useAssignmentStore((state) => state.assignments);
+  const { openModal } = useModalAssignmentSettingStore();
+
+  const handleEditClick = (assignment_id: string) => {
+    openModal(assignment_id);
+  };
 
   if (isLoading) return <div>Loading assignments...</div>;
   if (error) return <div>Error loading assignments: {error.message}</div>;
@@ -61,10 +63,8 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
                   <Menu.Dropdown>
                     <Menu.Item
                       onClick={() => {
-                        openAssignmentSetting();
-                      }}
-                    >
-                      Assignment Setting
+                        handleEditClick(assignment.assignment_id)}}>
+                        Assignment Setting
                     </Menu.Item>
                     <Menu.Item color="red">Delete Assignment</Menu.Item>
                   </Menu.Dropdown>
@@ -76,7 +76,7 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
       </Table>
 
       {/* Assignment Setting Modal */}
-      <AssignmentSetting isOpen={isAssignmentSettingOpen} onClose={closeAssignmentSetting} />
+      <AssignmentSetting/>
     </Paper>
   );
 };
