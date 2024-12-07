@@ -11,9 +11,11 @@ import (
 type SectionService interface {
 	// CRUD operations for Sections
 	CreateSection(CourseID uuid.UUID, sections interface{}) error
+
 	GetSectionsDetailsByCourseID(CourseID uuid.UUID) ([]*models.Section, error)
 	GetSectionIDsByCourseID(CourseID uuid.UUID) ([]uuid.UUID, error)
 	GetSectionsNameByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
+	GetSectionsByAssignmentID(AssignmentID uuid.UUID) ([]map[string]interface{}, error)
 
 	CreateSections(section *models.Section) error
 	GetSectionByCourseAndName(courseID uuid.UUID, sectionName string, section *models.Section) error
@@ -68,6 +70,14 @@ func (s *SectionServiceImpl) GetSectionByCourseAndName(courseID uuid.UUID, secti
 		return err
 	}
 	return nil
+}
+
+func (s *SectionServiceImpl) GetSectionsByAssignmentID(AssignmentID uuid.UUID) ([]map[string]interface{}, error) {
+	sections, err := s.repo.FindSectionsByAssignmentID(AssignmentID)
+	if err != nil {
+		return nil, err
+	}
+	return sections, nil
 }
 
 func (s *SectionServiceImpl) CreateSections(section *models.Section) error {
