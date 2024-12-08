@@ -1,8 +1,9 @@
+import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
-import { useCourseStore } from '../store/useCourseStore';
+import { useCourseStore, useInsCourseStore } from '../store/useCourseStore';
 
 interface FetchCoursesOptions {
-  isStudent: boolean; // ระบุว่าเป็นนักศึกษาหรือไม่
+  isStudent: boolean;
 }
 
 export const useFetchCourses = ({ isStudent }: FetchCoursesOptions) => {
@@ -43,3 +44,30 @@ export const useFetchCourses = ({ isStudent }: FetchCoursesOptions) => {
     },
   });
 };
+
+interface FetchCourseResponse {
+  course_id: string;
+  course_name: string;
+  course_code: string;
+  course_description: string;
+  semester: string;
+  academic_year: string;
+  entry_code: string;
+}
+
+export const useFetchCourse = (course_id: string) => {
+  const setInsCourse = useInsCourseStore((state) => state.setCourses);
+
+  return useQuery<FetchCourseResponse>({
+    queryKey: ['course', course_id],
+    queryFn: async () => {
+      const response = await axios.get(`/api/api/instructor/course`, {
+        params: { course_id: course_id },
+      });
+
+      setInsCourse(response.data.course);
+      return response.data || null;
+    },
+    enabled: !!course_id,
+  });
+}
