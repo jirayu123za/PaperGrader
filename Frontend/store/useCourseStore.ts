@@ -40,3 +40,13 @@ export const useCourseStore = create<CourseStore>(
     }
   )
 );
+
+interface InsCourseStore {
+  course: Course | null;
+  setCourses: (courses: Course) => void;
+}
+
+export const useInsCourseStore = create<InsCourseStore>((set) => ({
+  course: null,
+  setCourses: (course) => set({ course }),
+}));
