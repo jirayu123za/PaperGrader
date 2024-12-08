@@ -146,6 +146,7 @@ func main() {
 	apiGroup.Get("/instructor/assignment", instructorHandler.GetAssignmentByCourseIDAndAssignmentID)
 
 	apiGroup.Get("/instructor/courses", instructorHandler.GetCoursesByUserID)
+	apiGroup.Get("/instructor/course", instructorHandler.GetCourseByCourseID)
 
 	// test api get template file name
 	apiGroup.Get("/instructor/template/name", instructorHandler.GetAssignmentNameTemplate)
