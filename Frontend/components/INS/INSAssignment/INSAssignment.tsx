@@ -170,7 +170,7 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
                   </Table.Td>
                 </Table.Tr>
                 <Table.Tr>
-                  <Table.Td colSpan={8}>
+                  <Table.Td colSpan={8} p={0}>
                     <Collapse in={!!form.values[`${assignment.assignment_id}_expanded`]}>
                       <SecAssignment
                         assignmentId={assignment.assignment_id}
@@ -179,7 +179,6 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
                         expanded={form.values[`${assignment.assignment_id}_expanded`]}
                       />
                     </Collapse>
-
                   </Table.Td>
                 </Table.Tr>
               </React.Fragment>
