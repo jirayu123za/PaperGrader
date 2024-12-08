@@ -9,6 +9,9 @@ import { useModalAssignmentSettingStore } from '../../../store/modal/useAssignme
 import { usePagination } from '@mantine/hooks';
 import SecAssignment from './SecAssignment';
 import { useForm } from '@mantine/form';
+import { useSelectSectionStore } from '../../../store/useSectionStore';
+
+
 
 interface INTAssignmentProps {
   courseId: string;
@@ -17,7 +20,7 @@ interface INTAssignmentProps {
 const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
   const { isLoading, error } = useFetchAssignments(courseId, false);
   const router = useRouter();
-
+  const { setSelectedSections } = useSelectSectionStore();
   const assignments = useAssignmentStore((state) => state.assignments);
   const { openModal } = useModalAssignmentSettingStore();
 
@@ -46,6 +49,17 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
     return <div className="p-6 bg-white shadow rounded-lg">No assignments available.</div>;
   }
 
+  const handleCheckboxChange = (assignmentId: string, checked: boolean) => {
+    setSelectedSections((prev: string[]) => {
+      const updatedSections = checked
+        ? [...prev, assignmentId]
+        : prev.filter((id) => id !== assignmentId);
+      return updatedSections;
+    });
+    form.setFieldValue(assignmentId, checked); // อัปเดตค่าของฟอร์ม
+  };
+
+
   return (
     <Paper shadow="sm" radius="md" withBorder p="xl">
       <h2 className="text-2xl font-semibold mb-4">{assignments.length} Assignments</h2>
@@ -65,110 +79,112 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
         <Table.Tbody>
           {isLoading
             ? Array.from({ length: 10 }).map((_, index) => (
-                <Table.Tr key={`skeleton-row-${index}`}>
+              <Table.Tr key={`skeleton-row-${index}`}>
+                <Table.Td>
+                  <Skeleton visible height={20} width="100%" />
+                </Table.Td>
+                <Table.Td>
+                  <Skeleton visible height={20} width="50%" />
+                </Table.Td>
+                <Table.Td>
+                  <Skeleton visible height={20} width="50%" />
+                </Table.Td>
+                <Table.Td>
+                  <Skeleton visible height={20} width="30%" />
+                </Table.Td>
+                <Table.Td>
+                  <Skeleton visible height={20} width="30%" />
+                </Table.Td>
+                <Table.Td>
+                  <Skeleton visible height={20} width="50%" />
+                </Table.Td>
+              </Table.Tr>
+            ))
+            : paginatedData.map((assignment) => (
+              <React.Fragment key={assignment.assignment_id}>
+                <Table.Tr className="border-b">
                   <Table.Td>
-                    <Skeleton visible height={20} width="100%" />
+                    <Checkbox
+                      checked={!!form.values[assignment.assignment_id]}
+                      onChange={(e) =>
+                        handleCheckboxChange(assignment.assignment_id, e.currentTarget.checked)
+                      }
+                    />
                   </Table.Td>
-                  <Table.Td>
-                    <Skeleton visible height={20} width="50%" />
+                  <Table.Td className="py-2 px-4 flex items-center gap-2">
+                    <span
+                      className="cursor-pointer hover:underline"
+                      onClick={() =>
+                        router.push(
+                          `/courses/${courseId}/process/${assignment.assignment_id}/CreateOutline`
+                        )
+                      }
+                    >
+                      {assignment.assignment_name}
+                    </span>
+                    <Button
+                      variant="subtle"
+                      onClick={() => {
+                        const isExpanded = form.values[`${assignment.assignment_id}_expanded`];
+                        form.setFieldValue(`${assignment.assignment_id}_expanded`, !isExpanded);
+
+                        if (isExpanded) {
+                          // Reset ค่า Checkbox และ selectedSections ถ้า collapse
+                          form.reset();
+                          setSelectedSections([]);
+                        }
+                      }}
+                    >
+                      {form.values[`${assignment.assignment_id}_expanded`] ? (
+                        <FiChevronUp />
+                      ) : (
+                        <FiChevronDown />
+                      )}
+                    </Button>
                   </Table.Td>
-                  <Table.Td>
-                    <Skeleton visible height={20} width="50%" />
+                  <Table.Td className="py-2 px-4">
+                    {assignment.assignment_release_date || '-'}
                   </Table.Td>
-                  <Table.Td>
-                    <Skeleton visible height={20} width="30%" />
+                  <Table.Td className="py-2 px-4">{assignment.assignment_due_date || '-'}</Table.Td>
+                  <Table.Td className="py-2 px-4 text-center">
+                    {assignment.published ? 'Yes' : 'No'}
                   </Table.Td>
-                  <Table.Td>
-                    <Skeleton visible height={20} width="30%" />
+                  <Table.Td className="py-2 px-4 text-center">
+                    {assignment.regrades ? 'Yes' : 'No'}
                   </Table.Td>
-                  <Table.Td>
-                    <Skeleton visible height={20} width="50%" />
+                  <Table.Td className="py-2 px-4">{assignment.submiss_by}</Table.Td>
+                  <Table.Td className="py-2 px-4 text-center">
+                    <Menu>
+                      <Menu.Target>
+                        <Button variant="subtle">•••</Button>
+                      </Menu.Target>
+                      <Menu.Dropdown>
+                        <Menu.Item
+                          onClick={() => {
+                            openModal(assignment.assignment_id);
+                          }}
+                        >
+                          Assignment Setting
+                        </Menu.Item>
+                        <Menu.Item color="red">Delete Assignment</Menu.Item>
+                      </Menu.Dropdown>
+                    </Menu>
                   </Table.Td>
                 </Table.Tr>
-              ))
-            : paginatedData.map((assignment) => (
-                <React.Fragment key={assignment.assignment_id}>
-                  <Table.Tr className="border-b">
-                    <Table.Td>
-                      <Checkbox
-                        checked={!!form.values[assignment.assignment_id]}
-                        onChange={(e) =>
-                          form.setFieldValue(
-                            assignment.assignment_id,
-                            e.currentTarget.checked
-                          )
-                        }
+                <Table.Tr>
+                  <Table.Td colSpan={8}>
+                    <Collapse in={!!form.values[`${assignment.assignment_id}_expanded`]}>
+                      <SecAssignment
+                        assignmentId={assignment.assignment_id}
+                        courseId={courseId}
+                        parentChecked={form.values[assignment.assignment_id]}
+                        
                       />
-                    </Table.Td>
-                    <Table.Td className="py-2 px-4 flex items-center gap-2">
-                      <span
-                        className="cursor-pointer hover:underline"
-                        onClick={() =>
-                          router.push(
-                            `/courses/${courseId}/process/${assignment.assignment_id}/CreateOutline`
-                          )
-                        }
-                      >
-                        {assignment.assignment_name}
-                      </span>
-                      <Button
-                        variant="subtle"
-                        onClick={() =>
-                          form.setFieldValue(
-                            `${assignment.assignment_id}_expanded`,
-                            !form.values[`${assignment.assignment_id}_expanded`]
-                          )
-                        }
-                      >
-                        {form.values[`${assignment.assignment_id}_expanded`] ? (
-                          <FiChevronUp />
-                        ) : (
-                          <FiChevronDown />
-                        )}
-                      </Button>
-                    </Table.Td>
-                    <Table.Td className="py-2 px-4">
-                      {assignment.assignment_release_date || '-'}
-                    </Table.Td>
-                    <Table.Td className="py-2 px-4">{assignment.assignment_due_date || '-'}</Table.Td>
-                    <Table.Td className="py-2 px-4 text-center">
-                      {assignment.published ? 'Yes' : 'No'}
-                    </Table.Td>
-                    <Table.Td className="py-2 px-4 text-center">
-                      {assignment.regrades ? 'Yes' : 'No'}
-                    </Table.Td>
-                    <Table.Td className="py-2 px-4">{assignment.submiss_by}</Table.Td>
-                    <Table.Td className="py-2 px-4 text-center">
-                      <Menu>
-                        <Menu.Target>
-                          <Button variant="subtle">•••</Button>
-                        </Menu.Target>
-                        <Menu.Dropdown>
-                          <Menu.Item
-                            onClick={() => {
-                              openModal(assignment.assignment_id);
-                            }}
-                          >
-                            Assignment Setting
-                          </Menu.Item>
-                          <Menu.Item color="red">Delete Assignment</Menu.Item>
-                        </Menu.Dropdown>
-                      </Menu>
-                    </Table.Td>
-                  </Table.Tr>
-                  <Table.Tr>
-                    <Table.Td colSpan={8}>
-                      <Collapse in={!!form.values[`${assignment.assignment_id}_expanded`]}>
-                        <SecAssignment
-                          assignmentId={assignment.assignment_id}
-                          courseId={courseId}
-                          parentChecked={form.values[assignment.assignment_id]}
-                        />
-                      </Collapse>
-                    </Table.Td>
-                  </Table.Tr>
-                </React.Fragment>
-              ))}
+                    </Collapse>
+                  </Table.Td>
+                </Table.Tr>
+              </React.Fragment>
+            ))}
         </Table.Tbody>
       </Table>
 

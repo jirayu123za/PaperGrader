@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Checkbox, Table, Loader, Text, Paper, Progress } from '@mantine/core';
 import { useFetchAssignmentSections } from '../../../hooks/AssignmentSetting/useFetchAssignmentSections';
 import { useFetchAssignmentSetting } from '../../../hooks/AssignmentSetting/useFetchAssignmentSetting';
 import { useForm } from '@mantine/form';
 import dayjs from 'dayjs';
+import { useSelectSectionStore } from '../../../store/useSectionStore';
 
 interface SecAssignmentProps {
   courseId: string;
@@ -11,24 +12,43 @@ interface SecAssignmentProps {
   parentChecked?: boolean;
 }
 
-const SecAssignment: React.FC<SecAssignmentProps> = ({ courseId, assignmentId , parentChecked}) => {
-  const { data: sections, isLoading: sectionsLoading, error: sectionsError } = useFetchAssignmentSections(assignmentId);
-  const { data: assignmentSetting, isLoading: settingLoading, error: settingError } = useFetchAssignmentSetting(courseId, assignmentId);
+const SecAssignment: React.FC<SecAssignmentProps> = ({ courseId, assignmentId, parentChecked }) => {
+  const { data: sections, isLoading: sectionsLoading, error: sectionsError } =
+    useFetchAssignmentSections(assignmentId);
+  const { data: assignmentSetting, isLoading: settingLoading, error: settingError } =
+    useFetchAssignmentSetting(courseId, assignmentId);
+  const { setSelectedSections, resetSelectedSections } = useSelectSectionStore();
+
   const form = useForm<Record<string, boolean>>({
     initialValues: {},
   });
-  React.useEffect(() => {
-    if (parentChecked !== undefined) {
-      const updatedValues = sections?.reduce(
-        (acc, section) => ({ ...acc, [section.section_id]: parentChecked }),
+
+  useEffect(() => {
+    if (parentChecked !== undefined && sections) {
+      // อัปเดตค่า `form` และ `selectedSections` อัตโนมัติเมื่อ `parentChecked` เปลี่ยน
+      const updatedValues = sections.reduce(
+        (acc, section) => ({
+          ...acc,
+          [section.section_id]: parentChecked,
+        }),
         {}
       );
-      form.setValues(updatedValues || {});
+
+      form.setValues(updatedValues); // ตั้งค่าใหม่สำหรับ `form`
+      if (parentChecked) {
+        setSelectedSections(sections.map((section) => section.section_id)); // เพิ่ม section ทั้งหมด
+      } else {
+        resetSelectedSections(); // รีเซ็ตค่า
+      }
     }
-  }, [parentChecked, sections]);
+  }, [parentChecked, sections, setSelectedSections, resetSelectedSections]);
 
-
-  
+  const handleCheckboxChange = (sectionId: string, checked: boolean) => {
+    setSelectedSections((prev) =>
+      checked ? [...prev, sectionId] : prev.filter((id) => id !== sectionId)
+    );
+    form.setFieldValue(sectionId, checked);
+  };
 
   if (sectionsLoading || settingLoading) {
     return <Loader size="sm" />;
@@ -42,9 +62,6 @@ const SecAssignment: React.FC<SecAssignmentProps> = ({ courseId, assignmentId , 
     return <Text>No sections available for this assignment.</Text>;
   }
 
-
-
-  // Match sections with corresponding times from assignmentSetting
   const matchedSections = sections.map((section) => {
     const matched = assignmentSetting?.assignmentSections.find(
       (assignmentSection) => assignmentSection.section_id === section.section_id
@@ -55,7 +72,6 @@ const SecAssignment: React.FC<SecAssignmentProps> = ({ courseId, assignmentId , 
       dueDate: matched?.dueDate || 'N/A',
     };
   });
-
 
   return (
     <Paper shadow="xs" p="sm" radius="md" withBorder>
@@ -73,11 +89,9 @@ const SecAssignment: React.FC<SecAssignmentProps> = ({ courseId, assignmentId , 
           {matchedSections.map((section) => (
             <Table.Tr key={section.section_id}>
               <Table.Td>
-              <Checkbox
+                <Checkbox
                   checked={!!form.values[section.section_id]}
-                  onChange={(e) =>
-                    form.setFieldValue(section.section_id, e.currentTarget.checked)
-                  }
+                  onChange={(e) => handleCheckboxChange(section.section_id, e.currentTarget.checked)}
                 />
               </Table.Td>
               <Table.Td>{section.section_name}</Table.Td>

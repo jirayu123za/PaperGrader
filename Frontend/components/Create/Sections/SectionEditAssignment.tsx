@@ -1,22 +1,32 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { TagsInput, Text, Loader } from '@mantine/core';
 import { useFetchAssignmentSections } from '../../../hooks/AssignmentSetting/useFetchAssignmentSections';
-import { useAssignmentSectionsStore, useSelectSectionStore } from '../../../store/useSectionStore';
-import { useRouter } from 'next/router';
+import { useSelectSectionStore } from '../../../store/useSectionStore';
 
-const SectionEditAssignment: React.FC<{ assignmentId: string }> = ({ assignmentId }) => {
-  const router = useRouter();
-  const { assignment_id } = router.query; // Retrieve assignment_id from the route
-  const { data, isLoading, error } = useFetchAssignmentSections(assignment_id as string);
+interface SectionEditAssignmentProps {
+  assignmentId: string;
+}
 
-  const { assignmentSections } = useAssignmentSectionsStore();
+const SectionEditAssignment: React.FC<SectionEditAssignmentProps> = ({ assignmentId }) => {
+  const { data: sections, isLoading, error } = useFetchAssignmentSections(assignmentId);
   const { selectedSections, setSelectedSections } = useSelectSectionStore();
 
-  // Map assignment sections to TagsInput-compatible data structure
-  const sectionsData = assignmentSections.map((section) => ({
-    label: section.section_name,
-    value: section.section_id,
-  }));
+  // เมื่อ sections มีการเปลี่ยนแปลง ให้กรองและแมป section_id กับ section_name
+  const selectedTagsData = sections
+    ? sections
+        .filter((section) => selectedSections.includes(section.section_id))
+        .map((section) => ({
+          label: section.section_name,
+          value: section.section_id,
+        }))
+    : [];
+
+  const allTagsData = sections
+    ? sections.map((section) => ({
+        label: section.section_name,
+        value: section.section_id,
+      }))
+    : [];
 
   if (isLoading) return <Loader size="sm" />;
   if (error) return <Text color="red">Error fetching sections: {error.message}</Text>;
@@ -24,12 +34,10 @@ const SectionEditAssignment: React.FC<{ assignmentId: string }> = ({ assignmentI
   return (
     <div className="mt-4">
       <TagsInput
-        data={sectionsData}
+        data={allTagsData} // ใช้ sections ทั้งหมดใน dropdown
         placeholder="Add or select sections"
-        value={selectedSections}
-        onChange={(tags) => {
-          setSelectedSections(tags); // Update the selected sections in the store
-        }}
+        value={selectedTagsData.map((tag) => tag.value)} // แสดงแท็กที่เลือก
+        onChange={(tags) => setSelectedSections(tags)} // อัปเดต selectedSections ใน store
         label="Edit Sections"
         maxDropdownHeight={100}
         comboboxProps={{ shadow: 'md' }}
