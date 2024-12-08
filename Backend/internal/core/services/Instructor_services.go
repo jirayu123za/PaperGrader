@@ -29,6 +29,8 @@ type InstructorService interface {
 	GetColumnsAndDataFromUploadedFile(fileBytes []byte) (map[string]interface{}, error)
 
 	GetCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error)
+	GetCourseByCourseID(CourseID uuid.UUID) (map[string]interface{}, error)
+
 	GetAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
 	GetActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
 	GetAssignmentByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error)
@@ -178,6 +180,14 @@ func (s *InstructorServiceImpl) GetCoursesByUserID(UserID uuid.UUID) ([]map[stri
 		return nil, err
 	}
 	return courses, nil
+}
+
+func (s *InstructorServiceImpl) GetCourseByCourseID(CourseID uuid.UUID) (map[string]interface{}, error) {
+	course, err := s.repo.FindCourseByCourseID(CourseID)
+	if err != nil {
+		return nil, err
+	}
+	return course, nil
 }
 
 func (s *InstructorServiceImpl) GetAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
