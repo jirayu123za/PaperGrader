@@ -12,7 +12,7 @@ const Dashboard = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <LeftMain courseId={courseId} />
+      <LeftMain/>
       <div className="flex-grow p-6">
         <INTDashBoard courseId={courseId} />
       </div>

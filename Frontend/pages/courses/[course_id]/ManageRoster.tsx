@@ -21,7 +21,7 @@ const ManageRoster: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <LeftMain courseId={actualCourseId} />
+      <LeftMain/>
       <div className="flex-grow p-6">
         <h1 className="text-2xl font-bold mb-4">Roster</h1>
 
