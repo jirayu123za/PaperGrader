@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Checkbox, Table, Loader, Text, Paper, Progress } from '@mantine/core';
 import { useFetchAssignmentSections } from '../../../hooks/AssignmentSetting/useFetchAssignmentSections';
 import { useFetchAssignmentSetting } from '../../../hooks/AssignmentSetting/useFetchAssignmentSetting';
@@ -10,9 +10,15 @@ interface SecAssignmentProps {
   courseId: string;
   assignmentId: string;
   parentChecked?: boolean;
+  expanded?: boolean; // ใช้ตรวจสอบการเปิด/ปิด Collapse
 }
 
-const SecAssignment: React.FC<SecAssignmentProps> = ({ courseId, assignmentId, parentChecked }) => {
+const SecAssignment: React.FC<SecAssignmentProps> = ({
+  courseId,
+  assignmentId,
+  parentChecked,
+  expanded,
+}) => {
   const { data: sections, isLoading: sectionsLoading, error: sectionsError } =
     useFetchAssignmentSections(assignmentId);
   const { data: assignmentSetting, isLoading: settingLoading, error: settingError } =
@@ -23,9 +29,19 @@ const SecAssignment: React.FC<SecAssignmentProps> = ({ courseId, assignmentId, p
     initialValues: {},
   });
 
+  const wasExpanded = useRef<boolean | undefined>(expanded);
+
+  useEffect(() => {
+    if (wasExpanded.current && !expanded) {
+      // Reset ค่าเมื่อ Collapse เปลี่ยนจากเปิดเป็นปิด
+      form.reset();
+      resetSelectedSections();
+    }
+    wasExpanded.current = expanded; // อัปเดตสถานะล่าสุด
+  }, [expanded, form, resetSelectedSections]);
+
   useEffect(() => {
     if (parentChecked !== undefined && sections) {
-      // อัปเดตค่า `form` และ `selectedSections` อัตโนมัติเมื่อ `parentChecked` เปลี่ยน
       const updatedValues = sections.reduce(
         (acc, section) => ({
           ...acc,
@@ -34,11 +50,11 @@ const SecAssignment: React.FC<SecAssignmentProps> = ({ courseId, assignmentId, p
         {}
       );
 
-      form.setValues(updatedValues); // ตั้งค่าใหม่สำหรับ `form`
+      form.setValues(updatedValues);
       if (parentChecked) {
-        setSelectedSections(sections.map((section) => section.section_id)); // เพิ่ม section ทั้งหมด
+        setSelectedSections(sections.map((section) => section.section_id));
       } else {
-        resetSelectedSections(); // รีเซ็ตค่า
+        resetSelectedSections();
       }
     }
   }, [parentChecked, sections, setSelectedSections, resetSelectedSections]);

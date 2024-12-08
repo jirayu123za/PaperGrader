@@ -130,16 +130,12 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
 
                         if (isExpanded) {
                           // Reset ค่า Checkbox และ selectedSections ถ้า collapse
-                          form.reset();
-                          setSelectedSections([]);
+                          form.setFieldValue(`${assignment.assignment_id}`, false); // ล้างค่าที่เลือกของ parent
+                          setSelectedSections([]); // ล้างค่าทั้งหมดใน Store
                         }
                       }}
                     >
-                      {form.values[`${assignment.assignment_id}_expanded`] ? (
-                        <FiChevronUp />
-                      ) : (
-                        <FiChevronDown />
-                      )}
+                      {form.values[`${assignment.assignment_id}_expanded`] ? <FiChevronUp /> : <FiChevronDown />}
                     </Button>
                   </Table.Td>
                   <Table.Td className="py-2 px-4">
@@ -178,9 +174,10 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
                         assignmentId={assignment.assignment_id}
                         courseId={courseId}
                         parentChecked={form.values[assignment.assignment_id]}
-                        
+                        expanded={form.values[`${assignment.assignment_id}_expanded`]} // ส่ง expanded
                       />
                     </Collapse>
+
                   </Table.Td>
                 </Table.Tr>
               </React.Fragment>
