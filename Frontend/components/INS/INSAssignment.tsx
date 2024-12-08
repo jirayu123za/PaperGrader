@@ -3,8 +3,9 @@ import AssignmentSetting from '../Customize/AssignmentSetting';
 import { useAssignmentStore } from '../../store/useAssignmentStore';
 import { useFetchAssignments } from '../../hooks/useFetchAssignments';
 import { useRouter } from 'next/router';
-import { Menu, Button, Paper, Table, Skeleton } from '@mantine/core';
+import { Menu, Button, Paper, Table, Skeleton, Pagination } from '@mantine/core';
 import { useModalAssignmentSettingStore } from '../../store/modal/useAssignmentSettingModal';
+import { usePagination } from '@mantine/hooks';
 
 interface INTAssignmentProps {
   courseId: string;
@@ -20,6 +21,22 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
   const handleEditClick = (assignment_id: string) => {
     openModal(assignment_id);
   };
+
+  const pageSize = 10;
+  const totalPages = Math.ceil(assignments.length / pageSize);
+  
+  const pagination = usePagination({
+    total: totalPages,
+    initialPage: 1,
+    siblings: 1,
+    boundaries: 1,
+  });
+  
+  const paginatedData = assignments.slice(
+    (pagination.active - 1) * pageSize,
+    pagination.active * pageSize
+  );
+
 
   if (error) return <div>Error loading assignments: {error.message}</div>;
   if (!assignments || assignments.length === 0) {
@@ -64,7 +81,7 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
                 </Table.Td>
               </Table.Tr>            
             ))
-          : assignments.map((assignment) => (
+          : paginatedData.map((assignment) => (
             <Table.Tr key={assignment.assignment_id} className="border-b">
               <Table.Td
                 className="py-2 px-4 cursor-pointer hover:underline"
@@ -96,6 +113,16 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
           ))}
         </Table.Tbody>
       </Table>
+
+      <div className="flex justify-center mt-4">
+        <Pagination
+          total={totalPages}
+          siblings={1}
+          boundaries={1}
+          value={pagination.active}
+          onChange={pagination.setPage}
+          />
+      </div>
 
       {/* Assignment Setting Modal */}
       <AssignmentSetting/>
