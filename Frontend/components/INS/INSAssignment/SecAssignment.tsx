@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Checkbox, Table, Loader, Text, Paper, Progress } from '@mantine/core';
+import { Checkbox, Table, Loader, Text, Progress } from '@mantine/core';
 import { useFetchAssignmentSections } from '../../../hooks/AssignmentSetting/useFetchAssignmentSections';
 import { useFetchAssignmentSetting } from '../../../hooks/AssignmentSetting/useFetchAssignmentSetting';
 import { useForm } from '@mantine/form';
@@ -89,8 +89,7 @@ const SecAssignment: React.FC<SecAssignmentProps> = ({
   });
 
   return (
-    <Paper shadow="xs" p="sm" radius="md" withBorder>
-      <Table highlightOnHover striped verticalSpacing="md">
+      <Table withTableBorder={false} verticalSpacing="lg" className="bg-white">
         <Table.Thead>
           <Table.Tr>
             <Table.Th style={{ width: '10%' }}>SELECT</Table.Th>
@@ -100,7 +99,7 @@ const SecAssignment: React.FC<SecAssignmentProps> = ({
             <Table.Th style={{ width: '20%', textAlign: 'center' }}>Due Date</Table.Th>
           </Table.Tr>
         </Table.Thead>
-        <tbody>
+        <Table.Tbody>
           {matchedSections.map((section) => (
             <Table.Tr key={section.section_id}>
               <Table.Td>
@@ -132,9 +131,8 @@ const SecAssignment: React.FC<SecAssignmentProps> = ({
               </Table.Td>
             </Table.Tr>
           ))}
-        </tbody>
+        </Table.Tbody>
       </Table>
-    </Paper>
   );
 };
 
