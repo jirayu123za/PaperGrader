@@ -381,6 +381,19 @@ func (r *GormInstructorRepository) FindCoursesByUserID(UserID uuid.UUID) ([]map[
 	return courses, nil
 }
 
+func (r *GormInstructorRepository) FindCourseByCourseID(CourseID uuid.UUID) (map[string]interface{}, error) {
+	var course map[string]interface{}
+
+	if err := r.db.
+		Table("courses").
+		Select("courses.course_id, courses.course_name, courses.course_code, courses.course_description, courses.semester, courses.academic_year, courses.entry_code").
+		Where("courses.course_id = ? AND courses.deleted_at IS NULL", CourseID).
+		Find(&course).Error; err != nil {
+		return nil, err
+	}
+	return course, nil
+}
+
 func (r *GormInstructorRepository) FindAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
 	var assignments []map[string]interface{}
 
