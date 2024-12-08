@@ -1,53 +1,60 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Text, Checkbox, Paper } from '@mantine/core';
+import React, { useEffect } from 'react';
+import { Button, Checkbox } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import { useForm } from '@mantine/form';
-import { useCustomizeTime } from '../../../hooks/useCustomizeTime';
-import { useCustomizeTimeStore } from '../../../store/useCustomizeTimeStore';
-import SectionSelector from '../../Create/Sections/SectionSelector';
+import { useFetchAssignmentSetting } from '../../../hooks/AssignmentSetting/useFetchAssignmentSetting'; 
+import { useAssignmentSettingStore } from '../../../store/useAssignmentSettingStore';
+import SectionEditAssignment from '../../Create/Sections/SectionEditAssignment';
 import '@mantine/dates/styles.css';
 
 interface CustomizeTimeProps {
+  courseId: string;
   assignmentId: string;
 }
 
-const CustomizeTime: React.FC<CustomizeTimeProps> = ({ assignmentId }) => {
-  const { releaseDate, dueDate, cutOffDate } = useCustomizeTimeStore();
-  const { isFetching, updateCustomizeTime } = useCustomizeTime(assignmentId);
-  const [isLateSubmissionEnabled, setIsLateSubmissionEnabled] = useState(false);
+const CustomizeTime: React.FC<CustomizeTimeProps> = ({ courseId, assignmentId }) => {
+  const { assignmentSetting } = useAssignmentSettingStore();
+  const { isFetching } = useFetchAssignmentSetting(courseId, assignmentId);
 
+  // จัดการสถานะด้วย useForm
   const form = useForm({
     initialValues: {
-      selectedSections: [] as string[],
-      release_date: releaseDate || '',
-      due_date: dueDate || '',
-      cut_off_date: cutOffDate || '',
+      selectedSections: assignmentSetting?.assignmentSections.map((s) => s.section_id) || [],
+      release_date: assignmentSetting?.assignmentSections[0]?.releaseDate || '',
+      due_date: assignmentSetting?.assignmentSections[0]?.dueDate || '',
+      cut_off_date: assignmentSetting?.assignmentSections[0]?.cutOffDate || '',
+      allowLateSubmissions: !!assignmentSetting?.assignment?.lateSubmiss || false, // ใช้ฟอร์มจัดการสถานะนี้
     },
   });
 
   useEffect(() => {
-    form.setValues({
-      release_date: releaseDate || '',
-      due_date: dueDate || '',
-      cut_off_date: cutOffDate || '',
-    });
-  }, [releaseDate, dueDate, cutOffDate]);
+    if (assignmentSetting) {
+      form.setValues({
+        selectedSections: assignmentSetting.assignmentSections.map((s) => s.section_id),
+        release_date: assignmentSetting.assignmentSections[0]?.releaseDate || '',
+        due_date: assignmentSetting.assignmentSections[0]?.dueDate || '',
+        cut_off_date: assignmentSetting.assignmentSections[0]?.cutOffDate || '',
+        allowLateSubmissions: !!assignmentSetting.assignment?.lateSubmiss || false,
+      });
+    }
+  }, [assignmentSetting]);
 
   const handleSubmit = (values: typeof form.values) => {
-    updateCustomizeTime({
+    console.log('Updated Customize Time:', {
       sections: values.selectedSections,
       releaseDate: values.release_date,
       dueDate: values.due_date,
-      cutOffDate: isLateSubmissionEnabled ? values.cut_off_date : '',
+      cutOffDate: values.allowLateSubmissions ? values.cut_off_date : '',
     });
+    // TODO: เรียก API เพื่ออัปเดตข้อมูล
   };
 
   if (isFetching) return <div>Loading...</div>;
 
   return (
     <form onSubmit={form.onSubmit(handleSubmit)}>
-      <SectionSelector defaultEnabled={true} />
-
+      <SectionEditAssignment assignmentId={assignmentId} />
+      
       <div className="grid grid-cols-2 gap-4 mb-6">
         <DateTimePicker
           label="Release Date"
@@ -66,10 +73,9 @@ const CustomizeTime: React.FC<CustomizeTimeProps> = ({ assignmentId }) => {
       <div className="mb-6">
         <Checkbox
           label="Allow late submissions"
-          checked={isLateSubmissionEnabled}
-          onChange={(event) => setIsLateSubmissionEnabled(event.currentTarget.checked)}
+          {...form.getInputProps('allowLateSubmissions', { type: 'checkbox' })}
         />
-        {isLateSubmissionEnabled && (
+        {form.values.allowLateSubmissions && (
           <DateTimePicker
             label="Cut Off Date"
             placeholder="Select cut off date"
@@ -85,7 +91,6 @@ const CustomizeTime: React.FC<CustomizeTimeProps> = ({ assignmentId }) => {
           variant="default"
           onClick={() => {
             form.reset();
-            setIsLateSubmissionEnabled(false);
           }}
         >
           Reset
@@ -93,7 +98,6 @@ const CustomizeTime: React.FC<CustomizeTimeProps> = ({ assignmentId }) => {
         <Button type="submit">Save</Button>
       </div>
     </form>
-
   );
 };
 
