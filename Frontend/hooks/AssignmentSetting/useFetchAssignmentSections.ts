@@ -13,7 +13,7 @@ export const useFetchAssignmentSections = (assignment_id: string) => {
     return useQuery<SectionsList[]>({
         queryKey: ['sections', assignment_id],
         queryFn: async () => {
-            const response = await axios.get('/api/api/sections/name', {
+            const response = await axios.get('/api/api/sections/assignment', {
                 params: { assignment_id: assignment_id },
             });
 

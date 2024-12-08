@@ -138,7 +138,7 @@ const AssignmentSetting: React.FC = () => {
           </Tabs.Panel>
 
           <Tabs.Panel value="customize-time">
-            <CustomizeTime/>
+          <CustomizeTime courseId={course_id as string} assignmentId={assignment_id as string} />
           </Tabs.Panel>
 
 
