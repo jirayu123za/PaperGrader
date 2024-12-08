@@ -11,14 +11,11 @@ const SectionEditAssignment: React.FC<SectionEditAssignmentProps> = ({ assignmen
   const { data: sections, isLoading, error } = useFetchAssignmentSections(assignmentId);
   const { selectedSections, setSelectedSections } = useSelectSectionStore();
 
-  // เมื่อ sections มีการเปลี่ยนแปลง ให้กรองและแมป section_id กับ section_name
-  const selectedTagsData = sections
+  // Map `selectedSections` เป็น `section_name`
+  const selectedTags = sections
     ? sections
         .filter((section) => selectedSections.includes(section.section_id))
-        .map((section) => ({
-          label: section.section_name,
-          value: section.section_id,
-        }))
+        .map((section) => section.section_name) // ใช้ section_name สำหรับแสดงในแท็ก
     : [];
 
   const allTagsData = sections
@@ -28,16 +25,26 @@ const SectionEditAssignment: React.FC<SectionEditAssignmentProps> = ({ assignmen
       }))
     : [];
 
+  const handleTagsChange = (tags: string[]) => {
+    // หา section_id ที่ตรงกับ section_name ใน tags
+    const updatedSelectedSections = sections
+      ? sections
+          .filter((section) => tags.includes(section.section_name)) // ใช้ section_name ตรงนี้
+          .map((section) => section.section_id)
+      : [];
+    setSelectedSections(updatedSelectedSections);
+  };
+
   if (isLoading) return <Loader size="sm" />;
   if (error) return <Text color="red">Error fetching sections: {error.message}</Text>;
 
   return (
     <div className="mt-4">
       <TagsInput
-        data={allTagsData} // ใช้ sections ทั้งหมดใน dropdown
+        data={allTagsData} // sections ทั้งหมดใน dropdown
         placeholder="Add or select sections"
-        value={selectedTagsData.map((tag) => tag.value)} // แสดงแท็กที่เลือก
-        onChange={(tags) => setSelectedSections(tags)} // อัปเดต selectedSections ใน store
+        value={selectedTags} // แสดง `section_name` ในแท็ก
+        onChange={handleTagsChange} // อัปเดต `selectedSections` ใน store
         label="Edit Sections"
         maxDropdownHeight={100}
         comboboxProps={{ shadow: 'md' }}
