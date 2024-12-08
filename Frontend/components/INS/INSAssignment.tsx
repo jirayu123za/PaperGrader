@@ -3,7 +3,7 @@ import AssignmentSetting from '../Customize/AssignmentSetting';
 import { useAssignmentStore } from '../../store/useAssignmentStore';
 import { useFetchAssignments } from '../../hooks/useFetchAssignments';
 import { useRouter } from 'next/router';
-import { Menu, Button, Paper, Table } from '@mantine/core';
+import { Menu, Button, Paper, Table, Skeleton } from '@mantine/core';
 import { useModalAssignmentSettingStore } from '../../store/modal/useAssignmentSettingModal';
 
 interface INTAssignmentProps {
@@ -21,7 +21,6 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
     openModal(assignment_id);
   };
 
-  if (isLoading) return <div>Loading assignments...</div>;
   if (error) return <div>Error loading assignments: {error.message}</div>;
   if (!assignments || assignments.length === 0) {
     return <div className="p-6 bg-white shadow rounded-lg">No assignments available.</div>;
@@ -42,7 +41,30 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {assignments.map((assignment) => (
+          { isLoading
+            ? Array.from({ length: 10 }).map((_, index) => (
+              <Table.Tr key={`skeleton-row-${index}`}>
+                <Table.Td>
+                  <Skeleton visible height={20} width="100%"/>
+                </Table.Td>
+                <Table.Td>
+                  <Skeleton visible height={20} width="50%"/>
+                </Table.Td>
+                <Table.Td>
+                  <Skeleton visible height={20} width="50%"/>
+                </Table.Td>
+                <Table.Td>
+                  <Skeleton visible height={20} width="30%"/>
+                </Table.Td>
+                <Table.Td>
+                  <Skeleton visible height={20} width="30%"/>
+                </Table.Td>
+                <Table.Td>
+                  <Skeleton visible height={20} width="50%"/>
+                </Table.Td>
+              </Table.Tr>            
+            ))
+          : assignments.map((assignment) => (
             <Table.Tr key={assignment.assignment_id} className="border-b">
               <Table.Td
                 className="py-2 px-4 cursor-pointer hover:underline"
