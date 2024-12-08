@@ -65,14 +65,14 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
       <Table highlightOnHover verticalSpacing="sm" className="min-w-full bg-white">
         <Table.Thead>
           <Table.Tr className="border-b">
-            <Table.Th className="py-2 px-4 text-left">SELECT</Table.Th>
-            <Table.Th className="py-2 px-4 text-left">NAME</Table.Th>
-            <Table.Th className="py-2 px-4 text-left">RELEASED</Table.Th>
-            <Table.Th className="py-2 px-4 text-left">DUE</Table.Th>
-            <Table.Th className="py-2 px-4 text-center">PUBLISHED</Table.Th>
-            <Table.Th className="py-2 px-4 text-center">REGRADES</Table.Th>
-            <Table.Th className="py-2 px-4 text-center">SUBMISS BY</Table.Th>
-            <Table.Th className="py-2 px-4 text-center">ACTIONS</Table.Th>
+            <Table.Th>SELECT</Table.Th>
+            <Table.Th>NAME</Table.Th>
+            <Table.Th style={{ textAlign: 'center' }}>RELEASED</Table.Th>
+            <Table.Th style={{ textAlign: 'center' }}>DUE</Table.Th>
+            <Table.Th style={{ textAlign: 'center' }}>PUBLISHED</Table.Th>
+            <Table.Th style={{ textAlign: 'center' }}>REGRADES</Table.Th>
+            <Table.Th style={{ textAlign: 'center' }}>SUBMISS BY</Table.Th>
+            <Table.Th style={{ textAlign: 'center' }}>ACTIONS</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
@@ -136,18 +136,22 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
                       {form.values[`${assignment.assignment_id}_expanded`] ? <FiChevronUp /> : <FiChevronDown />}
                     </Button>
                   </Table.Td>
-                  <Table.Td className="py-2 px-4">
+                  <Table.Td style={{ textAlign: 'center' }}>
                     {assignment.assignment_release_date || '-'}
                   </Table.Td>
-                  <Table.Td className="py-2 px-4">{assignment.assignment_due_date || '-'}</Table.Td>
-                  <Table.Td className="py-2 px-4 text-center">
+                  <Table.Td style={{ textAlign: 'center' }}>
+                    {assignment.assignment_due_date || '-'}
+                  </Table.Td>
+                  <Table.Td style={{ textAlign: 'center' }}>
                     {assignment.published ? 'Yes' : 'No'}
                   </Table.Td>
-                  <Table.Td className="py-2 px-4 text-center">
+                  <Table.Td style={{ textAlign: 'center' }}>
                     {assignment.regrades ? 'Yes' : 'No'}
                   </Table.Td>
-                  <Table.Td className="py-2 px-4">{assignment.submiss_by}</Table.Td>
-                  <Table.Td className="py-2 px-4 text-center">
+                  <Table.Td style={{ textAlign: 'center' }}>
+                    {assignment.submiss_by}
+                  </Table.Td>
+                  <Table.Td style={{ textAlign: 'center' }}>
                     <Menu>
                       <Menu.Target>
                         <Button variant="subtle">•••</Button>
