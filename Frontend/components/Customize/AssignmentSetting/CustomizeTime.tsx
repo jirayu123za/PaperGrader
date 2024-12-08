@@ -1,53 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Text, Checkbox, Paper } from '@mantine/core';
+import SectionSelector from '../../Create/Sections/SectionSelector';
+import { Button, Checkbox } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import { useForm } from '@mantine/form';
-import { useCustomizeTime } from '../../../hooks/useCustomizeTime';
 import { useCustomizeTimeStore } from '../../../store/useCustomizeTimeStore';
-import SectionSelector from '../../Create/Sections/SectionSelector';
+import { useAssignmentSettingStore } from '../../../store/useAssignmentSettingStore';
 import '@mantine/dates/styles.css';
 
-interface CustomizeTimeProps {
-  assignmentId: string;
-}
-
-const CustomizeTime: React.FC<CustomizeTimeProps> = ({ assignmentId }) => {
-  const { releaseDate, dueDate, cutOffDate } = useCustomizeTimeStore();
-  const { isFetching, updateCustomizeTime } = useCustomizeTime(assignmentId);
+const CustomizeTime: React.FC = () => {
   const [isLateSubmissionEnabled, setIsLateSubmissionEnabled] = useState(false);
+  const { assignmentSetting } = useAssignmentSettingStore();
 
   const form = useForm({
     initialValues: {
-      selectedSections: [] as string[],
-      release_date: releaseDate || '',
-      due_date: dueDate || '',
-      cut_off_date: cutOffDate || '',
+      selectedSections: [],
+      release_date: '',
+      due_date: '',
+      cut_off_date: '',
     },
   });
 
-  useEffect(() => {
-    form.setValues({
-      release_date: releaseDate || '',
-      due_date: dueDate || '',
-      cut_off_date: cutOffDate || '',
-    });
-  }, [releaseDate, dueDate, cutOffDate]);
 
   const handleSubmit = (values: typeof form.values) => {
-    updateCustomizeTime({
-      sections: values.selectedSections,
-      releaseDate: values.release_date,
-      dueDate: values.due_date,
-      cutOffDate: isLateSubmissionEnabled ? values.cut_off_date : '',
-    });
+    console.log(values);
   };
 
-  if (isFetching) return <div>Loading...</div>;
-
   return (
-    <form onSubmit={form.onSubmit(handleSubmit)}>
-      <SectionSelector defaultEnabled={true} />
-
+    <>
+    <SectionSelector defaultEnabled={true} />
       <div className="grid grid-cols-2 gap-4 mb-6">
         <DateTimePicker
           label="Release Date"
@@ -90,10 +70,11 @@ const CustomizeTime: React.FC<CustomizeTimeProps> = ({ assignmentId }) => {
         >
           Reset
         </Button>
-        <Button type="submit">Save</Button>
+        <Button onClick={() => form.onSubmit(handleSubmit)}>
+          Save
+        </Button>
       </div>
-    </form>
-
+    </>
   );
 };
 
