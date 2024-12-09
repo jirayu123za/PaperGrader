@@ -1,15 +1,11 @@
-import { useState } from 'react';
 import { FaBars } from 'react-icons/fa'; 
 import { Button } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import AccountMenu from '../Account'; 
 
 export default function STD_LeftMain() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, { toggle }] = useDisclosure(false);
   const faIcon = <FaBars size={24} className={`transition-transform duration-300 ${isCollapsed ? 'mr-4' : 'transform rotate-180'}`} />;
-
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
-  };
 
   return (
     <div className={`relative h-screen flex flex-col justify-between border-r border-gray-300 ${isCollapsed ? 'w-16 p-4' : 'w-64 p-6'} bg-gray-100`}>
@@ -18,7 +14,7 @@ export default function STD_LeftMain() {
         <div className={`${isCollapsed ? 'hidden' : 'block'} text-2xl font-semibold`}>Logo</div>
         <Button 
           className="flex items-center justify-center p-0"
-          onClick={toggleCollapse} 
+          onClick={toggle} 
           variant="transparent" 
           color='black' 
           rightSection={faIcon}>
