@@ -1,7 +1,8 @@
 import React from 'react';
-import { useRouter } from 'next/router';
-import { Progress, Table, Divider } from '@mantine/core'; // นำเข้า Divider จาก Mantine
 import dayjs from 'dayjs';
+import { useRouter } from 'next/router';
+import { Progress, Table, Divider, Paper, Grid, Button, Pagination } from '@mantine/core';
+import { MdOutlineAssignmentTurnedIn } from "react-icons/md";
 import { useActiveAssignmentStore } from '../../../store/useActiveAssignmentStore';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 
@@ -22,6 +23,22 @@ interface ActiveAssignmentsProps {
 const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ selectedCourseId, openModal, isLoading, error }) => {
   const router = useRouter();
   const { activeAssignments } = useActiveAssignmentStore();
+  const iconAssignmentTurnedIn = <MdOutlineAssignmentTurnedIn size={24} />;
+
+  // const pageSize = 10;
+  // const totalPages = Math.ceil(filteredUsers.length / pageSize);
+  
+  // const pagination = usePagination({
+  //   total: totalPages,
+  //   initialPage: 1,
+  //   siblings: 1,
+  //   boundaries: 1,
+  // });
+  
+  // const paginatedData = filteredUsers.slice(
+  //   (pagination.active - 1) * pageSize,
+  //   pagination.active * pageSize
+  // );
 
   const calculateTimeProgress = (releaseDate: string, dueDate: string) => {
     const now = dayjs();
@@ -50,45 +67,56 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ selectedCourseId,
   }
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-md">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">Active Assignments</h2>
-        <button className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-300" onClick={openModal}>
-          Create Assignment
-        </button>
-      </div>
+    <Paper shadow="sm" radius="md" withBorder p="xl">
+      <Grid mb="md" justify="space-between" align="center">
+        <Grid.Col span={3}>
+          <h2 className="text-2xl font-semibold">Active Assignments</h2>
+        </Grid.Col>
+        <Grid.Col span={3} pt={8} pl={45}>
+          <Button 
+            variant="filled"
+            size='md'
+            radius="sm"
+            className='shadow-md'
+            leftSection={iconAssignmentTurnedIn}
+            onClick={openModal}
+          >
+            Create Assignment
+          </Button>          
+        </Grid.Col>
+      </Grid>
       {filteredAssignments.length > 0 ? (
         <Table striped highlightOnHover>
-          <thead>
-            <tr>
-              <th className="text-center text-lg">Active Assignments</th>
-              <th className="text-center text-lg">Released</th>
-              <th className="text-center text-lg">Time Progress</th>
-              <th className="text-center text-lg">Due</th>
-              <th className="text-center text-lg">% Submissions</th>
-              <th className="text-center text-lg">% Graded</th>
-              <th className="text-center text-lg">Published</th>
-              <th className="text-center text-lg">Regrades</th>
-            </tr>
-          </thead>
-          <tbody>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th className="text-center text-lg">Active Assignments</Table.Th>
+              <Table.Th className="text-center text-lg">Released</Table.Th>
+              <Table.Th className="text-center text-lg">Time Progress</Table.Th>
+              <Table.Th className="text-center text-lg">Due</Table.Th>
+              <Table.Th className="text-center text-lg">% Submissions</Table.Th>
+              <Table.Th className="text-center text-lg">% Graded</Table.Th>
+              <Table.Th className="text-center text-lg">Published</Table.Th>
+              <Table.Th className="text-center text-lg">Regrades</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
             {filteredAssignments.map((assignment, index) => (
               <React.Fragment key={assignment.assignment_id}>
-                <tr>
-                  <td
+                <Table.Tr>
+                  <Table.Td
                     className="py-6 px-4 cursor-pointer hover:underline text-center text-lg"
                     onClick={() => router.push(`/courses/${selectedCourseId}/process/${assignment.assignment_id}/CreateOutline`)}
                   >
                     {assignment.assignment_name}
-                  </td>
-                  <td className="py-6 px-4 text-center text-lg">
+                  </Table.Td>
+                  <Table.Td className="py-6 px-4 text-center text-lg">
                     {parseDate(assignment.assignment_release_date).toLocaleDateString('en-US', {
                       day: 'numeric',
                       month: 'short',
                       year: 'numeric',
                     })}
-                  </td>
-                  <td className="py-6 px-4 text-center text-lg">
+                  </Table.Td>
+                  <Table.Td className="py-6 px-4 text-center text-lg">
                     <div className="relative">
                       <Progress
                         value={calculateTimeProgress(assignment.assignment_release_date, assignment.assignment_due_date)}
@@ -97,37 +125,46 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ selectedCourseId,
                         radius="lg"
                       />
                     </div>
-                  </td>
-                  <td className="py-6 px-4 text-center text-lg">
+                  </Table.Td>
+                  <Table.Td className="py-6 px-4 text-center text-lg">
                     {parseDate(assignment.assignment_due_date).toLocaleDateString('en-US', {
                       day: 'numeric',
                       month: 'short',
                       year: 'numeric',
                     })}
-                  </td>
-                  <td className="py-6 px-4 text-center text-lg">0</td>
-                  <td className="py-6 px-4 text-center text-lg">0%</td>
-                  <td className="py-6 px-4 text-center text-lg">ON</td>
-                  <td className="py-6 px-4 text-center text-lg">ON</td>
-                </tr>
+                  </Table.Td>
+                  <Table.Td className="py-6 px-4 text-center text-lg">0</Table.Td>
+                  <Table.Td className="py-6 px-4 text-center text-lg">0%</Table.Td>
+                  <Table.Td className="py-6 px-4 text-center text-lg">ON</Table.Td>
+                  <Table.Td className="py-6 px-4 text-center text-lg">ON</Table.Td>
+                </Table.Tr>
                 {/* เพิ่ม Divider ระหว่างแถว */}
                 {index < filteredAssignments.length - 1 && (
-                  <tr>
-                    <td colSpan={8}>
+                  <Table.Tr>
+                    <Table.Td colSpan={8}>
                       <Divider my="xs" />
-                    </td>
-                  </tr>
+                    </Table.Td>
+                  </Table.Tr>
                 )}
               </React.Fragment>
             ))}
-          </tbody>
+          </Table.Tbody>
         </Table>
       ) : (
         <div className="text-gray-500">
           You currently have no active assignments. Create an assignment to get started.
         </div>
       )}
-    </div>
+      {/* <div className="flex justify-center mt-4">
+        <Pagination
+          total={totalPages}
+          siblings={1}
+          boundaries={1}
+          value={pagination.active}
+          onChange={pagination.setPage}
+        />
+      </div> */}
+    </Paper>
   );
 };
 
