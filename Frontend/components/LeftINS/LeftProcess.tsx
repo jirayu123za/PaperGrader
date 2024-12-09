@@ -1,24 +1,30 @@
 import { useState } from 'react';
 import { FaBars, FaArrowLeft, FaCheckCircle } from 'react-icons/fa';
-import { VscDebugRestart } from 'react-icons/vsc'; // ไอคอนสำหรับ Regrade Requests
-import { IoStatsChart } from 'react-icons/io5'; // ไอคอนสำหรับ Statistics
-import { IoMdSettings } from 'react-icons/io'; // ไอคอนสำหรับ Settings
-import { Divider } from '@mantine/core'; // นำเข้า Divider จาก Mantine
-import AccountMenu from '../Account'; // นำเข้า AccountMenu
-import Link from 'next/link'; // นำเข้า Link จาก Next.js
+import { GiClockwiseRotation } from "react-icons/gi";
+import { IoStatsChart } from 'react-icons/io5';
+import { IoMdSettings } from 'react-icons/io';
+import { Button, Container, Divider, Flex, Group, Stack, Title } from '@mantine/core';
+import AccountMenu from '../Account';
+import Link from 'next/link';
 
 interface LeftProcessProps {
-  assignment_name: string; // รับ assignmentName จาก props
-  course_id: string; // เพิ่มเพื่อใช้ในการสร้างลิงก์ที่เก็บค่า
-  process_id: string; // เพิ่มเพื่อใช้ในการสร้างลิงก์ที่เก็บค่า
+  assignment_name: string;
+  course_id: string;
+  process_id: string;
 }
 
 export default function LeftProcess({ assignment_name, course_id, process_id }: LeftProcessProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false); // สถานะสำหรับการหุบ/ขยายเมนู
-  const [selectedOptions, setSelectedOptions] = useState<string[]>(['Edit Outline']); // เก็บสถานะของตัวเลือกที่เลือก
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<string[]>(['Edit Outline']);
+  const faIcon = <FaBars size={18} className={`transition-transform duration-300 ${isCollapsed ? '' : 'transform rotate-180'}`} />;
+  const faArrowLeft = <FaArrowLeft size={18}/>;
+  const giClockwiseRotation = <GiClockwiseRotation size={18}/>;
+  const ioStatsChart = <IoStatsChart size={18}/>;
+  const ioMdSettings = <IoMdSettings size={18}/>;
+  const faCheckCircle = <FaCheckCircle size={18} className="text-green-500 mr-2" />;
 
   const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed); // เปลี่ยนสถานะการหุบ/ขยายเมนู
+    setIsCollapsed(!isCollapsed);
   };
 
   const toggleOption = (option: string) => {
@@ -30,42 +36,76 @@ export default function LeftProcess({ assignment_name, course_id, process_id }: 
   };
 
   return (
-    <div className={`relative h-screen flex flex-col justify-between border-r border-gray-300 ${isCollapsed ? 'w-16 p-4' : 'w-64 p-6'} bg-gray-100`}>
-      {/* ส่วนของโลโก้และไอคอนเมนูด้านบน */}
-      <div className="flex items-center justify-between mb-4">
-        <div className={`${isCollapsed ? 'hidden' : 'block'} bg-gray-200 p-2 rounded`}>
-          Logo
-        </div>
-        <button onClick={toggleCollapse} className="text-sm">
-          <FaBars
-            size={24}
-            className={`transition-transform duration-300 ${isCollapsed ? '' : 'transform rotate-180'}`} // ใช้ transform เพื่อหมุนไอคอน
-          />
-        </button>
-      </div>
-
-      {/* เนื้อหาเมนู */}
-      <div className={`flex-grow ${isCollapsed ? 'flex flex-col items-center' : ''}`}>
-        {/* กลับไปที่คอร์ส */}
-        <div className="mb-4">
-          <button className="flex items-center text-sm text-gray-600">
-            <FaArrowLeft className="mr-2" />
-            {isCollapsed ? '' : 'Back to this course'}
-          </button>
-        </div>
-
-        {/* แสดงชื่อ Assignment */}
-        {!isCollapsed && (
-          <div className="mb-4">
-            <h2 className="text-xl font-semibold">{assignment_name}</h2>
+    <Container
+      className={`relative h-screen flex flex-col border-r border-gray-300 transition-all duration-300 ${
+        isCollapsed ? 'w-16 p-4' : 'w-64 p-6'
+      } bg-gray-100`}
+    >
+      {/* Top: Logo and Button Collapse */}
+      <Stack>
+        <Flex className="items-center justify-between mb-4">
+          <div
+            className={`bg-gray-200 rounded transition-opacity duration-300 ${
+              isCollapsed ? 'opacity-0 w-0' : 'opacity-100'
+            }`}
+          >
+            Logo
           </div>
+          <Button
+            onClick={toggleCollapse}
+            variant="transparent"
+            color="black"
+            styles={{
+              root: {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                textAlign: 'left',
+                paddingLeft: isCollapsed ? '6px' : '12px',
+              },
+            }}
+          >
+            {faIcon}
+          </Button>
+        </Flex>
+
+        {/* Button back to course */}
+        <Button
+          variant="transparent"
+          leftSection={faArrowLeft}
+          color="black"
+          className={`transition-all duration-300 ${
+            isCollapsed ? 'justify-center' : ''
+          }`}
+          styles={{
+            root: {
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              textAlign: 'left',
+              paddingLeft: isCollapsed ? '6px' : '12px',
+            },
+          }}
+        >
+          {isCollapsed ? '' : 'Back to this course'}
+        </Button>
+
+        {/* Assignment's name */}
+        {!isCollapsed && (
+          <Title size="h4" className="pl-2 mb-4">
+            {assignment_name}
+          </Title>
         )}
 
-        <Divider className="mb-4" color="gray" size="md" /> {/* ปรับขนาดและสีของ Divider */}
-
-        {/* แสดงวงกลมเช็คถูกแม้เมนูจะถูกหุบ */}
-        <div className={`flex flex-col space-y-2 ${isCollapsed ? 'items-center' : ''}`}>
-          {['Edit Outline', 'Create rubric', 'Manage Scans', 'Manage Submissions', 'Grade Submissions'].map(option => (
+        {/* Options menu */}
+        <Stack gap={4}>
+          {[
+            'Edit Outline',
+            'Create rubric',
+            'Manage Scans',
+            'Manage Submissions',
+            'Grade Submissions',
+          ].map((option) => (
             <Link
               key={option}
               href={
@@ -77,42 +117,94 @@ export default function LeftProcess({ assignment_name, course_id, process_id }: 
               }
               passHref
             >
-              <button
+              <Button
+                variant="subtle"
+                color="rgba(80, 89, 80, 1)"
+                fullWidth
                 onClick={() => toggleOption(option)}
-                className={`flex items-center ${isCollapsed ? 'justify-center' : 'px-4 py-2'} rounded`}
+                className="transition-all duration-300"
+                styles={{
+                  root: {
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'flex-start',
+                    textAlign: 'left',
+                    paddingLeft: isCollapsed ? '6px' : '12px',
+                  },
+                }}
               >
                 {selectedOptions.includes(option) ? (
                   <FaCheckCircle className="text-green-500 mr-2" />
                 ) : (
-                  <div className="w-4 h-4 border border-black rounded-full bg-white mr-2"></div> // วงกลมขอบดำ ข้างในสีขาว
+                  <div className="w-4 h-4 border border-black rounded-full bg-white mr-2"></div>
                 )}
                 {isCollapsed ? '' : option}
-              </button>
+              </Button>
             </Link>
           ))}
-        </div>
+        </Stack>
+
+      {/* Divider and Footer */}
+      <div className="mt-auto">
+        <Divider size="sm" className="mb-4" />
+          <Button
+            variant="subtle"
+            color="rgba(80, 89, 80, 1)"
+            leftSection={giClockwiseRotation}
+            fullWidth
+            className="transition-all duration-300"
+            styles={{
+              root: {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                textAlign: 'left',
+                paddingLeft: isCollapsed ? '6px' : '12px',
+              },
+            }}
+          >
+            {isCollapsed ? '' : 'Regrade Requests'}
+          </Button>
+          <Button
+            variant="subtle"
+            color="rgba(80, 89, 80, 1)"
+            leftSection={ioStatsChart}
+            fullWidth
+            className="transition-all duration-300"
+            styles={{
+              root: {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                textAlign: 'left',
+                paddingLeft: isCollapsed ? '6px' : '12px',
+              },
+            }}
+          >
+            {isCollapsed ? '' : 'Statistics'}
+          </Button>
+          <Button
+            variant="subtle"
+            color="rgba(80, 89, 80, 1)"
+            leftSection={ioMdSettings}
+            fullWidth
+            className="transition-all duration-300"
+            styles={{
+              root: {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                textAlign: 'left',
+                paddingLeft: isCollapsed ? '6px' : '12px',
+              },
+            }}
+          >
+            {isCollapsed ? '' : 'Settings'}
+          </Button>
+          <AccountMenu isCollapsed={isCollapsed} />
       </div>
+    </Stack>
+    </Container>
 
-      <Divider className="my-4" color="gray" size="md" /> {/* Divider คั่น */}
-
-      {/* เมนูด้านล่าง */}
-      <div className={`flex flex-col space-y-2 mb-4 ${isCollapsed ? 'items-center' : ''}`}>
-        <button className="flex items-center px-2 py-1 text-gray-700">
-          <VscDebugRestart className="mr-2" />
-          {isCollapsed ? '' : 'Regrade Requests'}
-        </button>
-        <button className="flex items-center px-2 py-1 text-gray-700">
-          <IoStatsChart className="mr-2" />
-          {isCollapsed ? '' : 'Statistics'}
-        </button>
-        <button className="flex items-center px-2 py-1 text-gray-700">
-          <IoMdSettings className="mr-2" />
-          {isCollapsed ? '' : 'Settings'}
-        </button>
-      </div>
-
-      {/* User Account Section */}
-      <AccountMenu isCollapsed={isCollapsed} /> {/* ปรับให้ตรงกับโครงสร้างของ LeftOverview */}
-    </div>
   );
 }
