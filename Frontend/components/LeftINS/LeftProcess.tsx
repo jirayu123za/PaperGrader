@@ -41,7 +41,7 @@ export default function LeftProcess({ assignment_name, process_id }: LeftProcess
     >
       {/* Top: Logo and Button Collapse */}
       <Stack>
-        <Flex className="items-center justify-between mb-4">
+        <Flex className="items-center justify-between mb-2">
           <div
             className={`bg-gray-200 rounded transition-opacity duration-300 ${
               isCollapsed ? 'opacity-0 w-0' : 'opacity-100'
