@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { FaBars, FaUser, FaCog, FaFileAlt, FaUsers, FaHome } from 'react-icons/fa';
 import { IoStatsChart } from 'react-icons/io5';
 import { BiExport } from 'react-icons/bi';
@@ -8,21 +7,18 @@ import { useFetchInstructorList } from '../../hooks/useFetchInstructorList';
 import { useInstructorListStore } from '../../store/useInstructorListStore';
 import { useRouter } from 'next/router';
 import { useFetchCourse } from '../../hooks/useFetchCourse';
+import { useDisclosure } from '@mantine/hooks';
 import Link from 'next/link';
 import AccountMenu from '../Account';
 
 export default function LeftMain() {
   const router = useRouter();
   const { course_id } = router.query;
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, { toggle }] = useDisclosure(false);
   const { course } = useInsCourseStore();
   const { } = useFetchCourse(course_id as string);
   const { isLoading, error } = useFetchInstructorList(course_id as string);
   const instructorList = useInstructorListStore((state) => state.instructorList);
-
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
-  };
 
   return (
     <div className={`relative h-screen flex flex-col justify-between border-r border-gray-300 ${isCollapsed ? 'w-16 p-4' : 'w-64 p-6'} bg-gray-100`}>
@@ -33,7 +29,7 @@ export default function LeftMain() {
             <div className={`${isCollapsed ? 'hidden' : 'block'} text-2xl font-semibold cursor-pointer`}>Logo</div>
           </Link>
           <Button
-            onClick={toggleCollapse}
+            onClick={toggle}
             unstyled 
             className="bg-transparent p-2 shadow-none hover:bg-gray-100"
           >
