@@ -1,55 +1,106 @@
-import { useState } from 'react';
 import { FaUserCircle, FaQuestionCircle, FaEdit, FaSignOutAlt } from 'react-icons/fa';
-import { useFetchLogout } from '../hooks/useFetchLogout'; // นำเข้า useFetchLogout
+import { RiArrowUpSFill, RiArrowDownSFill } from "react-icons/ri";
+import { useFetchLogout } from '../hooks/useFetchLogout';
+import { Button, Text, Popover } from '@mantine/core';
 
 interface AccountMenuProps {
   isCollapsed: boolean;
 }
 
 export default function AccountMenu({ isCollapsed }: AccountMenuProps) {
-  const [accountOpened, setAccountOpened] = useState(false);
-  const { refetch: logout } = useFetchLogout(); // ใช้ refetch เพื่อเรียกฟังก์ชัน logout
+  const { mutate: logout } = useFetchLogout();
+  const iconFaUserCircle = <FaUserCircle size={18} />;
+  const iconFaQuestionCircle = <FaQuestionCircle size={16} />;
+  const iconFaEdit = <FaEdit size={16} />;
+  const iconFaSignOutAlt = <FaSignOutAlt size={16} />;
+  const iconRiArrowUpSFill = <RiArrowUpSFill size={16} />;
+  const iconRiArrowDownSFill = <RiArrowDownSFill size={16} />;
 
   return (
-    <div className={`absolute bottom-0 left-0 w-full ${isCollapsed ? 'flex justify-center' : ''}`}>
-      <button
-        onClick={() => setAccountOpened(!accountOpened)}
-        className={`w-full flex ${isCollapsed ? 'justify-center' : 'items-center justify-between'} p-2 border rounded ${accountOpened ? 'bg-gray-200' : 'bg-white'} hover:bg-gray-200`}
-      >
-        {/* ไอคอนจะอยู่ตรงกลางเมื่อ Sidebar หุบ */}
-        <FaUserCircle size={18} />
-        {/* จะแสดงคำว่า Account และลูกศรเฉพาะเมื่อ Sidebar เปิด */}
-        {!isCollapsed && (
-          <>
-            <span className="flex-grow text-left ml-2">Account</span>
-            <span>{accountOpened ? '▴' : '▾'}</span>
-          </>
-        )}
-      </button>
-
-      {/* เมนูจะแสดงขึ้นไม่ว่าจะ Sidebar หุบหรือไม่ */}
-      {accountOpened && (
-        <div
-          className={`absolute ${isCollapsed ? 'left-0 bottom-full mb-2' : 'bottom-full mb-2'} 
-          bg-white border rounded shadow-lg ${isCollapsed ? 'w-40' : 'w-full'}`}
+    <Popover
+      position="top-start"
+      withArrow
+      shadow="md"
+      width={isCollapsed ? 160 : 260}
+    >
+      {/* ปุ่มหลัก */}
+      <Popover.Target>
+        <Button
+          h={40}
+          variant="default"
+          fullWidth
+          color="black"
+          leftSection={iconFaUserCircle}
+          rightSection={!isCollapsed ? (isCollapsed ? null : iconRiArrowDownSFill) : undefined}
+          styles={{
+            root: {
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              textAlign: 'left',
+              paddingLeft: isCollapsed ? '6px' : '20px',
+            },
+          }}
         >
-          <button className="w-full text-left p-2 flex items-center hover:bg-gray-100">
-            <FaQuestionCircle size={16} className="mr-2" />
-            Help {/* แสดงข้อความเสมอ ไม่ขึ้นกับ isCollapsed */}
-          </button>
-          <button className="w-full text-left p-2 flex items-center hover:bg-gray-100">
-            <FaEdit size={16} className="mr-2" />
-            Edit Account {/* แสดงข้อความเสมอ */}
-          </button>
-          <button
-            onClick={() => logout()}  // เรียกใช้งาน logout เมื่อคลิกปุ่ม Log Out
-            className="w-full text-left p-2 flex items-center hover:bg-gray-100 text-red-500"
+          {!isCollapsed && <Text size="sm" fw={600}>Account</Text>}
+        </Button>
+      </Popover.Target>
+
+      {/* เมนูภายใน */}
+      <Popover.Dropdown p={2}>
+          <Button
+            variant="subtle"
+            color="rgba(80, 89, 80, 1)"
+            fullWidth
+            leftSection={iconFaQuestionCircle}
+            styles={{
+              root: {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                textAlign: 'left',
+                paddingLeft: isCollapsed ? '12px' : '20px',
+              },
+            }}
           >
-            <FaSignOutAlt size={16} className="mr-2" />
-            Log Out {/* แสดงข้อความเสมอ */}
-          </button>
-        </div>
-      )}
-    </div>
+            <Text size="sm" fw={600}>Help</Text>
+          </Button>
+          <Button
+            variant="subtle"
+            color="rgba(80, 89, 80, 1)"
+            fullWidth
+            leftSection={iconFaEdit}
+            styles={{
+              root: {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                textAlign: 'left',
+                paddingLeft: isCollapsed ? '12px' : '20px',
+              },
+            }}
+          >
+            <Text size="sm" fw={600}>Edit Account</Text>
+          </Button>
+          <Button
+            variant="subtle"
+            color="red"
+            fullWidth
+            leftSection={iconFaSignOutAlt}
+            onClick={() => logout()}
+            styles={{
+              root: {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                textAlign: 'left',
+                paddingLeft: isCollapsed ? '12px' : '20px',
+              },
+            }}
+          >
+            <Text size="sm" fw={600}>Log Out</Text>
+          </Button>
+      </Popover.Dropdown>
+    </Popover>
   );
 }
