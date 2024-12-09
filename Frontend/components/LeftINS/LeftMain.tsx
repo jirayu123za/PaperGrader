@@ -54,7 +54,7 @@ export default function LeftMain() {
           )}
         </div>
 
-        <Divider className="mb-4" color="gray" size="md" />
+        <Divider className="mb-4" size="sm" />
 
         {/* ส่วนกลาง: Main Menu */}
         <div className={`flex-grow ${isCollapsed ? 'flex flex-col items-center' : ''}`}>
@@ -98,7 +98,7 @@ export default function LeftMain() {
           </div>
         </div>
 
-        <Divider className="mt-4 mb-4" color="gray" size="md" />
+        <Divider className="mt-4 mb-4" size="sm" />
 
         {/* ส่วนล่าง: Instructor section */}
         <div className={`${isCollapsed ? 'hidden' : 'block'} text-md mb-2 font-semibold text-gray-900 mt-4`}>
