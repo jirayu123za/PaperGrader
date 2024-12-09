@@ -4,19 +4,18 @@ import PDFViewer from '../../../../../components/PDFViewer';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAssignmentStore } from '../../../../../store/useAssignmentStore';
+import { Container, Flex, Loader } from '@mantine/core';
 
 export default function CreateOutline() {
   const router = useRouter();
-  const { assignment_id, course_id } = router.query; // ดึง assignment_id และ course_id มาจาก URL
-  const { assignments } = useAssignmentStore(); // ดึง assignments จาก Zustand Store
+  const { assignment_id, course_id } = router.query;
+  const { assignments } = useAssignmentStore();
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // หา assignment_name จาก assignments ใน Zustand Store
   const selectedAssignment = assignments.find((assignment) => assignment.assignment_id === assignment_id);
   const assignmentName = selectedAssignment ? selectedAssignment.assignment_name : 'No Assignment';
 
-  // ดึงข้อมูล PDF URL
   useEffect(() => {
     const fetchPdfUrl = async () => {
       if (assignment_id && course_id) {
@@ -27,7 +26,7 @@ export default function CreateOutline() {
               assignment_id: assignment_id,
             },
           });
-          setPdfUrl(response.data.url); // เก็บ URL ของไฟล์ PDF
+          setPdfUrl(response.data.url);
         } catch (error) {
           console.error('Error fetching PDF URL:', error);
         } finally {
@@ -39,20 +38,32 @@ export default function CreateOutline() {
   }, [assignment_id, course_id]);
 
   return (
-    <div className="flex min-h-screen">
-      {/* แถบเมนูทางซ้าย */}
-      <LeftProcess assignment_name={assignmentName} course_id={course_id as string} process_id={assignment_id as string} />
+    <Container
+      fluid
+      className="flex min-h-screen overflow-hidden"
+      style={{ padding: 0 }}
+    >
+      {/* Sidebar */}
+      <LeftProcess assignment_name={assignmentName} process_id={assignment_id as string} />
 
-      {/* ส่วนของการอัพโหลดไฟล์ */}
-      <div className="flex-grow p-4">
+      {/* Main Content */}
+      <Flex
+        style={{
+          flex: 1,
+          overflow: 'hidden',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
         {loading ? (
-          <div>Loading...</div>
+          <Loader />
         ) : pdfUrl ? (
-          <PDFViewer fileUrl={pdfUrl} /> // ส่ง URL ของไฟล์ PDF ไปยัง PDFViewer
+          <PDFViewer fileUrl={pdfUrl} />
         ) : (
           <div>No PDF available</div>
         )}
-      </div>
-    </div>
+      </Flex>
+    </Container>
   );
 }
