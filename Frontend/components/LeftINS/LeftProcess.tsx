@@ -3,7 +3,7 @@ import { FaBars, FaArrowLeft, FaCheckCircle } from 'react-icons/fa';
 import { GiClockwiseRotation } from "react-icons/gi";
 import { IoStatsChart } from 'react-icons/io5';
 import { IoMdSettings } from 'react-icons/io';
-import { Button, Container, Divider, Flex, Stack, Title, Transition, Text } from '@mantine/core';
+import { Button, Container, Divider, Flex, Stack, Title, Transition, Text, Group } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useRouter } from 'next/router';
 import AccountMenu from '../Account';
@@ -236,10 +236,14 @@ export default function LeftProcess({ assignment_name, process_id }: LeftProcess
             >         
               {(styles) => isCollapsed ? <></> : <Text size='sm' fw={500} style={styles}>Settings</Text>}
             </Transition>             
-          </Button>
-          <AccountMenu isCollapsed={isCollapsed} />
-      </div>
-    </Stack>
+          </Button>  
+        </div>
+      </Stack>
+      
+      <Group mt="auto">
+        <AccountMenu isCollapsed={isCollapsed} />
+      </Group>
+      
     </Container>
   );
 }
