@@ -75,7 +75,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
         console.error("Failed to decode token:", error);
       }
     } else {
-      console.error("Token is missing");
+      // console.error("Token is missing");
     }
   }, [setGoogleId]);
 
