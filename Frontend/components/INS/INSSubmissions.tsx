@@ -1,28 +1,24 @@
-import React, { useEffect } from 'react';
-import { useFetchINS_Submission } from '../../hooks/useFetchINS_Submission';
+import React from 'react';
 import { useINS_SubmissionStore } from '../../store/useINS_SubmissionStore';
 import { Alert, Button } from '@mantine/core';
+import { useRouter } from 'next/router';
+import { useFetchSubmissions } from '../../hooks/useFetchINS_Submission';
 
 interface INSSubmissionsProps {
-  courseId: string;
-  assignmentId: string;
-  onViewPDF: (fileUrl: string) => void;  // ฟังก์ชันเพื่อเปิด PDFViewer
+  onViewPDF: (fileUrl: string) => void;
 }
 
-const INSSubmissions: React.FC<INSSubmissionsProps> = ({ courseId, assignmentId, onViewPDF }) => {
+const INSSubmissions: React.FC<INSSubmissionsProps> = ({ onViewPDF }) => {
+  const router = useRouter();
+  const { assignment_id, course_id } = router.query;
   const { submissions, urls } = useINS_SubmissionStore();
-  const { mutate: fetchSubmissions, isLoading, isError } = useFetchINS_Submission();
-
-  useEffect(() => {
-    // Fetch submissions ทันทีเมื่อ Component ถูก mount
-    fetchSubmissions({ courseId, assignmentId });
-  }, [courseId, assignmentId, fetchSubmissions]);
+  const { isLoading, error } = useFetchSubmissions(course_id as string, assignment_id as string);
 
   if (isLoading) {
     return <div>Loading submissions...</div>;
   }
 
-  if (isError) {
+  if (error) {
     return <Alert color="red">Failed to load submissions.</Alert>;
   }
 
@@ -40,7 +36,6 @@ const INSSubmissions: React.FC<INSSubmissionsProps> = ({ courseId, assignmentId,
           ))}
         </ul>
       ) : (
-        // แสดงข้อความเมื่อไม่มีการส่งไฟล์จากนักศึกษา
         <Alert color="yellow">No students have submitted assignments yet.</Alert>
       )}
     </div>
