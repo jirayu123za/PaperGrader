@@ -4,27 +4,26 @@ import { GiClockwiseRotation } from "react-icons/gi";
 import { IoStatsChart } from 'react-icons/io5';
 import { IoMdSettings } from 'react-icons/io';
 import { Button, Container, Divider, Flex, Stack, Title, Transition, Text } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { useRouter } from 'next/router';
 import AccountMenu from '../Account';
 import Link from 'next/link';
 
 interface LeftProcessProps {
   assignment_name: string;
-  course_id: string;
   process_id: string;
 }
 
-export default function LeftProcess({ assignment_name, course_id, process_id }: LeftProcessProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+export default function LeftProcess({ assignment_name, process_id }: LeftProcessProps) {
+  const [isCollapsed, { toggle }] = useDisclosure(false);
   const [selectedOptions, setSelectedOptions] = useState<string[]>(['Edit Outline']);
   const faIcon = <FaBars size={18} className={`transition-transform duration-300 ${isCollapsed ? '' : 'transform rotate-180'}`} />;
   const faArrowLeft = <FaArrowLeft size={18}/>;
   const giClockwiseRotation = <GiClockwiseRotation size={18}/>;
   const ioStatsChart = <IoStatsChart size={18}/>;
   const ioMdSettings = <IoMdSettings size={18}/>;
-
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+  const router = useRouter();
+  const { course_id } = router.query;
 
   const toggleOption = (option: string) => {
     setSelectedOptions((prevOptions) =>
@@ -51,7 +50,7 @@ export default function LeftProcess({ assignment_name, course_id, process_id }: 
             Logo
           </div>
           <Button
-            onClick={toggleCollapse}
+            onClick={toggle}
             variant="transparent"
             color="black"
             styles={{
