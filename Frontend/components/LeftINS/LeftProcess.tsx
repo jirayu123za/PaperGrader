@@ -3,7 +3,7 @@ import { FaBars, FaArrowLeft, FaCheckCircle } from 'react-icons/fa';
 import { GiClockwiseRotation } from "react-icons/gi";
 import { IoStatsChart } from 'react-icons/io5';
 import { IoMdSettings } from 'react-icons/io';
-import { Button, Container, Divider, Flex, Group, Stack, Title } from '@mantine/core';
+import { Button, Container, Divider, Flex, Stack, Title, Transition, Text } from '@mantine/core';
 import AccountMenu from '../Account';
 import Link from 'next/link';
 
@@ -21,7 +21,6 @@ export default function LeftProcess({ assignment_name, course_id, process_id }: 
   const giClockwiseRotation = <GiClockwiseRotation size={18}/>;
   const ioStatsChart = <IoStatsChart size={18}/>;
   const ioMdSettings = <IoMdSettings size={18}/>;
-  const faCheckCircle = <FaCheckCircle size={18} className="text-green-500 mr-2" />;
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
@@ -37,7 +36,7 @@ export default function LeftProcess({ assignment_name, course_id, process_id }: 
 
   return (
     <Container
-      className={`relative h-screen flex flex-col border-r border-gray-300 transition-all duration-300 ${
+      className={`relative h-screen flex flex-col border-r border-gray-300 ${
         isCollapsed ? 'w-16 p-4' : 'w-64 p-6'
       } bg-gray-100`}
     >
@@ -87,15 +86,25 @@ export default function LeftProcess({ assignment_name, course_id, process_id }: 
             },
           }}
         >
-          {isCollapsed ? '' : 'Back to this course'}
+          <Transition
+            mounted={!isCollapsed}
+            transition="fade"
+            duration={300}
+            timingFunction="ease"
+          >         
+          {(styles) => isCollapsed ? <Title size="md" style={styles}></Title> : <Title size="md" style={styles}>Back to this course</Title>}
+          </Transition> 
         </Button>
 
         {/* Assignment's name */}
-        {!isCollapsed && (
-          <Title size="h4" className="pl-2 mb-4">
-            {assignment_name}
-          </Title>
-        )}
+        <Transition
+          mounted={!isCollapsed}
+          transition="fade"
+          duration={300}
+          timingFunction="ease"
+        >         
+          {(styles) => isCollapsed ? <></> : <Title size="h4" className="pl-2 mb-4" style={styles}>{assignment_name}</Title>}
+        </Transition>         
 
         {/* Options menu */}
         <Stack gap={4}>
@@ -134,11 +143,18 @@ export default function LeftProcess({ assignment_name, course_id, process_id }: 
                 }}
               >
                 {selectedOptions.includes(option) ? (
-                  <FaCheckCircle className="text-green-500 mr-2" />
+                  <FaCheckCircle className="w-4 h-4 text-green-500 mr-2"/>
                 ) : (
                   <div className="w-4 h-4 border border-black rounded-full bg-white mr-2"></div>
                 )}
-                {isCollapsed ? '' : option}
+                <Transition
+                  mounted={!isCollapsed}
+                  transition="fade"
+                  duration={300}
+                  timingFunction="ease"
+                >         
+                  {(styles) => isCollapsed ? <></> : <Text size='sm' fw={500} style={styles}>{option}</Text>}
+                </Transition>  
               </Button>
             </Link>
           ))}
@@ -163,7 +179,14 @@ export default function LeftProcess({ assignment_name, course_id, process_id }: 
               },
             }}
           >
-            {isCollapsed ? '' : 'Regrade Requests'}
+            <Transition
+              mounted={!isCollapsed}
+              transition="fade"
+              duration={300}
+              timingFunction="ease"
+            >         
+              {(styles) => isCollapsed ? <></> : <Text size='sm' fw={500} style={styles}>Regrade Requests</Text>}
+            </Transition>  
           </Button>
           <Button
             variant="subtle"
@@ -181,7 +204,14 @@ export default function LeftProcess({ assignment_name, course_id, process_id }: 
               },
             }}
           >
-            {isCollapsed ? '' : 'Statistics'}
+            <Transition
+              mounted={!isCollapsed}
+              transition="fade"
+              duration={300}
+              timingFunction="ease"
+            >         
+              {(styles) => isCollapsed ? <></> : <Text size='sm' fw={500} style={styles}>Statistics</Text>}
+            </Transition> 
           </Button>
           <Button
             variant="subtle"
@@ -199,12 +229,18 @@ export default function LeftProcess({ assignment_name, course_id, process_id }: 
               },
             }}
           >
-            {isCollapsed ? '' : 'Settings'}
+            <Transition
+              mounted={!isCollapsed}
+              transition="fade"
+              duration={300}
+              timingFunction="ease"
+            >         
+              {(styles) => isCollapsed ? <></> : <Text size='sm' fw={500} style={styles}>Settings</Text>}
+            </Transition>             
           </Button>
           <AccountMenu isCollapsed={isCollapsed} />
       </div>
     </Stack>
     </Container>
-
   );
 }
