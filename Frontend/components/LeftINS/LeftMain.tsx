@@ -121,12 +121,8 @@ export default function LeftMain() {
         </div>
       </div>
 
-      <Divider className="mb-4" color="gray" size="md" />
-
       {/* ส่วน Account */}
-      <div className="flex-shrink-0">
-        <AccountMenu isCollapsed={isCollapsed} />
-      </div>
+      <AccountMenu isCollapsed={isCollapsed} />
     </div>
   );
 }
