@@ -16,6 +16,7 @@ type InstructorService interface {
 	GetAssignmentNameTemplate(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileName string, err error)
 	GetPDFTemplateWithURL(CourseID uuid.UUID, AssignmentID uuid.UUID) (templateURL string, err error)
 	GetFileFormSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, fileURLs []string, err error)
+	GetAssignmentDetails(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error)
 
 	CreateAssignmentFile(file *models.AssignmentFile) error
 
@@ -113,6 +114,14 @@ func (s *InstructorServiceImpl) GetFileFormSubmission(CourseID uuid.UUID, Assign
 		return nil, nil, err
 	}
 	return returnFileNames, returnFileURLs, nil
+}
+
+func (s *InstructorServiceImpl) GetAssignmentDetails(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error) {
+	assignment, err := s.repo.FindAssignmentDetails(CourseID, AssignmentID)
+	if err != nil {
+		return nil, err
+	}
+	return assignment, nil
 }
 
 func (s *InstructorServiceImpl) CreateAssignmentFile(file *models.AssignmentFile) error {
