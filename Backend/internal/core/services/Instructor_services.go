@@ -31,6 +31,8 @@ type InstructorService interface {
 	GetCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error)
 	GetCourseByCourseID(CourseID uuid.UUID) (map[string]interface{}, error)
 
+	GetInsAssignmentByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
+
 	GetAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
 	GetActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
 	GetAssignmentByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error)
@@ -188,6 +190,14 @@ func (s *InstructorServiceImpl) GetCourseByCourseID(CourseID uuid.UUID) (map[str
 		return nil, err
 	}
 	return course, nil
+}
+
+func (s *InstructorServiceImpl) GetInsAssignmentByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
+	assignments, err := s.repo.FindInsAssignmentByCourseID(CourseID)
+	if err != nil {
+		return nil, err
+	}
+	return assignments, nil
 }
 
 func (s *InstructorServiceImpl) GetAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
