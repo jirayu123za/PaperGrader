@@ -101,6 +101,18 @@ func (r *GormInstructorRepository) AddAssignmentFile(file *models.AssignmentFile
 	return nil
 }
 
+func (r *GormInstructorRepository) FindAssignmentDetails(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error) {
+	var assignmentDetails map[string]interface{}
+
+	if err := r.db.Table("assignments").
+		Select(`assignments.assignment_id, assignments.assignment_name, assignments.submiss_by`).
+		Where("assignments.course_id = ? AND assignments.assignment_id = ? AND assignments.deleted_at IS NULL", CourseID, AssignmentID).
+		Find(&assignmentDetails).Error; err != nil {
+		return nil, err
+	}
+	return assignmentDetails, nil
+}
+
 // Find instructors and students by course id
 func (r *GormInstructorRepository) FindRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
 	var users []map[string]interface{}
