@@ -141,6 +141,7 @@ func main() {
 	apiGroup.Post("/instructor/roster/file", instructorHandler.GetColumnsAndDataFromUploadedFile)
 
 	apiGroup.Post("/instructor/assignment/files", instructorHandler.CreateAssignmentWithFiles)
+	apiGroup.Get("/instructor/assignments/sections", instructorHandler.GetInsAssignmentByCourseID)
 	apiGroup.Get("/instructor/assignments", instructorHandler.GetAssignmentsByCourseID)
 	apiGroup.Get("/instructor/assignments/active", instructorHandler.GetActiveAssignmentsByCourseID)
 	apiGroup.Get("/instructor/assignment", instructorHandler.GetAssignmentByCourseIDAndAssignmentID)
