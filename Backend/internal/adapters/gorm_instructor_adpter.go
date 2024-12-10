@@ -394,6 +394,66 @@ func (r *GormInstructorRepository) FindCourseByCourseID(CourseID uuid.UUID) (map
 	return course, nil
 }
 
+func (r *GormInstructorRepository) FindInsAssignmentByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
+	var insAssignments []map[string]interface{}
+	if err := r.db.
+		Table("assignments").
+		Select(`
+			DISTINCT ON (assignments.assignment_id) assignments.assignment_id,
+			assignments.assignment_name,
+			assignments.submiss_by,
+			assignments.published,
+			assignments.regrades,
+			assignment_sections.release_date AS assignment_release_date,
+			assignment_sections.due_date AS assignment_due_date
+		`).
+		Joins("JOIN assignment_sections ON assignments.assignment_id = assignment_sections.assignment_id").
+		Joins("JOIN sections ON assignment_sections.section_id = sections.section_id").
+		Where("assignments.course_id = ? AND assignments.deleted_at IS NULL", CourseID).
+		Find(&insAssignments).Error; err != nil {
+		return nil, err
+	}
+
+	var assignmentSections []map[string]interface{}
+	if err := r.db.
+		Table("assignment_sections").
+		Select(`
+			assignment_sections.assignment_id,
+			assignment_sections.assignment_section_id,
+			assignment_sections.cut_off_date,
+			assignment_sections.due_date,
+			assignment_sections.release_date,
+			sections.section_id,
+			sections.section_name
+		`).
+		Joins("JOIN sections ON assignment_sections.section_id = sections.section_id").
+		Where("assignment_sections.assignment_id IN (?)",
+			r.db.
+				Table("assignments").
+				Select("assignment_id").
+				Where("course_id = ? AND deleted_at IS NULL", CourseID),
+		).
+		Find(&assignmentSections).Error; err != nil {
+		return nil, err
+	}
+
+	assignmentMap := make(map[string][]map[string]interface{})
+	for _, section := range assignmentSections {
+		assignmentID := section["assignment_id"].(string)
+		delete(section, "assignment_id")
+		assignmentMap[assignmentID] = append(assignmentMap[assignmentID], section)
+	}
+
+	var result []map[string]interface{}
+	for _, assignment := range insAssignments {
+		assignmentID := assignment["assignment_id"].(string)
+		assignment["assignment_sections"] = assignmentMap[assignmentID]
+		result = append(result, assignment)
+	}
+
+	return result, nil
+}
+
 func (r *GormInstructorRepository) FindAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
 	var assignments []map[string]interface{}
 
