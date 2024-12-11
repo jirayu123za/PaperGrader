@@ -2,15 +2,23 @@ import LeftProcess from '../../../../../components/LeftINS/LeftProcess';
 import PDFViewer from '../../../../../components/PDFViewer';
 import axios from 'axios';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
-import { Container, Flex, Loader } from '@mantine/core';
+import { useEffect } from 'react';
+import { Container, Flex, Loader, TextInput, Button } from '@mantine/core';
+import { useForm } from '@mantine/form';
 
 export default function CreateOutline() {
   const router = useRouter();
   const { assignment_id, course_id } = router.query;
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
 
+  // ใช้ useForm สำหรับจัดการ state
+  const form = useForm({
+    initialValues: {
+      pdfUrl: '',
+      loading: true,
+    },
+  });
+
+  // Fetch PDF URL เมื่อ assignment_id และ course_id พร้อม
   useEffect(() => {
     const fetchPdfUrl = async () => {
       if (assignment_id && course_id) {
@@ -21,11 +29,11 @@ export default function CreateOutline() {
               assignment_id: assignment_id,
             },
           });
-          setPdfUrl(response.data.url);
+          form.setFieldValue('pdfUrl', response.data.url);
         } catch (error) {
           console.error('Error fetching PDF URL:', error);
         } finally {
-          setLoading(false);
+          form.setFieldValue('loading', false);
         }
       }
     };
@@ -51,10 +59,10 @@ export default function CreateOutline() {
           alignItems: 'center',
         }}
       >
-        {loading ? (
+        {form.values.loading ? (
           <Loader />
-        ) : pdfUrl ? (
-          <PDFViewer fileUrl={pdfUrl} />
+        ) : form.values.pdfUrl ? (
+          <PDFViewer fileUrl={form.values.pdfUrl} />
         ) : (
           <div>No PDF available</div>
         )}
