@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import SectionSelector from '../Create/Sections/SectionSelector';
 import { Modal, Button, TextInput, Select, Skeleton } from '@mantine/core';
 import { useEditCourseMemberStore } from '../../store/useEditCourseMemberStore';
-import { useSelectSectionStore } from '../../store/useSectionStore';
+import { useSelectSectionStore } from '../../store/useSectionStore';  
 import { useFetchEditCourseMember } from '../../hooks/Roster/useFetchEditCourseMember';
 import { useModalEditRosterMemberStore } from '../../store/modal/useRosterModalStore';
 import { useRouter } from 'next/router';
@@ -15,7 +15,6 @@ const EditCourseMember: React.FC = () => {
   const { selectedSections, setSelectedSections, resetSelectedSections } = useSelectSectionStore();  
   const { personal_data_id, opened, closeModal } = useModalEditRosterMemberStore();
   const { isLoading, isSuccess } = useFetchEditCourseMember(course_id as string, personal_data_id as string);
-  // const { mutate: updateCourseMember, status } = useUpdateCourseMember();
 
   const capitalizeFirstLetter = (value: string) => {
     return value
@@ -47,7 +46,7 @@ const EditCourseMember: React.FC = () => {
         role: editMember.role_type || '',
         sections: [],
       });
-  
+
       if (editMember.section_name) {
         const sections = editMember.section_name.includes(',')
           ? editMember.section_name.split(',')
@@ -69,21 +68,11 @@ const EditCourseMember: React.FC = () => {
     formData.append('role_type', values.role);
     formData.append('sections', selectedSections.join(','));
 
-    // updateCourseMember({ formData, course_id: course_id, personal_data_id: personal_data_id }, {
-    //   onSuccess: () => {
-    //     resetSelectedSections();
-    //     form.reset();
-    //     closeModal();
-    //   },
-    //   onError: () => {
-    //     console.log('Error updating member');
-    //   },
-    // });
-    form.reset();
     console.log('Form data:', formData.getAll('first_name'), formData.getAll('last_name'), formData.getAll('student_code'), formData.getAll('role_type'), formData.getAll('sections'));
+    form.reset();
   };
 
-  const isSectionDisabled = editMember?.role_type === 'INSTRUCTOR' || editMember?.role_type  === 'TA';
+  const isSectionDisabled = editMember?.role_type === 'INSTRUCTOR' || editMember?.role_type === 'TA';
 
   return (
     <Modal
@@ -102,6 +91,10 @@ const EditCourseMember: React.FC = () => {
             label="Full Name"
             {...form.getInputProps('fullName')}
             required
+            onBlur={(e) => {
+              const capitalizedValue = capitalizeFirstLetter(e.target.value);
+              form.setFieldValue('fullName', capitalizedValue);
+            }}
           />
         </Skeleton>
         <Skeleton visible={isLoading}>
@@ -137,11 +130,15 @@ const EditCourseMember: React.FC = () => {
               resetSelectedSections();
               closeModal();
             }}
-            disabled={status == "pending"}
           >
             Cancel
           </Button>
-          <Button variant="filled" color="teal" className="ml-2" onClick={() => form.onSubmit(handleSubmit)()} disabled={status == "pending"}>
+          <Button
+            variant="filled"
+            color="teal"
+            className="ml-2"
+            onClick={() => form.onSubmit(handleSubmit)()}
+          >
             Save
           </Button>
         </div>
