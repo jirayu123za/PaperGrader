@@ -1,7 +1,15 @@
 import React from 'react';
 import { Box, Text, Title, Anchor, Divider } from '@mantine/core';
+import { useRouter } from 'next/router';
 
-const CreateRubricPage: React.FC = () => {
+const INSCreateRubric: React.FC = () => {
+  const router = useRouter();
+  const { course_id, assignment_id } = router.query;
+
+  if (!course_id || !assignment_id) {
+    return <div>Invalid course or assignment ID</div>;
+  }
+
   return (
     <Box px="lg" pt="xl">
       {/* Title */}
@@ -15,7 +23,11 @@ const CreateRubricPage: React.FC = () => {
       {/* Description */}
       <Text>
         Questions must be added to the{' '}
-        <Anchor href="/create-outline" size="sm" underline="hover">
+        <Anchor
+          href={`/courses/${course_id}/process/${assignment_id}/CreateOutline`}
+          size="sm"
+          underline="hover"
+        >
           Create Outline
         </Anchor>{' '}
         page before you can begin creating a rubric.
@@ -24,4 +36,4 @@ const CreateRubricPage: React.FC = () => {
   );
 };
 
-export default CreateRubricPage;
+export default INSCreateRubric;
