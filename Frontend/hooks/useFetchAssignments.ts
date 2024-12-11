@@ -12,18 +12,18 @@ interface Assignment {
   submiss_by: string;
 }
 
-export const useFetchAssignments = (courseId: string, isStudent: boolean) => {
+export const useFetchAssignments = (course_id: string, isStudent: boolean) => {
   const setAssignments = useAssignmentStore((state) => state.setAssignments);
 
   return useQuery<Assignment[], Error>({
-    queryKey: ['assignments', courseId, isStudent],
+    queryKey: ['assignments', course_id, isStudent],
     queryFn: async () => {
       const apiEndpoint = isStudent
         ? '/api/api/student/assignments'
         : '/api/api/instructor/assignments';
 
       const response = await axios.get(apiEndpoint, {
-        params: { course_id: courseId },
+        params: { course_id: course_id },
       });
 
       if (response.status !== 200) {
