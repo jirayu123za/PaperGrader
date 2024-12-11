@@ -1,8 +1,8 @@
 import React from 'react';
-import { useINS_SubmissionStore } from '../../store/useINS_SubmissionStore';
+import { useINS_SubmissionStore } from '../../../store/useINS_SubmissionStore';
 import { Alert, Button } from '@mantine/core';
 import { useRouter } from 'next/router';
-import { useFetchSubmissions } from '../../hooks/useFetchINS_Submission';
+import { useFetchSubmissions } from '../../../hooks/useFetchINS_Submission';
 
 interface INSSubmissionsProps {
   onViewPDF: (fileUrl: string) => void;

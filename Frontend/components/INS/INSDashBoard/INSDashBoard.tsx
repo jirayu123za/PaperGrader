@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import CreateAssignmentModal from '../../Create/CreateAssignment';
-import ActiveAssignments from '../INDDashBoard/ActiveAssignment';
+import ActiveAssignments from './ActiveAssignment';
 import { useInsCourseStore } from '../../../store/useCourseStore';
 import { useFetchActiveAssignments } from '../../../hooks/useFetchActiveAssignment';
 import { Divider, Flex, Title, Highlight, List } from '@mantine/core';
@@ -22,7 +22,7 @@ const INSDashBoard = () => {
     refetch();
   };
 
-  const iconInfoCircler = <BsFillInfoCircleFill size={15} color='teal'/>;
+  const iconInfoCircler = <BsFillInfoCircleFill size={15} color='teal' />;
 
   return (
     <div className="bg-white-50 p-8">
@@ -30,7 +30,7 @@ const INSDashBoard = () => {
         <Title order={2} fw={600}>
           {course ? `${course.course_name}` : 'No Course Selected'}
         </Title>
-        <Divider orientation="vertical" className="mx-4" size="sm"/>
+        <Divider orientation="vertical" className="mx-4" size="sm" />
         <Title order={2} fw={600}>
           {course ? `${course.semester}/${course.academic_year}` : 'No Course ID'}
         </Title>
@@ -39,22 +39,22 @@ const INSDashBoard = () => {
       <Flex gap="xl" pb="lg">
         <div className="w-1/2">
           <Title order={5} fw={600} pb={4}>DESCRIPTION</Title>
-          <Divider size="sm" pb={4}/>
-            <Highlight
-              highlight={['Course Settings.', 'default']}
-              highlightStyles={{
+          <Divider size="sm" pb={4} />
+          <Highlight
+            highlight={['Course Settings.', 'default']}
+            highlightStyles={{
               backgroundImage:
-              'linear-gradient(45deg, var(--mantine-color-cyan-5), var(--mantine-color-indigo-5))',
+                'linear-gradient(45deg, var(--mantine-color-cyan-5), var(--mantine-color-indigo-5))',
               fontWeight: 700,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}>
-              {course ? (course.course_description ? course.course_description : 'You can edit your course description on the Course Settings.') : 'You can edit your course description on the Course Settings.'}
-            </Highlight>
+            {course ? (course.course_description ? course.course_description : 'You can edit your course description on the Course Settings.') : 'You can edit your course description on the Course Settings.'}
+          </Highlight>
         </div>
         <div className="w-1/2">
           <Title order={5} fw={600} pb={4}>THINGS TO DO</Title>
-          <Divider size="sm" pb={4}/>
+          <Divider size="sm" pb={4} />
           <List icon={iconInfoCircler}>
             <List.Item className='text-gray-600'>
               Add students or staff to your course from the Roster page.
