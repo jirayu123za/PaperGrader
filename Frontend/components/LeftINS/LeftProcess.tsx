@@ -1,3 +1,4 @@
+import React from 'react';
 import AccountMenu from '../Account';
 import Link from 'next/link';
 import { FaBars, FaArrowLeft, FaCheckCircle } from 'react-icons/fa';
@@ -29,6 +30,7 @@ export default function LeftProcess() {
     manageScans: useDisclosure(false),
     manageSubmissions: useDisclosure(false),
     gradeSubmissions: useDisclosure(false),
+    ReviewGrade: useDisclosure(false),
   };
 
   const toggleOption = (optionKey: keyof typeof optionsState) => {
@@ -37,12 +39,18 @@ export default function LeftProcess() {
 
   const options = [
     { key: 'editOutline', label: 'Edit Outline', href: `/courses/${course_id}/process/${assignment_id}/CreateOutline` },
-    { key: 'createRubric', label: 'Create rubric', href: '/courses/${course_id}/process/${assignment_id}/CreateRubric' },
-    { key: 'manageScans', label: 'Manage Scans', href: '#' },
+    { key: 'createRubric', label: 'Create rubric', href: `/courses/${course_id}/process/${assignment_id}/CreateRubric` },
+    { key: 'manageScans', label: 'Manage Scans', href: `/courses/${course_id}/process/${assignment_id}/ManageScans` },
     { key: 'manageSubmissions', label: 'Manage Submissions', href: `/courses/${course_id}/process/${assignment_id}/Submissions` },
     { key: 'gradeSubmissions', label: 'Grade Submissions', href: '#' },
+    { key: 'ReviewGrade', label: 'Review Grade', href: '#' },
   ];
 
+  const handleBackToCourse = () => {
+    if (course_id) {
+      router.push(`/courses/${course_id}/Assignment`);
+    }
+  };
   return (
     <Container
       className={`relative h-screen flex flex-col border-r border-gray-300 ${
@@ -94,12 +102,7 @@ export default function LeftProcess() {
               paddingLeft: isCollapsed ? '6px' : '12px',
             },
           }}
-          onClick={() => {
-            // ตรวจสอบ course_id ก่อนเปลี่ยนหน้า
-            if (course_id) {
-              router.push(`/courses/${course_id}/Assignment`);
-            } 
-          }}
+          onClick={handleBackToCourse}
         >
           <Transition
             mounted={!isCollapsed}
