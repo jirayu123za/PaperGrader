@@ -96,9 +96,6 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
 
         {/* Section Selector */}
         <div className="mb-4 mt-4">
-          <Text size="sm" fw={500}>
-            Assign to Sections
-          </Text>
           <SectionSelector />
           </div>
 
