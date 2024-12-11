@@ -42,7 +42,7 @@ export default function LeftProcess() {
     { key: 'createRubric', label: 'Create rubric', href: `/courses/${course_id}/process/${assignment_id}/CreateRubric` },
     { key: 'manageScans', label: 'Manage Scans', href: `/courses/${course_id}/process/${assignment_id}/ManageScans` },
     { key: 'manageSubmissions', label: 'Manage Submissions', href: `/courses/${course_id}/process/${assignment_id}/Submissions` },
-    { key: 'gradeSubmissions', label: 'Grade Submissions', href: '#' },
+    { key: 'gradeSubmissions', label: 'Grade Submissions', href: `/courses/${course_id}/process/${assignment_id}/Grading` },
     { key: 'ReviewGrade', label: 'Review Grade', href: '#' },
   ];
 
