@@ -94,6 +94,12 @@ export default function LeftProcess() {
               paddingLeft: isCollapsed ? '6px' : '12px',
             },
           }}
+          onClick={() => {
+            // ตรวจสอบ course_id ก่อนเปลี่ยนหน้า
+            if (course_id) {
+              router.push(`/courses/${course_id}/Assignment`);
+            } 
+          }}
         >
           <Transition
             mounted={!isCollapsed}
