@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
+import { useAssignmentStore, useInsAssignmentStore } from '../store/useAssignmentStore';
 import axios from 'axios';
-import { useAssignmentStore } from '../store/useAssignmentStore';
 
-// สร้าง interface ของ Assignment
 interface Assignment {
   assignment_id: string;
   assignment_name: string;
@@ -37,4 +36,45 @@ export const useFetchAssignments = (courseId: string, isStudent: boolean) => {
     },
   });
 };
+
+interface AssignmentSection {
+  assignment_section_id: string;
+  cut_off_date: string | null;
+  due_date: string | null;
+  release_date: string | null;
+  section_id: string;
+  section_name: string;
+}
+
+interface InsAssignment {
+  assignment_due_date: string | null;
+  assignment_id: string;
+  assignment_name: string;
+  assignment_release_date: string | null;
+  assignment_sections: AssignmentSection[];
+  published: boolean;
+  regrades: boolean;
+  submiss_by: string;
+}
+
+export const useFetchInsAssignments = (course_id: string) => {
+  const setInsAssignments = useInsAssignmentStore((state) => state.setInsAssignments);
+
+  return useQuery<InsAssignment[], Error>({
+    queryKey: ['ins_assignments', course_id],
+    queryFn: async () => {
+      const response = await axios.get('/api/api/instructor/assignments/sections', {
+        params: { course_id },
+      });
+
+      if (response.status !== 200) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data: InsAssignment[] = response.data.ins_assignments;
+      setInsAssignments(data);
+      return data;
+    },
+  });
+}
 
