@@ -1,5 +1,6 @@
 import React from 'react';
 import AssignmentSetting from '../../Customize/AssignmentSetting';
+import SecAssignment from './SecAssignment';
 import { useAssignmentStore } from '../../../store/useAssignmentStore';
 import { useFetchAssignments } from '../../../hooks/useFetchAssignments';
 import { useRouter } from 'next/router';
@@ -7,20 +8,14 @@ import { Menu, Button, Paper, Table, Skeleton, Pagination, Collapse, Checkbox } 
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { useModalAssignmentSettingStore } from '../../../store/modal/useAssignmentSettingModal';
 import { usePagination } from '@mantine/hooks';
-import SecAssignment from './SecAssignment';
 import { useForm } from '@mantine/form';
 import { useSelectSectionStore } from '../../../store/useSectionStore';
 
-
-
-interface INTAssignmentProps {
-  courseId: string;
-}
-
-const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
+const INTAssignment: React.FC = () => {
   const router = useRouter();
   const assignments = useAssignmentStore((state) => state.assignments);
-  const { isLoading, error } = useFetchAssignments(courseId, false);
+  const { course_id } = router.query;
+  const { isLoading, error } = useFetchAssignments(course_id as string, false);
   const { setSelectedSections } = useSelectSectionStore();
   const { openModal } = useModalAssignmentSettingStore();
 
@@ -115,7 +110,7 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
                       className="cursor-pointer hover:underline"
                       onClick={() =>
                         router.push(
-                          `/courses/${courseId}/process/${assignment.assignment_id}/CreateOutline`
+                          `/courses/${course_id}/process/${assignment.assignment_id}/CreateOutline`
                         )
                       }
                     >
@@ -174,7 +169,7 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
                     <Collapse in={!!form.values[`${assignment.assignment_id}_expanded`]}>
                       <SecAssignment
                         assignmentId={assignment.assignment_id}
-                        courseId={courseId}
+                        courseId={course_id as string}
                         parentChecked={form.values[assignment.assignment_id]}
                         expanded={form.values[`${assignment.assignment_id}_expanded`]}
                       />
