@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import LeftProcess from '../../../../../components/LeftINS/LeftProcess';
-import INSSubmissions from '../../../../../components/INS/INSSubmissions';
+import INSSubmissions from '../../../../../components/INS/INSProcess/INSSubmissions';
 
 export default function Submissions() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -11,14 +11,14 @@ export default function Submissions() {
 
   return (
     <div className="flex min-h-screen">
-      <LeftProcess/>
+      <LeftProcess />
       <div className="flex-grow p-4">
         {loading ? (
           <div>Loading...</div>
         ) : (
           <>
             <INSSubmissions
-              onViewPDF={() => {}}
+              onViewPDF={() => { }}
             />
           </>
         )}
