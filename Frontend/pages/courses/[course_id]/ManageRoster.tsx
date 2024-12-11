@@ -23,7 +23,6 @@ const ManageRoster: React.FC = () => {
     <div className="flex min-h-screen bg-gray-50">
       <LeftMain/>
       <div className="flex-grow p-6">
-        <h1 className="text-2xl font-bold mb-4">Roster</h1>
 
         {/* ปุ่มเพื่อสลับระหว่าง CourseRoster และ ManageSection ชิดขวา */}
         <div className="flex justify-end space-x-4 mb-4">
