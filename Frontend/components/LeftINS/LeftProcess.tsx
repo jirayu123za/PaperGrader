@@ -37,7 +37,7 @@ export default function LeftProcess() {
 
   const options = [
     { key: 'editOutline', label: 'Edit Outline', href: `/courses/${course_id}/process/${assignment_id}/CreateOutline` },
-    { key: 'createRubric', label: 'Create rubric', href: '#' },
+    { key: 'createRubric', label: 'Create rubric', href: '/courses/${course_id}/process/${assignment_id}/CreateRubric' },
     { key: 'manageScans', label: 'Manage Scans', href: '#' },
     { key: 'manageSubmissions', label: 'Manage Submissions', href: `/courses/${course_id}/process/${assignment_id}/Submissions` },
     { key: 'gradeSubmissions', label: 'Grade Submissions', href: '#' },
