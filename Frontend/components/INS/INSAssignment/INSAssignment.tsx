@@ -56,6 +56,9 @@ const INTAssignment: React.FC<INTAssignmentProps> = ({ courseId }) => {
       return updatedSections;
     });
     form.setFieldValue(assignmentId, checked);
+  
+    // เปิด/ปิด Subtable อัตโนมัติ
+    form.setFieldValue(`${assignmentId}_expanded`, checked);
   };
 
 

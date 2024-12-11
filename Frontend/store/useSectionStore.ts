@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { subscribeWithSelector } from 'zustand/middleware';
 
 interface SectionsList {
   section_id: string;
@@ -25,15 +26,19 @@ interface SelectSectionStore {
   resetSelectedSections: () => void;
 }
 
-export const useSelectSectionStore = create<SelectSectionStore>((set) => ({
-  selectedSections: [],
-  setSelectedSections: (sections) =>
-    set((state) => ({
-      selectedSections:
-        typeof sections === "function" ? sections(state.selectedSections) : sections,
-    })),
-  resetSelectedSections: () => set({ selectedSections: [] }),
-}));
+export const useSelectSectionStore = create<SelectSectionStore>()(
+  subscribeWithSelector((set) => ({
+    selectedSections: [],
+    setSelectedSections: (sections) =>
+      set((state) => ({
+        selectedSections:
+          typeof sections === 'function'
+            ? sections(state.selectedSections)
+            : sections,
+      })),
+    resetSelectedSections: () => set({ selectedSections: [] }),
+  }))
+);
 
 interface AssignmentSectionsStore {
   assignmentSections: SectionsList[];
