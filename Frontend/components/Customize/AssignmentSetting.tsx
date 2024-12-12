@@ -138,9 +138,8 @@ const AssignmentSetting: React.FC = () => {
           </Tabs.Panel>
 
           <Tabs.Panel value="customize-time">
-          <CustomizeTime courseId={course_id as string} assignmentId={assignment_id as string} />
+          <CustomizeTime/>
           </Tabs.Panel>
-
 
           {/* Tab 3: Submission Settings */}
           <Tabs.Panel mt="md" value="submission-settings">
@@ -223,11 +222,13 @@ const AssignmentSetting: React.FC = () => {
         </Tabs.Panel>
           
         </Tabs>
-        <Group mt="lg">
+        <Group p={16} justify='end'>
+          <Button type="submit">
+            Save
+          </Button>
           <Button color="red" variant="outline" leftSection={binIcon}>
             Delete Assignment
           </Button>
-          <Button type="submit">Save</Button>
         </Group>
       </form>
     </Modal>
