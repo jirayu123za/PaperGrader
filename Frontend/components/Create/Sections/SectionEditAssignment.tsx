@@ -2,13 +2,11 @@ import React from 'react';
 import { TagsInput, Text, Loader } from '@mantine/core';
 import { useFetchAssignmentSections } from '../../../hooks/AssignmentSetting/useFetchAssignmentSections';
 import { useSelectSectionStore } from '../../../store/useSectionStore';
+import { useModalAssignmentSettingStore } from '../../../store/modal/useAssignmentSettingModal';
 
-interface SectionEditAssignmentProps {
-  assignmentId: string;
-}
-
-const SectionEditAssignment: React.FC<SectionEditAssignmentProps> = ({ assignmentId }) => {
-  const { data: sections, isLoading, error } = useFetchAssignmentSections(assignmentId);
+const SectionEditAssignment: React.FC = () => {
+  const { assignment_id } = useModalAssignmentSettingStore(state => state);
+  const { data: sections, isLoading, error } = useFetchAssignmentSections(assignment_id);
   const { selectedSections, setSelectedSections } = useSelectSectionStore();
 
   const selectedTags = sections
