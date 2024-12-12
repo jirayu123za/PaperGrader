@@ -22,6 +22,7 @@ export const useAssignmentStore = create<AssignmentStore>((set) => ({
 }));
 
 interface AssignmentSection {
+  assignment_id: string;
   assignment_section_id: string;
   cut_off_date: string | null;
   due_date: string | null;
