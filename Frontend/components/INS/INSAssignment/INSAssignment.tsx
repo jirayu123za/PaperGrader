@@ -1,30 +1,54 @@
 import React from 'react';
 import AssignmentSetting from '../../Customize/AssignmentSetting';
 import SecAssignment from './SecAssignment';
-import { useAssignmentStore } from '../../../store/useAssignmentStore';
-import { useFetchAssignments } from '../../../hooks/useFetchAssignments';
+import { useInsAssignmentStore } from '../../../store/useAssignmentStore';
+import { useFetchInsAssignments } from '../../../hooks/useFetchAssignments';
 import { useRouter } from 'next/router';
-import { Menu, Button, Paper, Table, Skeleton, Pagination, Collapse, Checkbox } from '@mantine/core';
+import { Menu, Button, Paper, Table, Skeleton, Pagination, Collapse, Checkbox, Title } from '@mantine/core';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { useModalAssignmentSettingStore } from '../../../store/modal/useAssignmentSettingModal';
 import { usePagination } from '@mantine/hooks';
-import { useForm } from '@mantine/form';
 import { useSelectSectionStore } from '../../../store/useSectionStore';
+import { useAssignmentExpandStore, useSelectedAssignmentStore } from '../../../store/Table/useInsAssignmentTableStore';
 
 const INTAssignment: React.FC = () => {
   const router = useRouter();
-  const assignments = useAssignmentStore((state) => state.assignments);
   const { course_id } = router.query;
-  const { isLoading, error } = useFetchAssignments(course_id as string, false);
-  const { setSelectedSections } = useSelectSectionStore();
   const { openModal } = useModalAssignmentSettingStore();
+  const { setSelectedSections } = useSelectSectionStore();
+  const { expandedAssignments, toggleAssignment } = useAssignmentExpandStore();
+  const { selectedAssignmentID, setSelectedAssignmentID, setSelectedAssignmentSections, resetAssignmentSelection } = useSelectedAssignmentStore();
+  const { isLoading, error } = useFetchInsAssignments(course_id as string);
+  const insAssignments = useInsAssignmentStore((state) => state.insAssignments);
 
-  const form = useForm<Record<string, boolean | undefined>>({
-    initialValues: {},
-  });
+  const handleCheckboxChange = (checked: boolean, assignmentSections: any[], assignment: any) => {
+    const sectionIds = assignmentSections.map((section) => section.section_id);
+  
+    setSelectedSections((prev) =>
+      checked
+        ? [...prev, ...sectionIds]
+        : prev.filter((id) => !sectionIds.includes(id))
+    );
+  
+    if (selectedAssignmentID === assignment.assignment_id) {
+      resetAssignmentSelection();
+      toggleAssignment(assignment.assignment_id); 
+    } else {
+      if (selectedAssignmentID && expandedAssignments[selectedAssignmentID]) {
+        toggleAssignment(selectedAssignmentID);
+      }
+      setSelectedAssignmentID(assignment.assignment_id);
+      setSelectedAssignmentSections(assignment.assignment_sections.map((section: any) => section.assignment_section_id));
+      if (!expandedAssignments[assignment.assignment_id]) {
+        toggleAssignment(assignment.assignment_id);
+      }
+    }
 
-  const pageSize = 10;
-  const totalPages = Math.ceil(assignments.length / pageSize);
+    console.log("Selected section names:", sectionIds);
+  };
+
+  const pageSize = 8;
+  const totalPages = Math.ceil(insAssignments.length / pageSize);
 
   const pagination = usePagination({
     total: totalPages,
@@ -33,34 +57,20 @@ const INTAssignment: React.FC = () => {
     boundaries: 1,
   });
 
-  const paginatedData = assignments.slice(
+  const paginatedData = insAssignments.slice(
     (pagination.active - 1) * pageSize,
     pagination.active * pageSize
   );
 
   if (error) return <div>Error loading assignments: {error.message}</div>;
-  if (!assignments || assignments.length === 0) {
+  if (!insAssignments || insAssignments.length === 0) {
     return <div className="p-6 bg-white shadow rounded-lg">No assignments available.</div>;
   }
 
-  const handleCheckboxChange = (assignmentId: string, checked: boolean) => {
-    setSelectedSections((prev: string[]) => {
-      const updatedSections = checked
-        ? [...prev, assignmentId]
-        : prev.filter((id) => id !== assignmentId);
-      return updatedSections;
-    });
-    form.setFieldValue(assignmentId, checked);
-  
-    // เปิด/ปิด Subtable อัตโนมัติ
-    form.setFieldValue(`${assignmentId}_expanded`, checked);
-  };
-
-
   return (
     <Paper shadow="sm" radius="md" withBorder p="xl">
-      <h2 className="text-2xl font-semibold mb-4">{assignments.length} Assignments</h2>
-      <Table highlightOnHover verticalSpacing="sm" className="min-w-full bg-white">
+      <h2 className="text-2xl font-semibold mb-4">{insAssignments.length} Assignments</h2>
+      <Table highlightOnHover verticalSpacing="md" className="min-w-full bg-white">
         <Table.Thead>
           <Table.Tr className="border-b">
             <Table.Th>SELECT</Table.Th>
@@ -77,34 +87,40 @@ const INTAssignment: React.FC = () => {
           {isLoading
             ? Array.from({ length: 10 }).map((_, index) => (
               <Table.Tr key={`skeleton-row-${index}`}>
-                <Table.Td>
-                  <Skeleton visible height={20} width="100%" />
-                </Table.Td>
-                <Table.Td>
-                  <Skeleton visible height={20} width="50%" />
-                </Table.Td>
-                <Table.Td>
-                  <Skeleton visible height={20} width="50%" />
-                </Table.Td>
-                <Table.Td>
-                  <Skeleton visible height={20} width="30%" />
-                </Table.Td>
-                <Table.Td>
-                  <Skeleton visible height={20} width="30%" />
-                </Table.Td>
-                <Table.Td>
-                  <Skeleton visible height={20} width="50%" />
-                </Table.Td>
-              </Table.Tr>
+              <Table.Td style={{ width: '3%' }}>
+                <Skeleton visible height={25} />
+              </Table.Td>
+              <Table.Td style={{ width: '20%' }}>
+                <Skeleton visible height={25} />
+              </Table.Td>
+              <Table.Td style={{ textAlign: 'center', width: '10%' }}>
+                <Skeleton visible height={25} />
+              </Table.Td>
+              <Table.Td style={{ textAlign: 'center', width: '10%' }}>
+                <Skeleton visible height={25} />
+              </Table.Td>
+              <Table.Td style={{ textAlign: 'center', width: '10%' }}>
+                <Skeleton visible height={25} />
+              </Table.Td>
+              <Table.Td style={{ textAlign: 'center', width: '10%' }}>
+                <Skeleton visible height={25} />
+              </Table.Td>
+              <Table.Td style={{ textAlign: 'center', width: '10%' }}>
+                <Skeleton visible height={25} />
+              </Table.Td>
+              <Table.Td style={{ textAlign: 'center', width: '5%' }}>
+                <Skeleton visible height={25} />
+              </Table.Td>
+            </Table.Tr>
             ))
             : paginatedData.map((assignment) => (
               <React.Fragment key={assignment.assignment_id}>
                 <Table.Tr className="border-b">
                   <Table.Td>
                     <Checkbox
-                      checked={!!form.values[assignment.assignment_id]}
-                      onChange={(e) =>
-                        handleCheckboxChange(assignment.assignment_id, e.currentTarget.checked)
+                      checked={selectedAssignmentID === assignment.assignment_id}
+                      onChange={(event) =>
+                        handleCheckboxChange(event.currentTarget.checked, assignment.assignment_sections, assignment)
                       }
                     />
                   </Table.Td>
@@ -119,20 +135,12 @@ const INTAssignment: React.FC = () => {
                     >
                       {assignment.assignment_name}
                     </span>
-                    <Button
-                      variant="subtle"
-                      onClick={() => {
-                        const isExpanded = form.values[`${assignment.assignment_id}_expanded`];
-                        form.setFieldValue(`${assignment.assignment_id}_expanded`, !isExpanded);
-
-                        if (isExpanded) {
-                          form.setFieldValue(`${assignment.assignment_id}`, false);
-                          setSelectedSections([]);
-                        }
-                      }}
-                    >
-                      {form.values[`${assignment.assignment_id}_expanded`] ? <FiChevronUp /> : <FiChevronDown />}
-                    </Button>
+                      <Button
+                        variant="subtle"
+                        onClick={() => toggleAssignment(assignment.assignment_id)}
+                      >
+                        {expandedAssignments[assignment.assignment_id] ? <FiChevronUp /> : <FiChevronDown />}
+                      </Button>
                   </Table.Td>
                   <Table.Td style={{ textAlign: 'center' }}>
                     {assignment.assignment_release_date || '-'}
@@ -169,14 +177,12 @@ const INTAssignment: React.FC = () => {
                 </Table.Tr>
                 <Table.Tr>
                   <Table.Td colSpan={8} p={0}>
-                    <Collapse in={!!form.values[`${assignment.assignment_id}_expanded`]}>
-                      <SecAssignment
-                        assignmentId={assignment.assignment_id}
-                        courseId={course_id as string}
-                        parentChecked={form.values[assignment.assignment_id]}
-                        expanded={form.values[`${assignment.assignment_id}_expanded`]}
-                      />
-                    </Collapse>
+                      <Collapse 
+                        in={expandedAssignments[assignment.assignment_id]}
+                        transitionDuration={200}
+                      >
+                        <SecAssignment/>
+                      </Collapse>
                   </Table.Td>
                 </Table.Tr>
               </React.Fragment>
