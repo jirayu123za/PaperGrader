@@ -452,7 +452,6 @@ func (r *GormInstructorRepository) FindInsAssignmentByCourseID(CourseID uuid.UUI
 	assignmentMap := make(map[string][]map[string]interface{})
 	for _, section := range assignmentSections {
 		assignmentID := section["assignment_id"].(string)
-		delete(section, "assignment_id")
 		assignmentMap[assignmentID] = append(assignmentMap[assignmentID], section)
 	}
 
