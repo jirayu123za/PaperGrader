@@ -9,7 +9,7 @@ import { GrShareOption } from 'react-icons/gr';
 import { FiEye } from 'react-icons/fi';
 import { useForm } from '@mantine/form';
 import { useRouter } from 'next/router';
-import { useModalAssignmentSettingStore } from '../../store/modal/useAssignmentSettingModal';
+import { useCustomizeTimeStore, useModalAssignmentSettingStore } from '../../store/modal/useAssignmentSettingModal';
 import { useFetchAssignmentSetting } from '../../hooks/AssignmentSetting/useFetchAssignmentSetting';
 import { useAssignmentSettingStore } from '../../store/useAssignmentSettingStore';
 
@@ -19,7 +19,8 @@ const AssignmentSetting: React.FC = () => {
   const { assignmentSetting } = useAssignmentSettingStore();
   const { assignment_id, opened, closeModal } = useModalAssignmentSettingStore();
   const { isLoading, isSuccess } = useFetchAssignmentSetting(course_id as string, assignment_id as string);
-
+  const { release_date, due_date, cut_off_date, selectedSections, resetCustomizeTime } = useCustomizeTimeStore();
+  
   const form = useForm<{
     assignmentName: string;
     assignmentDescription: string;
@@ -33,6 +34,10 @@ const AssignmentSetting: React.FC = () => {
     enableGroupSubmission: boolean;
     groupSizeLimit: string;
     studentVisibility: string;
+    releaseDate: string;
+    dueDate: string;
+    cutOffDate: string;
+    sections: string[];
   }>({
     initialValues: {
       assignmentName: '',
@@ -47,6 +52,10 @@ const AssignmentSetting: React.FC = () => {
       submissionType: '',
       rubricVisibility: '',
       studentVisibility: '',
+      releaseDate: '',
+      dueDate: '',
+      cutOffDate: '',
+      sections: [],
     },
   });
 
@@ -61,14 +70,17 @@ const AssignmentSetting: React.FC = () => {
         published: assignmentSetting.assignment?.published || false,
         enableRegrades: assignmentSetting.assignment?.regrades || false,
         enableGroupSubmission: assignmentSetting.assignment?.groupSubmiss || false,
-        
+        releaseDate: release_date,
+        dueDate: due_date,
+        cutOffDate: cut_off_date,
+        sections: selectedSections,
         // groupSizeLimit: assignmentSetting.group_size_limit || '',
         // submissionType: assignmentSetting.assignment?.submit_type || '',
         // rubricVisibility: assignmentSetting.rubric_visibility || '',
         // studentVisibility: assignmentSetting.student_visibility || '',
       });
     }
-  }, [isLoading, isSuccess, assignmentSetting]);
+  }, [isLoading, isSuccess, assignmentSetting, release_date, due_date, cut_off_date, selectedSections]);
 
   const handleUpdateSettings = (values: typeof form.values) => {
     const formData = new FormData();
@@ -80,6 +92,10 @@ const AssignmentSetting: React.FC = () => {
     formData.append('group_submiss', values.enableGroupSubmission.toString());
     formData.append('published', values.published.toString());
     formData.append('regrades', values.enableRegrades.toString());
+    formData.append('release_date', values.releaseDate);
+    formData.append('due_date', values.dueDate);
+    formData.append('cut_off_date', values.cutOffDate);
+    formData.append('sections', selectedSections.join(','));
 
     console.log('Saved Form Values:', values);
     form.reset();
@@ -99,6 +115,7 @@ const AssignmentSetting: React.FC = () => {
       opened={opened}
       onClose={() => {
         form.reset();
+        resetCustomizeTime(); 
         closeModal();
       }}
       title="Edit Assignment"
