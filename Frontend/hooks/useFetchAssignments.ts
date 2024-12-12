@@ -38,6 +38,7 @@ export const useFetchAssignments = (course_id: string, isStudent: boolean) => {
 };
 
 interface AssignmentSection {
+  assignment_id: string;
   assignment_section_id: string;
   cut_off_date: string | null;
   due_date: string | null;
