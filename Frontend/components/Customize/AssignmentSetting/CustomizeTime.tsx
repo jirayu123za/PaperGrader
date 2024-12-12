@@ -2,19 +2,19 @@ import React, { useEffect } from 'react';
 import { Button, Checkbox } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import { useForm } from '@mantine/form';
+import { useRouter } from 'next/router';
 import { useFetchAssignmentSetting } from '../../../hooks/AssignmentSetting/useFetchAssignmentSetting'; 
 import { useAssignmentSettingStore } from '../../../store/useAssignmentSettingStore';
+import { useModalAssignmentSettingStore } from '../../../store/modal/useAssignmentSettingModal';
 import SectionEditAssignment from '../../Create/Sections/SectionEditAssignment';
 import '@mantine/dates/styles.css';
 
-interface CustomizeTimeProps {
-  courseId: string;
-  assignmentId: string;
-}
-
-const CustomizeTime: React.FC<CustomizeTimeProps> = ({ courseId, assignmentId }) => {
+const CustomizeTime: React.FC = () => {
+  const router = useRouter();
+  const { course_id } = router.query;
   const { assignmentSetting } = useAssignmentSettingStore();
-  const { isFetching } = useFetchAssignmentSetting(courseId, assignmentId);
+  const { assignment_id } = useModalAssignmentSettingStore(state => state);
+  const { isLoading } = useFetchAssignmentSetting(course_id as string, assignment_id as string);
 
   const form = useForm({
     initialValues: {
@@ -38,21 +38,21 @@ const CustomizeTime: React.FC<CustomizeTimeProps> = ({ courseId, assignmentId })
     }
   }, [assignmentSetting]);
 
-  const handleSubmit = (values: typeof form.values) => {
-    console.log('Updated Customize Time:', {
-      sections: values.selectedSections,
-      releaseDate: values.release_date,
-      dueDate: values.due_date,
-      cutOffDate: values.allowLateSubmissions ? values.cut_off_date : '',
-    });
-    // TODO: call API to update assignment setting
-  };
+  // const handleSubmit = (values: typeof form.values) => {
+  //   console.log('Updated Customize Time:', {
+  //     sections: values.selectedSections,
+  //     releaseDate: values.release_date,
+  //     dueDate: values.due_date,
+  //     cutOffDate: values.allowLateSubmissions ? values.cut_off_date : '',
+  //   });
+  //   // TODO: call API to update assignment setting
+  // };
 
   return (
-    <form onSubmit={form.onSubmit(handleSubmit)}>
-      <SectionEditAssignment assignmentId={assignmentId} />
+    <>
+      <SectionEditAssignment/>
       
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-2 gap-4 mb-3 mt-3">
         <DateTimePicker
           label="Release Date"
           placeholder="Select release date"
@@ -67,36 +67,14 @@ const CustomizeTime: React.FC<CustomizeTimeProps> = ({ courseId, assignmentId })
         />
       </div>
 
-      <div className="mb-6">
-        <Checkbox
-          label="Allow late submissions"
-          {...form.getInputProps('allowLateSubmissions', { type: 'checkbox' })}
-        />
-        {form.values.allowLateSubmissions && (
-          <DateTimePicker
-            label="Cut Off Date"
-            placeholder="Select cut off date"
-            {...form.getInputProps('cut_off_date')}
-            valueFormat="DD/MM/YYYY HH:mm"
-            className="mt-4"
-          />
-        )}
-      </div>
-
-      <div className="flex justify-end space-x-4">
-        <Button
-          variant="default"
-          onClick={() => {
-            form.reset();
-          }}
-        >
-          Reset
-        </Button>
-        <Button onClick={() => form.onSubmit(handleSubmit)}>
-          Save
-        </Button>
-      </div>
-    </form>
+      <DateTimePicker
+        label="Cut Off Date"
+        placeholder="Select cut off date"
+        {...form.getInputProps('cut_off_date')}
+        valueFormat="DD/MM/YYYY HH:mm"
+        className="mt-4"
+      />
+    </>
   );
 };
 
