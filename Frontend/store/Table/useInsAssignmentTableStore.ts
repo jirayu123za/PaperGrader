@@ -20,3 +20,21 @@ export const useAssignmentExpandStore = create<AssignmentExpandState>((set) => (
             };
         }),
 }));
+
+interface SelectedAssignmentState {
+    selectedAssignmentID: string | null;
+    setSelectedAssignmentID: (assignment_id: string | null) => void;
+
+    selectedAssignmentSections: string[];
+    setSelectedAssignmentSections: (sections: string[]) => void;
+    resetAssignmentSelection: () => void;
+}
+
+export const useSelectedAssignmentStore = create<SelectedAssignmentState>((set) => ({
+    selectedAssignmentID: null,
+    setSelectedAssignmentID: (assignment_id) => set({ selectedAssignmentID: assignment_id }),
+
+    selectedAssignmentSections: [],
+    setSelectedAssignmentSections: (sections) => set({ selectedAssignmentSections: sections }),
+    resetAssignmentSelection: () => set({ selectedAssignmentID: null, selectedAssignmentSections: [] }),
+}));
