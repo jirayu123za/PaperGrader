@@ -12,6 +12,7 @@ import { useRouter } from 'next/router';
 import { useCustomizeTimeStore, useModalAssignmentSettingStore } from '../../store/modal/useAssignmentSettingModal';
 import { useFetchAssignmentSetting } from '../../hooks/AssignmentSetting/useFetchAssignmentSetting';
 import { useAssignmentSettingStore } from '../../store/useAssignmentSettingStore';
+import { useUpdateAssignment } from '../../hooks/AssignmentSetting/useUpdateAssignment';
 
 const AssignmentSetting: React.FC = () => {
   const router = useRouter();
@@ -20,7 +21,8 @@ const AssignmentSetting: React.FC = () => {
   const { assignment_id, opened, closeModal } = useModalAssignmentSettingStore();
   const { isLoading, isSuccess } = useFetchAssignmentSetting(course_id as string, assignment_id as string);
   const { release_date, due_date, cut_off_date, selectedSections, resetCustomizeTime } = useCustomizeTimeStore();
-  
+  const { mutate: updateAssignment } = useUpdateAssignment();
+
   const form = useForm<{
     assignmentName: string;
     assignmentDescription: string;
@@ -88,16 +90,32 @@ const AssignmentSetting: React.FC = () => {
     formData.append('assignment_description', values.assignmentDescription);
     formData.append('submiss_by', values.uploadBy);
     formData.append('grading_type', values.scoringMethod);
-    formData.append('late_submiss', values.allowLateSubmissions.toString());
-    formData.append('group_submiss', values.enableGroupSubmission.toString());
-    formData.append('published', values.published.toString());
-    formData.append('regrades', values.enableRegrades.toString());
+    formData.append('allowLateSubmissions', values.allowLateSubmissions ? 'true' : 'false');
+    formData.append('enableGroupSubmission', values.enableGroupSubmission ? 'true' : 'false');
+    formData.append('published', values.published ? 'true' : 'false');
+    formData.append('enableRegrades', values.enableRegrades ? 'true' : 'false');
+    
     formData.append('release_date', values.releaseDate);
     formData.append('due_date', values.dueDate);
     formData.append('cut_off_date', values.cutOffDate);
-    formData.append('sections', selectedSections.join(','));
+    formData.append('sections', JSON.stringify(values.sections)); 
 
     console.log('Saved Form Values:', values);
+
+    updateAssignment(
+      { formData, course_id: course_id as string, assignment_id: assignment_id as string },
+      {
+        onSuccess: () => {
+          console.log('Assignment updated successfully');
+          form.reset();
+          closeModal();
+        },
+        onError: (error) => {
+          console.error('Failed to update assignment:', error);
+        },
+      }
+    );
+    
     form.reset();
     closeModal();
   };
