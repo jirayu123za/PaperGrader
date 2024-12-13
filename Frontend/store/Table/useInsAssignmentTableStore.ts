@@ -38,3 +38,15 @@ export const useSelectedAssignmentStore = create<SelectedAssignmentState>((set) 
     setSelectedAssignmentSections: (sections) => set({ selectedAssignmentSections: sections }),
     resetAssignmentSelection: () => set({ selectedAssignmentID: null, selectedAssignmentSections: [] }),
 }));
+
+interface SelectAssignmentSectionIDs {
+    selectedAssignmentSectionIDs: string[];
+    setSelectedAssignmentSectionIDs: (assignment_section_id: string[]) => void;
+    resetSelectedAssignmentSectionIDs: () => void;
+}
+
+export const useSelectAssignmentSectionIDsStore = create<SelectAssignmentSectionIDs>((set) => ({
+    selectedAssignmentSectionIDs: [],
+    setSelectedAssignmentSectionIDs: (assignment_section_id) => set({ selectedAssignmentSectionIDs: assignment_section_id }),
+    resetSelectedAssignmentSectionIDs: () => set({ selectedAssignmentSectionIDs: [] }),
+}));
