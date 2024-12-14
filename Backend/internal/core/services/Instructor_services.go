@@ -19,6 +19,7 @@ type InstructorService interface {
 	GetAssignmentDetails(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error)
 
 	CreateAssignmentFile(file *models.AssignmentFile) error
+	UpdateAssignmentAndAssignmentSection(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment, sectionsIDs []uuid.UUID, assignmentSectionIDs []uuid.UUID) error
 
 	GetRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
 	GetRosterSectionByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
@@ -126,6 +127,10 @@ func (s *InstructorServiceImpl) GetAssignmentDetails(CourseID uuid.UUID, Assignm
 
 func (s *InstructorServiceImpl) CreateAssignmentFile(file *models.AssignmentFile) error {
 	return s.repo.AddAssignmentFile(file)
+}
+
+func (s *InstructorServiceImpl) UpdateAssignmentAndAssignmentSection(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment, sectionsIDs []uuid.UUID, assignmentSectionIDs []uuid.UUID) error {
+	return s.repo.ModifyAssignmentAndAssignmentSection(CourseID, AssignmentID, assignment, sectionsIDs, assignmentSectionIDs)
 }
 
 // Get instructors and students by course id
