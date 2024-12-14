@@ -62,6 +62,42 @@ func (r *GormInstructorRepository) AddAssignmentWithFiles(CourseID uuid.UUID, as
 	})
 }
 
+func (r *GormInstructorRepository) ModifyAssignmentAndAssignmentSection(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment, sectionsIDs []uuid.UUID, assignmentSectionIDs []uuid.UUID) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if result := tx.Model(&models.Assignment{}).
+			Where("course_id = ? AND assignment_id = ?", CourseID, AssignmentID).
+			Updates(assignment); result.Error != nil {
+			return result.Error
+		}
+
+		var existingAssignmentSections []models.AssignmentSection
+		if err := tx.Where("assignment_id = ?", AssignmentID).
+			Find(&existingAssignmentSections).Error; err != nil {
+			return err
+		}
+
+		existingSectionMap := make(map[uuid.UUID]uuid.UUID)
+		for _, section := range existingAssignmentSections {
+			existingSectionMap[section.SectionID] = section.AssignmentSectionID
+		}
+
+		for _, sectionID := range sectionsIDs {
+			if assignmentSectionID, exists := existingSectionMap[sectionID]; exists {
+				section := models.AssignmentSection{
+					SectionID: sectionID,
+				}
+				if result := tx.Model(&models.AssignmentSection{}).
+					Where("assignment_section_id = ?", assignmentSectionID).
+					Updates(section); result.Error != nil {
+					return result.Error
+				}
+			}
+		}
+
+		return nil
+	})
+}
+
 func (r *GormInstructorRepository) FindAssignmentNameTemplate(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileName string, err error) {
 	var assignmentFile models.AssignmentFile
 	if err := r.db.Table("assignment_files").
@@ -120,16 +156,24 @@ func (r *GormInstructorRepository) FindRosterByCourseID(CourseID uuid.UUID) ([]m
 	if err := r.db.Table("enrollment_lists").
 		Select(`personal_data.personal_data_id,
 				CONCAT(personal_data.first_name, ' ', personal_data.last_name) AS full_name,
-		        personal_data.email,
+				personal_data.email,
 				personal_data.student_code,
-		        personal_data.role_type,
-		        STRING_AGG(DISTINCT sections.section_name, ', ') AS section_name,
-		        COUNT(submissions.submission_id) AS submission_count`).
+				personal_data.role_type,
+				grouped_sections.section_names AS section_name,
+				COUNT(submissions.submission_id) AS submission_count`).
 		Joins("JOIN personal_data ON enrollment_lists.personal_data_id = personal_data.personal_data_id").
-		Joins("LEFT JOIN sections ON enrollment_lists.section_id = sections.section_id").
+		Joins(`LEFT JOIN (
+				SELECT enrollment_lists.personal_data_id, 
+				STRING_AGG(DISTINCT sections.section_name, ', ' ORDER BY sections.section_name) AS section_names
+				FROM enrollment_lists
+				LEFT JOIN sections ON enrollment_lists.section_id = sections.section_id
+				WHERE enrollment_lists.course_id = ?
+				GROUP BY enrollment_lists.personal_data_id
+				) AS grouped_sections ON grouped_sections.personal_data_id = personal_data.personal_data_id`, CourseID).
 		Joins("LEFT JOIN submissions ON enrollment_lists.personal_data_id = submissions.user_id AND submissions.assignment_id IN (SELECT assignment_id FROM assignments WHERE assignments.course_id = ?)", CourseID).
 		Where("enrollment_lists.course_id = ? AND enrollment_lists.deleted_at IS NULL", CourseID).
-		Group("personal_data.personal_data_id, personal_data.first_name, personal_data.last_name, personal_data.email, personal_data.role_type").
+		Group("personal_data.personal_data_id, personal_data.first_name, personal_data.last_name, personal_data.email, personal_data.student_code, personal_data.role_type, grouped_sections.section_names").
+		Order(`CASE WHEN grouped_sections.section_names LIKE '001%' THEN 0 ELSE 1 END, grouped_sections.section_names ASC`).
 		Scan(&users).Error; err != nil {
 		return nil, err
 	}
@@ -149,6 +193,7 @@ func (r *GormInstructorRepository) FindRosterSectionByCourseID(CourseID uuid.UUI
 		Joins("LEFT JOIN personal_data ON enrollment_lists.personal_data_id = personal_data.personal_data_id AND personal_data.role_type = 'STUDENT'").
 		Where("sections.course_id = ? AND sections.deleted_at IS NULL", CourseID).
 		Group("sections.section_id, sections.section_name").
+		Order("CAST(sections.section_name AS INTEGER) ASC").
 		Scan(&sectionsDetails).Error; err != nil {
 		return nil, err
 	}
@@ -471,7 +516,7 @@ func (r *GormInstructorRepository) FindAssignmentsByCourseID(CourseID uuid.UUID)
 	if err := r.db.
 		Table("assignments").
 		Select("DISTINCT ON (assignments.assignment_id) assignments.assignment_id, assignments.assignment_name, assignments.submiss_by, assignments.published, assignments.regrades, assignment_sections.release_date AS assignment_release_date, assignment_sections.due_date AS assignment_due_date").
-		Joins("JOIN assignment_sections ON assignments.assignment_id = assignment_sections.assignment_id").
+		Joins("JOIN assignment_sections ON assignments.assignment_id = assignment_sections.assignment_id AND assignment_sections.deleted_at IS NULL").
 		Find(&assignments, "assignments.course_id = ? AND assignments.deleted_at IS NULL", CourseID).Error; err != nil {
 		return nil, err
 	}
