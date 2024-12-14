@@ -15,6 +15,7 @@ type InstructorRepository interface {
 	FindAssignmentDetails(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error)
 
 	AddAssignmentFile(file *models.AssignmentFile) error
+	ModifyAssignmentAndAssignmentSection(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment, sectionsIDs []uuid.UUID, assignmentSectionIDs []uuid.UUID) error
 
 	// CRUD operations for Roster of a course
 	FindRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
