@@ -13,6 +13,7 @@ import { useCustomizeTimeStore, useModalAssignmentSettingStore } from '../../sto
 import { useFetchAssignmentSetting } from '../../hooks/AssignmentSetting/useFetchAssignmentSetting';
 import { useAssignmentSettingStore } from '../../store/useAssignmentSettingStore';
 import { useUpdateAssignment } from '../../hooks/AssignmentSetting/useUpdateAssignment';
+import { useSelectAssignmentSectionIDsStore } from '../../store/Table/useInsAssignmentTableStore';
 
 const AssignmentSetting: React.FC = () => {
   const router = useRouter();
@@ -22,6 +23,7 @@ const AssignmentSetting: React.FC = () => {
   const { isLoading, isSuccess } = useFetchAssignmentSetting(course_id as string, assignment_id as string);
   const { release_date, due_date, cut_off_date, selectedSections, resetCustomizeTime } = useCustomizeTimeStore();
   const { mutate: updateAssignment } = useUpdateAssignment();
+  const { selectedAssignmentSectionIDs, resetSelectedAssignmentSectionIDs } = useSelectAssignmentSectionIDsStore();
 
   const form = useForm<{
     assignmentName: string;
@@ -99,8 +101,9 @@ const AssignmentSetting: React.FC = () => {
     formData.append('due_date', values.dueDate);
     formData.append('cut_off_date', values.cutOffDate);
     formData.append('sections', JSON.stringify(values.sections)); 
+    formData.append('assignment_section_ids', JSON.stringify(selectedAssignmentSectionIDs));
 
-    console.log('Saved Form Values:', values);
+    console.log('Saved Form Data:', {...values, selectedAssignmentSectionIDs});
 
     updateAssignment(
       { formData, course_id: course_id as string, assignment_id: assignment_id as string },
@@ -108,6 +111,8 @@ const AssignmentSetting: React.FC = () => {
         onSuccess: () => {
           console.log('Assignment updated successfully');
           form.reset();
+          resetSelectedAssignmentSectionIDs();
+          resetCustomizeTime();
           closeModal();
         },
         onError: (error) => {
@@ -115,8 +120,10 @@ const AssignmentSetting: React.FC = () => {
         },
       }
     );
-    
-    form.reset();
+
+    form.reset();    
+    resetSelectedAssignmentSectionIDs();
+    resetCustomizeTime();
     closeModal();
   };
 
