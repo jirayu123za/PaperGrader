@@ -9,7 +9,7 @@ import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { useModalAssignmentSettingStore } from '../../../store/modal/useAssignmentSettingModal';
 import { usePagination } from '@mantine/hooks';
 import { useSelectSectionStore } from '../../../store/useSectionStore';
-import { useAssignmentExpandStore, useSelectAssignmentSectionIDsStore, useSelectedAssignmentStore } from '../../../store/Table/useInsAssignmentTableStore';
+import { useAssignmentExpandStore, useSelectedAssignmentStore } from '../../../store/Table/useInsAssignmentTableStore';
 
 const INTAssignment: React.FC = () => {
   const router = useRouter();
@@ -20,7 +20,6 @@ const INTAssignment: React.FC = () => {
   const { selectedAssignmentID, setSelectedAssignmentID, setSelectedAssignmentSections, resetAssignmentSelection } = useSelectedAssignmentStore();
   const { isLoading, error } = useFetchInsAssignments(course_id as string);
   const insAssignments = useInsAssignmentStore((state) => state.insAssignments);
-  const { selectedAssignmentSectionIDs, setSelectedAssignmentSectionIDs, resetSelectedAssignmentSectionIDs} = useSelectAssignmentSectionIDsStore();
 
   const handleCheckboxChange = (checked: boolean, assignmentSections: any[], assignment: any) => {
     const sectionIds = assignmentSections.map((section) => section.section_id);
@@ -166,10 +165,6 @@ const INTAssignment: React.FC = () => {
                       <Menu.Dropdown>
                         <Menu.Item
                           onClick={() => {
-                            const sectionIDs = assignment.assignment_sections.map(
-                              (section: any) => section.assignment_section_id
-                            );
-                            setSelectedAssignmentSectionIDs(sectionIDs);
                             openModal(assignment.assignment_id);
                           }}
                         >
