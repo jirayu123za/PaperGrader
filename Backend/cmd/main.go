@@ -147,6 +147,7 @@ func main() {
 	apiGroup.Get("/instructor/assignment", instructorHandler.GetAssignmentByCourseIDAndAssignmentID)
 
 	apiGroup.Get("/instructor/assignment/process", instructorHandler.GetAssignmentDetails)
+	apiGroup.Put("/instructor/assignment", instructorHandler.UpdateAssignmentAndAssignmentSection)
 
 	apiGroup.Get("/instructor/courses", instructorHandler.GetCoursesByUserID)
 	apiGroup.Get("/instructor/course", instructorHandler.GetCourseByCourseID)
