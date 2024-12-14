@@ -19,7 +19,7 @@ type InstructorService interface {
 	GetAssignmentDetails(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error)
 
 	CreateAssignmentFile(file *models.AssignmentFile) error
-	UpdateAssignmentAndAssignmentSection(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment, sectionsIDs []uuid.UUID, assignmentSectionIDs []uuid.UUID) error
+	UpdateAssignmentAndAssignmentSection(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment, sections []models.AssignmentSection) error
 
 	GetRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
 	GetRosterSectionByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
@@ -129,8 +129,8 @@ func (s *InstructorServiceImpl) CreateAssignmentFile(file *models.AssignmentFile
 	return s.repo.AddAssignmentFile(file)
 }
 
-func (s *InstructorServiceImpl) UpdateAssignmentAndAssignmentSection(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment, sectionsIDs []uuid.UUID, assignmentSectionIDs []uuid.UUID) error {
-	return s.repo.ModifyAssignmentAndAssignmentSection(CourseID, AssignmentID, assignment, sectionsIDs, assignmentSectionIDs)
+func (s *InstructorServiceImpl) UpdateAssignmentAndAssignmentSection(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment, sections []models.AssignmentSection) error {
+	return s.repo.ModifyAssignmentAndAssignmentSection(CourseID, AssignmentID, assignment, sections)
 }
 
 // Get instructors and students by course id
