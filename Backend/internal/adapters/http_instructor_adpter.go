@@ -272,21 +272,58 @@ func (h *HttpInstructorHandler) UpdateAssignmentAndAssignmentSection(c *fiber.Ct
 	var sectionsIDs []uuid.UUID
 	if err := json.Unmarshal([]byte(sectionsData), &sectionsIDs); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid sections data",
+			"message": "Invalid sections format",
 			"error":   err.Error(),
 		})
 	}
 
-	assignmentSectionIDsData := c.FormValue("assignment_section_ids")
-	var assignmentSectionIDs []uuid.UUID
-	if err := json.Unmarshal([]byte(assignmentSectionIDsData), &assignmentSectionIDs); err != nil {
+	releaseDateStr := c.FormValue("releaseDate")
+	releaseDate, err := utils.ParseDate(releaseDateStr, time.RFC3339)
+	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid assignment_section_ids data",
+			"message": "Invalid release_date format",
 			"error":   err.Error(),
 		})
 	}
 
-	if err := h.services.UpdateAssignmentAndAssignmentSection(courseID, assignmentID, &assignment, sectionsIDs, assignmentSectionIDs); err != nil {
+	dueDateStr := c.FormValue("dueDate")
+	dueDate, err := utils.ParseDate(dueDateStr, time.RFC3339)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid due_date format",
+			"error":   err.Error(),
+		})
+	}
+
+	cutOffDateStr := c.FormValue("cutOffDate")
+	cutOffDate, err := utils.ParseDate(cutOffDateStr, time.RFC3339)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid cut_off_date format",
+			"error":   err.Error(),
+		})
+	}
+
+	fmt.Printf("Received ReleaseDate: %s\n", c.FormValue("releaseDate"))
+	fmt.Printf("Received DueDate: %s\n", c.FormValue("dueDate"))
+	fmt.Printf("Received CutOffDate: %s\n", c.FormValue("cutOffDate"))
+
+	var sections []models.AssignmentSection
+	for _, sectionID := range sectionsIDs {
+		sections = append(sections, models.AssignmentSection{
+			SectionID:   sectionID,
+			ReleaseDate: releaseDate,
+			DueDate:     dueDate,
+			CutOffDate:  cutOffDate,
+		})
+	}
+
+	for _, section := range sections {
+		fmt.Printf("Section ID: %v, ReleaseDate: %v, DueDate: %v, CutOffDate: %v\n",
+			section.SectionID, section.ReleaseDate, section.DueDate, section.CutOffDate)
+	}
+
+	if err := h.services.UpdateAssignmentAndAssignmentSection(courseID, assignmentID, &assignment, sections); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to update assignment and sections",
 			"error":   err.Error(),
