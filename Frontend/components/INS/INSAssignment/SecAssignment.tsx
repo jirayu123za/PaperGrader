@@ -1,5 +1,6 @@
 import React from 'react';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { Checkbox, Table, Loader, Text, Progress, Skeleton, Pagination } from '@mantine/core';
 import { useFetchAssignmentSections } from '../../../hooks/AssignmentSetting/useFetchAssignmentSections';
 import { useFetchAssignmentSetting } from '../../../hooks/AssignmentSetting/useFetchAssignmentSetting';
@@ -10,6 +11,7 @@ import { useInsAssignmentStore } from '../../../store/useAssignmentStore';
 import { usePagination } from '@mantine/hooks';
 
 const SecAssignment: React.FC = () => {
+  dayjs.extend(utc);
   const router = useRouter();
   const { course_id } = router.query;
   // const { data: sections, isLoading: sectionsLoading, error: sectionsError } = useFetchAssignmentSections(assignment_id as string);
@@ -78,7 +80,7 @@ const SecAssignment: React.FC = () => {
             <Table.Td style={{ textAlign: 'center' }}>{section.section_name}</Table.Td>
             <Table.Td style={{ textAlign: 'center' }}>
               {section.release_date
-                ? dayjs(section.release_date).format('MMM D, YYYY h:mm A')
+                ? dayjs(section.release_date).utc().format('MMM D, YYYY h:mm A') 
                 : 'N/A'}
             </Table.Td>
             <Table.Td>
@@ -90,7 +92,7 @@ const SecAssignment: React.FC = () => {
             </Table.Td>
             <Table.Td style={{ textAlign: 'center' }}>
               {section.due_date
-                ? dayjs(section.due_date).format('MMM D, YYYY h:mm A')
+                ? dayjs(section.due_date).utc().format('MMM D, YYYY h:mm A')
                 : 'N/A'}
             </Table.Td>
           </Table.Tr>
