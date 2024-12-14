@@ -201,6 +201,103 @@ func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 	})
 }
 
+func (h *HttpInstructorHandler) UpdateAssignmentAndAssignmentSection(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	assignmentName := c.FormValue("assignmentName")
+	assignmentDescription := c.FormValue("assignmentDescription")
+	submissBy := c.FormValue("submissionType")
+	gradingType := c.FormValue("scoringMethod")
+	lateSubmissStr := c.FormValue("allowLateSubmissions")
+	lateSubmiss, err := strconv.ParseBool(lateSubmissStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid allowLateSubmission value",
+			"error":   err.Error(),
+		})
+	}
+	groupSubmissStr := c.FormValue("enableGroupSubmission")
+	groupSubmiss, err := strconv.ParseBool(groupSubmissStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid enableGroupSubmission value",
+			"error":   err.Error(),
+		})
+	}
+	publishGradesStr := c.FormValue("published")
+	publishGrades, err := strconv.ParseBool(publishGradesStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid published value",
+			"error":   err.Error(),
+		})
+	}
+	regradesStr := c.FormValue("enableRegrades")
+	regrades, err := strconv.ParseBool(regradesStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid enableRegrades value",
+			"error":   err.Error(),
+		})
+	}
+
+	assignment := models.Assignment{
+		AssignmentName:        assignmentName,
+		AssignmentDescription: assignmentDescription,
+		SubmissBy:             submissBy,
+		GradingType:           gradingType,
+		LateSubmiss:           lateSubmiss,
+		GroupSubmiss:          groupSubmiss,
+		Published:             publishGrades,
+		Regrades:              regrades,
+	}
+
+	sectionsData := c.FormValue("sections")
+	var sectionsIDs []uuid.UUID
+	if err := json.Unmarshal([]byte(sectionsData), &sectionsIDs); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid sections data",
+			"error":   err.Error(),
+		})
+	}
+
+	assignmentSectionIDsData := c.FormValue("assignment_section_ids")
+	var assignmentSectionIDs []uuid.UUID
+	if err := json.Unmarshal([]byte(assignmentSectionIDsData), &assignmentSectionIDs); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_section_ids data",
+			"error":   err.Error(),
+		})
+	}
+
+	if err := h.services.UpdateAssignmentAndAssignmentSection(courseID, assignmentID, &assignment, sectionsIDs, assignmentSectionIDs); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to update assignment and sections",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Assignment and sections were updated successfully",
+	})
+}
+
 func (h *HttpInstructorHandler) GetAssignmentNameTemplate(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
