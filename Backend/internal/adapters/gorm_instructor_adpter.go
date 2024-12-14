@@ -62,7 +62,7 @@ func (r *GormInstructorRepository) AddAssignmentWithFiles(CourseID uuid.UUID, as
 	})
 }
 
-func (r *GormInstructorRepository) ModifyAssignmentAndAssignmentSection(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment, sectionsIDs []uuid.UUID, assignmentSectionIDs []uuid.UUID) error {
+func (r *GormInstructorRepository) ModifyAssignmentAndAssignmentSection(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment, sections []models.AssignmentSection) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		if result := tx.Model(&models.Assignment{}).
 			Where("course_id = ? AND assignment_id = ?", CourseID, AssignmentID).
@@ -81,19 +81,24 @@ func (r *GormInstructorRepository) ModifyAssignmentAndAssignmentSection(CourseID
 			existingSectionMap[section.SectionID] = section.AssignmentSectionID
 		}
 
-		for _, sectionID := range sectionsIDs {
-			if assignmentSectionID, exists := existingSectionMap[sectionID]; exists {
-				section := models.AssignmentSection{
-					SectionID: sectionID,
-				}
+		for _, section := range sections {
+			if assignmentSectionID, exists := existingSectionMap[section.SectionID]; exists {
+				fmt.Printf("Updating section %s with ReleaseDate: %v, DueDate: %v, CutOffDate: %v\n",
+					section.SectionID, section.ReleaseDate, section.DueDate, section.CutOffDate)
+
 				if result := tx.Model(&models.AssignmentSection{}).
 					Where("assignment_section_id = ?", assignmentSectionID).
-					Updates(section); result.Error != nil {
+					Updates(map[string]interface{}{
+						"release_date": section.ReleaseDate,
+						"due_date":     section.DueDate,
+						"cut_off_date": section.CutOffDate,
+					}); result.Error != nil {
 					return result.Error
 				}
+			} else {
+				continue
 			}
 		}
-
 		return nil
 	})
 }
