@@ -17,9 +17,9 @@ interface BasicSettingsProps {
         submissionType: string;
         rubricVisibility: string;
         studentVisibility: string;
-        releaseDate: string;
-        dueDate: string;
-        cutOffDate: string;
+        releaseDate: Date | null;
+        dueDate: Date | null;
+        cutOffDate: Date | null;
         sections: string[];
     }>;
 }

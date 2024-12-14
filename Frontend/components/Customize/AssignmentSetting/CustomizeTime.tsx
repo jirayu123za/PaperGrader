@@ -20,18 +20,24 @@ const CustomizeTime: React.FC = () => {
 
   const form = useForm({
     initialValues: {
-      release_date: assignmentSetting?.assignmentSections[0]?.releaseDate || '',
-      due_date: assignmentSetting?.assignmentSections[0]?.dueDate || '',
-      cut_off_date: assignmentSetting?.assignmentSections[0]?.cutOffDate || '',
-    },
+      release_date: assignmentSetting?.assignmentSections[0]?.releaseDate
+      ? new Date(assignmentSetting.assignmentSections[0].releaseDate)
+      : null,
+    due_date: assignmentSetting?.assignmentSections[0]?.dueDate
+      ? new Date(assignmentSetting.assignmentSections[0].dueDate)
+      : null,
+    cut_off_date: assignmentSetting?.assignmentSections[0]?.cutOffDate
+      ? new Date(assignmentSetting.assignmentSections[0].cutOffDate)
+      : null,
+  },
   });
 
   useEffect(() => {
     if (assignmentSetting) {
       const initialValues = {
-        release_date: assignmentSetting.assignmentSections[0]?.releaseDate || '',
-        due_date: assignmentSetting.assignmentSections[0]?.dueDate || '',
-        cut_off_date: assignmentSetting.assignmentSections[0]?.cutOffDate || '',
+        release_date: null,
+        due_date: null,
+        cut_off_date: null,
         sections: selectedSections || [],
       };
       form.setValues(initialValues);

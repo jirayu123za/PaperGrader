@@ -13,7 +13,6 @@ import { useCustomizeTimeStore, useModalAssignmentSettingStore } from '../../sto
 import { useFetchAssignmentSetting } from '../../hooks/AssignmentSetting/useFetchAssignmentSetting';
 import { useAssignmentSettingStore } from '../../store/useAssignmentSettingStore';
 import { useUpdateAssignment } from '../../hooks/AssignmentSetting/useUpdateAssignment';
-import { useSelectAssignmentSectionIDsStore } from '../../store/Table/useInsAssignmentTableStore';
 
 const AssignmentSetting: React.FC = () => {
   const router = useRouter();
@@ -23,7 +22,6 @@ const AssignmentSetting: React.FC = () => {
   const { isLoading, isSuccess } = useFetchAssignmentSetting(course_id as string, assignment_id as string);
   const { release_date, due_date, cut_off_date, selectedSections, resetCustomizeTime } = useCustomizeTimeStore();
   const { mutate: updateAssignment } = useUpdateAssignment();
-  const { selectedAssignmentSectionIDs, resetSelectedAssignmentSectionIDs } = useSelectAssignmentSectionIDsStore();
 
   const form = useForm<{
     assignmentName: string;
@@ -38,9 +36,9 @@ const AssignmentSetting: React.FC = () => {
     enableGroupSubmission: boolean;
     groupSizeLimit: string;
     studentVisibility: string;
-    releaseDate: string;
-    dueDate: string;
-    cutOffDate: string;
+    releaseDate: Date | null;
+    dueDate: Date | null;
+    cutOffDate: Date | null;
     sections: string[];
   }>({
     initialValues: {
@@ -56,9 +54,9 @@ const AssignmentSetting: React.FC = () => {
       submissionType: '',
       rubricVisibility: '',
       studentVisibility: '',
-      releaseDate: '',
-      dueDate: '',
-      cutOffDate: '',
+      releaseDate: null,
+      dueDate: null,
+      cutOffDate: null,
       sections: [],
     },
   });
@@ -74,9 +72,9 @@ const AssignmentSetting: React.FC = () => {
         published: assignmentSetting.assignment?.published || false,
         enableRegrades: assignmentSetting.assignment?.regrades || false,
         enableGroupSubmission: assignmentSetting.assignment?.groupSubmiss || false,
-        releaseDate: release_date,
-        dueDate: due_date,
-        cutOffDate: cut_off_date,
+        releaseDate: release_date ? new Date(release_date) : null,
+        dueDate: due_date ? new Date(due_date) : null,
+        cutOffDate: cut_off_date ? new Date(cut_off_date) : null,
         sections: selectedSections,
         // groupSizeLimit: assignmentSetting.group_size_limit || '',
         // submissionType: assignmentSetting.assignment?.submit_type || '',
@@ -97,13 +95,14 @@ const AssignmentSetting: React.FC = () => {
     formData.append('published', values.published ? 'true' : 'false');
     formData.append('enableRegrades', values.enableRegrades ? 'true' : 'false');
     
-    formData.append('release_date', values.releaseDate);
-    formData.append('due_date', values.dueDate);
-    formData.append('cut_off_date', values.cutOffDate);
+    formData.append('releaseDate', values.releaseDate ? new Date(values.releaseDate).toISOString() : '');
+    formData.append('dueDate', values.dueDate ? new Date(values.dueDate).toISOString() : '');
+    formData.append('cutOffDate', values.cutOffDate ? new Date(values.cutOffDate).toISOString() : '');
     formData.append('sections', JSON.stringify(values.sections)); 
-    formData.append('assignment_section_ids', JSON.stringify(selectedAssignmentSectionIDs));
 
-    console.log('Saved Form Data:', {...values, selectedAssignmentSectionIDs});
+    console.log('releaseDate:', formData.get('releaseDate'));
+    console.log('dueDate:', formData.get('dueDate'));
+    console.log('cutOffDate:', formData.get('cutOffDate'));
 
     updateAssignment(
       { formData, course_id: course_id as string, assignment_id: assignment_id as string },
@@ -111,7 +110,6 @@ const AssignmentSetting: React.FC = () => {
         onSuccess: () => {
           console.log('Assignment updated successfully');
           form.reset();
-          resetSelectedAssignmentSectionIDs();
           resetCustomizeTime();
           closeModal();
         },
@@ -122,7 +120,6 @@ const AssignmentSetting: React.FC = () => {
     );
 
     form.reset();    
-    resetSelectedAssignmentSectionIDs();
     resetCustomizeTime();
     closeModal();
   };
