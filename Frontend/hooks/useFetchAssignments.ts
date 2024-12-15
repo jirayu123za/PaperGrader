@@ -76,6 +76,7 @@ export const useFetchInsAssignments = (course_id: string) => {
       setInsAssignments(data);
       return data;
     },
+    enabled: !!course_id,
   });
 }
 
