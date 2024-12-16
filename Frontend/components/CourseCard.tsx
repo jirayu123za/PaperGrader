@@ -7,24 +7,23 @@ interface Course {
   course_id: string;
   course_name: string;
   course_code: string;
-  description: string;
+  course_description: string;
   total_assignments: string;
   academic_year: string;
   semester: string;
 }
 
 interface CourseCardProps {
-  courses?: Course[]; // อนุญาตให้เป็น undefined ได้
+  courses?: Course[];
   studentMode?: boolean;
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = false }) => {
+  const router = useRouter();  
   const { setSelectedCourseId } = useCourseStore();
-  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showOlderCourses, setShowOlderCourses] = useState(false);
 
-  // การจัดกลุ่มคอร์สตามปีการศึกษาและเทอม
   const groupedCourses = Array.isArray(courses)
     ? courses.reduce((acc: Record<string, Course[]>, course: Course) => {
       const key = `${course.academic_year} / ${course.semester}`;
@@ -37,8 +36,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
     : {};
 
   const sortedKeys = Object.keys(groupedCourses).sort().reverse();
-  const latestKeys = sortedKeys.slice(0, 2); // ดึง 2 เทอมล่าสุด
-  const olderKeys = sortedKeys.slice(2); // ดึงเทอมที่เก่ากว่า
+  const latestKeys = sortedKeys.slice(0, 2);
+  const olderKeys = sortedKeys.slice(2);
 
   const handleSelectCourse = (course: Course) => {
     setSelectedCourseId(course.course_id);
@@ -79,14 +78,14 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
                     key={course.course_id}
                     className="p-4 bg-gray-100 shadow rounded-lg cursor-pointer relative"
                     style={{
-                      width: 380, // กำหนดความกว้างคงที่
-                      height: 180, // กำหนดความสูงคงที่
+                      width: 380,
+                      height: 180,
                     }}
                     onClick={() => handleSelectCourse(course)}
                   >
                     <h2 className="text-base text-gray-600 mb-2">{course.course_code}</h2>
                     <h3 className="text-xl font-semibold mb-2">{course.course_name}</h3>
-                    <p className="text-gray-600 text-sm mb-4">{course.description}</p>
+                    <p className="text-gray-600 text-sm mb-4">{course.course_description}</p>
                     <div className="absolute bottom-0 left-0 right-0 bg-purple-900 text-white p-2 text-center text-sm">
                       {course.total_assignments ? `${course.total_assignments} assignments` : 'No assignments'}
                     </div>
@@ -97,7 +96,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
                     className="p-6 bg-white border-dashed border-2 border-teal-600 shadow-sm rounded-lg cursor-pointer flex items-center justify-center"
                     onClick={handleCreateCourseClick}
                     style={{
-                      width: 380, // กำหนดขนาดเท่ากับการ์ดอื่น
+                      width: 380,
                       height: 180,
                     }}
                   >
@@ -133,14 +132,14 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
                     key={course.course_id}
                     className="p-4 bg-gray-100 shadow rounded-lg cursor-pointer relative"
                     style={{
-                      width: 380, // ความกว้างคงที่
-                      height: 180, // ความสูงคงที่
+                      width: 380,
+                      height: 180,
                     }}
                     onClick={() => handleSelectCourse(course)}
                   >
                     <h2 className="text-base text-gray-600 mb-2">{course.course_code}</h2>
                     <h3 className="text-xl font-semibold mb-2">{course.course_name}</h3>
-                    <p className="text-gray-600 text-sm mb-4">{course.description}</p>
+                    <p className="text-gray-600 text-sm mb-4">{course.course_description}</p>
                     <div className="absolute bottom-0 left-0 right-0 bg-purple-900 text-white p-2 text-center text-sm">
                       {course.total_assignments ? `${course.total_assignments} assignments` : 'No assignments'}
                     </div>
