@@ -15,6 +15,8 @@ type StudentService interface {
 	CreateSubmissionFile(submission *models.Submission) error
 	GetCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error)
 	GetAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error)
+
+	GetCourseByCourseID(CourseID uuid.UUID) (map[string]interface{}, error)
 }
 
 type StudentServiceImpl struct {
@@ -83,4 +85,12 @@ func (s *StudentServiceImpl) GetAssignmentsByCourseID(CourseID uuid.UUID) ([]*mo
 		return nil, err
 	}
 	return assignments, nil
+}
+
+func (s *StudentServiceImpl) GetCourseByCourseID(CourseID uuid.UUID) (map[string]interface{}, error) {
+	course, err := s.repo.FindCourseByCourseID(CourseID)
+	if err != nil {
+		return nil, err
+	}
+	return course, nil
 }
