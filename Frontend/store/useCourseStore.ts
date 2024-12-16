@@ -1,7 +1,5 @@
-import { create, StateCreator } from 'zustand';
-import { persist, PersistOptions } from 'zustand/middleware';
+import { create } from 'zustand';
 
-// สร้าง interface ของ course ให้รองรับข้อมูลที่ดึงมา
 interface Course {
   course_id: string;
   course_description: string;
@@ -20,26 +18,22 @@ interface CourseStore {
   setSelectedCourseId: (course_id: string | null) => void;
 }
 
-// กำหนดประเภทของ PersistOptions
-type MyPersist = (
-  config: StateCreator<CourseStore>,
-  options: PersistOptions<CourseStore>
-) => StateCreator<CourseStore>;
+export const useCourseStore = create<CourseStore>((set) => ({
+  courses: [],
+  setCourses: (courses) => set({ courses }),
+  selectedCourseId: null,
+  setSelectedCourseId: (course_id) => set({ selectedCourseId: course_id }),
+}));
 
-// ใช้ with `persist` middleware
-export const useCourseStore = create<CourseStore>(
-  (persist as MyPersist)(
-    (set) => ({
-      courses: [],
-      setCourses: (courses) => set({ courses }),
-      selectedCourseId: null,
-      setSelectedCourseId: (course_id) => set({ selectedCourseId: course_id }),
-    }),
-    {
-      name: 'course-storage',
-    }
-  )
-);
+interface StdCourseDashboardStore {
+  course: Course | null;
+  setCourse: (course: Course) => void;
+}
+
+export const useStdCourseDashboardStore = create<StdCourseDashboardStore>((set) => ({
+  course: null,
+  setCourse: (course) => set({ course }),
+}));
 
 interface InsCourseStore {
   course: Course | null;
