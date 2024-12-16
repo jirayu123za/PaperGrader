@@ -277,3 +277,27 @@ func (h *HttpStudentHandler) GetAssignmentsByCourseID(c *fiber.Ctx) error {
 		"assignments": response,
 	})
 }
+
+func (h *HttpStudentHandler) GetCourseByCourseID(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	course, err := h.services.GetCourseByCourseID(courseID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get course",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Successfully fetched course",
+		"course":  course,
+	})
+}
