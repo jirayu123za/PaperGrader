@@ -1,66 +1,44 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useAssignments } from '../../hooks/useFetchSTD_Assignment';
-import { useAssignmentStore } from '../../store/useSTD_AssignmentStore';
-import { Card, Progress, Text, Checkbox, ScrollArea } from '@mantine/core';
 import dayjs from 'dayjs';
 import STDSubmit from '../STD/STD_submit';
+import { useFetchStdAssignments } from '../../hooks/useFetchSTD_Assignment';
+import { useAssignmentStore } from '../../store/useSTD_AssignmentStore';
+import { Card, Progress, Text, Checkbox, ScrollArea, Skeleton, Flex } from '@mantine/core';
+import { useSubmitAndDownloadModalStore } from '../../store/modal/useSubmitAndDownloadModal';
 
 const STD_Dashboard = () => {
-  const { data: assignments, isLoading, error } = useAssignments('courseId');
+  const { isLoading, error } = useFetchStdAssignments();
   const { assignments: assignmentList } = useAssignmentStore();
+  const { openModal } = useSubmitAndDownloadModalStore();
 
-  // State สำหรับควบคุมการเปิด modal และเก็บ assignmentId
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedAssignmentId, setSelectedAssignmentId] = useState<string | null>(null);
-
-  if (isLoading) return <div>Loading assignments...</div>;
   if (error) return <div>Error loading assignments: {error.message}</div>;
 
-  // ฟังก์ชันคำนวณ Progress bar และจำนวนวันคงเหลือ
   const calculateProgress = (releaseDate: string, dueDate: string) => {
+    if (releaseDate === 'N/A' || dueDate === 'N/A') return 0;
+
     const now = dayjs();
     const release = dayjs(releaseDate);
     const due = dayjs(dueDate);
 
-    if (!release.isValid() || !due.isValid()) {
-      return { diff: "Invalid date", progress: 0 };
+    if (now.isBefore(releaseDate)) {
+      return 0;
+    }
+    if (now.isAfter(dueDate)) {
+      return 100;
     }
 
-    const totalDuration = due.diff(release, 'day');
-    const timePassed = now.diff(release, 'day');
-    const progress = totalDuration > 0 ? (timePassed / totalDuration) * 100 : 100;
-    const diff = due.diff(now, 'day');
-
-    return { diff, progress: progress > 100 ? 100 : progress < 0 ? 0 : progress };
+    const totalDuration = due.diff(release);
+    const elapsedDuration = now.diff(release);
+    return (elapsedDuration / totalDuration) * 100;
   };
 
-  // ฟังก์ชันเปิด modal เมื่อคลิก assignment name
-  const openModal = (assignmentId: string) => {
-    setSelectedAssignmentId(assignmentId);
-    setIsModalOpen(true);
-  };
-
-  // ปิด modal
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedAssignmentId(null);
-  };
-
-  // กรอง assignment ที่ยังไม่เลย due date
-  const filteredAssignments = assignmentList?.filter((assignment) => {
-    const dueDate = dayjs(assignment.due_date);
-    return dueDate.isAfter(dayjs());
-  }) || [];
-
-  // เรียง assignments ตามเวลาที่เหลือก่อน due date
-  const sortedAssignments = [...filteredAssignments].sort((a, b) => {
+  const sortedAssignments = assignmentList ? [...assignmentList].sort((a, b) => {
     const timeLeftA = dayjs(a.due_date).diff(dayjs(), 'day');
     const timeLeftB = dayjs(b.due_date).diff(dayjs(), 'day');
     return timeLeftA - timeLeftB;
-  });
+  }) : [];
 
-  // ถ้า assignmentList ยังไม่มีข้อมูล ให้แสดงข้อความแทน
   if (!assignmentList || assignmentList.length === 0) {
     return (
       <div className="flex items-center justify-center">
@@ -75,61 +53,79 @@ const STD_Dashboard = () => {
     <div>
       <ScrollArea h={700} type="never">
         <div className="space-y-4">
-          {sortedAssignments.map((assignment) => {
-            const { diff, progress } = calculateProgress(assignment.release_Date, assignment.due_date);
-
-            return (
-              <Card key={assignment.assignment_id} shadow="sm" padding="lg" radius="md" withBorder>
+          {isLoading ? 
+            Array.from({ length: 5 }).map((_, index) => (
+              <Card key={index} shadow="sm" padding="lg" radius="md" withBorder>
                 <div className="flex justify-between items-center">
-
-                  {/* คลิกที่ชื่อ Course จะแสดงเป็น course_code แต่ส่ง course_id */}
                   <div className="w-1/4">
-                    <Link href={`/STDCourseOverview/${assignment.course_id}/CourseDashboard`} passHref>
-                      <Text style={{ fontWeight: 500 }} className="cursor-pointer hover:underline">
-                        Course Code: {assignment.course_code}
-                      </Text>
-                    </Link>
-
-                    <Text size="sm" color="dimmed">
-                      {assignment.course_name || "Unknown Course"}
-                    </Text>
+                    <Skeleton height={20} width="70%" />
+                    <Skeleton height={15} width="50%" mt={8} />
                   </div>
-
-                  {/* คลิกที่ชื่อ Assignment เพื่อเปิด modal */}
                   <div className="w-2/4 flex items-center">
-                    <Checkbox />
-                    <Text
-                      size="sm"
-                      color="dimmed"
-                      className="ml-2 cursor-pointer"
-                      onClick={() => openModal(assignment.assignment_id)}
-                    >
-                      {assignment.assignment_name}
-                    </Text>
+                    <Skeleton height={20} width="10%" />
+                    <Skeleton height={20} width="60%" ml={12} />
                   </div>
-
                   <div className="w-1/4">
-                    <Text size="sm" color="dimmed">
-                      {typeof diff === 'number' && diff > 0 ? `Due in: ${diff} Days` : "Overdue"}
-                    </Text>
-                    <Progress value={progress} />
+                    <Skeleton height={15} width="50%" />
+                    <Skeleton height={8} mt={8} />
                   </div>
                 </div>
               </Card>
-            );
-          })}
+            )
+          ) : (
+            sortedAssignments.map((assignment) => {
+              return (
+                <Card key={assignment.assignment_id} shadow="sm" padding="lg" radius="md" withBorder>
+                  <div className="flex justify-between items-center">  
+                    <div className="w-1/4">
+                      <Link href={`/STDCourseOverview/${assignment.course_id}/CourseDashboard`} passHref>
+                        <Text style={{ fontWeight: 500 }} className="cursor-pointer hover:underline">
+                          Course Code: {assignment.course_code}
+                        </Text>
+                      </Link>
+  
+                      <Flex gap={2} align="center">
+                        <Text size="sm" color="dimmed">
+                          {assignment.course_name}
+                        </Text>
+                        <Text size="sm" color="dimmed">
+                          ({assignment.section_name})
+                        </Text>
+                      </Flex>
+                    </div>
+  
+                    <div className="w-1/4 flex items-center gap-2">
+                      <Checkbox />
+                      <Text
+                        size="sm"
+                        color="dimmed"
+                        className="cursor-pointer justify-center hover:underline"
+                        onClick={() => openModal(assignment.assignment_id, assignment.course_id)}
+                      >
+                        {assignment.assignment_name}
+                      </Text>
+                    </div>
+  
+                    <div className="w-1/4">
+                      <Text size="sm" color="dimmed" className="text-center">
+                        {dayjs(assignment.due_date).diff(dayjs(), 'day') > 0 ? `Due in: ${dayjs(assignment.due_date).diff(dayjs(), 'day')} Days` : "Overdue"}
+                      </Text>
+                      <Progress
+                        value={calculateProgress(assignment.release_Date?? 'N/A', assignment.due_date ?? 'N/A')}
+                        color="green"
+                        size="md"
+                        radius="lg"
+                      />
+                    </div>
+                  </div>
+                </Card>
+              );
+            })
+          )}
         </div>
       </ScrollArea>
 
-      {/* เปิด modal สำหรับการ submit assignment */}
-      {selectedAssignmentId && (
-        <STDSubmit
-          isOpen={isModalOpen}
-          onClose={closeModal}
-          assignmentId={selectedAssignmentId}
-          courseId={assignmentList.find(a => a.assignment_id === selectedAssignmentId)?.course_id} 
-        />
-      )}
+      <STDSubmit/>
     </div>
   );
 };
