@@ -1,22 +1,19 @@
 import React from 'react';
-import { useFetchAssignments } from '../../hooks/useFetchAssignments'; // ใช้ useFetchAssignments ที่สร้างไว้
+import { useFetchAssignments } from '../../hooks/useFetchAssignments';
 import { useAssignmentStore } from '../../store/useAssignmentStore';
-import { useCourseStore } from '../../store/useCourseStore';
+import { useStdCourseDashboardStore } from '../../store/useCourseStore';
 import { useRouter } from 'next/router';
+import { Badge, Divider, Table } from '@mantine/core';
+import { useFetchStdCourse } from '../../hooks/useFetchCourse';
 import dayjs from 'dayjs';
-import { Badge, Divider } from '@mantine/core';
 
-interface CourseDashboardProps {
-  courseId: string;
-  isStudent: boolean;
-}
-
-const STD_CourseDashboard: React.FC<CourseDashboardProps> = ({ courseId, isStudent }) => {
-  const { data: assignments, isLoading, error } = useFetchAssignments(courseId, isStudent);
-  const { assignments: assignmentList } = useAssignmentStore();
-  const { courses } = useCourseStore();
-  const selectedCourse = courses.find((course) => course.course_id === courseId);
+const STD_CourseDashboard: React.FC = () => {
   const router = useRouter();
+  const { course_id } = router.query;
+  const { data: assignments, isLoading, error } = useFetchAssignments(course_id as string);
+  const { assignments: assignmentList } = useAssignmentStore();
+  const { isLoading: isCourseLoading, error: errorCourse } = useFetchStdCourse(course_id as string);
+  const { course: courseData } = useStdCourseDashboardStore();
 
   if (isLoading) return <div>Loading assignments...</div>;
   if (error) return <div>Error loading assignments: {error.message}</div>;
@@ -25,9 +22,9 @@ const STD_CourseDashboard: React.FC<CourseDashboardProps> = ({ courseId, isStude
     <div className="course-dashboard">
       <div className="header mb-6">
         <h1 className="text-3xl font-bold">
-          {selectedCourse?.course_name} | {selectedCourse?.semester} / {selectedCourse?.academic_year}
+          {courseData?.course_name} | {courseData?.semester} / {courseData?.academic_year}
         </h1>
-        <p className="text-gray-500">Course Code: {selectedCourse?.course_code}</p>
+        <p className="text-gray-500">Course Code: {courseData?.course_code}</p>
         <Divider my="md" />
       </div>
 
@@ -36,36 +33,35 @@ const STD_CourseDashboard: React.FC<CourseDashboardProps> = ({ courseId, isStude
           This course has no assignments assigned yet.
         </div>
       ) : (
-        <table className="min-w-full bg-white border-collapse">
-          <thead>
-            <tr className="border-b">
-              <th className="py-2 px-4 text-left">Name</th>
-              <th className="py-2 px-4 text-left">Status</th>
-              <th className="py-2 px-4 text-left">Released</th>
-              <th className="py-2 px-4 text-left">Due</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table className="min-w-full bg-white border-collapse">
+          <Table.Thead>
+            <Table.Tr className="border-b">
+              <Table.Th className="py-2 px-4 text-left">Name</Table.Th>
+              <Table.Th className="py-2 px-4 text-left">Status</Table.Th>
+              <Table.Th className="py-2 px-4 text-left">Released</Table.Th>
+              <Table.Th className="py-2 px-4 text-left">Due</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
             {assignmentList.map((assignment) => {
-              // ตรวจสอบว่า assignment มี property 'status' หรือไม่
               const status = (assignment as any).status || 'No Status';
 
               return (
                 <React.Fragment key={assignment.assignment_id}>
-                  <tr className="border-b">
-                    <td 
+                  <Table.Tr className="border-b">
+                    <Table.Td 
                       className="py-2 px-4 cursor-pointer hover:underline"
                       onClick={() => router.push(`/assignment/${assignment.assignment_id}`)}
                     >
                       {assignment.assignment_name}
-                    </td>
-                    <td className="py-2 px-4">
+                    </Table.Td>
+                    <Table.Td className="py-2 px-4">
                       <Badge color={status === 'Submitted' ? 'green' : 'blue'} variant="filled">
                         {status === 'Submitted' ? 'Submitted' : 'No Submission'}
                       </Badge>
-                    </td>
-                    <td className="py-2 px-4">{assignment.assignment_release_date}</td>
-                    <td className="py-2 px-4">
+                    </Table.Td>
+                    <Table.Td className="py-2 px-4">{assignment.assignment_release_date}</Table.Td>
+                    <Table.Td className="py-2 px-4">
                       <div>
                         {assignment.assignment_due_date}
                         <br />
@@ -73,13 +69,13 @@ const STD_CourseDashboard: React.FC<CourseDashboardProps> = ({ courseId, isStude
                           Late Due Date: {assignment.assignment_due_date}
                         </span>
                       </div>
-                    </td>
-                  </tr>
+                    </Table.Td>
+                  </Table.Tr>
                 </React.Fragment>
               );
             })}
-          </tbody>
-        </table>
+          </Table.Tbody>
+        </Table>
       )}
     </div>
   );
