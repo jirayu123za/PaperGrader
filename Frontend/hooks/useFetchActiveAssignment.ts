@@ -27,7 +27,7 @@ export const useFetchActiveAssignments = (course_id: string) => {
             }
 
             const data = response.data.active_assignments;
-            setActiveAssignments(data);
+            setActiveAssignments(data || []);
             return data;
         },
         enabled: !!course_id,
