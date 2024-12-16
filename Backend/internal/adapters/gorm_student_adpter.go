@@ -68,10 +68,14 @@ func (r *GormStudentRepository) FindCoursesAndAssignments(UserID uuid.UUID) ([]m
 func (r *GormStudentRepository) FindCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error) {
 	var courses []map[string]interface{}
 	if err := r.db.Table("courses").
+		Table("courses").
 		Select("courses.course_id, courses.course_name, courses.course_code, courses.course_description, courses.semester, courses.academic_year, courses.entry_code, COUNT(assignments.assignment_id) AS total_assignments").
-		Joins("JOIN enrollments ON courses.course_id = enrollments.course_id").
+		Joins("JOIN enrollment_lists ON enrollment_lists.course_id = courses.course_id").
+		Joins("JOIN personal_data ON personal_data.personal_data_id = enrollment_lists.personal_data_id").
+		Joins("JOIN users ON users.email = personal_data.email").
 		Joins("LEFT JOIN assignments ON assignments.course_id = courses.course_id").
-		Where("enrollments.user_id = ? AND enrollments.deleted_at IS NULL AND courses.deleted_at IS NULL", UserID).
+		Where("users.user_id = ?", UserID).
+		Where("courses.deleted_at IS NULL").
 		Group("courses.course_id").
 		Find(&courses).Error; err != nil {
 		return nil, err
@@ -105,4 +109,16 @@ func (r *GormStudentRepository) FindAssignmentsByCourseID(courseID uuid.UUID) ([
 		return nil, err
 	}
 	return assignments, nil
+}
+
+func (r *GormStudentRepository) FindCourseByCourseID(CourseID uuid.UUID) (map[string]interface{}, error) {
+	var course map[string]interface{}
+	if err := r.db.
+		Table("courses").
+		Select("courses.course_id, courses.course_name, courses.course_code, courses.course_description, courses.semester, courses.academic_year, courses.entry_code").
+		Where("courses.course_id = ? AND courses.deleted_at IS NULL", CourseID).
+		Find(&course).Error; err != nil {
+		return nil, err
+	}
+	return course, nil
 }
