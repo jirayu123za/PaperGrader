@@ -1,12 +1,8 @@
 import React from 'react';
-import STD_LeftMain from '../../components/STD/STD_Leftmain'; // นำเข้า STD_LeftMain
-import STD_Dashboard from '../../components/STD/STD_Dashboard'; // นำเข้า STD_Dashboard
-
+import STD_LeftMain from '../../components/STD/STD_Leftmain';
+import STD_Dashboard from '../../components/STD/STD_Dashboard';
 
 const STDDashboard: React.FC = () => {
-
-  
-  
   return (
     <div className="flex min-h-screen bg-gray-50">
       <STD_LeftMain /> 
