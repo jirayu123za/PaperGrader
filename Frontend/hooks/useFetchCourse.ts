@@ -1,47 +1,75 @@
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
-import { useCourseStore, useInsCourseStore } from '../store/useCourseStore';
+import { useCourseStore, useInsCourseStore, useStdCourseDashboardStore } from '../store/useCourseStore';
 
-interface FetchCoursesOptions {
-  isStudent: boolean;
+interface FetchInsCoursesResponse {
+  course_id: string;
+  course_name: string;
+  course_code: string;
+  course_description: string;
+  semester: string;
+  academic_year: string;
+  entry_code: boolean;
+  total_assignments: string;
 }
 
-export const useFetchCourses = ({ isStudent }: FetchCoursesOptions) => {
+export const useFetchInsCourses = () => {
   const setCourses = useCourseStore((state) => state.setCourses);
 
-  return useQuery({
-    queryKey: ['courses', isStudent],
+  return useQuery<FetchInsCoursesResponse[], Error>({
+    queryKey: ['courses'],
     queryFn: async () => {
-      const apiUrl = isStudent
-        ? '/api/api/student/courses' // API สำหรับนักศึกษา
-        : '/api/api/instructor/courses'; // API สำหรับผู้สอน
+      const response = await axios.get('/api/api/instructor/courses');
 
-      const response = await fetch(apiUrl);
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error('Network response was not ok');
       }
-      const data = await response.json();
 
-      // ตรวจสอบว่า data.courses เป็น array ที่ถูกต้อง
-      if (!data.courses || !Array.isArray(data.courses)) {
-        return []; // ส่งกลับ array ว่างเมื่อไม่มีข้อมูลคอร์ส
+      const data = response.data.courses;
+      setCourses(data || []);
+      return data;
+    },
+  });
+}
+
+export const useFetchStdCourses = () => {
+  const setCourses = useCourseStore((state) => state.setCourses);
+
+  return useQuery<FetchInsCoursesResponse[], Error>({
+    queryKey: ['courses'],
+    queryFn: async () => {
+      const response = await axios.get('/api/api/student/courses');
+
+      if (response.status !== 200) {
+        throw new Error('Network response was not ok');
       }
 
-      // แปลงข้อมูลให้ตรงกับโครงสร้างของ courses
-      const transformedData = data.courses.map((course: any) => ({
-        course_id: course.course_id,
-        course_name: course.course_name,
-        course_code: course.course_code,
-        course_description: course.course_description,
-        semester: course.semester,
-        academic_year: course.academic_year,
-        entry_code: course.entry_code,
-        total_assignments: course.total_assignments,
-      }));
-
-      setCourses(transformedData); // เก็บข้อมูลใน store
-      return transformedData;
+      const data = response.data.courses;
+      setCourses(data || []);
+      return data;
     },
+  });
+};
+
+export const useFetchStdCourse = (course_id: string) => {
+  const setCourse = useStdCourseDashboardStore((state) => state.setCourse);
+
+  return useQuery<FetchInsCoursesResponse[], Error>({
+    queryKey: ['course'],
+    queryFn: async () => {
+      const response = await axios.get('/api/api/student/course', {
+        params: { course_id: course_id },
+      });
+
+      if (response.status !== 200) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = response.data.course;
+      setCourse(data || null);
+      return data || null;
+    },
+    enabled: !!course_id,
   });
 };
 
