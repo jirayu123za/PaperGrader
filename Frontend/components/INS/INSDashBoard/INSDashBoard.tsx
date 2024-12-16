@@ -66,14 +66,7 @@ const INSDashBoard = () => {
         </div>
       </Flex>
 
-      {/* ใช้ ActiveAssignments component */}
-      <ActiveAssignments
-        selectedCourseId={course_id as string}
-        openModal={openModal}
-        isLoading={isLoading}
-        error={error}
-      />
-
+      <ActiveAssignments openModal={openModal}/>
       <CreateAssignmentModal isOpen={isModalOpen} onClose={closeModal} />
     </div>
   );
