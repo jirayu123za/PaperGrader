@@ -15,13 +15,9 @@ interface ActiveAssignments {
 interface ActiveAssignmentStore {
     activeAssignments: ActiveAssignments[];
     setActiveAssignments: (activeAssignments: ActiveAssignments[]) => void;
-    selectedAssignmentId: string | null;
-    setSelectedAssignmentId: (assignment_id: string | null) => void;
 }
 
 export const useActiveAssignmentStore = create<ActiveAssignmentStore>((set) => ({
     activeAssignments: [],
     setActiveAssignments: (activeAssignments) => set({ activeAssignments }),
-    selectedAssignmentId: null,
-    setSelectedAssignmentId: (assignment_id) => set({ selectedAssignmentId: assignment_id }),
 }));
