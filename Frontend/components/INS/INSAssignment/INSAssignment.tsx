@@ -23,16 +23,16 @@ const INTAssignment: React.FC = () => {
 
   const handleCheckboxChange = (checked: boolean, assignmentSections: any[], assignment: any) => {
     const sectionIds = assignmentSections.map((section) => section.section_id);
-  
+
     setSelectedSections((prev) =>
       checked
         ? [...prev, ...sectionIds]
         : prev.filter((id) => !sectionIds.includes(id))
     );
-  
+
     if (selectedAssignmentID === assignment.assignment_id) {
       resetAssignmentSelection();
-      toggleAssignment(assignment.assignment_id); 
+      toggleAssignment(assignment.assignment_id);
     } else {
       if (selectedAssignmentID && expandedAssignments[selectedAssignmentID]) {
         toggleAssignment(selectedAssignmentID);
@@ -72,11 +72,9 @@ const INTAssignment: React.FC = () => {
       <h2 className="text-2xl font-semibold mb-4">{insAssignments.length} Assignments</h2>
       <Table highlightOnHover verticalSpacing="md" className="min-w-full bg-white">
         <Table.Thead>
-          <Table.Tr className="border-b">
+          <Table.Tr>
             <Table.Th>SELECT</Table.Th>
             <Table.Th>NAME</Table.Th>
-            <Table.Th style={{ textAlign: 'center' }}>RELEASED</Table.Th>
-            <Table.Th style={{ textAlign: 'center' }}>DUE</Table.Th>
             <Table.Th style={{ textAlign: 'center' }}>PUBLISHED</Table.Th>
             <Table.Th style={{ textAlign: 'center' }}>REGRADES</Table.Th>
             <Table.Th style={{ textAlign: 'center' }}>SUBMISS BY</Table.Th>
@@ -87,31 +85,25 @@ const INTAssignment: React.FC = () => {
           {isLoading
             ? Array.from({ length: 10 }).map((_, index) => (
               <Table.Tr key={`skeleton-row-${index}`}>
-              <Table.Td style={{ width: '3%' }}>
-                <Skeleton visible height={25} />
-              </Table.Td>
-              <Table.Td style={{ width: '20%' }}>
-                <Skeleton visible height={25} />
-              </Table.Td>
-              <Table.Td style={{ textAlign: 'center', width: '10%' }}>
-                <Skeleton visible height={25} />
-              </Table.Td>
-              <Table.Td style={{ textAlign: 'center', width: '10%' }}>
-                <Skeleton visible height={25} />
-              </Table.Td>
-              <Table.Td style={{ textAlign: 'center', width: '10%' }}>
-                <Skeleton visible height={25} />
-              </Table.Td>
-              <Table.Td style={{ textAlign: 'center', width: '10%' }}>
-                <Skeleton visible height={25} />
-              </Table.Td>
-              <Table.Td style={{ textAlign: 'center', width: '10%' }}>
-                <Skeleton visible height={25} />
-              </Table.Td>
-              <Table.Td style={{ textAlign: 'center', width: '5%' }}>
-                <Skeleton visible height={25} />
-              </Table.Td>
-            </Table.Tr>
+                <Table.Td style={{ width: '3%' }}>
+                  <Skeleton visible height={25} />
+                </Table.Td>
+                <Table.Td style={{ width: '20%' }}>
+                  <Skeleton visible height={25} />
+                </Table.Td>
+                <Table.Td style={{ textAlign: 'center', width: '10%' }}>
+                  <Skeleton visible height={25} />
+                </Table.Td>
+                <Table.Td style={{ textAlign: 'center', width: '10%' }}>
+                  <Skeleton visible height={25} />
+                </Table.Td>
+                <Table.Td style={{ textAlign: 'center', width: '10%' }}>
+                  <Skeleton visible height={25} />
+                </Table.Td>
+                <Table.Td style={{ textAlign: 'center', width: '5%' }}>
+                  <Skeleton visible height={25} />
+                </Table.Td>
+              </Table.Tr>
             ))
             : paginatedData.map((assignment) => (
               <React.Fragment key={assignment.assignment_id}>
@@ -135,18 +127,12 @@ const INTAssignment: React.FC = () => {
                     >
                       {assignment.assignment_name}
                     </span>
-                      <Button
-                        variant="subtle"
-                        onClick={() => toggleAssignment(assignment.assignment_id)}
-                      >
-                        {expandedAssignments[assignment.assignment_id] ? <FiChevronUp /> : <FiChevronDown />}
-                      </Button>
-                  </Table.Td>
-                  <Table.Td style={{ textAlign: 'center' }}>
-                    {assignment.assignment_release_date || '-'}
-                  </Table.Td>
-                  <Table.Td style={{ textAlign: 'center' }}>
-                    {assignment.assignment_due_date || '-'}
+                    <Button
+                      variant="subtle"
+                      onClick={() => toggleAssignment(assignment.assignment_id)}
+                    >
+                      {expandedAssignments[assignment.assignment_id] ? <FiChevronUp /> : <FiChevronDown />}
+                    </Button>
                   </Table.Td>
                   <Table.Td style={{ textAlign: 'center' }}>
                     {assignment.published ? 'Yes' : 'No'}
@@ -177,12 +163,12 @@ const INTAssignment: React.FC = () => {
                 </Table.Tr>
                 <Table.Tr>
                   <Table.Td colSpan={8} p={0}>
-                      <Collapse 
-                        in={expandedAssignments[assignment.assignment_id]}
-                        transitionDuration={200}
-                      >
-                        <SecAssignment/>
-                      </Collapse>
+                    <Collapse
+                      in={expandedAssignments[assignment.assignment_id]}
+                      transitionDuration={200}
+                    >
+                      <SecAssignment />
+                    </Collapse>
                   </Table.Td>
                 </Table.Tr>
               </React.Fragment>
