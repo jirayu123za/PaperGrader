@@ -15,4 +15,6 @@ type StudentRepository interface {
 	FindCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error)
 	FindAssignmentNamesWithCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, err error)
 	FindAssignmentsByCourseID(CourseID uuid.UUID) ([]*models.Assignment, error)
+
+	FindCourseByCourseID(CourseID uuid.UUID) (map[string]interface{}, error)
 }
