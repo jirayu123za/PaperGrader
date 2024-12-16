@@ -2,91 +2,70 @@ import React from 'react';
 import { Modal, Button, FileInput, Alert } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconDownload, IconFileText } from '@tabler/icons-react';
-import { useFetchInstructorFile } from '../../hooks/useFetchInstructorFile'; // Correct hook import
-import { useUploadStudentFile } from '../../hooks/useUploadStudentFile'; // Import from the correct file
-import { useFileStore } from '../../store/useSTDFileStore'; // Zustand store
+import { useFetchInstructorFile } from '../../hooks/useFetchInstructorFile';
+import { useUploadStudentFile } from '../../hooks/useUploadStudentFile';
+import { useFileStore } from '../../store/useSTDFileStore';
+import { useSubmitAndDownloadModalStore } from '../../store/modal/useSubmitAndDownloadModal';
 
-interface STDSubmitProps {
-  isOpen: boolean;
-  onClose: () => void;
-  assignmentId: string;
-  courseId: string;  // Add courseId as a prop
-}
-
-const STDSubmit: React.FC<STDSubmitProps> = ({ isOpen, onClose, assignmentId, courseId }) => {
-  // ดึงข้อมูลไฟล์ของอาจารย์
-  const { data: instructorFile, isLoading } = useFetchInstructorFile(courseId, assignmentId);
-  // ใช้ hook สำหรับอัปโหลดไฟล์
+const STDSubmit: React.FC = () => {
+  const { assignment_id, course_id, opened, closeModal, files, fileNames } = useSubmitAndDownloadModalStore();
+  const { isLoading } = useFetchInstructorFile();
   const { mutate: uploadStudentFile } = useUploadStudentFile();
-  // จัดการไฟล์ที่นักศึกษาเลือกผ่าน Zustand
   const { studentFile, setStudentFile } = useFileStore();
 
   const form = useForm({
-    initialValues: {
-      file: null,
-    },
+    initialValues: { file: null },
     validate: {
       file: (value) => (value ? null : 'You must upload a PDF'),
     },
   });
 
-  // ฟังก์ชันบังคับดาวน์โหลดไฟล์
   const downloadFile = (url: string, fileName: string) => {
     const link = document.createElement('a');
     link.href = url;
     link.download = fileName;
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link); // ลบลิงก์หลังจากดาวน์โหลดเสร็จสิ้น
+    document.body.removeChild(link);
   };
 
-  // ฟังก์ชัน handleSubmit สำหรับอัปโหลดไฟล์นักศึกษา
   const handleSubmit = () => {
-    console.log('Selected file before submit:', studentFile);  // ตรวจสอบว่าไฟล์ถูกเลือกแล้ว
+    console.log('Selected file before submit:', studentFile);
     if (studentFile) {
-      uploadStudentFile({ assignmentId, courseId, file: studentFile }, {
-        onSuccess: (data) => {
-          console.log('Upload successful:', data);  // Log success
-          handleClose(); // ปิด modal และรีเซ็ตข้อมูลหลังจากอัปโหลดสำเร็จ
-        },
-        onError: (error) => {
-          console.error('Upload failed:', error);  // Log error
-        },
-      });
-    } else {
-      console.log('No file selected');
+      uploadStudentFile(
+        { course_id, assignment_id, file: studentFile }, 
+        { onSuccess: (data) => {
+            console.log('Upload successful:', data);
+            closeModal();
+          },
+          onError: (error) => {
+            console.error('Upload failed:', error);
+          },
+        });
+      } else {
+    console.log('No file selected');
     }
   };
 
-
-  // ฟังก์ชันปิด modal และรีเซ็ตค่าในฟอร์ม
-  const handleClose = () => {
-    form.reset(); // รีเซ็ตฟอร์ม
-    setStudentFile(null); // รีเซ็ตไฟล์นักศึกษา
-    onClose(); // ปิด modal
-  };
-
   return (
-    <Modal opened={isOpen} onClose={handleClose} title="Submit Homework Assignment" size="lg">
+    <Modal opened={opened} onClose={closeModal} title="Submit Homework Assignment" size="lg">
       {isLoading ? (
         <div>Loading...</div>
       ) : (
         <>
-          {/* ตรวจสอบว่าไฟล์จากอาจารย์มีอยู่จริง และแสดงชื่อไฟล์พร้อมปุ่มดาวน์โหลด */}
-          {instructorFile && instructorFile.files && instructorFile.fileNames ? (
+          {files.length && fileNames.length > 0 ? (
             <Alert title="Your Instructor has provided PDF files to help you complete your assignment" color="blue" radius="md">
               {/* แสดงรายการไฟล์ทั้งหมด */}
-              {instructorFile.files.map((fileUrl: string, index: number) => (
-                <div key={index}>
-                  <Button
-                    variant="light"
-                    onClick={() => downloadFile(fileUrl, instructorFile.fileNames[index])}
-                    className="text-blue-500 hover:underline block"
-                  >
-                    <IconDownload size={18} className="inline-block mr-2" />
-                    {instructorFile.fileNames[index]}
-                  </Button>
-                </div>
+              {files.map((fileUrl: string, index: number) => (
+                <Button
+                  key={index}
+                  variant="light"
+                  onClick={() => downloadFile(fileUrl, fileNames[index])}
+                  className="text-blue-500 hover:underline block"
+                >
+                  <IconDownload size={18} className="inline-block mr-2" />
+                  {fileNames[index]}
+                </Button>
               ))}
             </Alert>
           ) : (
@@ -95,21 +74,19 @@ const STDSubmit: React.FC<STDSubmitProps> = ({ isOpen, onClose, assignmentId, co
             </Alert>
           )}
 
-          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit(); 
+          }}>
             <div className="my-4">
               <FileInput
                 placeholder="Select PDF"
                 label="Upload a PDF containing your responses to the assignment."
                 value={studentFile}
-                onChange={(file) => {
-                  console.log('Selected file:', file);  // Log การเลือกไฟล์
-                  setStudentFile(file);
-                }}
+                onChange={setStudentFile}
                 accept="application/pdf"
                 required
               />
-
             </div>
 
             {studentFile && (
@@ -120,10 +97,19 @@ const STDSubmit: React.FC<STDSubmitProps> = ({ isOpen, onClose, assignmentId, co
             )}
 
             <div className="flex justify-end">
-              <Button variant="default" onClick={handleClose}>
+              <Button 
+                variant="default"
+                onClick={() => {
+                form.reset();
+                setStudentFile(null);
+                closeModal(); }}>
                 Cancel
               </Button>
-              <Button type="submit" color="blue" className="ml-2">
+              <Button 
+                type="submit" 
+                color="blue" 
+                className="ml-2"
+              >
                 Submit
               </Button>
             </div>
