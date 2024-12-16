@@ -1,66 +1,58 @@
 import React from 'react';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { useRouter } from 'next/router';
-import { Progress, Table, Divider, Paper, Grid, Button, Pagination } from '@mantine/core';
+import { Progress, Table, Paper, Grid, Button, Pagination, Skeleton } from '@mantine/core';
 import { MdOutlineAssignmentTurnedIn } from "react-icons/md";
 import { useActiveAssignmentStore } from '../../../store/useActiveAssignmentStore';
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-
-dayjs.extend(isSameOrBefore);
-
-const parseDate = (dateString: string): Date => {
-  const [day, month, year] = dateString.split('-').map(Number);
-  return new Date(year, month - 1, day);
-};
+import { useFetchActiveAssignments } from '../../../hooks/useFetchActiveAssignment';
+import { usePagination } from '@mantine/hooks';
 
 interface ActiveAssignmentsProps {
-  selectedCourseId: string;
   openModal: () => void;
-  isLoading: boolean;
-  error: Error | null;
 }
 
-const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ selectedCourseId, openModal, isLoading, error }) => {
+const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
   const router = useRouter();
+  const { course_id } = router.query;
+  const { isLoading, error } = useFetchActiveAssignments(course_id as string);
   const { activeAssignments } = useActiveAssignmentStore();
   const iconAssignmentTurnedIn = <MdOutlineAssignmentTurnedIn size={24} />;
+  dayjs.extend(utc);
 
-  // const pageSize = 10;
-  // const totalPages = Math.ceil(filteredUsers.length / pageSize);
+  const pageSize = 10;
+  const totalPages = Math.ceil(activeAssignments.length / pageSize);
   
-  // const pagination = usePagination({
-  //   total: totalPages,
-  //   initialPage: 1,
-  //   siblings: 1,
-  //   boundaries: 1,
-  // });
+  const pagination = usePagination({
+    total: totalPages,
+    initialPage: 1,
+    siblings: 1,
+    boundaries: 1,
+  });
   
-  // const paginatedData = filteredUsers.slice(
-  //   (pagination.active - 1) * pageSize,
-  //   pagination.active * pageSize
-  // );
+  const paginatedData = activeAssignments.slice(
+    (pagination.active - 1) * pageSize,
+    pagination.active * pageSize
+  );
 
   const calculateTimeProgress = (releaseDate: string, dueDate: string) => {
+    if (releaseDate === 'N/A' || dueDate === 'N/A') return 0;
+
     const now = dayjs();
-    const start = dayjs(parseDate(releaseDate));
-    const end = dayjs(parseDate(dueDate));
-    const totalDuration = end.diff(start, 'day');
-    const elapsedTime = now.diff(start, 'day');
-    const progress = (elapsedTime / totalDuration) * 100;
-    return progress > 100 ? 100 : progress < 0 ? 0 : progress;
+    const release = dayjs(releaseDate);
+    const due = dayjs(dueDate);
+
+    if (now.isBefore(releaseDate)) {
+      return 0;
+    }
+    if (now.isAfter(dueDate)) {
+      return 100;
+    }
+
+    const totalDuration = due.diff(release);
+    const elapsedDuration = now.diff(release);
+    return (elapsedDuration / totalDuration) * 100;
   };
-
-  const filteredAssignments = (activeAssignments || [])
-    .filter(assignment => {
-      const now = dayjs();
-      const dueDate = dayjs(parseDate(assignment.assignment_due_date));
-      return now.isSameOrBefore(dueDate);
-    })
-    .slice(0, 4);
-
-  if (isLoading) {
-    return <div>Loading assignments...</div>;
-  }
 
   if (error) {
     return <div>Error loading assignments: {error.message}</div>;
@@ -85,69 +77,98 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ selectedCourseId,
           </Button>          
         </Grid.Col>
       </Grid>
-      {filteredAssignments.length > 0 ? (
-        <Table striped highlightOnHover>
+
+      {activeAssignments.length > 0 ? (
+        <Table striped highlightOnHover verticalSpacing="sm">
           <Table.Thead>
             <Table.Tr>
-              <Table.Th className="text-center text-lg">Active Assignments</Table.Th>
-              <Table.Th className="text-center text-lg">Released</Table.Th>
-              <Table.Th className="text-center text-lg">Time Progress</Table.Th>
-              <Table.Th className="text-center text-lg">Due</Table.Th>
-              <Table.Th className="text-center text-lg">% Submissions</Table.Th>
-              <Table.Th className="text-center text-lg">% Graded</Table.Th>
-              <Table.Th className="text-center text-lg">Published</Table.Th>
-              <Table.Th className="text-center text-lg">Regrades</Table.Th>
+              <Table.Th>NAME</Table.Th>
+              <Table.Th style={{ textAlign: 'center' }}>RELEASED</Table.Th>
+              <Table.Th style={{ textAlign: 'center' }}>Time Progress</Table.Th>
+              <Table.Th style={{ textAlign: 'center' }}>DUE</Table.Th>
+              <Table.Th style={{ textAlign: 'center' }}>LATE</Table.Th>
+              <Table.Th style={{ textAlign: 'center' }}>% SUBMISSION</Table.Th>
+              <Table.Th style={{ textAlign: 'center' }}>% GRADE</Table.Th>
+              <Table.Th style={{ textAlign: 'center' }}>PUBLISHED</Table.Th>
+              <Table.Th style={{ textAlign: 'center' }}>REGRADES</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {filteredAssignments.map((assignment, index) => (
-              <React.Fragment key={assignment.assignment_id}>
-                <Table.Tr>
+            {isLoading
+              ? Array.from({ length: 10 }).map((_, index) => (
+                <Table.Tr key={`skeleton-row-${index}`}>
+                  <Table.Td>
+                    <Skeleton visible height={25} />
+                  </Table.Td>
+                  <Table.Td style={{ textAlign: 'center' }}>
+                    <Skeleton visible height={25} />
+                  </Table.Td>
+                  <Table.Td style={{ textAlign: 'center' }}>
+                    <Skeleton visible height={25} />
+                  </Table.Td>
+                  <Table.Td style={{ textAlign: 'center' }}>
+                    <Skeleton visible height={25} />
+                  </Table.Td>
+                  <Table.Td style={{ textAlign: 'center' }}>
+                    <Skeleton visible height={25} />
+                  </Table.Td>
+                  <Table.Td style={{ textAlign: 'center'}}>
+                    <Skeleton visible height={25}/>
+                  </Table.Td>
+                  <Table.Td style={{ textAlign: 'center' }}>
+                    <Skeleton visible height={25}/>
+                  </Table.Td>
+                  <Table.Td style={{ textAlign: 'center' }}>
+                    <Skeleton visible height={25}/>
+                  </Table.Td>
+                  <Table.Td style={{ textAlign: 'center' }}>
+                    <Skeleton visible height={25}/>
+                  </Table.Td>
+                </Table.Tr>
+              ))
+              : paginatedData.map((assignment) => (
+                <Table.Tr key={assignment.assignment_id}>
                   <Table.Td
-                    className="py-6 px-4 cursor-pointer hover:underline text-center text-lg"
-                    onClick={() => router.push(`/courses/${selectedCourseId}/process/${assignment.assignment_id}/CreateOutline`)}
+                    className="cursor-pointer hover:underline"
+                    onClick={() => router.push(`/courses/${course_id}/process/${assignment.assignment_id}/CreateOutline`)}
                   >
                     {assignment.assignment_name}
                   </Table.Td>
-                  <Table.Td className="py-6 px-4 text-center text-lg">
-                    {parseDate(assignment.assignment_release_date).toLocaleDateString('en-US', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
+                  <Table.Td style={{ textAlign: 'center' }}>
+                    {assignment.assignment_release_date
+                      ? dayjs(assignment.assignment_release_date).utc().format('MMM D, YYYY h:mm A')
+                      : 'N/A'
+                    }
                   </Table.Td>
-                  <Table.Td className="py-6 px-4 text-center text-lg">
+                  <Table.Td style={{ textAlign: 'center' }}>
                     <div className="relative">
                       <Progress
-                        value={calculateTimeProgress(assignment.assignment_release_date, assignment.assignment_due_date)}
-                        color="blue"
-                        size="sm"
+                        value={calculateTimeProgress(assignment.assignment_release_date?? 'N/A', assignment.assignment_due_date ?? 'N/A')}
+                        color="green"
+                        size="md"
                         radius="lg"
                       />
                     </div>
                   </Table.Td>
-                  <Table.Td className="py-6 px-4 text-center text-lg">
-                    {parseDate(assignment.assignment_due_date).toLocaleDateString('en-US', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
+                  <Table.Td style={{ textAlign: 'center' }}>
+                    {assignment.assignment_due_date
+                      ? dayjs(assignment.assignment_due_date).utc().format('MMM D, YYYY h:mm A')
+                      : 'N/A'                    
+                    }
                   </Table.Td>
-                  <Table.Td className="py-6 px-4 text-center text-lg">0</Table.Td>
-                  <Table.Td className="py-6 px-4 text-center text-lg">0%</Table.Td>
-                  <Table.Td className="py-6 px-4 text-center text-lg">ON</Table.Td>
-                  <Table.Td className="py-6 px-4 text-center text-lg">ON</Table.Td>
+                  <Table.Td style={{ textAlign: 'center' }}>
+                    {assignment.assignment_cut_off_date
+                      ? dayjs(assignment.assignment_cut_off_date).utc().format('MMM D, YYYY h:mm A')
+                      : 'N/A'                     
+                    }
+                  </Table.Td>
+                  <Table.Td style={{ textAlign: 'center' }}>0</Table.Td>
+                  <Table.Td style={{ textAlign: 'center' }}>0%</Table.Td>
+                  <Table.Td style={{ textAlign: 'center' }}>{assignment.published ? 'Yes' : 'No'}</Table.Td>
+                  <Table.Td style={{ textAlign: 'center' }}>{assignment.regrades ? 'Yes' : 'No'}</Table.Td>
                 </Table.Tr>
-                {/* เพิ่ม Divider ระหว่างแถว */}
-                {index < filteredAssignments.length - 1 && (
-                  <Table.Tr>
-                    <Table.Td colSpan={8}>
-                      <Divider my="xs" />
-                    </Table.Td>
-                  </Table.Tr>
-                )}
-              </React.Fragment>
-            ))}
+              ))
+            }
           </Table.Tbody>
         </Table>
       ) : (
@@ -155,15 +176,18 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ selectedCourseId,
           You currently have no active assignments. Create an assignment to get started.
         </div>
       )}
-      {/* <div className="flex justify-center mt-4">
-        <Pagination
-          total={totalPages}
-          siblings={1}
-          boundaries={1}
-          value={pagination.active}
-          onChange={pagination.setPage}
-        />
-      </div> */}
+
+      {activeAssignments.length > 0 &&
+        <div className="flex justify-center mt-4">
+          <Pagination
+            total={totalPages}
+            siblings={1}
+            boundaries={1}
+            value={pagination.active}
+            onChange={pagination.setPage}
+          />
+        </div>
+      }
     </Paper>
   );
 };
