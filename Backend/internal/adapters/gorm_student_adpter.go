@@ -28,20 +28,39 @@ func (r *GormStudentRepository) AddSubmissionFile(submission *models.Submission)
 // find all courses and assignments for a student
 func (r *GormStudentRepository) FindCoursesAndAssignments(UserID uuid.UUID) ([]map[string]interface{}, error) {
 	var courses []map[string]interface{}
-	query := `
-		SELECT c.course_id, c.course_name, c.course_code,
-				a.assignment_id, a.assignment_name, a.assignment_description, a.due_date, a.release_date, a.submiss_by
-		FROM courses c
-		JOIN assignments a ON c.course_id = a.course_id
-		JOIN enrollments e ON c.course_id = e.course_id
-		WHERE e.user_id = ? 
-		AND e.deleted_at IS NULL 
-		AND c.deleted_at IS NULL 
-		AND a.deleted_at IS NULL 
-		AND (COALESCE(a.cut_off_date, a.due_date) > NOW())
-	`
-	if result := r.db.Raw(query, UserID).Scan(&courses); result.Error != nil {
-		return nil, result.Error
+
+	if err := r.db.
+		Table("courses").
+		Select(`
+			courses.course_id, 
+			courses.course_name, 
+			courses.course_code, 
+			assignments.assignment_id, 
+			assignments.assignment_name, 
+			assignments.assignment_description, 
+			assignment_sections.due_date, 
+			assignment_sections.release_date, 
+			assignment_sections.cut_off_date,
+			sections.section_name
+		`).
+		Joins("JOIN enrollment_lists ON enrollment_lists.course_id = courses.course_id").
+		Joins("JOIN sections ON sections.section_id = enrollment_lists.section_id").
+		Joins("JOIN assignment_sections ON sections.section_id = assignment_sections.section_id").
+		Joins("JOIN assignments ON assignments.assignment_id = assignment_sections.assignment_id").
+		Joins("JOIN personal_data ON personal_data.personal_data_id = enrollment_lists.personal_data_id").
+		Joins("JOIN users ON users.email = personal_data.email").
+		Where(`
+			users.user_id = ? 
+			AND courses.deleted_at IS NULL 
+			AND assignments.deleted_at IS NULL 
+			AND enrollment_lists.deleted_at IS NULL
+			AND assignment_sections.deleted_at IS NULL
+			AND sections.deleted_at IS NULL
+			AND assignment_sections.due_date IS NOT NULL 
+			AND assignment_sections.release_date IS NOT NULL
+		`, UserID).
+		Find(&courses).Error; err != nil {
+		return nil, err
 	}
 	return courses, nil
 }
