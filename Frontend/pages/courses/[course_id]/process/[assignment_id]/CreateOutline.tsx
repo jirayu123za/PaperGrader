@@ -1,32 +1,67 @@
 import LeftProcess from '../../../../../components/LeftINS/LeftProcess';
 import PDFViewer from '../../../../../components/PDFViewer';
+import CreateOutline from '../../../../../components/INS/INSProcess/Right/CreateOutline';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
-import { Container, Flex, Loader, TextInput, Button } from '@mantine/core';
+import { Container, Flex, Loader } from '@mantine/core';
 import { useForm } from '@mantine/form';
 
-export default function CreateOutline() {
+export default function CreateOutlinePage() {
   const router = useRouter();
   const { assignment_id, course_id } = router.query;
 
-  // ใช้ useForm สำหรับจัดการ state
   const form = useForm({
     initialValues: {
       pdfUrl: '',
       loading: true,
+      boundingBoxes: [] as {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        pageNumber: number;
+        title: string;
+        points: number;
+      }[],
+      
     },
   });
 
-  // Fetch PDF URL เมื่อ assignment_id และ course_id พร้อม
+  const handleNewQuestion = () => {
+    form.setFieldValue('boundingBoxes', [
+      ...form.values.boundingBoxes,
+      {
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 100,
+        pageNumber: 1,
+        title: 'New Question',
+        points: 1,
+      },
+    ]);
+  };
+
+  const updateBoundingBox = (index: number, newBox: any) => {
+    const updatedBoxes = [...form.values.boundingBoxes];
+    updatedBoxes[index] = newBox;
+    form.setFieldValue('boundingBoxes', updatedBoxes);
+  };
+
+  const removeBoundingBox = (index: number) => {
+    const updatedBoxes = form.values.boundingBoxes.filter((_, i) => i !== index);
+    form.setFieldValue('boundingBoxes', updatedBoxes);
+  };
+
   useEffect(() => {
     const fetchPdfUrl = async () => {
       if (assignment_id && course_id) {
         try {
           const response = await axios.get('/api/api/instructor/template/url', {
             params: {
-              course_id: course_id,
-              assignment_id: assignment_id,
+              course_id,
+              assignment_id,
             },
           });
           form.setFieldValue('pdfUrl', response.data.url);
@@ -43,15 +78,30 @@ export default function CreateOutline() {
   return (
     <Container
       fluid
-      className="flex min-h-screen overflow-hidden"
-      style={{ padding: 0 }}
+      className="flex min-h-screen overflow-hidden "
+      style={{ margin: 0, padding: 0 }}
     >
       {/* Sidebar */}
-      <LeftProcess />
+      <Flex
+        style={{
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          height: '100vh',
+          width: '20%',
+          borderRight: '1px solid #dee2e6',
+          overflow: 'hidden',
+          padding: 0,
+          margin: 0,
+        }}
+      >
+        <LeftProcess />
+      </Flex>
 
       {/* Main Content */}
       <Flex
         style={{
+          marginLeft: '20%', 
           flex: 1,
           overflow: 'hidden',
           display: 'flex',
@@ -62,10 +112,31 @@ export default function CreateOutline() {
         {form.values.loading ? (
           <Loader />
         ) : form.values.pdfUrl ? (
-          <PDFViewer fileUrl={form.values.pdfUrl} />
+          <PDFViewer
+            fileUrl={form.values.pdfUrl}
+            boundingBoxes={form.values.boundingBoxes}
+            updateBoundingBox={updateBoundingBox}
+
+          />
         ) : (
           <div>No PDF available</div>
         )}
+      </Flex>
+
+      {/* CreateOutline Section */}
+      <Flex
+        style={{
+          width: '30%',
+          padding: '1rem',
+          overflow: 'hidden',
+          borderLeft: '1px solid #dee2e6',
+        }}
+      >
+        <CreateOutline
+          onNewQuestion={handleNewQuestion}
+          boundingBoxes={form.values.boundingBoxes}
+          removeBoundingBox={removeBoundingBox}
+        />
       </Flex>
     </Container>
   );
