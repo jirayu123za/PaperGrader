@@ -1,8 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-import { Container, Title, Text, Button, Table, Flex, Divider, Box } from '@mantine/core';
+import { Container, Title, Text, Button, Table, Flex, Divider, Box, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { Stage, Layer, Rect } from 'react-konva';
 
 interface BoundingBox {
   x: number;
@@ -17,26 +16,26 @@ interface BoundingBox {
 interface CreateOutlineProps {
   onNewQuestion: () => void;
   boundingBoxes: BoundingBox[];
+  updateBoundingBox: (index: number, updatedBox: BoundingBox) => void;
   removeBoundingBox: (index: number) => void;
 }
 
-const CreateOutline: React.FC<CreateOutlineProps> = ({ onNewQuestion, boundingBoxes,removeBoundingBox, }) => {
+const CreateOutline: React.FC<CreateOutlineProps> = ({
+  onNewQuestion,
+  boundingBoxes,
+  updateBoundingBox,
+  removeBoundingBox,
+}) => {
   const router = useRouter();
   const { assignment_id, course_id } = router.query;
 
-  const form = useForm({
-    initialValues: {
-      boundingBoxes: [] as BoundingBox[],
-    },
-  });
-  
-
-  const handleNewQuestion = () => {
-    alert('Add New Question logic here');
-  };
-
   const handleCancel = () => {
     router.push(`/courses/${course_id}/assignments/${assignment_id}`);
+  };
+
+  const handleInputChange = (index: number, field: keyof BoundingBox, value: any) => {
+    const updatedBox = { ...boundingBoxes[index], [field]: value };
+    updateBoundingBox(index, updatedBox);
   };
 
   return (
@@ -69,14 +68,28 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({ onNewQuestion, boundingBo
             <th>#</th>
             <th>Title</th>
             <th>Points</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {boundingBoxes.map((box, index) => (
             <tr key={index}>
               <td>{index + 1}</td>
-              <td>{box.title}</td>
-              <td>{box.points}</td>
+              <td>
+                <TextInput
+                  size="xs"
+                  value={box.title}
+                  onChange={(e) => handleInputChange(index, 'title', e.target.value)}
+                />
+              </td>
+              <td>
+                <TextInput
+                  size="xs"
+                  type="number"
+                  value={box.points}
+                  onChange={(e) => handleInputChange(index, 'points', Number(e.target.value))}
+                />
+              </td>
               <td>
                 <Button size="xs" color="red" variant="outline" onClick={() => removeBoundingBox(index)}>
                   X
@@ -91,7 +104,9 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({ onNewQuestion, boundingBo
 
       {/* Buttons */}
       <Flex gap="sm" mt="lg">
-        <Button variant="default">Cancel</Button>
+        <Button variant="default" onClick={handleCancel}>
+          Cancel
+        </Button>
         <Button variant="filled">Save Outline</Button>
       </Flex>
     </Container>
