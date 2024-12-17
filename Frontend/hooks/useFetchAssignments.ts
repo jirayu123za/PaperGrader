@@ -5,8 +5,9 @@ import axios from 'axios';
 interface Assignment {
   assignment_id: string;
   assignment_name: string;
-  assignment_release_date: string;
-  assignment_due_date: string;
+  release_date: string;
+  due_date: string;
+  cut_off_date: string;
   published: boolean;
   regrades: boolean;
   submiss_by: string;
@@ -27,8 +28,11 @@ export const useFetchAssignments = (course_id: string) => {
       }
 
       const data = response.data.assignments;
-      setAssignments(data);
-      return data;
+      const normalizedData = Array.isArray(data) ? data : [data];
+      console.log("Assignments Data:", normalizedData);
+
+      setAssignments(normalizedData || []);
+      return normalizedData || [];
     },
     enabled: !!course_id,
   });
