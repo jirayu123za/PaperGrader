@@ -11,7 +11,7 @@
   "dependencies": {
     "@mantine/core": "^7.13.4",
     "@mantine/dates": "^7.12.2",
-    "@mantine/form": "^7.13.2",
+    "@mantine/form": "^7.15.1",
     "@mantine/hooks": "^7.13.4",
     "@mantine/modals": "^7.12.2",
     "@mantine/tiptap": "^7.13.4",
@@ -36,6 +36,7 @@
     "jwt-decode": "^4.0.0",
     "konva": "^9.3.16",
     "next": "^14.2.12",
+    "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^2.16.105",
     "react": "^18",
     "react-dom": "^18",
@@ -47,6 +48,7 @@
   "devDependencies": {
     "@types/axios": "^0.14.0",
     "@types/node": "^20",
+    "@types/pdfjs-dist": "^2.10.378",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/react-pdf": "^7.0.0",
