@@ -24,7 +24,7 @@ export default function CreateOutlinePage() {
         title: string;
         points: number;
       }[],
-      
+
     },
   });
 
@@ -101,7 +101,7 @@ export default function CreateOutlinePage() {
       {/* Main Content */}
       <Flex
         style={{
-          marginLeft: '20%', 
+          marginLeft: '20%',
           flex: 1,
           overflow: 'hidden',
           display: 'flex',
@@ -136,7 +136,9 @@ export default function CreateOutlinePage() {
           onNewQuestion={handleNewQuestion}
           boundingBoxes={form.values.boundingBoxes}
           removeBoundingBox={removeBoundingBox}
+          updateBoundingBox={updateBoundingBox} // เพิ่มการส่ง prop นี้
         />
+
       </Flex>
     </Container>
   );
