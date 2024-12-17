@@ -3,9 +3,9 @@ import { create } from 'zustand';
 interface Assignment {
   assignment_id: string;
   assignment_name: string;
-  assignment_release_date: string;
-  assignment_due_date: string;
-  assignment_cut_off_date: string;
+  release_date: string;
+  due_date: string;
+  cut_off_date: string;
   published: boolean;
   regrades: boolean;
   submiss_by: string;
