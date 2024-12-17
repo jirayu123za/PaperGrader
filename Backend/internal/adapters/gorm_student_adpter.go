@@ -101,10 +101,22 @@ func (r *GormStudentRepository) FindAssignmentNamesWithCourseIDAndAssignmentID(C
 	return fileNames, nil
 }
 
-func (r *GormStudentRepository) FindAssignmentsByCourseID(courseID uuid.UUID) ([]*models.Assignment, error) {
-	var assignments []*models.Assignment
+func (r *GormStudentRepository) FindAssignmentsByCourseID(courseID uuid.UUID) (map[string]interface{}, error) {
+	var assignments map[string]interface{}
 	if err := r.db.
-		Where("course_id = ? AND deleted_at IS NULL", courseID).
+		Table("assignments").
+		Select(`
+			DISTINCT ON (assignments.assignment_id) 
+			assignments.assignment_id,
+			assignments.assignment_name,
+			assignments.assignment_description,
+			assignment_sections.release_date,
+			assignment_sections.due_date,
+			assignment_sections.cut_off_date
+		`).
+		Joins("JOIN assignment_sections ON assignments.assignment_id = assignment_sections.assignment_id").
+		Where("assignments.course_id = ? AND assignments.deleted_at IS NULL AND assignment_sections.deleted_at IS NULL", courseID).
+		Order("assignments.assignment_id, assignment_sections.release_date ASC").
 		Find(&assignments).Error; err != nil {
 		return nil, err
 	}
