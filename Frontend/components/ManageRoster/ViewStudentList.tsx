@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Modal, Pagination, Skeleton, Table, Text } from '@mantine/core';
 import { useFetchSectionUsersRoster } from '../../hooks/Roster/useFetchUsersRoster';
 import { useRosterStore } from '../../store/useRosterStore';
@@ -12,12 +12,6 @@ const ViewStudentLists: React.FC = () => {
     const { isOpen, selectedSection, closeModal } = useModalStore();
     const { sectionUsersList } = useRosterStore();
     const { isLoading, error } = useFetchSectionUsersRoster(course_id ?? '', selectedSection?.section_id ?? '');
-
-    // useEffect(() => {
-    //     if (isOpen) {
-    //         refetch();
-    //     }
-    // }, [isOpen, refetch]);
 
     const pageSize = 10;
     const totalPages = Math.ceil(sectionUsersList.length / pageSize);
@@ -55,6 +49,7 @@ const ViewStudentLists: React.FC = () => {
                 <Table striped highlightOnHover withRowBorders={false}>
                     <Table.Thead>
                         <Table.Tr>
+                            <Table.Th style={{ textAlign: 'left' }}>Student No.</Table.Th>
                             <Table.Th style={{ textAlign: 'left' }}>Name</Table.Th>
                             <Table.Th style={{ textAlign: 'left' }}>Email</Table.Th>
                             <Table.Th style={{ textAlign: 'center' }}>Submissions</Table.Th>
@@ -73,12 +68,16 @@ const ViewStudentLists: React.FC = () => {
                                     <Table.Td>
                                         <Skeleton visible height={20} width="40%" />
                                     </Table.Td>
+                                    <Table.Td>
+                                        <Skeleton visible height={20} width="40%" />
+                                    </Table.Td>
                                 </Table.Tr>
                             ))
                             : error ?
                                 <Text ta="center" color="red">Error fetching student list</Text>
                                 : paginatedData.map((student, index) => (
                                     <Table.Tr key={index}>
+                                        <Table.Td style={{ textAlign: 'left' }}>{student.student_code || 'N/A'}</Table.Td>
                                         <Table.Td style={{ textAlign: 'left' }}>{student.full_name || 'N/A'}</Table.Td>
                                         <Table.Td style={{ textAlign: 'left' }}>{student.email || 'N/A'}</Table.Td>
                                         <Table.Td style={{ textAlign: 'center' }}>{student.submissions_count ?? 0}</Table.Td>
