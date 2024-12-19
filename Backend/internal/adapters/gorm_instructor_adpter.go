@@ -212,12 +212,14 @@ func (r *GormInstructorRepository) FindRosterByCourseIDAndSectionID(CourseID uui
 		Select(`personal_data.personal_data_id,
 				CONCAT(personal_data.first_name, ' ', personal_data.last_name) AS full_name,
 		        personal_data.email,
+				personal_data.student_code,
 		        COUNT(submissions.submission_id) AS submission_count`).
 		Joins("JOIN personal_data ON enrollment_lists.personal_data_id = personal_data.personal_data_id").
 		Joins("LEFT JOIN sections ON enrollment_lists.section_id = sections.section_id").
 		Joins("LEFT JOIN submissions ON enrollment_lists.personal_data_id = submissions.user_id AND submissions.assignment_id IN (SELECT assignment_id FROM assignments WHERE assignments.course_id = ?)", CourseID).
 		Where("enrollment_lists.course_id = ? AND enrollment_lists.section_id = ? AND enrollment_lists.deleted_at IS NULL", CourseID, SectionID).
 		Group("personal_data.personal_data_id, personal_data.first_name, personal_data.last_name, personal_data.email, personal_data.role_type").
+		Order("personal_data.student_code ASC").
 		Scan(&users).Error; err != nil {
 		return nil, err
 	}
