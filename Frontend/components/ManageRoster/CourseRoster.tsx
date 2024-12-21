@@ -7,9 +7,6 @@ import { useRouter } from 'next/router';
 import { useRosterStore } from '../../store/useRosterStore';
 import { useModalEditRosterMemberStore } from '../../store/modal/useRosterModalStore';
 import { usePagination } from '@mantine/hooks';
-import { useForm } from '@mantine/form';
-
-
 
 const CourseRoster: React.FC = () => {
   const router = useRouter();
@@ -18,37 +15,21 @@ const CourseRoster: React.FC = () => {
   const { usersList, searchTerm, setSearchTerm, roleFilter, setRoleFilter } = useRosterStore();
   const { openModal } = useModalEditRosterMemberStore();
 
-
-  const form = useForm({
-    initialValues: {
-      searchTerm: '',
-      roleFilter: '',
-      sectionFilter: '',
-    },
-  });
-
-
   const handleEditClick = (personal_data_id: string) => {
     openModal(personal_data_id);
   };
 
-
   const filteredUsers = usersList.filter((member) => {
-    const matchesSearch = form.values.searchTerm
-      ? member.full_name.toLowerCase().includes(form.values.searchTerm.toLowerCase()) ||
-      member.email.toLowerCase().includes(form.values.searchTerm.toLowerCase()) ||
-      member.student_code?.toLowerCase().includes(form.values.searchTerm.toLowerCase())
+    const matchesSearch = searchTerm
+      ? member.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.student_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.section_name?.toLowerCase().includes(searchTerm.toLowerCase())
       : true;
 
-    const matchesRole = form.values.roleFilter
-      ? member.role_type === form.values.roleFilter
-      : true;
+    const matchesRole = roleFilter ? member.role_type === roleFilter : true;
 
-    const matchesSection = form.values.sectionFilter
-      ? member.section_name?.toLowerCase().includes(form.values.sectionFilter.toLowerCase())
-      : true;
-
-    return matchesSearch && matchesRole && matchesSection;
+    return matchesSearch && matchesRole;
   });
 
   const pageSize = 10;
@@ -84,8 +65,8 @@ const CourseRoster: React.FC = () => {
         <Skeleton visible={isLoading} height={40} width="60%">
           <TextInput
             placeholder="Search by name, email, or student ID"
-            value={form.values.searchTerm}
-            onChange={(e) => form.setFieldValue('searchTerm', e.currentTarget.value)}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.currentTarget.value)}
             style={{ flex: 1 }}
             disabled={isLoading}
           />
@@ -103,14 +84,6 @@ const CourseRoster: React.FC = () => {
             clearable
             disabled={isLoading}
           />
-        </Skeleton>
-        <Skeleton visible={isLoading} height={40} width="20%">
-        <TextInput
-          placeholder="Filter by section"
-          value={form.values.sectionFilter}
-          onChange={(e) => form.setFieldValue('sectionFilter', e.currentTarget.value)}
-          disabled={isLoading}
-        />
         </Skeleton>
       </div>
 
