@@ -14,7 +14,7 @@ const ViewStudentLists: React.FC = () => {
     const { isLoading, error } = useFetchSectionUsersRoster(course_id ?? '', selectedSection?.section_id ?? '');
 
     const pageSize = 10;
-    const totalPages = Math.ceil(sectionUsersList.length / pageSize);
+    const totalPages = Math.ceil((sectionUsersList?.length || 0) / pageSize);
   
     const pagination = usePagination({
       total: totalPages,
@@ -23,10 +23,9 @@ const ViewStudentLists: React.FC = () => {
       boundaries: 1,
     });
     
-    const paginatedData = sectionUsersList.slice(
-      (pagination.active - 1) * pageSize,
-      pagination.active * pageSize
-    );
+    const paginatedData = sectionUsersList
+    ? sectionUsersList.slice((pagination.active - 1) * pageSize, pagination.active * pageSize)
+    : [];
 
     return (
         <Modal
