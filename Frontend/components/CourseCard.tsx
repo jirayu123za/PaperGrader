@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/router';
 import { useCourseStore } from '../store/useCourseStore';
 import CreateCourse from './Create/CreateCourse';
+import { ScrollArea } from '@mantine/core';
+import { useForm } from '@mantine/form';
 
 interface Course {
   course_id: string;
@@ -19,20 +21,26 @@ interface CourseCardProps {
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = false }) => {
-  const router = useRouter();  
+  const router = useRouter();
   const { setSelectedCourseId } = useCourseStore();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showOlderCourses, setShowOlderCourses] = useState(false);
+
+  // ใช้ useForm สำหรับจัดการสถานะ
+  const form = useForm({
+    initialValues: {
+      isModalOpen: false,
+      showOlderCourses: false,
+    },
+  });
 
   const groupedCourses = Array.isArray(courses)
     ? courses.reduce((acc: Record<string, Course[]>, course: Course) => {
-      const key = `${course.academic_year} / ${course.semester}`;
-      if (!acc[key]) {
-        acc[key] = [];
-      }
-      acc[key].push(course);
-      return acc;
-    }, {})
+        const key = `${course.academic_year} / ${course.semester}`;
+        if (!acc[key]) {
+          acc[key] = [];
+        }
+        acc[key].push(course);
+        return acc;
+      }, {})
     : {};
 
   const sortedKeys = Object.keys(groupedCourses).sort().reverse();
@@ -49,11 +57,11 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
   };
 
   const handleCreateCourseClick = () => {
-    setIsModalOpen(true);
+    form.setFieldValue('isModalOpen', true);
   };
 
   return (
-    <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
+    <ScrollArea h={600} type="auto">
       {courses.length === 0 && !studentMode ? (
         <div
           className="p-6 bg-white border-dashed border-2 border-teal-600 shadow-sm rounded-lg cursor-pointer flex items-center justify-center"
@@ -71,7 +79,6 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
           {latestKeys.map((key) => (
             <div key={key} className="mb-8">
               <h2 className="text-xl font-semibold mb-4">{key}</h2>
-              {/* ใช้ Flexbox */}
               <div className="flex flex-wrap gap-5">
                 {groupedCourses[key].map((course) => (
                   <div
@@ -115,44 +122,45 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
             <div className="text-left mt-4">
               <button
                 className="text-blue-600 underline"
-                onClick={() => setShowOlderCourses(!showOlderCourses)}
+                onClick={() => form.setFieldValue('showOlderCourses', !form.values.showOlderCourses)}
               >
-                {showOlderCourses ? 'Hide older courses' : 'See older courses'}
+                {form.values.showOlderCourses ? 'Hide older courses' : 'See older courses'}
               </button>
             </div>
           )}
 
           {/* แสดงเทอมเก่ากว่าเมื่อกดปุ่ม */}
-          {showOlderCourses && olderKeys.map((key) => (
-            <div key={key} className="mb-8">
-              <h2 className="text-xl font-semibold mb-4">{key}</h2>
-              <div className="flex flex-wrap gap-5">
-                {groupedCourses[key].map((course) => (
-                  <div
-                    key={course.course_id}
-                    className="p-4 bg-gray-100 shadow rounded-lg cursor-pointer relative"
-                    style={{
-                      width: 380,
-                      height: 180,
-                    }}
-                    onClick={() => handleSelectCourse(course)}
-                  >
-                    <h2 className="text-base text-gray-600 mb-2">{course.course_code}</h2>
-                    <h3 className="text-xl font-semibold mb-2">{course.course_name}</h3>
-                    <p className="text-gray-600 text-sm mb-4">{course.course_description}</p>
-                    <div className="absolute bottom-0 left-0 right-0 bg-purple-900 text-white p-2 text-center text-sm">
-                      {course.total_assignments ? `${course.total_assignments} assignments` : 'No assignments'}
+          {form.values.showOlderCourses &&
+            olderKeys.map((key) => (
+              <div key={key} className="mb-8">
+                <h2 className="text-xl font-semibold mb-4">{key}</h2>
+                <div className="flex flex-wrap gap-5">
+                  {groupedCourses[key].map((course) => (
+                    <div
+                      key={course.course_id}
+                      className="p-4 bg-gray-100 shadow rounded-lg cursor-pointer relative"
+                      style={{
+                        width: 380,
+                        height: 180,
+                      }}
+                      onClick={() => handleSelectCourse(course)}
+                    >
+                      <h2 className="text-base text-gray-600 mb-2">{course.course_code}</h2>
+                      <h3 className="text-xl font-semibold mb-2">{course.course_name}</h3>
+                      <p className="text-gray-600 text-sm mb-4">{course.course_description}</p>
+                      <div className="absolute bottom-0 left-0 right-0 bg-purple-900 text-white p-2 text-center text-sm">
+                        {course.total_assignments ? `${course.total_assignments} assignments` : 'No assignments'}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </>
       )}
 
-      {!studentMode && <CreateCourse isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />}
-    </div>
+      {!studentMode && <CreateCourse isOpen={form.values.isModalOpen} onClose={() => form.setFieldValue('isModalOpen', false)} />}
+    </ScrollArea>
   );
 };
 
