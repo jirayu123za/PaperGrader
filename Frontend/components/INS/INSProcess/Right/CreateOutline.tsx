@@ -4,10 +4,8 @@ import { Container, Title, Text, Button, Table, Flex, Divider, Box, TextInput } 
 import { useForm } from '@mantine/form';
 
 interface BoundingBox {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  topLeft: { x: number; y: number };
+  bottomRight: { x: number; y: number };
   pageNumber: number;
   title: string;
   points: number;

@@ -16,13 +16,12 @@ export default function CreateOutlinePage() {
       pdfUrl: '',
       loading: true,
       boundingBoxes: [] as {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
+        topLeft: { x: number; y: number };
+        bottomRight: { x: number; y: number };
         pageNumber: number;
         title: string;
         points: number;
+      
       }[],
 
     },
@@ -32,10 +31,8 @@ export default function CreateOutlinePage() {
     form.setFieldValue('boundingBoxes', [
       ...form.values.boundingBoxes,
       {
-        x: 100,
-        y: 100,
-        width: 200,
-        height: 100,
+        topLeft: { x: 100, y: 100 },
+        bottomRight: { x: 300, y: 200 },
         pageNumber: 1,
         title: 'New Question',
         points: 1,

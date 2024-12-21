@@ -9,10 +9,8 @@ import usePDFViewerStore from '../store/usePDFViewerStore';
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js`;
 
 interface BoundingBox {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  topLeft: { x: number; y: number };
+  bottomRight: { x: number; y: number };
 }
 
 interface PDFViewerProps {
@@ -65,11 +63,19 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl, boundingBoxes, updateBou
   };
 
   const handleDragEnd = (index: number, e: any) => {
+    const box = boundingBoxes[index];
+    const width = box.bottomRight.x - box.topLeft.x;
+    const height = box.bottomRight.y - box.topLeft.y;
+
     updateBoundingBox(index, {
-      x: (e.target.x() + scrollOffset.left) / scaleFactor,
-      y: (e.target.y() + scrollOffset.top) / scaleFactor,
-      width: boundingBoxes[index].width,
-      height: boundingBoxes[index].height,
+      topLeft: {
+        x: (e.target.x() + scrollOffset.left) / scaleFactor,
+        y: (e.target.y() + scrollOffset.top) / scaleFactor,
+      },
+      bottomRight: {
+        x: ((e.target.x() + scrollOffset.left) / scaleFactor) + width,
+        y: ((e.target.y() + scrollOffset.top) / scaleFactor) + height,
+      },
     });
   };
 
@@ -94,7 +100,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl, boundingBoxes, updateBou
         ref={stageRef}
         style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'auto' }}
         onMouseDown={(e) => {
-          // ตรวจสอบถ้าคลิกบนพื้นที่ Stage โดยไม่มี Rect อื่น
           if (e.target === e.target.getStage()) {
             setSelectedShapeIndex(null);
           }
@@ -105,10 +110,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl, boundingBoxes, updateBou
             <Rect
               key={index}
               id={`box-${index}`}
-              x={box.x * scaleFactor - scrollOffset.left}
-              y={box.y * scaleFactor - scrollOffset.top}
-              width={box.width * scaleFactor}
-              height={box.height * scaleFactor}
+              x={box.topLeft.x * scaleFactor - scrollOffset.left}
+              y={box.topLeft.y * scaleFactor - scrollOffset.top}
+              width={(box.bottomRight.x - box.topLeft.x) * scaleFactor}
+              height={(box.bottomRight.y - box.topLeft.y) * scaleFactor}
               fill="rgba(0, 0, 255, 0.2)"
               stroke="blue"
               strokeWidth={2}
