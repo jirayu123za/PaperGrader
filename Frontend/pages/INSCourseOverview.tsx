@@ -3,7 +3,7 @@ import { useFetchInsCourses } from '../hooks/useFetchCourse';
 import { useCourseStore } from '../store/useCourseStore';
 import { Card, Flex, Grid, Skeleton } from '@mantine/core';
 import CourseCard from '../components/CourseCard';
-import LeftINSMain from '../components/LeftINS/LeftOverview';
+import LeftOverview from '../components/LeftINS/LeftOverview';
 
 const INSCourseOverview = () => {
   const { data: courses, isLoading, error } = useFetchInsCourses();
@@ -16,12 +16,11 @@ const INSCourseOverview = () => {
   }, [courses, setCourses]);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <LeftINSMain />
-
-      <div className="flex-grow p-8">
+    <div className="flex min-h-screen bg-gray-50 overflow-hidden">
+      <LeftOverview />
+      <div className="flex-grow p-8 overflow-y-auto">
         <h1 className="text-3xl font-bold mb-8">Courses Overview</h1>
-        
+
         {isLoading ? (
           <Grid gutter="lg">
             {Array.from({ length: 4 }).map((_, index) => (
