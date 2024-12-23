@@ -1,7 +1,6 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import { Container, Title, Text, Button, Table, Flex, Divider, Box, TextInput } from '@mantine/core';
-import { useForm } from '@mantine/form';
 
 interface BoundingBox {
   topLeft: { x: number; y: number };
@@ -36,9 +35,15 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
     updateBoundingBox(index, updatedBox);
   };
 
+  const handleSaveOutline = () => {
+    if (assignment_id) {
+      localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(boundingBoxes));
+      alert('Outline saved successfully!');
+    }
+  };
+
   return (
     <Container size="md" py="xl">
-      {/* Title */}
       <Box mb="md">
         <Title order={4}>Outline for Assignment</Title>
         <Text size="sm" color="dimmed">
@@ -46,20 +51,16 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
         </Text>
       </Box>
 
-      {/* Buttons */}
       <Flex mb="lg" gap="sm">
         <Button size="xs" variant="default" onClick={onNewQuestion}>
           + New Question
         </Button>
       </Flex>
 
-      {/* Description */}
       <Text size="sm" color="dimmed" mb="lg">
         Create questions and subquestions via the + buttons below, or by dragging boxes on the template.
-        Reorder and indent questions by dragging them in the outline.
       </Text>
 
-      {/* Table */}
       <Table>
         <thead>
           <tr>
@@ -100,12 +101,13 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
 
       <Divider my="lg" />
 
-      {/* Buttons */}
       <Flex gap="sm" mt="lg">
         <Button variant="default" onClick={handleCancel}>
           Cancel
         </Button>
-        <Button variant="filled">Save Outline</Button>
+        <Button variant="filled" onClick={handleSaveOutline}>
+          Save Outline
+        </Button>
       </Flex>
     </Container>
   );

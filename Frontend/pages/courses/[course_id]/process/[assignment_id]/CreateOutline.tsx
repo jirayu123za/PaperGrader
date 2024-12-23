@@ -21,23 +21,20 @@ export default function CreateOutlinePage() {
         pageNumber: number;
         title: string;
         points: number;
-      
       }[],
-
     },
   });
 
   const handleNewQuestion = () => {
-    form.setFieldValue('boundingBoxes', [
-      ...form.values.boundingBoxes,
-      {
-        topLeft: { x: 100, y: 100 },
-        bottomRight: { x: 300, y: 200 },
-        pageNumber: 1,
-        title: 'New Question',
-        points: 1,
-      },
-    ]);
+    const newBox = {
+      topLeft: { x: 100, y: 100 },
+      bottomRight: { x: 300, y: 200 },
+      pageNumber: 1,
+      title: 'New Question',
+      points: 1,
+    };
+
+    form.setFieldValue('boundingBoxes', [...form.values.boundingBoxes, newBox]);
   };
 
   const updateBoundingBox = (index: number, newBox: any) => {
@@ -56,14 +53,12 @@ export default function CreateOutlinePage() {
       if (assignment_id && course_id) {
         try {
           const response = await axios.get('/api/api/instructor/template/url', {
-            params: {
-              course_id,
-              assignment_id,
-            },
+            params: { course_id, assignment_id },
           });
           form.setFieldValue('pdfUrl', response.data.url);
         } catch (error) {
           console.error('Error fetching PDF URL:', error);
+          alert('Failed to load PDF. Please try again.');
         } finally {
           form.setFieldValue('loading', false);
         }
@@ -73,11 +68,7 @@ export default function CreateOutlinePage() {
   }, [assignment_id, course_id]);
 
   return (
-    <Container
-      fluid
-      className="flex min-h-screen overflow-hidden "
-      style={{ margin: 0, padding: 0 }}
-    >
+    <Container fluid className="flex min-h-screen overflow-hidden" style={{ margin: 0, padding: 0 }}>
       {/* Sidebar */}
       <Flex
         style={{
@@ -88,8 +79,6 @@ export default function CreateOutlinePage() {
           width: '20%',
           borderRight: '1px solid #dee2e6',
           overflow: 'hidden',
-          padding: 0,
-          margin: 0,
         }}
       >
         <LeftProcess />
@@ -111,9 +100,10 @@ export default function CreateOutlinePage() {
         ) : form.values.pdfUrl ? (
           <PDFViewer
             fileUrl={form.values.pdfUrl}
+            assignmentId={assignment_id as string}
             boundingBoxes={form.values.boundingBoxes}
             updateBoundingBox={updateBoundingBox}
-
+            setBoundingBoxes={(newBoxes) => form.setFieldValue('boundingBoxes', newBoxes)}
           />
         ) : (
           <div>No PDF available</div>
@@ -133,9 +123,8 @@ export default function CreateOutlinePage() {
           onNewQuestion={handleNewQuestion}
           boundingBoxes={form.values.boundingBoxes}
           removeBoundingBox={removeBoundingBox}
-          updateBoundingBox={updateBoundingBox} // เพิ่มการส่ง prop นี้
+          updateBoundingBox={updateBoundingBox}
         />
-
       </Flex>
     </Container>
   );
