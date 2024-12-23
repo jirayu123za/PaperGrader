@@ -21,6 +21,7 @@ export default function CreateOutlinePage() {
         pageNumber: number;
         title: string;
         points: number;
+        type: 'NAME' | 'STUDENTID' | 'QUESTION';
       }[],
     },
   });
@@ -32,20 +33,90 @@ export default function CreateOutlinePage() {
       pageNumber: 1,
       title: 'New Question',
       points: 1,
+      type: 'QUESTION',
     };
 
-    form.setFieldValue('boundingBoxes', [...form.values.boundingBoxes, newBox]);
+    const updatedBoxes = [...form.values.boundingBoxes, newBox];
+    form.setFieldValue('boundingBoxes', updatedBoxes);
+
+    if (assignment_id) {
+      localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+    }
   };
+
+  const handleEditName = () => {
+    const existingIndex = form.values.boundingBoxes.findIndex((box) => box.type === 'NAME');
+    let updatedBoxes;
+
+    if (existingIndex !== -1) {
+      // ถ้ามี BoundingBox ของ Name อยู่แล้ว ให้ลบออก
+      updatedBoxes = form.values.boundingBoxes.filter((_, index) => index !== existingIndex);
+    } else {
+      // ถ้ายังไม่มี ให้เพิ่ม BoundingBox ของ Name
+      const newBox = {
+        topLeft: { x: 50, y: 50 },
+        bottomRight: { x: 200, y: 100 },
+        pageNumber: 1,
+        title: 'Name',
+        points: 0,
+        type: 'NAME',
+      };
+      updatedBoxes = [...form.values.boundingBoxes, newBox];
+    }
+
+    // อัปเดต form และ localStorage
+    form.setFieldValue('boundingBoxes', updatedBoxes);
+    if (assignment_id) {
+      localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+    }
+  };
+
+  const handleEditStudentID = () => {
+    const existingIndex = form.values.boundingBoxes.findIndex((box) => box.type === 'STUDENTID');
+    let updatedBoxes;
+
+    if (existingIndex !== -1) {
+      // ถ้ามี BoundingBox ของ Student ID อยู่แล้ว ให้ลบออก
+      updatedBoxes = form.values.boundingBoxes.filter((_, index) => index !== existingIndex);
+    } else {
+      // ถ้ายังไม่มี ให้เพิ่ม BoundingBox ของ Student ID
+      const newBox = {
+        topLeft: { x: 50, y: 150 },
+        bottomRight: { x: 200, y: 200 },
+        pageNumber: 1,
+        title: 'Student ID',
+        points: 0,
+        type: 'STUDENTID',
+      };
+      updatedBoxes = [...form.values.boundingBoxes, newBox];
+    }
+
+    // อัปเดต form และ localStorage
+    form.setFieldValue('boundingBoxes', updatedBoxes);
+    if (assignment_id) {
+      localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+    }
+  };
+
+
 
   const updateBoundingBox = (index: number, newBox: any) => {
     const updatedBoxes = [...form.values.boundingBoxes];
     updatedBoxes[index] = newBox;
     form.setFieldValue('boundingBoxes', updatedBoxes);
+
+    if (assignment_id) {
+      localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+    }
   };
 
   const removeBoundingBox = (index: number) => {
     const updatedBoxes = form.values.boundingBoxes.filter((_, i) => i !== index);
     form.setFieldValue('boundingBoxes', updatedBoxes);
+
+    if (assignment_id) {
+      localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+    }
   };
 
   useEffect(() => {
@@ -64,7 +135,23 @@ export default function CreateOutlinePage() {
         }
       }
     };
+
+    const loadBoundingBoxes = () => {
+      const savedBoxes = localStorage.getItem(`boundingBoxes-${assignment_id}`);
+      if (savedBoxes) {
+        try {
+          const parsedBoxes = JSON.parse(savedBoxes);
+          if (Array.isArray(parsedBoxes)) {
+            form.setFieldValue('boundingBoxes', parsedBoxes);
+          }
+        } catch (error) {
+          console.error('Error parsing bounding box data:', error);
+        }
+      }
+    };
+
     fetchPdfUrl();
+    loadBoundingBoxes();
   }, [assignment_id, course_id]);
 
   return (
@@ -121,6 +208,8 @@ export default function CreateOutlinePage() {
       >
         <CreateOutline
           onNewQuestion={handleNewQuestion}
+          onEditName={handleEditName}
+          onEditStudentID={handleEditStudentID}
           boundingBoxes={form.values.boundingBoxes}
           removeBoundingBox={removeBoundingBox}
           updateBoundingBox={updateBoundingBox}

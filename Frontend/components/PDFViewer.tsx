@@ -13,6 +13,7 @@ interface BoundingBox {
   pageNumber: number;
   title: string;
   points: number;
+  type: 'NAME' | 'STUDENTID' | 'QUESTION';
 }
 
 interface PDFViewerProps {
@@ -109,6 +110,33 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     });
   };
 
+  const handleTransformEnd = (index: number) => {
+    const node = stageRef.current.findOne(`#box-${index}`);
+    const scaleX = node.scaleX();
+    const scaleY = node.scaleY();
+    const box = boundingBoxes[index];
+
+    const newWidth = (box.bottomRight.x - box.topLeft.x) * scaleX;
+    const newHeight = (box.bottomRight.y - box.topLeft.y) * scaleY;
+
+    const newBottomRightX = box.topLeft.x + newWidth;
+    const newBottomRightY = box.topLeft.y + newHeight;
+
+    node.scaleX(1);
+    node.scaleY(1);
+
+    const updatedBox = {
+      ...box,
+      bottomRight: {
+        x: newBottomRightX,
+        y: newBottomRightY,
+      },
+    };
+
+    updateBoundingBox(index, updatedBox);
+  };
+
+
   return (
     <Container
       style={{
@@ -142,20 +170,43 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 y={box.topLeft.y * scaleFactor - scrollOffset.top}
                 width={(box.bottomRight.x - box.topLeft.x) * scaleFactor}
                 height={(box.bottomRight.y - box.topLeft.y) * scaleFactor}
-                fill="rgba(0, 0, 255, 0.2)"
-                stroke="blue"
+                fill={
+                  box.type === 'NAME'
+                    ? 'rgba(0, 255, 0, 0.2)'
+                    : box.type === 'STUDENTID'
+                      ? 'rgba(0, 255, 0, 0.2)'
+                      : 'rgba(0, 0, 255, 0.2)'
+                }
+                stroke={
+                  box.type === 'NAME'
+                    ? 'green'
+                    : box.type === 'STUDENTID'
+                      ? 'green'
+                      : 'blue'
+                }
                 strokeWidth={2}
                 draggable
                 onDragEnd={(e) => handleDragEnd(index, e)}
                 onClick={() => setSelectedShapeIndex(index)}
+                onTransformEnd={() => handleTransformEnd(index)}
               />
               <Text
                 x={box.topLeft.x * scaleFactor - scrollOffset.left}
                 y={box.topLeft.y * scaleFactor - scrollOffset.top - 20}
-                text={`Q${index + 1}: ${box.title} (${box.points} pts)`}
+                text={
+                  box.type === 'QUESTION'
+                    ? `Q${index + 1}: ${box.title} (${box.points} pts)`
+                    : `${box.title}` // แสดงเฉพาะชื่อถ้าเป็น NAME หรือ STUDENTID
+                }
                 fontSize={14}
                 fontStyle="bold"
-                fill="blue"
+                fill={
+                  box.type === 'NAME'
+                    ? 'green'
+                    : box.type === 'STUDENTID'
+                      ? 'green'
+                      : 'blue'
+                }
               />
             </React.Fragment>
           ))}
@@ -167,6 +218,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 : []
             }
             rotateEnabled={false}
+            enabledAnchors={['top-left', 'top-right', 'bottom-left', 'bottom-right','middle-left','middle-right','top-center','bottom-center']}
           />
         </Layer>
       </Stage>
