@@ -37,7 +37,6 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
       boundingBoxes: boundingBoxes as BoundingBox[],
     },
   });
-  
 
   const handleCancel = () => {
     router.push(`/courses/${course_id}/assignments/${assignment_id}`);
@@ -102,7 +101,6 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
         <thead>
           <tr>
             <th>#</th>
-            <th>Type</th>
             <th>Title</th>
             <th>Points</th>
             <th>Actions</th>
@@ -114,7 +112,6 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
             .map((box, index) => (
               <tr key={index}>
                 <td>{index + 1}</td>
-                <td>{box.type}</td>
                 <td>
                   <TextInput
                     size="xs"
@@ -138,7 +135,7 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
               </tr>
             ))}
           <tr>
-            <td colSpan={5} align="center">
+            <td colSpan={4} align="center">
               <Button size="xs" variant="default" onClick={onNewQuestion}>
                 + New Question
               </Button>
