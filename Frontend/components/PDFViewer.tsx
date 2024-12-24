@@ -5,6 +5,7 @@ import { Container } from '@mantine/core';
 import { Stage, Layer, Rect, Transformer, Text } from 'react-konva';
 import usePDFViewerStore from '../store/usePDFViewerStore';
 
+
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js`;
 
 interface BoundingBox {
@@ -135,6 +136,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 
     updateBoundingBox(index, updatedBox);
   };
+
 
 
   return (

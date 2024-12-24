@@ -34,9 +34,10 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
 
   const form = useForm({
     initialValues: {
-      boundingBoxes,
+      boundingBoxes: boundingBoxes as BoundingBox[],
     },
   });
+  
 
   const handleCancel = () => {
     router.push(`/courses/${course_id}/assignments/${assignment_id}`);

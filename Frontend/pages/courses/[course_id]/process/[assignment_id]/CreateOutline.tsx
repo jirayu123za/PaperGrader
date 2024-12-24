@@ -7,6 +7,19 @@ import { useEffect } from 'react';
 import { Container, Flex, Loader } from '@mantine/core';
 import { useForm } from '@mantine/form';
 
+
+
+
+
+interface BoundingBox {
+  topLeft: { x: number; y: number };
+  bottomRight: { x: number; y: number };
+  pageNumber: number;
+  title: string;
+  points: number;
+  type: 'NAME' | 'STUDENTID' | 'QUESTION';
+}
+
 export default function CreateOutlinePage() {
   const router = useRouter();
   const { assignment_id, course_id } = router.query;
@@ -27,33 +40,31 @@ export default function CreateOutlinePage() {
   });
 
   const handleNewQuestion = () => {
-    const newBox = {
+    const newBox: BoundingBox = {
       topLeft: { x: 100, y: 100 },
       bottomRight: { x: 300, y: 200 },
       pageNumber: 1,
       title: 'New Question',
       points: 1,
-      type: 'QUESTION',
+      type: 'QUESTION', // ต้องใช้ค่าที่ตรงกับ type ที่กำหนดใน interface
     };
-
+  
     const updatedBoxes = [...form.values.boundingBoxes, newBox];
     form.setFieldValue('boundingBoxes', updatedBoxes);
-
+  
     if (assignment_id) {
       localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
     }
   };
-
+  
   const handleEditName = () => {
     const existingIndex = form.values.boundingBoxes.findIndex((box) => box.type === 'NAME');
-    let updatedBoxes;
-
+    let updatedBoxes: BoundingBox[];
+  
     if (existingIndex !== -1) {
-      // ถ้ามี BoundingBox ของ Name อยู่แล้ว ให้ลบออก
       updatedBoxes = form.values.boundingBoxes.filter((_, index) => index !== existingIndex);
     } else {
-      // ถ้ายังไม่มี ให้เพิ่ม BoundingBox ของ Name
-      const newBox = {
+      const newBox: BoundingBox = {
         topLeft: { x: 50, y: 50 },
         bottomRight: { x: 200, y: 100 },
         pageNumber: 1,
@@ -63,24 +74,26 @@ export default function CreateOutlinePage() {
       };
       updatedBoxes = [...form.values.boundingBoxes, newBox];
     }
-
-    // อัปเดต form และ localStorage
+  
     form.setFieldValue('boundingBoxes', updatedBoxes);
+  
     if (assignment_id) {
       localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
     }
   };
+  
+  
 
   const handleEditStudentID = () => {
     const existingIndex = form.values.boundingBoxes.findIndex((box) => box.type === 'STUDENTID');
-    let updatedBoxes;
+    let updatedBoxes: BoundingBox[];
 
     if (existingIndex !== -1) {
       // ถ้ามี BoundingBox ของ Student ID อยู่แล้ว ให้ลบออก
       updatedBoxes = form.values.boundingBoxes.filter((_, index) => index !== existingIndex);
     } else {
       // ถ้ายังไม่มี ให้เพิ่ม BoundingBox ของ Student ID
-      const newBox = {
+      const newBox: BoundingBox = {
         topLeft: { x: 50, y: 150 },
         bottomRight: { x: 200, y: 200 },
         pageNumber: 1,
@@ -100,15 +113,16 @@ export default function CreateOutlinePage() {
 
 
 
-  const updateBoundingBox = (index: number, newBox: any) => {
+  const updateBoundingBox = (index: number, newBox: BoundingBox) => {
     const updatedBoxes = [...form.values.boundingBoxes];
-    updatedBoxes[index] = newBox;
+    updatedBoxes[index] = newBox; // newBox ต้องเป็นประเภท BoundingBox
     form.setFieldValue('boundingBoxes', updatedBoxes);
-
+  
     if (assignment_id) {
       localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
     }
   };
+  
 
   const removeBoundingBox = (index: number) => {
     const updatedBoxes = form.values.boundingBoxes.filter((_, i) => i !== index);
@@ -140,7 +154,7 @@ export default function CreateOutlinePage() {
       const savedBoxes = localStorage.getItem(`boundingBoxes-${assignment_id}`);
       if (savedBoxes) {
         try {
-          const parsedBoxes = JSON.parse(savedBoxes);
+          const parsedBoxes: BoundingBox[] = JSON.parse(savedBoxes); // ระบุประเภท BoundingBox[]
           if (Array.isArray(parsedBoxes)) {
             form.setFieldValue('boundingBoxes', parsedBoxes);
           }
@@ -149,6 +163,8 @@ export default function CreateOutlinePage() {
         }
       }
     };
+    
+    
 
     fetchPdfUrl();
     loadBoundingBoxes();
