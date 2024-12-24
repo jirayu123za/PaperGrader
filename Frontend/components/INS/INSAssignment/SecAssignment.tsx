@@ -1,7 +1,7 @@
 import React from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { Checkbox, Table, Progress } from '@mantine/core';
+import { Checkbox, Table, Progress, Text as MantineText } from '@mantine/core';
 import { useSelectSectionStore } from '../../../store/useSectionStore';
 import { useAssignmentExpandStore, useSelectedAssignmentStore } from '../../../store/Table/useInsAssignmentTableStore';
 import { useInsAssignmentStore } from '../../../store/useAssignmentStore';
@@ -39,7 +39,7 @@ const SecAssignment: React.FC = () => {
             <Table.Th style={{ width: '10%' }}>SELECT</Table.Th>
             <Table.Th style={{ width: '20%', textAlign: 'center' }}>Section Name</Table.Th>
             <Table.Th style={{ width: '20%', textAlign: 'center' }}>Release Date</Table.Th>
-            <Table.Th style={{ width: '30%', textAlign: 'center' }}>Progress</Table.Th>
+            <Table.Th style={{ width: '30%', textAlign: 'center' }}>Time Remaining</Table.Th>
             <Table.Th style={{ width: '20%', textAlign: 'center' }}>Due Date</Table.Th>
           </Table.Tr>
         </Table.Thead>
@@ -63,10 +63,14 @@ const SecAssignment: React.FC = () => {
               </Table.Td>
               <Table.Td>
                 <Progress
-                  value={calculateProgress(section.release_date ?? 'N/A', section.due_date ?? 'N/A')}
-                  color="green"
+                  value={calculateTimeRemaining(section.release_date ?? 'N/A', section.due_date ?? 'N/A')}
+                  color={getProgressColor(section.release_date ?? 'N/A', section.due_date ?? 'N/A')}
                   size="lg"
+                  striped
                 />
+                <MantineText size="xs" mt={4}>
+                  {getRemainingTimeText(section.due_date)}
+                </MantineText>
               </Table.Td>
               <Table.Td style={{ textAlign: 'center' }}>
                 {section.due_date
@@ -81,24 +85,60 @@ const SecAssignment: React.FC = () => {
   );
 };
 
-const calculateProgress = (releaseDate: string, dueDate: string): number => {
-  if (releaseDate === 'N/A' || dueDate === 'N/A') return 0;
+const calculateTimeRemaining = (releaseDate: string | null, dueDate: string | null): number => {
+  if (!releaseDate || !dueDate || releaseDate === 'N/A' || dueDate === 'N/A') return 0;
 
   const now = dayjs();
   const release = dayjs(releaseDate);
   const due = dayjs(dueDate);
 
   if (now.isBefore(release)) {
-    return 0;
+    return 100; // Full bar if before release
   }
   if (now.isAfter(due)) {
-    return 100;
+    return 0; // Empty bar if after due
   }
 
   const totalDuration = due.diff(release);
-  const elapsedDuration = now.diff(release);
+  const remainingDuration = due.diff(now);
 
-  return (elapsedDuration / totalDuration) * 100;
+  return (remainingDuration / totalDuration) * 100; // Percentage of time remaining
+};
+
+const getProgressColor = (releaseDate: string | null, dueDate: string | null): string => {
+  const remainingPercentage = calculateTimeRemaining(releaseDate, dueDate);
+
+  if (remainingPercentage > 70) {
+    return 'green';
+  } else if (remainingPercentage > 40) {
+    return 'orange';
+  } else {
+    return 'red';
+  }
+};
+
+const getRemainingTimeText = (dueDate: string | null): string => {
+  if (!dueDate || dueDate === 'N/A') return 'N/A';
+
+  const now = dayjs();
+  const due = dayjs(dueDate);
+
+  if (now.isAfter(due)) {
+    return 'Past Due';
+  }
+
+  const duration = due.diff(now, 'minute');
+
+  const days = Math.floor(duration / (60 * 24));
+  const hours = Math.floor((duration % (60 * 24)) / 60);
+  const minutes = duration % 60;
+
+  const timeParts = [];
+  if (days > 0) timeParts.push(`${days}d`);
+  if (hours > 0) timeParts.push(`${hours}h`);
+  if (minutes > 0) timeParts.push(`${minutes}m`);
+
+  return timeParts.join(' ') || 'Less than a minute';
 };
 
 export default SecAssignment;
