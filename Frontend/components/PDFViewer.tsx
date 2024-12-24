@@ -5,7 +5,6 @@ import { Container } from '@mantine/core';
 import { Stage, Layer, Rect, Transformer, Text } from 'react-konva';
 import usePDFViewerStore from '../store/usePDFViewerStore';
 
-
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js`;
 
 interface BoundingBox {
@@ -39,7 +38,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const { scaleFactor, setScaleFactor, selectedShapeIndex, setSelectedShapeIndex } = usePDFViewerStore();
 
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
-  const [scrollOffset, setScrollOffset] = useState({ top: 0, left: 0 });
 
   useEffect(() => {
     const renderPDF = async () => {
@@ -86,17 +84,13 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     }
   }, [assignmentId, setBoundingBoxes]);
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    setScrollOffset({ top: e.currentTarget.scrollTop, left: e.currentTarget.scrollLeft });
-  };
-
   const handleDragEnd = (index: number, e: any) => {
     const box = boundingBoxes[index];
     const width = box.bottomRight.x - box.topLeft.x;
     const height = box.bottomRight.y - box.topLeft.y;
 
-    const newTopLeftX = (e.target.x() + scrollOffset.left) / scaleFactor;
-    const newTopLeftY = (e.target.y() + scrollOffset.top) / scaleFactor;
+    const newTopLeftX = e.target.x() / scaleFactor;
+    const newTopLeftY = e.target.y() / scaleFactor;
 
     updateBoundingBox(index, {
       ...box,
@@ -137,8 +131,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     updateBoundingBox(index, updatedBox);
   };
 
-
-
   return (
     <Container
       style={{
@@ -148,7 +140,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         overflow: 'auto',
         border: '1px solid #ccc',
       }}
-      onScroll={handleScroll}
     >
       <canvas ref={canvasRef} style={{ display: 'block' }} />
 
@@ -168,22 +159,22 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
             <React.Fragment key={index}>
               <Rect
                 id={`box-${index}`}
-                x={box.topLeft.x * scaleFactor - scrollOffset.left}
-                y={box.topLeft.y * scaleFactor - scrollOffset.top}
+                x={box.topLeft.x * scaleFactor}
+                y={box.topLeft.y * scaleFactor}
                 width={(box.bottomRight.x - box.topLeft.x) * scaleFactor}
                 height={(box.bottomRight.y - box.topLeft.y) * scaleFactor}
                 fill={
                   box.type === 'NAME'
                     ? 'rgba(0, 255, 0, 0.2)'
                     : box.type === 'STUDENTID'
-                      ? 'rgba(0, 255, 0, 0.2)'
+                      ? 'rgba(255, 0, 0, 0.2)'
                       : 'rgba(0, 0, 255, 0.2)'
                 }
                 stroke={
                   box.type === 'NAME'
                     ? 'green'
                     : box.type === 'STUDENTID'
-                      ? 'green'
+                      ? 'red'
                       : 'blue'
                 }
                 strokeWidth={2}
@@ -193,12 +184,12 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 onTransformEnd={() => handleTransformEnd(index)}
               />
               <Text
-                x={box.topLeft.x * scaleFactor - scrollOffset.left}
-                y={box.topLeft.y * scaleFactor - scrollOffset.top - 20}
+                x={box.topLeft.x * scaleFactor}
+                y={box.topLeft.y * scaleFactor - 20}
                 text={
                   box.type === 'QUESTION'
                     ? `Q${index + 1}: ${box.title} (${box.points} pts)`
-                    : `${box.title}` // แสดงเฉพาะชื่อถ้าเป็น NAME หรือ STUDENTID
+                    : `${box.title}`
                 }
                 fontSize={14}
                 fontStyle="bold"
@@ -206,7 +197,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                   box.type === 'NAME'
                     ? 'green'
                     : box.type === 'STUDENTID'
-                      ? 'green'
+                      ? 'red'
                       : 'blue'
                 }
               />
