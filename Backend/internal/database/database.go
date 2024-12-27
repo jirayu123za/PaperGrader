@@ -13,6 +13,21 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+func CreateEnumsBoundingBoxType(db *gorm.DB) {
+	err := db.Exec(`
+		DO $$
+		BEGIN
+			IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'bounding_box_type_enum') THEN
+				CREATE TYPE bounding_box_type_enum AS ENUM ('name', 'id', 'question');
+			END IF;
+		END$$;
+	`).Error
+
+	if err != nil {
+		log.Fatalf("Failed to create enum: %v", err)
+	}
+}
+
 func ConnectPostgres(migrate bool) *gorm.DB {
 	config.LoadEnv()
 	dsn := os.Getenv("DATABASE_DSN")
@@ -37,21 +52,23 @@ func ConnectPostgres(migrate bool) *gorm.DB {
 
 	// Migration
 	if migrate {
+		CreateEnumsBoundingBoxType(db)
+
 		db.Migrator().DropTable(
-			&models.AssignmentSection{},
-			&models.AssignmentFile{},
-			&models.Submission{},
-			// &models.Enrollment{},
-			// &models.InstructorList{},
-			// models.EnrollmentList{},
-			// &models.PersonalData{},
-			// &models.Section{},
-			&models.Assignment{},
-			// &models.Course{},
-			// &models.User{},
-			// &models.UserGroup{},
-			// &models.University{},
-			&models.Upload{},
+		// &models.AssignmentSection{},
+		// &models.AssignmentFile{},
+		// &models.Submission{},
+		// // &models.Enrollment{},
+		// // &models.InstructorList{},
+		// // models.EnrollmentList{},
+		// // &models.PersonalData{},
+		// // &models.Section{},
+		// &models.Assignment{},
+		// // &models.Course{},
+		// // &models.User{},
+		// // &models.UserGroup{},
+		// // &models.University{},
+		// &models.Upload{},
 		)
 
 		err := db.AutoMigrate(
@@ -68,7 +85,11 @@ func ConnectPostgres(migrate bool) *gorm.DB {
 			&models.PersonalData{},
 			&models.Submission{},
 			&models.AssignmentSection{},
-			&models.Upload{})
+			&models.Upload{},
+			&models.BoundingBox{},
+			&models.Question{},
+		)
+
 		if err != nil {
 			log.Fatal("Failed to migrate database: ", err)
 		}
