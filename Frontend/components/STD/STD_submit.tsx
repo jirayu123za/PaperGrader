@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Button, FileInput, Alert } from '@mantine/core';
+import { Modal, Button, FileInput, Alert, Text as MantineText } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconDownload, IconFileText } from '@tabler/icons-react';
 import { useFetchInstructorFile } from '../../hooks/useFetchInstructorFile';
@@ -30,20 +30,21 @@ const STDSubmit: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    console.log('Selected file before submit:', studentFile);
     if (studentFile) {
       uploadStudentFile(
-        { course_id, assignment_id, file: studentFile }, 
-        { onSuccess: (data) => {
+        { course_id, assignment_id, file: studentFile },
+        {
+          onSuccess: (data) => {
             console.log('Upload successful:', data);
             closeModal();
           },
           onError: (error) => {
             console.error('Upload failed:', error);
           },
-        });
-      } else {
-    console.log('No file selected');
+        }
+      );
+    } else {
+      console.log('No file selected');
     }
   };
 
@@ -55,17 +56,20 @@ const STDSubmit: React.FC = () => {
         <>
           {files.length && fileNames.length > 0 ? (
             <Alert title="Your Instructor has provided PDF files to help you complete your assignment" color="blue" radius="md">
-              {/* แสดงรายการไฟล์ทั้งหมด */}
               {files.map((fileUrl: string, index: number) => (
-                <Button
-                  key={index}
-                  variant="light"
-                  onClick={() => downloadFile(fileUrl, fileNames[index])}
-                  className="text-blue-500 hover:underline block"
-                >
-                  <IconDownload size={18} className="inline-block mr-2" />
-                  {fileNames[index]}
-                </Button>
+                <div key={index} className="mb-2">
+                  <Button
+                    variant="light"
+                    onClick={() => downloadFile(fileUrl, fileNames[index])}
+                    className="text-blue-500 hover:underline block"
+                  >
+                    <IconDownload size={18} className="inline-block mr-2" />
+                    {fileNames[index]}
+                  </Button>
+                  <MantineText size="sm" color="dimmed" className="ml-2">
+                    {index === 0 ? 'This is a template file.' : 'This is an additional file.'}
+                  </MantineText>
+                </div>
               ))}
             </Alert>
           ) : (
@@ -74,10 +78,12 @@ const STDSubmit: React.FC = () => {
             </Alert>
           )}
 
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            handleSubmit(); 
-          }}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
+          >
             <div className="my-4">
               <FileInput
                 placeholder="Select PDF"
@@ -97,19 +103,17 @@ const STDSubmit: React.FC = () => {
             )}
 
             <div className="flex justify-end">
-              <Button 
+              <Button
                 variant="default"
                 onClick={() => {
-                form.reset();
-                setStudentFile(null);
-                closeModal(); }}>
+                  form.reset();
+                  setStudentFile(null);
+                  closeModal();
+                }}
+              >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                color="blue" 
-                className="ml-2"
-              >
+              <Button type="submit" color="blue" className="ml-2">
                 Submit
               </Button>
             </div>
