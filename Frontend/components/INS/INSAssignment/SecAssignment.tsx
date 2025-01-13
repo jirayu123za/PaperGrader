@@ -110,7 +110,7 @@ const getProgressColor = (releaseDate: string | null, dueDate: string | null): s
 
   if (remainingPercentage > 70) {
     return 'green';
-  } else if (remainingPercentage > 40) {
+  } else if (remainingPercentage > 20) {
     return 'orange';
   } else {
     return 'red';
