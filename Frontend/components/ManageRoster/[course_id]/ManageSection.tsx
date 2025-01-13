@@ -50,8 +50,8 @@ const ManageSection: React.FC = () => {
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Section Name</Table.Th>
-              <Table.Th>No of Students</Table.Th>
-              <Table.Th>View</Table.Th>
+              <Table.Th style={{ textAlign: 'center' }}>Students Enrolled</Table.Th>
+              <Table.Th style={{ textAlign: 'center' }}>View</Table.Th>
               <Table.Th>Remove</Table.Th>
             </Table.Tr>
           </Table.Thead>
@@ -82,8 +82,8 @@ const ManageSection: React.FC = () => {
             :paginatedData.map((section) => (
               <Table.Tr key={section.section_id}>
                 <Table.Td>{section.section_name}</Table.Td>
-                <Table.Td>{section.total_students}</Table.Td>
-                <Table.Td>
+                <Table.Td style={{ textAlign: 'center' }}>{section.total_students}</Table.Td>
+                <Table.Td style={{ textAlign: 'center' }}>
                   <Button
                     variant="subtle"
                     size="xs"
