@@ -188,7 +188,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 y={box.topLeft.y * scaleFactor - 20}
                 text={
                   box.type === 'QUESTION'
-                    ? `Q${index + 1}: ${box.title} (${box.points} pts)`
+                    ? ` ${box.title} (${box.points} pts)`
                     : `${box.title}`
                 }
                 fontSize={14}

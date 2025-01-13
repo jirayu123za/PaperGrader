@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { Container, Title, Text, Button, Table, Flex, Divider, Box, TextInput } from '@mantine/core';
+import { Container, Title, Text, Button, Table, Flex, Divider, Box, TextInput, NumberInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 
 interface BoundingBox {
@@ -97,13 +97,14 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
         Create questions and subquestions via the + buttons below, or by dragging boxes on the template.
       </Text>
 
+      {/* ตารางสำหรับ Questions */}
       <Table>
         <thead>
           <tr>
-            <th>#</th>
-            <th>Title</th>
-            <th>Points</th>
-            <th>Actions</th>
+            <th style={{ width: '5%' }}>#</th>
+            <th style={{ width: '70%' }}>Title</th>
+            <th style={{ width: '10%', textAlign: 'center' }}>Points</th>
+            <th style={{ width: '15%', textAlign: 'center' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -120,11 +121,11 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
                   />
                 </td>
                 <td>
-                  <TextInput
+                  <NumberInput
                     size="xs"
-                    type="number"
                     value={box.points}
-                    onChange={(e) => handleInputChange(index, 'points', Number(e.target.value))}
+                    onChange={(value) => handleInputChange(index, 'points', value)}
+                    hideControls // ซ่อนปุ่มเพิ่ม-ลด
                   />
                 </td>
                 <td>

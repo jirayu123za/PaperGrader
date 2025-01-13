@@ -40,13 +40,16 @@ export default function CreateOutlinePage() {
   });
 
   const handleNewQuestion = () => {
+    // กรองเฉพาะ BoundingBox ที่เป็น QUESTION
+    const questionBoxes = form.values.boundingBoxes.filter((box) => box.type === 'QUESTION');
+    
     const newBox: BoundingBox = {
       topLeft: { x: 100, y: 100 },
       bottomRight: { x: 300, y: 200 },
       pageNumber: 1,
-      title: 'New Question',
+      title: `Q${questionBoxes.length + 1}: New Question`, // กำหนดชื่อ Q ตามลำดับ
       points: 1,
-      type: 'QUESTION', // ต้องใช้ค่าที่ตรงกับ type ที่กำหนดใน interface
+      type: 'QUESTION',
     };
   
     const updatedBoxes = [...form.values.boundingBoxes, newBox];
@@ -56,6 +59,7 @@ export default function CreateOutlinePage() {
       localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
     }
   };
+  
   
   const handleEditName = () => {
     const existingIndex = form.values.boundingBoxes.findIndex((box) => box.type === 'NAME');
