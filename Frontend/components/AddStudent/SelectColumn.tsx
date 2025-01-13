@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Button, Select, RadioGroup, Radio, Text, Table, Loader } from '@mantine/core';
+import { Modal, Button, Select, RadioGroup, Radio, Text, Table, Loader, Flex } from '@mantine/core';
 import { useCreateMultipleUser } from '../../hooks/useCreate/useCreateMultipleUser';
 import { useForm } from '@mantine/form';
 import { useRouter } from 'next/router';
@@ -10,7 +10,7 @@ interface SelectColumnProps {
   onClose: () => void;
 }
 
-const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {  
+const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
   const csvData = useCSVdataStore((state) => state.csvData);
   const csvHeaders = csvData?.columns || [];
   const router = useRouter();
@@ -64,7 +64,7 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
 
       formData.append('data', JSON.stringify(columnData));
 
-      console.log('Prepared FormData:', columnData); 
+      console.log('Prepared FormData:', columnData);
 
       createMultipleUser({ formData, course_id: Array.isArray(course_id) ? course_id[0] : course_id || '' }, {
         onSuccess: () => {
@@ -93,11 +93,33 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
       <Table highlightOnHover>
         <thead>
           <tr>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Email Address</th>
-            <th>Section</th>
-            <th>Student ID (Optional)</th>
+            <th>
+              <Flex align="center" gap="xs">
+                <Text>First Name</Text>
+                <Text size="xs" color="red">*</Text>
+              </Flex>
+            </th>
+            <th>
+              <Flex align="center" gap="xs">
+                <Text>Last Name</Text>
+                <Text size="xs" color="red">*</Text>
+              </Flex>
+            </th>
+            <th>
+              <Flex align="center" gap="xs">
+                <Text>Email Address</Text>
+                <Text size="xs" color="red">*</Text>
+              </Flex>
+            </th>
+            <th>
+              <Flex align="center" gap="xs">
+                <Text>Section</Text>
+                <Text size="xs" color="red">*</Text>
+              </Flex>
+            </th>
+            <th>
+              <Text>Student ID (Optional)</Text>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -164,8 +186,8 @@ const SelectColumn: React.FC<SelectColumnProps> = ({ isOpen, onClose }) => {
       >
         <div className="flex gap-4">
           <Radio value="STUDENT" label="Student" />
-          <Radio value="INSTRUCTOR" label="Instructor" disabled/>
-          <Radio value="TA" label="TA" disabled/>
+          <Radio value="INSTRUCTOR" label="Instructor" disabled />
+          <Radio value="TA" label="TA" disabled />
         </div>
       </RadioGroup>
 
