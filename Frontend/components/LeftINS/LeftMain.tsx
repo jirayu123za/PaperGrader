@@ -82,7 +82,7 @@ export default function LeftMain() {
 
             <button className="flex items-center space-x-2 hover:text-teal-700" disabled={!course}>
               <IoStatsChart />
-              {!isCollapsed && <span>Statistic</span>}
+              {!isCollapsed && <span>Statistics</span>}
             </button>
 
             {/* ปุ่ม Data Exports */}
