@@ -3,13 +3,10 @@ import PDFViewer from '../../../../../components/PDFViewer';
 import CreateOutline from '../../../../../components/INS/INSProcess/Right/CreateOutline';
 import axios from 'axios';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
-import { Container, Flex, Loader } from '@mantine/core';
+import { useEffect, useState } from 'react';
+import { Container, Flex, Loader, Button} from '@mantine/core';
 import { useForm } from '@mantine/form';
-
-
-
-
+import { FaBars } from 'react-icons/fa';
 
 interface BoundingBox {
   topLeft: { x: number; y: number };
@@ -24,47 +21,39 @@ export default function CreateOutlinePage() {
   const router = useRouter();
   const { assignment_id, course_id } = router.query;
 
+  const [isOutlineCollapsed, setOutlineCollapsed] = useState(false);
+
   const form = useForm({
     initialValues: {
       pdfUrl: '',
       loading: true,
-      boundingBoxes: [] as {
-        topLeft: { x: number; y: number };
-        bottomRight: { x: number; y: number };
-        pageNumber: number;
-        title: string;
-        points: number;
-        type: 'NAME' | 'STUDENTID' | 'QUESTION';
-      }[],
+      boundingBoxes: [] as BoundingBox[],
     },
   });
 
   const handleNewQuestion = () => {
-    // กรองเฉพาะ BoundingBox ที่เป็น QUESTION
     const questionBoxes = form.values.boundingBoxes.filter((box) => box.type === 'QUESTION');
-    
     const newBox: BoundingBox = {
       topLeft: { x: 100, y: 100 },
       bottomRight: { x: 300, y: 200 },
       pageNumber: 1,
-      title: `Q${questionBoxes.length + 1}: New Question`, // กำหนดชื่อ Q ตามลำดับ
+      title: `Q${questionBoxes.length + 1}: New Question`,
       points: 1,
       type: 'QUESTION',
     };
-  
+
     const updatedBoxes = [...form.values.boundingBoxes, newBox];
     form.setFieldValue('boundingBoxes', updatedBoxes);
-  
+
     if (assignment_id) {
       localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
     }
   };
-  
-  
+
   const handleEditName = () => {
     const existingIndex = form.values.boundingBoxes.findIndex((box) => box.type === 'NAME');
     let updatedBoxes: BoundingBox[];
-  
+
     if (existingIndex !== -1) {
       updatedBoxes = form.values.boundingBoxes.filter((_, index) => index !== existingIndex);
     } else {
@@ -78,25 +67,21 @@ export default function CreateOutlinePage() {
       };
       updatedBoxes = [...form.values.boundingBoxes, newBox];
     }
-  
+
     form.setFieldValue('boundingBoxes', updatedBoxes);
-  
+
     if (assignment_id) {
       localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
     }
   };
-  
-  
 
   const handleEditStudentID = () => {
     const existingIndex = form.values.boundingBoxes.findIndex((box) => box.type === 'STUDENTID');
     let updatedBoxes: BoundingBox[];
 
     if (existingIndex !== -1) {
-      // ถ้ามี BoundingBox ของ Student ID อยู่แล้ว ให้ลบออก
       updatedBoxes = form.values.boundingBoxes.filter((_, index) => index !== existingIndex);
     } else {
-      // ถ้ายังไม่มี ให้เพิ่ม BoundingBox ของ Student ID
       const newBox: BoundingBox = {
         topLeft: { x: 50, y: 150 },
         bottomRight: { x: 200, y: 200 },
@@ -108,25 +93,22 @@ export default function CreateOutlinePage() {
       updatedBoxes = [...form.values.boundingBoxes, newBox];
     }
 
-    // อัปเดต form และ localStorage
     form.setFieldValue('boundingBoxes', updatedBoxes);
+
     if (assignment_id) {
       localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
     }
   };
-
-
 
   const updateBoundingBox = (index: number, newBox: BoundingBox) => {
     const updatedBoxes = [...form.values.boundingBoxes];
-    updatedBoxes[index] = newBox; // newBox ต้องเป็นประเภท BoundingBox
+    updatedBoxes[index] = newBox;
     form.setFieldValue('boundingBoxes', updatedBoxes);
-  
+
     if (assignment_id) {
       localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
     }
   };
-  
 
   const removeBoundingBox = (index: number) => {
     const updatedBoxes = form.values.boundingBoxes.filter((_, i) => i !== index);
@@ -158,7 +140,7 @@ export default function CreateOutlinePage() {
       const savedBoxes = localStorage.getItem(`boundingBoxes-${assignment_id}`);
       if (savedBoxes) {
         try {
-          const parsedBoxes: BoundingBox[] = JSON.parse(savedBoxes); // ระบุประเภท BoundingBox[]
+          const parsedBoxes: BoundingBox[] = JSON.parse(savedBoxes);
           if (Array.isArray(parsedBoxes)) {
             form.setFieldValue('boundingBoxes', parsedBoxes);
           }
@@ -167,8 +149,6 @@ export default function CreateOutlinePage() {
         }
       }
     };
-    
-    
 
     fetchPdfUrl();
     loadBoundingBoxes();
@@ -183,7 +163,7 @@ export default function CreateOutlinePage() {
           left: 0,
           top: 0,
           height: '100vh',
-          width: '20%',
+          width: '15%',
           borderRight: '1px solid #dee2e6',
           overflow: 'hidden',
         }}
@@ -194,12 +174,14 @@ export default function CreateOutlinePage() {
       {/* Main Content */}
       <Flex
         style={{
-          marginLeft: '20%',
+          marginLeft: '15%',
+          marginRight: isOutlineCollapsed ? '0%' : '30%',
           flex: 1,
-          overflow: 'hidden',
+          overflow: 'auto',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
+          transition: 'margin-right 0.3s ease',
         }}
       >
         {form.values.loading ? (
@@ -219,22 +201,50 @@ export default function CreateOutlinePage() {
 
       {/* CreateOutline Section */}
       <Flex
-        style={{
-          width: '30%',
-          padding: '1rem',
-          overflow: 'hidden',
-          borderLeft: '1px solid #dee2e6',
-        }}
-      >
-        <CreateOutline
-          onNewQuestion={handleNewQuestion}
-          onEditName={handleEditName}
-          onEditStudentID={handleEditStudentID}
-          boundingBoxes={form.values.boundingBoxes}
-          removeBoundingBox={removeBoundingBox}
-          updateBoundingBox={updateBoundingBox}
-        />
-      </Flex>
+  style={{
+    position: 'fixed',
+    right: 0,
+    top: 0,
+    height: '100vh',
+    width: isOutlineCollapsed ? '3%' : '30%',
+    padding: isOutlineCollapsed ? '0' : '1rem',
+    overflowY: 'auto',
+    borderLeft: '1px solid #dee2e6',
+    transition: 'width 0.3s ease',
+    backgroundColor: '#f8f9fa',
+  }}
+>  <Button
+    style={{
+      position: 'absolute',
+      top: '10px', // อยู่ใกล้ขอบด้านบน
+      right: isOutlineCollapsed ? '5px' : 'calc(30% - 30px)', // อยู่ตรงกลางของส่วนขวา
+      width: '40px',
+      height: '40px',
+      borderRadius: '50%',
+      backgroundColor: '#6665AC',
+      color: isOutlineCollapsed ? '#FFF': '#6665AC',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1000, // เพื่อให้แสดงอยู่ด้านหน้าสุด
+    }}
+    onClick={() => setOutlineCollapsed((prev) => !prev)}
+  >
+    <FaBars />
+  </Button>
+  {!isOutlineCollapsed && (
+    <CreateOutline
+      onNewQuestion={handleNewQuestion}
+      onEditName={handleEditName}
+      onEditStudentID={handleEditStudentID}
+      boundingBoxes={form.values.boundingBoxes}
+      removeBoundingBox={removeBoundingBox}
+      updateBoundingBox={updateBoundingBox}
+      onToggleCollapse={() => setOutlineCollapsed((prev) => !prev)} // Callback for collapsing
+    />
+  )}
+</Flex>
+
     </Container>
   );
 }
