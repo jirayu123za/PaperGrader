@@ -5,7 +5,7 @@ import { FaBars, FaArrowLeft, FaCheckCircle } from 'react-icons/fa';
 import { GiClockwiseRotation } from 'react-icons/gi';
 import { IoStatsChart } from 'react-icons/io5';
 import { IoMdSettings } from 'react-icons/io';
-import { Button, Container, Divider, Flex, Stack, Title, Transition, Text, Group } from '@mantine/core';
+import { Button, Container, Divider, Flex, Stack, Title, Transition, Text, Group, Radio } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useRouter } from 'next/router';
 import { useFetchAssignmentLeft } from '../../hooks/SideBar/useFetchAssignmentLeft';
@@ -46,9 +46,8 @@ export default function LeftProcess() {
 
   return (
     <Container
-      className={`relative h-screen flex flex-col border-r ${
-        isCollapsed ? 'w-16 p-4' : 'w-64 p-6'
-      }`}
+      className={`relative h-screen flex flex-col border-r ${isCollapsed ? 'w-16 p-4' : 'w-64 p-6'
+        }`}
       style={{
         backgroundColor: '#6665AC',
         color: '#F9F9F9',
@@ -58,9 +57,8 @@ export default function LeftProcess() {
       <Stack>
         <Flex className="items-center justify-between mb-2">
           <div
-            className={`rounded transition-opacity duration-300 ${
-              isCollapsed ? 'opacity-0 w-0 h-0' : 'opacity-100'
-            } flex justify-center items-center`}
+            className={`rounded transition-opacity duration-300 ${isCollapsed ? 'opacity-0 w-0 h-0' : 'opacity-100'
+              } flex justify-center items-center`}
             style={{
               height: isCollapsed ? '0px' : '40px',
               backgroundColor: '#E9E9E9',
@@ -152,6 +150,20 @@ export default function LeftProcess() {
                 },
               }}
             >
+              <Radio
+                value={option.key}
+                checked={activeOption === option.key}
+                onChange={() => handleOptionClick(option.key)}
+                styles={{
+                  label: {
+                    color: activeOption === option.key ? '#1C7ED6' : '#000',
+                  },
+                  radio: {
+                    borderColor: activeOption === option.key ? '#1C7ED6' : '#ccc',
+                    backgroundColor: activeOption === option.key ? '#1C7ED6' : 'transparent',
+                  },
+                }}
+              />
               <Transition
                 mounted={!isCollapsed}
                 transition="fade"
