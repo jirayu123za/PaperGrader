@@ -1,7 +1,7 @@
 import React from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { Checkbox, Table, Progress, Text as MantineText } from '@mantine/core';
+import { Checkbox, Table, Progress, Text as MantineText, ScrollArea } from '@mantine/core';
 import { useSelectSectionStore } from '../../../store/useSectionStore';
 import { useAssignmentExpandStore, useSelectedAssignmentStore } from '../../../store/Table/useInsAssignmentTableStore';
 import { useInsAssignmentStore } from '../../../store/useAssignmentStore';
@@ -32,8 +32,14 @@ const SecAssignment: React.FC = () => {
   const allSections = expandedAssignmentsData.flatMap((assignment) => assignment.assignment_sections);
 
   return (
-    <>
-      <Table withTableBorder={false} verticalSpacing="lg" className="bg-white">
+    <ScrollArea style={{ height: '400px' }}>
+      <Table
+        striped
+        highlightOnHover
+        verticalSpacing="md"
+        className="bg-white"
+        style={{ borderCollapse: 'collapse' }} // นำเส้นตารางออก
+      >
         <Table.Thead>
           <Table.Tr>
             <Table.Th style={{ width: '10%' }}>SELECT</Table.Th>
@@ -44,8 +50,14 @@ const SecAssignment: React.FC = () => {
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {allSections.map((section) => (
-            <Table.Tr key={section.assignment_section_id}>
+          {allSections.map((section, index) => (
+            <Table.Tr
+              key={section.assignment_section_id}
+              style={{
+                backgroundColor: index % 2 === 0 ? '#f8f9fa' : '#ffffff', // สีพื้นหลังแบบสลับ
+                color: '#495057', // สีข้อความ
+              }}
+            >
               <Table.Td>
                 <Checkbox
                   pl={10}
@@ -81,7 +93,7 @@ const SecAssignment: React.FC = () => {
           ))}
         </Table.Tbody>
       </Table>
-    </>
+    </ScrollArea>
   );
 };
 
