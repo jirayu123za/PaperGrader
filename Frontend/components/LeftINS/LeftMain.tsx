@@ -116,11 +116,11 @@ export default function LeftMain() {
   <div className={`flex flex-col space-y-4 ${isCollapsed ? 'items-center' : ''}`}>
     <Link href={course ? `/courses/${course.course_id}` : '#'} passHref>
       <button
-        className="flex items-center space-x-2"
+        className="flex items-center space-x-2 hover:bg-blue-500 focus:bg-blue-600 focus:ring-2 focus:ring-blue-300 active:bg-blue-700 transition duration-300 rounded-md p-2"
         disabled={!course}
         style={{
           color: '#F9F9F9',
-          backgroundColor: 'transparent', // ไม่คลุมสี
+          backgroundColor: 'transparent', // Default transparent
         }}
       >
         <FaHome />
@@ -133,11 +133,11 @@ export default function LeftMain() {
       passHref
     >
       <button
-        className="flex items-center space-x-2"
+        className="flex items-center space-x-2 hover:bg-blue-500 focus:bg-blue-600 focus:ring-2 focus:ring-blue-300 active:bg-blue-700 transition duration-300 rounded-md p-2"
         disabled={!course}
         style={{
           color: '#F9F9F9',
-          backgroundColor: 'transparent', // ไม่คลุมสี
+          backgroundColor: 'transparent',
         }}
       >
         <FaFileAlt />
@@ -150,11 +150,11 @@ export default function LeftMain() {
       passHref
     >
       <button
-        className="flex items-center space-x-2"
+        className="flex items-center space-x-2 hover:bg-blue-500 focus:bg-blue-600 focus:ring-2 focus:ring-blue-300 active:bg-blue-700 transition duration-300 rounded-md p-2"
         disabled={!course}
         style={{
           color: '#F9F9F9',
-          backgroundColor: 'transparent', // ไม่คลุมสี
+          backgroundColor: 'transparent',
         }}
       >
         <FaUsers />
@@ -163,11 +163,11 @@ export default function LeftMain() {
     </Link>
 
     <button
-      className="flex items-center space-x-2"
+      className="flex items-center space-x-2 hover:bg-blue-500 focus:bg-blue-600 focus:ring-2 focus:ring-blue-300 active:bg-blue-700 transition duration-300 rounded-md p-2"
       disabled={!course}
       style={{
         color: '#F9F9F9',
-        backgroundColor: 'transparent', // ไม่คลุมสี
+        backgroundColor: 'transparent',
       }}
     >
       <IoStatsChart />
@@ -175,11 +175,11 @@ export default function LeftMain() {
     </button>
 
     <button
-      className="flex items-center space-x-2"
+      className="flex items-center space-x-2 hover:bg-blue-500 focus:bg-blue-600 focus:ring-2 focus:ring-blue-300 active:bg-blue-700 transition duration-300 rounded-md p-2"
       disabled={!course}
       style={{
         color: '#F9F9F9',
-        backgroundColor: 'transparent', // ไม่คลุมสี
+        backgroundColor: 'transparent',
       }}
     >
       <BiExport />
@@ -187,11 +187,11 @@ export default function LeftMain() {
     </button>
 
     <button
-      className="flex items-center space-x-2"
+      className="flex items-center space-x-2 hover:bg-blue-500 focus:bg-blue-600 focus:ring-2 focus:ring-blue-300 active:bg-blue-700 transition duration-300 rounded-md p-2"
       disabled={!course}
       style={{
         color: '#F9F9F9',
-        backgroundColor: 'transparent', // ไม่คลุมสี
+        backgroundColor: 'transparent',
       }}
     >
       <FaCog />
