@@ -18,7 +18,7 @@ const INSCourseOverview = () => {
   return (
     <div className="flex min-h-screen bg-gray-50 overflow-hidden">
       <LeftOverview />
-      <div className="flex-grow p-8 overflow-y-auto">
+      <div className="flex-grow p-8">
         <h1 className="text-3xl font-bold mb-8">Courses Overview</h1>
 
         {isLoading ? (
@@ -40,7 +40,10 @@ const INSCourseOverview = () => {
         ) : error ? (
           <div>Error loading courses: {error.message}</div>
         ) : courses && courses.length > 0 ? (
-          <CourseCard courses={courses} studentMode={false} />
+          <div className="overflow-y-auto max-h-[calc(100vh-200px)] p-4">
+            {/* เพิ่ม overflow-y-auto เพื่อให้เลื่อนเฉพาะใน CourseCard */}
+            <CourseCard courses={courses} studentMode={false} />
+          </div>
         ) : (
           <div>No courses available</div>
         )}
