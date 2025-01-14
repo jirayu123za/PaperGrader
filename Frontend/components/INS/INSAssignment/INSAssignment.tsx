@@ -48,7 +48,7 @@ const INTAssignment: React.FC = () => {
   };
 
   const pageSize = 8;
-  const totalPages = Math.ceil(insAssignments.length / pageSize);
+  const totalPages = insAssignments ? Math.ceil(insAssignments.length / pageSize) : 1;
 
   const pagination = usePagination({
     total: totalPages,
@@ -57,10 +57,12 @@ const INTAssignment: React.FC = () => {
     boundaries: 1,
   });
 
-  const paginatedData = insAssignments.slice(
-    (pagination.active - 1) * pageSize,
-    pagination.active * pageSize
-  );
+  const paginatedData = insAssignments
+  ? insAssignments.slice(
+      (pagination.active - 1) * pageSize,
+      pagination.active * pageSize
+    )
+  : [];
 
   if (error) return <div>Error loading assignments: {error.message}</div>;
   if (!insAssignments || insAssignments.length === 0) {
