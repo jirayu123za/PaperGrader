@@ -4,7 +4,7 @@ import SecAssignment from './SecAssignment';
 import { useInsAssignmentStore } from '../../../store/useAssignmentStore';
 import { useFetchInsAssignments } from '../../../hooks/useFetchAssignments';
 import { useRouter } from 'next/router';
-import { Menu, Button, Paper, Table, Skeleton, Pagination, Collapse, Checkbox, Title } from '@mantine/core';
+import { Menu, Button, Paper, Table, Skeleton, Pagination, Collapse, Checkbox, Title, ScrollArea } from '@mantine/core';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { useModalAssignmentSettingStore } from '../../../store/modal/useAssignmentSettingModal';
 import { usePagination } from '@mantine/hooks';
