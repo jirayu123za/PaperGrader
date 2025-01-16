@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import AccountMenu from '../Account';
 import Link from 'next/link';
-import { FaBars, FaArrowLeft, FaCheckCircle } from 'react-icons/fa';
+import { FaBars, FaArrowLeft } from 'react-icons/fa';
 import { GiClockwiseRotation } from 'react-icons/gi';
 import { IoStatsChart } from 'react-icons/io5';
 import { IoMdSettings } from 'react-icons/io';
-import { Button, Container, Divider, Flex, Stack, Title, Transition, Text, Group, Radio } from '@mantine/core';
+import { Button, Container, Divider, Flex, Stack, Title, Transition, Text, Group, Radio, Image } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useRouter } from 'next/router';
 import { useFetchAssignmentLeft } from '../../hooks/SideBar/useFetchAssignmentLeft';
@@ -15,7 +15,6 @@ export default function LeftProcess() {
   const [isCollapsed, { toggle }] = useDisclosure(false);
   const [activeOption, setActiveOption] = useState<string | null>(null); // Track the active option
   const router = useRouter();
-  const faIcon = <FaBars size={18} className={`transition-transform duration-300 ${isCollapsed ? '' : 'transform rotate-180'}`} />;
   const faArrowLeft = <FaArrowLeft size={18} />;
   const giClockwiseRotation = <GiClockwiseRotation size={18} />;
   const ioStatsChart = <IoStatsChart size={18} />;
@@ -38,51 +37,56 @@ export default function LeftProcess() {
     setActiveOption(key); // Update the active option when clicked
   };
 
-  const handleBackToCourse = () => {
-    if (course_id) {
-      router.push(`/courses/${course_id}/Assignment`);
-    }
-  };
-
   return (
-    <Container
-      className={`relative h-screen flex flex-col border-r ${isCollapsed ? 'w-16 p-4' : 'w-64 p-6'
-        }`}
-      style={{
-        backgroundColor: '#6665AC',
-        color: '#F9F9F9',
-      }}
-    >
+    <Container className={`relative flex flex-col justify-between border-r transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} h-screen`}>
       {/* Top: Logo and Button Collapse */}
-      <Stack>
-        <Flex className="items-center justify-between mb-2">
-          <div
-            className={`rounded transition-opacity duration-300 ${isCollapsed ? 'opacity-0 w-0 h-0' : 'opacity-100'
-              } flex justify-center items-center`}
-            style={{
-              height: isCollapsed ? '0px' : '40px',
-              backgroundColor: '#E9E9E9',
-              color: '#484CA3',
-            }}
-          >
-            Logo
-          </div>
-          <Button
-            onClick={toggle}
-            variant="transparent"
-            styles={{
-              root: {
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#F9F9F9',
-              },
-            }}
-          >
-            {faIcon}
-          </Button>
-        </Flex>
+      <Flex justify="space-between" align="center" p={12}
+        style={{
+        backgroundColor: '#f1f3f8',
+        }}
+      >
+        {!isCollapsed && (
+          <Image
+            src="/Image/logo-ppgd.png"
+            alt="logo" w={200} h={60} p={2} 
+            style={{ cursor: 'pointer' }}
+            onClick={() => router.push('/INSCourseOverview')}
+          />
+        )}
 
+        <Button
+          onClick={toggle}
+          variant="transparent"
+          radius="md"
+          styles={() => ({
+            root: {
+              border: 'none',
+              padding: isCollapsed ? "0 0 0 8px" : "0", 
+              height: 'auto',
+            },
+          })}
+        >
+          <FaBars
+            size={24}
+            style={{
+              color: isCollapsed ? '#000000': '#000000',
+            }}
+            className={`transition-transform duration-300 ${
+              isCollapsed ? '' : 'transform rotate-180'
+            }`}
+          />
+        </Button>
+      </Flex>
+
+      <Divider />
+
+      <Stack
+        p={16} gap="xs"
+        className='flex-grow'
+        style={() => ({
+          backgroundColor: '#6665AC',
+        })}
+      >
         {/* Button back to course */}
         <Button
           variant="transparent"
@@ -92,10 +96,15 @@ export default function LeftProcess() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: isCollapsed ? 'center' : 'flex-start',
+              padding: isCollapsed ? '8px 20px' : '',
               color: '#F9F9F9',
             },
           }}
-          onClick={handleBackToCourse}
+          onClick={() => {
+            if (course_id) {
+              router.push(`/courses/${course_id}/Assignment`);
+            }
+          }}
         >
           <Transition
             mounted={!isCollapsed}
@@ -109,8 +118,8 @@ export default function LeftProcess() {
               </Title>
             )}
           </Transition>
-        </Button>
-
+        </Button>        
+          
         {/* Assignment's name */}
         <Transition
           mounted={!isCollapsed}
@@ -128,35 +137,20 @@ export default function LeftProcess() {
             </Title>
           )}
         </Transition>
-      </Stack>
-
-      {/* Options menu */}
-      <Stack gap={4}>
+      
+        {/* Options menu */}
         {options.map((option) => (
-          <Link key={option.key} href={option.href} passHref>
-            <Button
-              variant="subtle"
-              fullWidth
-              onClick={() => handleOptionClick(option.key)}
-              styles={{
-                root: {
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                  backgroundColor: activeOption === option.key ? '#E9E9E9' : 'transparent', // Highlight background when active
-                  color: activeOption === option.key ? '#484CA3' : '#F9F9F9', // Change text color when active
-                  borderRadius: '8px',
-                  transition: 'background-color 0.3s, color 0.3s',
-                },
-              }}
-            >
+          <Button
+            variant="subtle"
+            fullWidth
+            leftSection={
               <Radio
                 value={option.key}
                 checked={activeOption === option.key}
                 onChange={() => handleOptionClick(option.key)}
                 styles={{
                   label: {
-                    color: activeOption === option.key ? '#1C7ED6' : '#000',
+                    color: activeOption === option.key ? '#1C7ED6' : '#000000',
                   },
                   radio: {
                     borderColor: activeOption === option.key ? '#1C7ED6' : '#ccc',
@@ -164,26 +158,48 @@ export default function LeftProcess() {
                   },
                 }}
               />
-              <Transition
-                mounted={!isCollapsed}
-                transition="fade"
-                duration={300}
-                timingFunction="ease"
-              >
-                {(styles) => (
-                  <Text size="sm" fw={500} style={{ ...styles }}>
-                    {option.label}
-                  </Text>
-                )}
-              </Transition>
-            </Button>
-          </Link>
+            }
+            onClick={() => {
+              handleOptionClick(option.key);
+              router.push(option.href);
+            }}
+            styles={{
+              root: {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: isCollapsed ? "center" : "flex-start",
+                padding: isCollapsed ? '8px 20px' : '',
+                color: activeOption === option.key ? '#424242' : '#FFFFFF',
+                backgroundColor: activeOption === option.key ? '#f8f9fa' : 'transparent',
+                borderRadius: '8px',
+                transition: 'background-color 0.3s, color 0.3s',
+              },
+            }}
+          >
+            <Transition
+              mounted={!isCollapsed}
+              transition="fade"
+              duration={300}
+              timingFunction="ease"
+            >
+              {(styles) => (
+                <Text size="sm" fw={500} style={{ ...styles }}>
+                  {option.label}
+                </Text>
+              )}
+            </Transition>
+          </Button>
         ))}
-      </Stack>
 
-      {/* Divider and Footer */}
-      <div className="mt-auto">
-        <Divider size="sm" className="mb-4" />
+        <Divider
+          style={{
+            backgroundColor: '#E9E9E9',
+            display: isCollapsed ? 'block' : 'block'
+          }}
+          size="xs" mt={16} mb={16}
+        />
+
+        {/* Footer */}
         <Button
           variant="subtle"
           leftSection={giClockwiseRotation}
@@ -193,6 +209,7 @@ export default function LeftProcess() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: isCollapsed ? 'center' : 'flex-start',
+              padding: isCollapsed ? '8px 20px' : '',
               color: '#F9F9F9',
             },
           }}
@@ -210,6 +227,7 @@ export default function LeftProcess() {
             )}
           </Transition>
         </Button>
+
         <Button
           variant="subtle"
           leftSection={ioStatsChart}
@@ -219,6 +237,7 @@ export default function LeftProcess() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: isCollapsed ? 'center' : 'flex-start',
+              padding: isCollapsed ? '8px 20px' : '',
               color: '#F9F9F9',
             },
           }}
@@ -236,6 +255,7 @@ export default function LeftProcess() {
             )}
           </Transition>
         </Button>
+
         <Button
           variant="subtle"
           leftSection={ioMdSettings}
@@ -245,6 +265,7 @@ export default function LeftProcess() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: isCollapsed ? 'center' : 'flex-start',
+              padding: isCollapsed ? '8px 20px' : '',
               color: '#F9F9F9',
             },
           }}
@@ -262,11 +283,12 @@ export default function LeftProcess() {
             )}
           </Transition>
         </Button>
-      </div>
+      </Stack>    
 
-      <Group mt="auto">
+      {/* Account Section */}
+      <Stack pb={0.75}>
         <AccountMenu isCollapsed={isCollapsed} />
-      </Group>
+      </Stack>
     </Container>
   );
 }

@@ -36,9 +36,9 @@ export default function AccountMenu({ isCollapsed }: AccountMenuProps) {
             root: {
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'flex-start',
+              justifyContent: 'flex-center',
               textAlign: 'left',
-              paddingLeft: isCollapsed ? '6px' : '20px',
+              paddingLeft: isCollapsed ? '20px' : '20px',
             },
           }}
         >
