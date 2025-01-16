@@ -133,7 +133,7 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
   }, [assignment_id, form]);
 
   return (
-    <div
+    <Container
       className={`fixed top-0 right-0 h-full transition-all duration-300 bg-white shadow-lg ${isCollapsed ? 'w-25' : 'w-[450px]'}`}
       style={{
         overflow: 'hidden',
@@ -168,48 +168,48 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
       {!isCollapsed && (
         <Container size="sm" py="xl" px="md">
           
-          <Box mb="md">
+          <Box pt={16} pl={16} pr={16}>
             <Text size="sm" color="dimmed">
               {form.values.boundingBoxes.length} bounding boxes total
             </Text>
           </Box>
 
-          <Flex mb="lg" gap="sm">
-            <Button size="xs" variant="outline" onClick={onEditName}>
+          <Flex gap="sm" pt={16} pl={16} pr={16}>
+            <Button size="sm" variant="outline" onClick={onEditName} w={180}>
               Edit Name
             </Button>
-            <Button size="xs" variant="outline" onClick={onEditStudentID}>
+            <Button size="sm" variant="outline" onClick={onEditStudentID} w={180}>
               Edit Student ID
             </Button>
           </Flex>
 
-          <Text size="sm" color="dimmed" mb="lg">
-            Create questions and subquestions via the + buttons below, or by dragging boxes on the template.
+          <Text size="sm" c="dimmed" pt={16} pl={16} pr={16}>
+            Create questions and sub-questions via the + buttons below, or by dragging boxes on the template.
           </Text>
 
-          <Table>
-            <thead>
-              <tr>
-                <th style={{ width: '5%' }}>#</th>
-                <th style={{ width: '70%' }}>Title</th>
-                <th style={{ width: '10%', textAlign: 'center' }}>Points</th>
-                <th style={{ width: '15%', textAlign: 'center' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table highlightOnHover >
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th style={{ width: '5%' }}>#</Table.Th>
+                <Table.Th style={{ width: '70%' }}>Title</Table.Th>
+                <Table.Th style={{ width: '10%', textAlign: 'center' }}>Points</Table.Th>
+                <Table.Th style={{ width: '15%', textAlign: 'center' }}>Actions</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
               {form.values.boundingBoxes.map((box, index) => (
                 <React.Fragment key={index}>
-                  <tr>
-                    <td>{box.questionId}</td>
-                    <td>
+                  <Table.Tr>
+                    <Table.Td>{box.questionId}</Table.Td>
+                    <Table.Td>
                       <TextInput
                         variant="unstyled"
                         size="xs"
                         value={box.title}
                         onChange={(e) => handleInputChange(index, 'title', e.target.value)}
                       />
-                    </td>
-                    <td>
+                    </Table.Td>
+                    <Table.Td>
                       <NumberInput
                         variant="unstyled"
                         size="xs"
@@ -217,8 +217,8 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
                         onChange={(value) => handleInputChange(index, 'points', value)}
                         hideControls
                       />
-                    </td>
-                    <td>
+                    </Table.Td>
+                    <Table.Td>
                       <Flex gap="xs">
                         <Button
                           size="xs"
@@ -237,13 +237,13 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
                           +
                         </Button>
                       </Flex>
-                    </td>
-                  </tr>
+                    </Table.Td>
+                  </Table.Tr>
                   {box.subQuestions &&
                     box.subQuestions.map((sub, subIndex) => (
-                      <tr key={`${index}-${subIndex}`}>
-                        <td style={{ paddingLeft: '1.5rem' }}>{`${index + 1}.${subIndex + 1}`}</td>
-                        <td>
+                      <Table.Tr key={`${index}-${subIndex}`}>
+                        <Table.Td style={{ paddingLeft: '1.5rem' }}>{`${index + 1}.${subIndex + 1}`}</Table.Td>
+                        <Table.Td>
                           <TextInput
                             variant="unstyled"
                             size="xs"
@@ -254,21 +254,21 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
                               handleInputChange(index, 'subQuestions', updatedSubQuestions);
                             }}
                           />
-                        </td>
-                        <td>
+                        </Table.Td>
+                        <Table.Td>
                           <NumberInput
                             variant="unstyled"
                             size="xs"
                             value={sub.points}
                             onChange={(value) => {
                               const updatedSubQuestions = box.subQuestions || [];
-                              updatedSubQuestions[subIndex].points = value || 0;
+                              updatedSubQuestions[subIndex].points = typeof value === 'number' ? value : 0;
                               handleInputChange(index, 'subQuestions', updatedSubQuestions);
                             }}
                             hideControls
                           />
-                        </td>
-                        <td>
+                        </Table.Td>
+                        <Table.Td>
                           <Button
                             size="xs"
                             color="red"
@@ -281,24 +281,24 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
                           >
                             X
                           </Button>
-                        </td>
-                      </tr>
+                        </Table.Td>
+                      </Table.Tr>
                     ))}
                 </React.Fragment>
               ))}
-              <tr>
-                <td colSpan={4} align="center">
+              <Table.Tr>
+                <Table.Td colSpan={4} align="center">
                   <Button size="xs" variant="default" onClick={onNewQuestion}>
                     + New Question
                   </Button>
-                </td>
-              </tr>
-            </tbody>
+                </Table.Td>
+              </Table.Tr>
+            </Table.Tbody>
           </Table>
 
-          <Divider my="lg" />
+          <Divider />
 
-          <Flex gap="sm" mt="lg" justify="flex-end">
+          <Flex gap="sm" mt="lg" justify="flex-end" pl={16} pr={16}>
             <Button variant="default" onClick={handleCancel}>
               Cancel
             </Button>
@@ -308,7 +308,7 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
           </Flex>
         </Container>
       )}
-    </div>
+    </Container>
   );
 };
 
