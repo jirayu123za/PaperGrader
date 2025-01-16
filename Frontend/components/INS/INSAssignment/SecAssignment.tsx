@@ -38,15 +38,16 @@ const SecAssignment: React.FC = () => {
         highlightOnHover
         verticalSpacing="md"
         className="bg-white"
-        style={{ borderCollapse: 'collapse' }} // นำเส้นตารางออก
+        style={{ borderCollapse: 'collapse' }}
       >
         <Table.Thead>
           <Table.Tr>
+            <Table.Th style={{ width: '10%' }}></Table.Th>
             <Table.Th style={{ width: '10%' }}>SELECT</Table.Th>
             <Table.Th style={{ width: '20%', textAlign: 'center' }}>Section Name</Table.Th>
             <Table.Th style={{ width: '20%', textAlign: 'center' }}>Release Date</Table.Th>
-            <Table.Th style={{ width: '30%', textAlign: 'center' }}>Time Remaining</Table.Th>
             <Table.Th style={{ width: '20%', textAlign: 'center' }}>Due Date</Table.Th>
+            <Table.Th style={{ width: '30%', textAlign: 'center' }}>Time Remaining</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
@@ -54,10 +55,11 @@ const SecAssignment: React.FC = () => {
             <Table.Tr
               key={section.assignment_section_id}
               style={{
-                backgroundColor: index % 2 === 0 ? '#f8f9fa' : '#ffffff', // สีพื้นหลังแบบสลับ
-                color: '#495057', // สีข้อความ
+                backgroundColor: index % 2 === 0 ? '#f8f9fa' : '#ffffff',
+                color: '#495057',
               }}
             >
+              <Table.Td style={{ textAlign: 'center' }}></Table.Td> 
               <Table.Td>
                 <Checkbox
                   pl={10}
@@ -73,6 +75,11 @@ const SecAssignment: React.FC = () => {
                   ? dayjs(section.release_date).utc().format('MMM D, YYYY h:mm A')
                   : 'N/A'}
               </Table.Td>
+              <Table.Td style={{ textAlign: 'center' }}>
+                {section.due_date
+                  ? dayjs(section.due_date).utc().format('MMM D, YYYY h:mm A')
+                  : 'N/A'}
+              </Table.Td>
               <Table.Td>
                 <Progress
                   value={calculateTimeRemaining(section.release_date ?? 'N/A', section.due_date ?? 'N/A')}
@@ -80,14 +87,9 @@ const SecAssignment: React.FC = () => {
                   size="lg"
                   striped
                 />
-                <MantineText size="xs" mt={4}>
+                <MantineText size="xs" mt={4} style={{ textAlign: 'center' }}>
                   {getRemainingTimeText(section.due_date)}
                 </MantineText>
-              </Table.Td>
-              <Table.Td style={{ textAlign: 'center' }}>
-                {section.due_date
-                  ? dayjs(section.due_date).utc().format('MMM D, YYYY h:mm A')
-                  : 'N/A'}
               </Table.Td>
             </Table.Tr>
           ))}
@@ -105,16 +107,16 @@ const calculateTimeRemaining = (releaseDate: string | null, dueDate: string | nu
   const due = dayjs(dueDate);
 
   if (now.isBefore(release)) {
-    return 100; // Full bar if before release
+    return 100;
   }
   if (now.isAfter(due)) {
-    return 0; // Empty bar if after due
+    return 0;
   }
 
   const totalDuration = due.diff(release);
   const remainingDuration = due.diff(now);
 
-  return (remainingDuration / totalDuration) * 100; // Percentage of time remaining
+  return (remainingDuration / totalDuration) * 100;
 };
 
 const getProgressColor = (releaseDate: string | null, dueDate: string | null): string => {
