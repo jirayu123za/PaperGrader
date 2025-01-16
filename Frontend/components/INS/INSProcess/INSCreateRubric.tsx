@@ -32,7 +32,7 @@ const INSCreateRubric: React.FC = () => {
 
   useEffect(() => {
     if (!assignment_id) return;
-
+  
     const savedBoxes = localStorage.getItem(`boundingBoxes-${assignment_id}`);
     if (savedBoxes) {
       try {
@@ -47,6 +47,7 @@ const INSCreateRubric: React.FC = () => {
       }
     }
   }, [assignment_id]);
+  
 
   if (!course_id || !assignment_id) {
     return <div>Invalid course or assignment ID</div>;

@@ -79,15 +79,19 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       try {
         const parsedBoxes = JSON.parse(savedBoxes);
         if (Array.isArray(parsedBoxes)) {
-          setBoundingBoxes(parsedBoxes);
-        } else {
-          console.error('Invalid bounding box data format.');
+          const updatedBoxes = parsedBoxes.map((box: BoundingBox) => ({
+            ...box,
+            imageData: extractImageData(box), // ดึงภาพสำหรับแต่ละ BoundingBox
+          }));
+          setBoundingBoxes(updatedBoxes);
+          localStorage.setItem(`boundingBoxes-${assignmentId}`, JSON.stringify(updatedBoxes)); // บันทึกข้อมูลใหม่
         }
       } catch (error) {
         console.error('Error parsing bounding box data:', error);
       }
     }
   }, [assignmentId, setBoundingBoxes]);
+  
 
   // ฟังก์ชันดึงภาพที่ครอบโดย bounding box
   const extractImageData = (box: BoundingBox): string | null => {
