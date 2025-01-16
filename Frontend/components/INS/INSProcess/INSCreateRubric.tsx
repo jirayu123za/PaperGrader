@@ -56,15 +56,19 @@ const INSCreateRubric: React.FC = () => {
   const handleSavePoints = (index: number, points: number) => {
     const updatedBoxes = [...boundingBoxes];
     updatedBoxes[index].points = points;
+    saveBoundingBoxesToLocalStorage(updatedBoxes);
+  };
 
+  const saveBoundingBoxesToLocalStorage = (updatedBoxes: BoundingBox[]) => {
     setBoundingBoxes(updatedBoxes);
-    localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+    if (assignment_id) {
+      localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+    }
   };
 
   const handleDeleteBox = (index: number) => {
     const updatedBoxes = boundingBoxes.filter((_, i) => i !== index);
-    setBoundingBoxes(updatedBoxes);
-    localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+    saveBoundingBoxesToLocalStorage(updatedBoxes);
   };
 
   const handleAddRubric = (index: number) => {
@@ -72,9 +76,8 @@ const INSCreateRubric: React.FC = () => {
     if (!updatedBoxes[index].rubrics) {
       updatedBoxes[index].rubrics = [];
     }
-    updatedBoxes[index].rubrics?.push({ points: 0, description: '' });
-    setBoundingBoxes(updatedBoxes);
-    localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+    updatedBoxes[index].rubrics.push({ points: 0, description: '' });
+    saveBoundingBoxesToLocalStorage(updatedBoxes);
   };
   
 
@@ -87,22 +90,20 @@ const INSCreateRubric: React.FC = () => {
     const updatedBoxes = [...boundingBoxes];
     if (updatedBoxes[boxIndex].rubrics) {
       if (field === 'points' && typeof value === 'number') {
-        updatedBoxes[boxIndex].rubrics![rubricIndex][field] = value;
+        updatedBoxes[boxIndex].rubrics[rubricIndex][field] = value;
       } else if (field === 'description' && typeof value === 'string') {
-        updatedBoxes[boxIndex].rubrics![rubricIndex][field] = value;
+        updatedBoxes[boxIndex].rubrics[rubricIndex][field] = value;
       }
     }
-    setBoundingBoxes(updatedBoxes);
-    localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+    saveBoundingBoxesToLocalStorage(updatedBoxes);
   };
   
   const handleDeleteRubric = (boxIndex: number, rubricIndex: number) => {
     const updatedBoxes = [...boundingBoxes];
     if (updatedBoxes[boxIndex].rubrics) {
-      updatedBoxes[boxIndex].rubrics?.splice(rubricIndex, 1);
+      updatedBoxes[boxIndex].rubrics.splice(rubricIndex, 1);
     }
-    setBoundingBoxes(updatedBoxes);
-    localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+    saveBoundingBoxesToLocalStorage(updatedBoxes);
   };
 
   return (
