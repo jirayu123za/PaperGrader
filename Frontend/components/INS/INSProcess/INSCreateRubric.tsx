@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Text, Title, Anchor, Divider, Table, NumberInput, Button, Flex } from '@mantine/core';
+import { Box, Text, Title, Anchor, Divider, Table, NumberInput, Button } from '@mantine/core';
 import { useRouter } from 'next/router';
 
 interface BoundingBox {
@@ -9,6 +9,7 @@ interface BoundingBox {
   title: string;
   points: number;
   type: 'NAME' | 'STUDENTID' | 'QUESTION';
+  imageData?: string | null; // เพิ่ม imageData ใน interface
 }
 
 const INSCreateRubric: React.FC = () => {
@@ -51,6 +52,14 @@ const INSCreateRubric: React.FC = () => {
     localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
   };
 
+  const handleDeleteBox = (index: number) => {
+    const updatedBoxes = boundingBoxes.filter((_, i) => i !== index);
+    setBoundingBoxes(updatedBoxes);
+
+    // บันทึกกลับไปยัง localStorage
+    localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+  };
+
   return (
     <Box px="lg" pt="xl">
       {/* Title */}
@@ -79,42 +88,46 @@ const INSCreateRubric: React.FC = () => {
         <Text>No questions available. Add questions in the Create Outline page.</Text>
       ) : (
         <Table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Image</th>
-            <th>Title</th>
-            <th>Points</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {boundingBoxes.map((box, index) => (
-            <tr key={index}>
-              <td>{index + 1}</td>
-              <td>
-                {box.imageData ? (
-                  <img src={box.imageData} alt={`Box ${index + 1}`} style={{ width: '100px', height: 'auto' }} />
-                ) : (
-                  'No image'
-                )}
-              </td>
-              <td>{box.title}</td>
-              <td>
-                <NumberInput
-                  value={box.points}
-                  onChange={(value) => handleSavePoints(index, value || 0)}
-                />
-              </td>
-              <td>
-                <Button color="red" onClick={() => handleDeleteBox(index)}>
-                  Delete
-                </Button>
-              </td>
+          <thead>
+            <tr>
+              <th style={{ width: '5%' }}>#</th>
+              <th style={{ width: '5%' }}>Image</th>
+              <th style={{ width: '5%' }}>Title</th>
+              <th style={{ width: '5%' }}>Points</th>
+              <th style={{ width: '5%' }}>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </Table>
+          </thead>
+          <tbody>
+            {boundingBoxes.map((box, index) => (
+              <tr key={index}>
+                <td>{index + 1}</td>
+                <td>
+                  {box.imageData ? (
+                    <img
+                      src={box.imageData}
+                      alt={`Box ${index + 1}`}
+                      style={{ width: '100px', height: 'auto' }}
+                    />
+                  ) : (
+                    'No image'
+                  )}
+                </td>
+                <td>{box.title}</td>
+                <td>
+                  <NumberInput
+                    value={box.points}
+                    onChange={(value) => handleSavePoints(index, value ?? 0)} // ใช้ ?? เพื่อแก้ปัญหา undefined
+                  />
+                </td>
+                <td>
+                  <Button color="red" onClick={() => handleDeleteBox(index)}>
+                    Delete
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
       )}
     </Box>
   );

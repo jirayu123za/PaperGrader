@@ -14,7 +14,7 @@ interface BoundingBox {
   title: string;
   points: number;
   type: 'NAME' | 'STUDENTID' | 'QUESTION';
-  imageData?: string; // เพิ่มฟิลด์สำหรับเก็บภาพที่ครอบ
+  imageData?: string | null; // เพิ่มฟิลด์สำหรับเก็บภาพที่ครอบ
 }
 
 interface PDFViewerProps {
