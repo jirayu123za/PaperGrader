@@ -75,6 +75,7 @@ const INSCreateRubric: React.FC = () => {
     setBoundingBoxes(updatedBoxes);
     localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
   };
+  
 
   const handleRubricChange = (
     boxIndex: number,
@@ -84,12 +85,16 @@ const INSCreateRubric: React.FC = () => {
   ) => {
     const updatedBoxes = [...boundingBoxes];
     if (updatedBoxes[boxIndex].rubrics) {
-      updatedBoxes[boxIndex].rubrics![rubricIndex][field] = value;
+      if (field === 'points' && typeof value === 'number') {
+        updatedBoxes[boxIndex].rubrics![rubricIndex][field] = value;
+      } else if (field === 'description' && typeof value === 'string') {
+        updatedBoxes[boxIndex].rubrics![rubricIndex][field] = value;
+      }
     }
     setBoundingBoxes(updatedBoxes);
     localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
   };
-
+  
   const handleDeleteRubric = (boxIndex: number, rubricIndex: number) => {
     const updatedBoxes = [...boundingBoxes];
     if (updatedBoxes[boxIndex].rubrics) {
@@ -134,7 +139,7 @@ const INSCreateRubric: React.FC = () => {
                     <NumberInput
                       label="Max Points"
                       hideControls
-                      value={box.points}
+                      value={box.points || 0} // ตรวจสอบให้แน่ใจว่าค่าเป็นตัวเลข
                       size="xs"
                       styles={{ input: { width: '45px', padding: '', } }}
                       onChange={(value) => handleSavePoints(index, value || 0)}
