@@ -1,6 +1,17 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import {Container,Title,Text,Button,Table,Flex,Divider,Box,TextInput,NumberInput,} from '@mantine/core';
+import {
+  Container,
+  Title,
+  Text,
+  Button,
+  Table,
+  Flex,
+  Divider,
+  Box,
+  TextInput,
+  NumberInput,
+} from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { FaBars } from 'react-icons/fa';
 import { useDisclosure } from '@mantine/hooks';
@@ -12,6 +23,12 @@ interface BoundingBox {
   title: string;
   points: number;
   type: 'NAME' | 'STUDENTID' | 'QUESTION';
+  subQuestions?: SubQuestion[];
+}
+
+interface SubQuestion {
+  title: string;
+  points: number;
 }
 
 interface CreateOutlineProps {
@@ -21,9 +38,8 @@ interface CreateOutlineProps {
   boundingBoxes: BoundingBox[];
   updateBoundingBox: (index: number, updatedBox: BoundingBox) => void;
   removeBoundingBox: (index: number) => void;
-  onToggleCollapse: (isCollapsed: boolean) => void; // เพิ่ม callback props
+  onToggleCollapse: (isCollapsed: boolean) => void;
 }
-
 
 const CreateOutline: React.FC<CreateOutlineProps> = ({
   onNewQuestion,
@@ -62,6 +78,30 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
     }
   };
 
+  const handleAddSubQuestion = (parentIndex: number) => {
+    const updatedBoxes = [...form.values.boundingBoxes];
+    const parentBox = updatedBoxes[parentIndex];
+
+    if (!parentBox.subQuestions) {
+      parentBox.subQuestions = [];
+    }
+
+    const newSubQuestion: SubQuestion = {
+      title: `${parentBox.title}.${parentBox.subQuestions.length + 1}`,
+      points: 0,
+    };
+
+    parentBox.subQuestions.push(newSubQuestion);
+    form.setFieldValue('boundingBoxes', updatedBoxes);
+
+    if (assignment_id) {
+      localStorage.setItem(
+        `boundingBoxes-${assignment_id}`,
+        JSON.stringify(updatedBoxes)
+      );
+    }
+  };
+
   const handleSaveOutline = () => {
     if (assignment_id) {
       localStorage.setItem(
@@ -71,9 +111,10 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
       alert('Outline saved successfully!');
     }
   };
+
   const handleToggle = () => {
-    toggle(); // สลับสถานะหุบ/ขยาย
-    onToggleCollapse(!isCollapsed); // ส่งสถานะใหม่กลับไป
+    toggle();
+    onToggleCollapse(!isCollapsed);
   };
 
   useEffect(() => {
@@ -90,24 +131,19 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
     }
   }, [assignment_id, form]);
 
-
-
   return (
     <div
-      className={`fixed top-0 right-0 h-full transition-all duration-300 bg-white shadow-lg ${isCollapsed ? 'w-25' : 'w-[450px]'
-        }`}
+      className={`fixed top-0 right-0 h-full transition-all duration-300 bg-white shadow-lg ${isCollapsed ? 'w-25' : 'w-[450px]'}`}
       style={{
         overflow: 'hidden',
-        backgroundColor: '#f8f9fa', // Background color
+        backgroundColor: '#f8f9fa',
       }}
     >
-      {/* Header Section */}
       <Flex justify="space-between" align="center" p="md" style={{ backgroundColor: '#6665AC', color: '#F9F9F9' }}>
         <Title order={4} className={`${isCollapsed ? 'hidden' : 'block'}`}>
           Outline for Assignment
         </Title>
         <Button
-        
           onClick={handleToggle}
           variant="subtle"
           radius="md"
@@ -123,14 +159,14 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
         >
           <FaBars
             size={24}
-            className={`transition-transform duration-300 ${isCollapsed ? '' : 'rotate-180'
-              }`}
+            className={`transition-transform duration-300 ${isCollapsed ? '' : 'rotate-180'}`}
           />
         </Button>
       </Flex>
 
       {!isCollapsed && (
-        <Container size="sm" py="xl">
+        <Container size="sm" py="xl" px="md">
+          
           <Box mb="md">
             <Text size="sm" color="dimmed">
               {form.values.boundingBoxes.length} bounding boxes total
@@ -160,13 +196,13 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
               </tr>
             </thead>
             <tbody>
-              {form.values.boundingBoxes
-                .filter((box) => box.type === 'QUESTION')
-                .map((box, index) => (
-                  <tr key={index}>
+              {form.values.boundingBoxes.map((box, index) => (
+                <React.Fragment key={index}>
+                  <tr>
                     <td>{index + 1}</td>
                     <td>
                       <TextInput
+                        variant="unstyled"
                         size="xs"
                         value={box.title}
                         onChange={(e) => handleInputChange(index, 'title', e.target.value)}
@@ -174,6 +210,7 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
                     </td>
                     <td>
                       <NumberInput
+                        variant="unstyled"
                         size="xs"
                         value={box.points}
                         onChange={(value) => handleInputChange(index, 'points', value)}
@@ -181,17 +218,73 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
                       />
                     </td>
                     <td>
-                      <Button
-                        size="xs"
-                        color="red"
-                        variant="outline"
-                        onClick={() => removeBoundingBox(index)}
-                      >
-                        X
-                      </Button>
+                      <Flex gap="xs">
+                        <Button
+                          size="xs"
+                          color="red"
+                          variant="outline"
+                          onClick={() => removeBoundingBox(index)}
+                        >
+                          X
+                        </Button>
+                        <Button
+                          size="xs"
+                          color="blue"
+                          variant="outline"
+                          onClick={() => handleAddSubQuestion(index)}
+                        >
+                          +
+                        </Button>
+                      </Flex>
                     </td>
                   </tr>
-                ))}
+                  {box.subQuestions &&
+                    box.subQuestions.map((sub, subIndex) => (
+                      <tr key={`${index}-${subIndex}`}>
+                        <td style={{ paddingLeft: '1.5rem' }}>{`${index + 1}.${subIndex + 1}`}</td>
+                        <td>
+                          <TextInput
+                            variant="unstyled"
+                            size="xs"
+                            value={sub.title}
+                            onChange={(e) => {
+                              const updatedSubQuestions = box.subQuestions || [];
+                              updatedSubQuestions[subIndex].title = e.target.value;
+                              handleInputChange(index, 'subQuestions', updatedSubQuestions);
+                            }}
+                          />
+                        </td>
+                        <td>
+                          <NumberInput
+                            variant="unstyled"
+                            size="xs"
+                            value={sub.points}
+                            onChange={(value) => {
+                              const updatedSubQuestions = box.subQuestions || [];
+                              updatedSubQuestions[subIndex].points = value || 0;
+                              handleInputChange(index, 'subQuestions', updatedSubQuestions);
+                            }}
+                            hideControls
+                          />
+                        </td>
+                        <td>
+                          <Button
+                            size="xs"
+                            color="red"
+                            variant="outline"
+                            onClick={() => {
+                              const updatedSubQuestions = box.subQuestions || [];
+                              updatedSubQuestions.splice(subIndex, 1);
+                              handleInputChange(index, 'subQuestions', updatedSubQuestions);
+                            }}
+                          >
+                            X
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                </React.Fragment>
+              ))}
               <tr>
                 <td colSpan={4} align="center">
                   <Button size="xs" variant="default" onClick={onNewQuestion}>
@@ -204,7 +297,7 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
 
           <Divider my="lg" />
 
-          <Flex gap="sm" mt="lg">
+          <Flex gap="sm" mt="lg" justify="flex-end">
             <Button variant="default" onClick={handleCancel}>
               Cancel
             </Button>

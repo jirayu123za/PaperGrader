@@ -14,6 +14,7 @@ interface BoundingBox {
   title: string;
   points: number;
   type: 'NAME' | 'STUDENTID' | 'QUESTION';
+  imageData?: string; // เพิ่มฟิลด์สำหรับเก็บภาพที่ครอบ
 }
 
 interface PDFViewerProps {
@@ -84,6 +85,37 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     }
   }, [assignmentId, setBoundingBoxes]);
 
+  // ฟังก์ชันดึงภาพที่ครอบโดย bounding box
+  const extractImageData = (box: BoundingBox): string | null => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    const scale = scaleFactor;
+
+    // คำนวณขอบเขตของ bounding box บน canvas
+    const x = box.topLeft.x * scale;
+    const y = box.topLeft.y * scale;
+    const width = (box.bottomRight.x - box.topLeft.x) * scale;
+    const height = (box.bottomRight.y - box.topLeft.y) * scale;
+
+    // สร้าง canvas ชั่วคราวเพื่อดึงภาพ
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = width;
+    tempCanvas.height = height;
+    const tempCtx = tempCanvas.getContext('2d');
+
+    if (tempCtx) {
+      // วาดภาพเฉพาะบริเวณ bounding box
+      tempCtx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
+      return tempCanvas.toDataURL(); // ส่งกลับ Base64
+    }
+
+    return null;
+  };
+
   const handleDragEnd = (index: number, e: any) => {
     const box = boundingBoxes[index];
     const width = box.bottomRight.x - box.topLeft.x;
@@ -92,7 +124,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     const newTopLeftX = e.target.x() / scaleFactor;
     const newTopLeftY = e.target.y() / scaleFactor;
 
-    updateBoundingBox(index, {
+    const updatedBox = {
       ...box,
       topLeft: {
         x: newTopLeftX,
@@ -102,7 +134,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         x: newTopLeftX + width,
         y: newTopLeftY + height,
       },
-    });
+    };
+
+    const imageData = extractImageData(updatedBox); // ดึงภาพใหม่หลังย้ายตำแหน่ง
+    updateBoundingBox(index, { ...updatedBox, imageData });
   };
 
   const handleTransformEnd = (index: number) => {
@@ -128,7 +163,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       },
     };
 
-    updateBoundingBox(index, updatedBox);
+    const imageData = extractImageData(updatedBox); // ดึงภาพใหม่หลังปรับขนาด
+    updateBoundingBox(index, { ...updatedBox, imageData });
   };
 
   return (
@@ -167,15 +203,15 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                   box.type === 'NAME'
                     ? 'rgba(0, 255, 0, 0.2)'
                     : box.type === 'STUDENTID'
-                      ? 'rgba(255, 0, 0, 0.2)'
-                      : 'rgba(0, 0, 255, 0.2)'
+                    ? 'rgba(255, 0, 0, 0.2)'
+                    : 'rgba(0, 0, 255, 0.2)'
                 }
                 stroke={
                   box.type === 'NAME'
                     ? 'green'
                     : box.type === 'STUDENTID'
-                      ? 'red'
-                      : 'blue'
+                    ? 'red'
+                    : 'blue'
                 }
                 strokeWidth={2}
                 draggable
@@ -197,8 +233,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                   box.type === 'NAME'
                     ? 'green'
                     : box.type === 'STUDENTID'
-                      ? 'red'
-                      : 'blue'
+                    ? 'red'
+                    : 'blue'
                 }
               />
             </React.Fragment>
@@ -211,7 +247,16 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 : []
             }
             rotateEnabled={false}
-            enabledAnchors={['top-left', 'top-right', 'bottom-left', 'bottom-right','middle-left','middle-right','top-center','bottom-center']}
+            enabledAnchors={[
+              'top-left',
+              'top-right',
+              'bottom-left',
+              'bottom-right',
+              'middle-left',
+              'middle-right',
+              'top-center',
+              'bottom-center',
+            ]}
           />
         </Layer>
       </Stage>
