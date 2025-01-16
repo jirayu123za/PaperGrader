@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Text, Title, Divider, NumberInput, Button, Flex, ActionIcon, Select, Textarea } from '@mantine/core';
+import { Box, Text, Title, Divider, NumberInput, Button, Flex, ActionIcon, Select, Textarea, Checkbox } from '@mantine/core';
 import { IconX, IconPlus } from '@tabler/icons-react';
 import { useRouter } from 'next/router';
-
-
 
 interface Rubric {
   points: number;
   description: string;
+  selected?: boolean; // เพิ่ม state ว่ารายการถูกเลือกหรือไม่
 }
 
 interface BoundingBox {
@@ -26,17 +25,17 @@ const Grading: React.FC = () => {
   const [selectedBoxId, setSelectedBoxId] = useState<number | null>(null);
   const router = useRouter();
   const { assignment_id } = router.query;
-  
+
   // ดึงข้อมูล boundingBoxes จาก localStorage
   useEffect(() => {
     if (!assignment_id) {
       console.log('Assignment ID is not available.');
       return;
     }
-  
+
     const savedData = localStorage.getItem(`boundingBoxes-${assignment_id}`);
     console.log(`Fetching data for key: boundingBoxes-${assignment_id}`);
-    
+
     if (savedData) {
       try {
         const parsedData: BoundingBox[] = JSON.parse(savedData);
@@ -53,7 +52,6 @@ const Grading: React.FC = () => {
       console.log(`No data found in localStorage for key: boundingBoxes-${assignment_id}`);
     }
   }, [assignment_id]);
-  
 
   const handleSaveRubric = (
     boxIndex: number,
@@ -68,21 +66,35 @@ const Grading: React.FC = () => {
       updatedBoxes[boxIndex].rubrics[rubricIndex].description = value;
     }
     setBoundingBoxes(updatedBoxes);
-    localStorage.setItem('boundingBoxes-${assignment_id}', JSON.stringify(updatedBoxes));
+    localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
   };
 
   const handleAddRubric = (boxIndex: number) => {
     const updatedBoxes = [...boundingBoxes];
-    updatedBoxes[boxIndex].rubrics.push({ points: 0, description: '' });
+    updatedBoxes[boxIndex].rubrics.push({ points: 0, description: '', selected: false });
     setBoundingBoxes(updatedBoxes);
-    localStorage.setItem('boundingBoxes-${assignment_id}', JSON.stringify(updatedBoxes));
+    localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
   };
 
   const handleDeleteRubric = (boxIndex: number, rubricIndex: number) => {
     const updatedBoxes = [...boundingBoxes];
     updatedBoxes[boxIndex].rubrics.splice(rubricIndex, 1);
     setBoundingBoxes(updatedBoxes);
-    localStorage.setItem('boundingBoxes-${assignment_id}', JSON.stringify(updatedBoxes));
+    localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+  };
+
+  const handleSelectRubric = (boxIndex: number, rubricIndex: number) => {
+    const updatedBoxes = [...boundingBoxes];
+    const rubric = updatedBoxes[boxIndex].rubrics[rubricIndex];
+    rubric.selected = !rubric.selected;
+
+    // คำนวณ earnedPoints ใหม่
+    updatedBoxes[boxIndex].earnedPoints = updatedBoxes[boxIndex].rubrics
+      .filter((r) => r.selected)
+      .reduce((sum, r) => sum + r.points, 0);
+
+    setBoundingBoxes(updatedBoxes);
+    localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
   };
 
   const selectedBox = boundingBoxes.find((box) => box.id === selectedBoxId);
@@ -123,13 +135,17 @@ const Grading: React.FC = () => {
           ) : (
             selectedBox.rubrics.map((rubric, rubricIndex) => (
               <Flex key={rubricIndex} align="center" my="sm" gap="sm">
+                <Checkbox
+                  checked={rubric.selected || false}
+                  onChange={() => handleSelectRubric(boundingBoxes.indexOf(selectedBox), rubricIndex)}
+                />
                 <NumberInput
                   hideControls
                   value={rubric.points}
                   onChange={(value) =>
                     handleSaveRubric(boundingBoxes.indexOf(selectedBox), rubricIndex, 'points', value || 0)
                   }
-                  style={{ width: '45px' }}
+                  style={{ width: '60px' }}
                 />
                 <Textarea
                   value={rubric.description}
@@ -175,7 +191,7 @@ const Grading: React.FC = () => {
         />
       </Box>
 
-      <Button  fullWidth>
+      <Button color="green" fullWidth>
         Save Grading
       </Button>
     </Box>
