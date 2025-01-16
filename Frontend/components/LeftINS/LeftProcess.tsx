@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import AccountMenu from '../Account';
-import Link from 'next/link';
 import { FaBars, FaArrowLeft } from 'react-icons/fa';
 import { GiClockwiseRotation } from 'react-icons/gi';
 import { IoStatsChart } from 'react-icons/io5';
 import { IoMdSettings } from 'react-icons/io';
-import { Button, Container, Divider, Flex, Stack, Title, Transition, Text, Group, Radio, Image } from '@mantine/core';
+import { Button, Container, Divider, Flex, Stack, Title, Transition, Text, Radio, Image } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useRouter } from 'next/router';
 import { useFetchAssignmentLeft } from '../../hooks/SideBar/useFetchAssignmentLeft';
@@ -13,7 +12,7 @@ import { useAssignmentLeftProcessStore } from '../../store/useLeftProcessStore';
 
 export default function LeftProcess() {
   const [isCollapsed, { toggle }] = useDisclosure(false);
-  const [activeOption, setActiveOption] = useState<string | null>(null); // Track the active option
+  const [activeOption, setActiveOption] = useState<string | null>(null);
   const router = useRouter();
   const faArrowLeft = <FaArrowLeft size={18} />;
   const giClockwiseRotation = <GiClockwiseRotation size={18} />;
@@ -34,8 +33,14 @@ export default function LeftProcess() {
   ];
 
   const handleOptionClick = (key: string) => {
-    setActiveOption(key); // Update the active option when clicked
+    setActiveOption(key);
   };
+
+  const [clientStyles, setClientStyles] = useState({});
+
+  useEffect(() => {
+    setClientStyles({ padding: "8px 20px" });
+  }, []);
 
   return (
     <Container className={`relative flex flex-col justify-between border-r transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} h-screen`}>
@@ -96,7 +101,8 @@ export default function LeftProcess() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: isCollapsed ? 'center' : 'flex-start',
-              padding: isCollapsed ? '8px 20px' : '',
+              // padding: isCollapsed ? '8px 20px' : '',
+              ...clientStyles,
               color: '#F9F9F9',
             },
           }}
@@ -141,6 +147,7 @@ export default function LeftProcess() {
         {/* Options menu */}
         {options.map((option) => (
           <Button
+            key={option.key}
             variant="subtle"
             fullWidth
             leftSection={
@@ -168,7 +175,8 @@ export default function LeftProcess() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: isCollapsed ? "center" : "flex-start",
-                padding: isCollapsed ? '8px 20px' : '',
+                // padding: isCollapsed ? '8px 20px' : '',
+                ...clientStyles,
                 color: activeOption === option.key ? '#424242' : '#FFFFFF',
                 backgroundColor: activeOption === option.key ? '#f8f9fa' : 'transparent',
                 borderRadius: '8px',
@@ -209,7 +217,8 @@ export default function LeftProcess() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: isCollapsed ? 'center' : 'flex-start',
-              padding: isCollapsed ? '8px 20px' : '',
+              // padding: isCollapsed ? '8px 20px' : '',
+              ...clientStyles,
               color: '#F9F9F9',
             },
           }}
@@ -237,7 +246,8 @@ export default function LeftProcess() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: isCollapsed ? 'center' : 'flex-start',
-              padding: isCollapsed ? '8px 20px' : '',
+              // padding: isCollapsed ? '8px 20px' : '',
+              ...clientStyles,
               color: '#F9F9F9',
             },
           }}
@@ -265,7 +275,8 @@ export default function LeftProcess() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: isCollapsed ? 'center' : 'flex-start',
-              padding: isCollapsed ? '8px 20px' : '',
+              // padding: isCollapsed ? '8px 20px' : '',
+              ...clientStyles,
               color: '#F9F9F9',
             },
           }}
