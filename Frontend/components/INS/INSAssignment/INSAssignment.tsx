@@ -75,12 +75,12 @@ const INTAssignment: React.FC = () => {
       <Table highlightOnHover verticalSpacing="md" className="min-w-full bg-white">
         <Table.Thead>
           <Table.Tr>
-            <Table.Th>SELECT</Table.Th>
+            <Table.Th style={{ width: '10%' }}>SELECT</Table.Th>
             <Table.Th>NAME</Table.Th>
-            <Table.Th style={{ textAlign: 'center' }}>PUBLISHED GRADE</Table.Th>
-            <Table.Th style={{ textAlign: 'center' }}>REGRADES </Table.Th>
-            <Table.Th style={{ textAlign: 'center' }}>SUBMISS BY</Table.Th>
-            <Table.Th style={{ textAlign: 'center' }}>ACTIONS</Table.Th>
+            <Table.Th style={{ width: '20%', textAlign: 'center' }}>PUBLISHED GRADE</Table.Th>
+            <Table.Th style={{ width: '20%', textAlign: 'center' }}>REGRADES </Table.Th>
+            <Table.Th style={{ width: '20%', textAlign: 'center' }}>SUBMISS BY</Table.Th>
+            <Table.Th style={{ width: '20%', textAlign: 'center' }}>ACTIONS</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
