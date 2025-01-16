@@ -1,5 +1,6 @@
 import React from 'react';
 import { Table, Button, TextInput, Flex } from '@mantine/core';
+import { useRouter } from 'next/router';
 import { useForm } from '@mantine/form';
 
 interface Submission {
@@ -48,11 +49,12 @@ const mockSubmissions: Submission[] = [
   },
 ];
 
-interface INSSubmissionsProps {
-  onViewPDF: (fileUrl: string) => void;
-}
+interface INSSubmissionsProps {}
 
-const INSSubmissions: React.FC<INSSubmissionsProps> = ({ onViewPDF }) => {
+const INSSubmissions: React.FC<INSSubmissionsProps> = () => {
+  const router = useRouter();
+  const { course_id, assignment_id } = router.query;
+
   const form = useForm({
     initialValues: {
       searchTerm: '',
@@ -67,6 +69,13 @@ const INSSubmissions: React.FC<INSSubmissionsProps> = ({ onViewPDF }) => {
       submission.section.includes(lowercasedTerm)
     );
   });
+
+  const handleViewPDF = (studentCode: string) => {
+    // Redirect to the grading page
+    router.push(
+      `/courses/${course_id}/process/${assignment_id}/submissions/${studentCode}/question/question_id/Grade`
+    );
+  };
 
   return (
     <div style={{ padding: '1rem' }}>
@@ -102,7 +111,7 @@ const INSSubmissions: React.FC<INSSubmissionsProps> = ({ onViewPDF }) => {
                 <Button
                   variant="light"
                   color="blue"
-                  onClick={() => onViewPDF(`https://mocked-url.com/${submission.fileName}`)}
+                  onClick={() => handleViewPDF(submission.studentCode)}
                 >
                   View PDF
                 </Button>

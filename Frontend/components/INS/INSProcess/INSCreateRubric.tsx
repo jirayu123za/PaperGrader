@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Text, Title, Anchor, Divider, Table, NumberInput, Button } from '@mantine/core';
+import { Box, Text, Title, Anchor, Divider, NumberInput, Button, SimpleGrid, Card, Image, Flex, ActionIcon } from '@mantine/core';
 import { useRouter } from 'next/router';
+import { IconX } from '@tabler/icons-react';
 
 interface BoundingBox {
   topLeft: { x: number; y: number };
@@ -9,7 +10,8 @@ interface BoundingBox {
   title: string;
   points: number;
   type: 'NAME' | 'STUDENTID' | 'QUESTION';
-  imageData?: string | null; // เพิ่ม imageData ใน interface
+  imageData?: string | null;
+  rubrics?: { points: number; description: string }[]; // Rubrics สำหรับแต่ละข้อ
 }
 
 const INSCreateRubric: React.FC = () => {
@@ -19,10 +21,18 @@ const INSCreateRubric: React.FC = () => {
   const [boundingBoxes, setBoundingBoxes] = useState<BoundingBox[]>([]);
 
   useEffect(() => {
-    // ตรวจสอบว่า assignment_id มีค่าหรือไม่
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    };
+  }, []);
+
+  useEffect(() => {
     if (!assignment_id) return;
 
-    // ดึงข้อมูล boundingBoxes จาก localStorage
     const savedBoxes = localStorage.getItem(`boundingBoxes-${assignment_id}`);
     if (savedBoxes) {
       try {
@@ -47,88 +57,163 @@ const INSCreateRubric: React.FC = () => {
     updatedBoxes[index].points = points;
 
     setBoundingBoxes(updatedBoxes);
-
-    // บันทึกกลับไปยัง localStorage
     localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
   };
 
   const handleDeleteBox = (index: number) => {
     const updatedBoxes = boundingBoxes.filter((_, i) => i !== index);
     setBoundingBoxes(updatedBoxes);
+    localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+  };
 
-    // บันทึกกลับไปยัง localStorage
+  const handleAddRubric = (index: number) => {
+    const updatedBoxes = [...boundingBoxes];
+    if (!updatedBoxes[index].rubrics) {
+      updatedBoxes[index].rubrics = [];
+    }
+    updatedBoxes[index].rubrics?.push({ points: 0, description: '' });
+    setBoundingBoxes(updatedBoxes);
+    localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+  };
+
+  const handleRubricChange = (
+    boxIndex: number,
+    rubricIndex: number,
+    field: 'points' | 'description',
+    value: string | number
+  ) => {
+    const updatedBoxes = [...boundingBoxes];
+    if (updatedBoxes[boxIndex].rubrics) {
+      updatedBoxes[boxIndex].rubrics![rubricIndex][field] = value;
+    }
+    setBoundingBoxes(updatedBoxes);
+    localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+  };
+
+  const handleDeleteRubric = (boxIndex: number, rubricIndex: number) => {
+    const updatedBoxes = [...boundingBoxes];
+    if (updatedBoxes[boxIndex].rubrics) {
+      updatedBoxes[boxIndex].rubrics?.splice(rubricIndex, 1);
+    }
+    setBoundingBoxes(updatedBoxes);
     localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
   };
 
   return (
-    <Box px="lg" pt="xl">
-      {/* Title */}
-      <Title order={2} mb="md">
-        Create Rubric
-      </Title>
-
-      {/* Divider */}
+    <Box px="lg" pt="xl" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Title order={2} mb="md">Create Rubric</Title>
       <Divider mb="md" />
-
-      {/* Description */}
       <Text mb="lg">
         Questions must be added to the{' '}
-        <Anchor
-          href={`/courses/${course_id}/process/${assignment_id}/CreateOutline`}
-          size="sm"
-          underline="hover"
-        >
+        <Anchor href={`/courses/${course_id}/process/${assignment_id}/CreateOutline`} size="sm" underline="hover">
           Create Outline
         </Anchor>{' '}
         page before you can begin creating a rubric.
       </Text>
 
-      {/* Display Bounding Box Content */}
-      {boundingBoxes.length === 0 ? (
-        <Text>No questions available. Add questions in the Create Outline page.</Text>
-      ) : (
-        <Table>
-          <thead>
-            <tr>
-              <th style={{ width: '5%' }}>#</th>
-              <th style={{ width: '5%' }}>Image</th>
-              <th style={{ width: '5%' }}>Title</th>
-              <th style={{ width: '5%' }}>Points</th>
-              <th style={{ width: '5%' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+      <Box style={{ flex: 1, overflowY: 'auto', padding: '1rem' }}>
+        {boundingBoxes.length === 0 ? (
+          <Text>No questions available. Add questions in the Create Outline page.</Text>
+        ) : (
+          <SimpleGrid cols={1} spacing="lg">
             {boundingBoxes.map((box, index) => (
-              <tr key={index}>
-                <td>{index + 1}</td>
-                <td>
-                  {box.imageData ? (
-                    <img
-                      src={box.imageData}
-                      alt={`Box ${index + 1}`}
-                      style={{ width: '100px', height: 'auto' }}
+              <Card key={index} shadow="sm" padding="lg">
+                <Flex align="flex-start" gap="lg" justify="space-between">
+                  {/* รูปภาพอยู่ฝั่งซ้าย */}
+                  <Box style={{ flex: '0 0 500px' }}>
+                    {box.imageData ? (
+                      <Image src={box.imageData} alt={`Box ${index + 1}`} height={150} />
+                    ) : (
+                      <Text color="dimmed" style={{ textAlign: 'center' }}>No image</Text>
+                    )}
+                  </Box>
+
+                  {/* เนื้อหาและ Rubric อยู่ฝั่งขวา */}
+                  <Box style={{ flex: 1 }}>
+                    <Text style={{ fontWeight: 500, fontSize: 'lg' }}>{box.title}</Text>
+                    <NumberInput
+                      label="Max Points"
+                      hideControls
+                      value={box.points}
+                      size="xs"
+                      styles={{ input: { width: '45px', padding: '', } }}
+                      onChange={(value) => handleSavePoints(index, value || 0)}
+                      mt="sm"
                     />
-                  ) : (
-                    'No image'
-                  )}
-                </td>
-                <td>{box.title}</td>
-                <td>
-                  <NumberInput
-                    value={box.points}
-                    onChange={(value) => handleSavePoints(index, value ?? 0)} // ใช้ ?? เพื่อแก้ปัญหา undefined
-                  />
-                </td>
-                <td>
+                    <Button
+                      color="blue"
+                      mt="md"
+                      onClick={() => handleAddRubric(index)}
+                    >
+                      Add Rubric
+                    </Button>
+                    <Box mt="sm">
+                      {box.rubrics?.map((rubric, rubricIndex) => (
+                        <Flex
+                          key={rubricIndex}
+                          align="center"
+                          gap="sm"
+                          mt="sm"
+                          style={{
+                            position: 'relative',
+                            paddingRight: '24px', // เพิ่มพื้นที่สำหรับปุ่มลบ
+                          }}
+                        >
+                          {/* ลำดับของ Rubric */}
+                          <Text style={{ width: '20px', fontWeight: 500 }}>{rubricIndex + 1}</Text>
+
+                          {/* ช่องใส่คะแนน */}
+                          <NumberInput
+                            placeholder="Points"
+                            hideControls
+                            value={rubric.points}
+                            onChange={(value) =>
+                              handleRubricChange(index, rubricIndex, 'points', value || 0)
+                            }
+                            styles={{ input: { width: '45px', padding: '' } }}
+                          />
+
+                          {/* ช่องใส่ข้อความ */}
+                          <input
+                            type="text"
+                            placeholder="Description"
+                            value={rubric.description}
+                            onChange={(e) =>
+                              handleRubricChange(index, rubricIndex, 'description', e.target.value)
+                            }
+                            style={{
+                              flex: 1,
+                              padding: '4px',
+                              border: '1px solid #ccc',
+                              borderRadius: '4px',
+                            }}
+                          />
+
+                          {/* ปุ่มลบ Rubric */}
+                          <ActionIcon
+                            color="red"
+                            size="sm"
+                            style={{ position: 'absolute', right: 0 }}
+                            onClick={() => handleDeleteRubric(index, rubricIndex)}
+                          >
+                            <IconX size={14} />
+                          </ActionIcon>
+                        </Flex>
+                      ))}
+                    </Box>
+
+                  </Box>
+
+                  {/* ปุ่ม Delete Card */}
                   <Button color="red" onClick={() => handleDeleteBox(index)}>
                     Delete
                   </Button>
-                </td>
-              </tr>
+                </Flex>
+              </Card>
             ))}
-          </tbody>
-        </Table>
-      )}
+          </SimpleGrid>
+        )}
+      </Box>
     </Box>
   );
 };
