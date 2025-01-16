@@ -8,41 +8,30 @@ const INSManageScans: React.FC = () => {
   const { assignment_id, course_id } = router.query;
 
   return (
-    <Container
-      fluid
-      py="xs"
-      px="sm"
-      style={{
-        maxWidth: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '25vh', // จำกัดความสูงไว้ที่ 1/4 ของจอ
-      }}
-    >
       <Flex justify="space-between" align="flex-start" style={{ width: '100%' }}>
         {/* Left Section */}
         <Box style={{ flex: 2, paddingRight: '0.5rem' }}>
           {/* Title */}
-          <Title order={6} mb="xs" style={{ fontSize: '0.875rem' }}>
+          <Title order={3} mb="md" style={{ color: '#2e2e2e' }}>
             Manage Scans
           </Title>
 
           {/* Warning Alert */}
           <Alert
-            icon={<IconAlertCircle size={10} />}
+            icon={<IconAlertCircle size={15} />}
             color="yellow"
-            mb="xs"
-            style={{ padding: '6px' }}
+            p="md"
+            mb={4}
           >
             <Flex align="center">
-              <Text style={{ fontSize: '0.625rem', fontWeight: 600, marginRight: '4px' }}>
-                Proposed scan splits:
+              <Text size="sm" mr={6}>
+                Proposed scan splits: 
               </Text>
-              <Text style={{ fontSize: '0.625rem' }}>
+              <Text size="sm">
                 Proposed scan splits will likely be more accurate if you first set up the{' '}
                 <Anchor
-                  href={`/courses/${course_id}/process/${assignment_id}/assignment-outline`}
-                  style={{ textDecoration: 'underline', fontSize: '0.625rem' }}
+                  href={`/courses/${course_id}/process/${assignment_id}/CreateOutline`}
+                  style={{ textDecoration: 'underline', fontSize: '0.80rem' }}
                 >
                   Assignment Outline
                 </Anchor>
@@ -53,18 +42,21 @@ const INSManageScans: React.FC = () => {
 
           {/* Info Alert */}
           <Alert
-            icon={<IconAlertCircle size={10} />}
+            icon={<IconAlertCircle size={15} />}
             color="blue"
+            p="md"
             mb="xs"
-            style={{ padding: '6px' }}
           >
             <Flex align="center">
-              <Text style={{ fontSize: '0.625rem', fontWeight: 600, marginRight: '4px' }}>
+              <Text size="sm" mr={6}>
                 Scanning tips:
               </Text>
-              <Text style={{ fontSize: '0.625rem' }}>
+              <Text size="sm">
                 For more information on scanning best practices, see our{' '}
-                <Anchor href="/scanning-tips" style={{ textDecoration: 'underline', fontSize: '0.625rem' }}>
+                <Anchor 
+                  href="/scanning-tips" 
+                  style={{ textDecoration: 'underline', fontSize: '0.80rem' }}
+                >
                   scanning tips
                 </Anchor>
                 .
@@ -73,17 +65,17 @@ const INSManageScans: React.FC = () => {
           </Alert>
 
           {/* Descriptions */}
-          <Text size="xs" mb="xs" style={{ fontSize: '0.625rem' }}>
+          <Text size="sm" mb="xs" mt={16}>
             Upload scans in PDF format. A single file can contain multiple student submissions (it is
             more efficient to scan in batches). Multiple files can be uploaded at once.
           </Text>
 
-          <Text size="xs" style={{ fontSize: '0.625rem' }}>
+          <Text size="sm">
             PaperGrader attempts to split each uploaded scan into submissions. The proposed split depends
             on the length of the{' '}
             <Anchor
               href={`/courses/${course_id}/process/${assignment_id}/question-outline`}
-              style={{ textDecoration: 'underline', fontSize: '0.625rem' }}
+              style={{ textDecoration: 'underline', fontSize: '0.80rem' }}
             >
               question outline
             </Anchor>
@@ -98,24 +90,24 @@ const INSManageScans: React.FC = () => {
           style={{
             flex: 1,
             border: '1px dashed #dee2e6',
-            padding: '4px',
+            padding: '16px',
+            margin: '16px',
+            marginTop: '50px',
             borderRadius: '4px',
             textAlign: 'center',
-            width: '120px',
-            height: '60px',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
+            backgroundColor: '#f8f9fa',
           }}
         >
-          <Text size="xs" color="dimmed" mb="xs" style={{ fontSize: '0.625rem' }}>
+          <Text size="sm" c="dimmed" mb="xs">
             Drop files anywhere on the page, or select files using the button below.
           </Text>
           <FileInput placeholder="Select PDF Files" accept=".pdf" size="xs" />
         </Box>
       </Flex>
-    </Container>
   );
 };
 
