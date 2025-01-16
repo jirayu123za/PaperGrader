@@ -1,22 +1,13 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import {
-  Container,
-  Title,
-  Text,
-  Button,
-  Table,
-  Flex,
-  Divider,
-  Box,
-  TextInput,
-  NumberInput,
-} from '@mantine/core';
+import {Container,Title,Text,Button,Table,Flex,Divider,Box,TextInput,NumberInput,} from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { FaBars } from 'react-icons/fa';
 import { useDisclosure } from '@mantine/hooks';
 
 interface BoundingBox {
+  id: number; // Unique ID
+  questionId: string; // Question Identifier
   topLeft: { x: number; y: number };
   bottomRight: { x: number; y: number };
   pageNumber: number;
@@ -25,6 +16,7 @@ interface BoundingBox {
   type: 'NAME' | 'STUDENTID' | 'QUESTION';
   subQuestions?: SubQuestion[];
 }
+
 
 interface SubQuestion {
   title: string;
@@ -104,13 +96,22 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
 
   const handleSaveOutline = () => {
     if (assignment_id) {
-      localStorage.setItem(
-        `boundingBoxes-${assignment_id}`,
-        JSON.stringify(form.values.boundingBoxes)
-      );
+      const dataToSave = form.values.boundingBoxes.map((box) => ({
+        id: box.id,
+        questionId: box.questionId,
+        topLeft: box.topLeft,
+        bottomRight: box.bottomRight,
+        pageNumber: box.pageNumber,
+        title: box.title,
+        points: box.points,
+        type: box.type,
+      }));
+  
+      localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(dataToSave));
       alert('Outline saved successfully!');
     }
   };
+  
 
   const handleToggle = () => {
     toggle();
@@ -199,7 +200,7 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
               {form.values.boundingBoxes.map((box, index) => (
                 <React.Fragment key={index}>
                   <tr>
-                    <td>{index + 1}</td>
+                    <td>{box.questionId}</td>
                     <td>
                       <TextInput
                         variant="unstyled"

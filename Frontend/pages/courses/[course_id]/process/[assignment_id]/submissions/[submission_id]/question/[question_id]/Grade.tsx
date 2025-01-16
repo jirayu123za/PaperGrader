@@ -9,6 +9,8 @@ import { useForm } from '@mantine/form';
 import { FaBars } from 'react-icons/fa';
 
 interface BoundingBox {
+  id: number; // Unique identifier
+  questionId: string; // Question identifier
   topLeft: { x: number; y: number };
   bottomRight: { x: number; y: number };
   pageNumber: number;
@@ -34,6 +36,8 @@ export default function CreateOutlinePage() {
   const handleNewQuestion = () => {
     const questionBoxes = form.values.boundingBoxes.filter((box) => box.type === 'QUESTION');
     const newBox: BoundingBox = {
+      id: Date.now(),
+      questionId: `Q${questionBoxes.length + 1}`,
       topLeft: { x: 100, y: 100 },
       bottomRight: { x: 300, y: 200 },
       pageNumber: 1,
@@ -58,6 +62,8 @@ export default function CreateOutlinePage() {
       updatedBoxes = form.values.boundingBoxes.filter((_, index) => index !== existingIndex);
     } else {
       const newBox: BoundingBox = {
+        id: Date.now(), // Assign a unique ID
+        questionId: 'NAME', // Use a descriptive identifier
         topLeft: { x: 50, y: 50 },
         bottomRight: { x: 200, y: 100 },
         pageNumber: 1,
@@ -83,6 +89,8 @@ export default function CreateOutlinePage() {
       updatedBoxes = form.values.boundingBoxes.filter((_, index) => index !== existingIndex);
     } else {
       const newBox: BoundingBox = {
+        id: Date.now(), // Assign a unique ID
+        questionId: 'STUDENTID', // Use a descriptive identifier
         topLeft: { x: 50, y: 150 },
         bottomRight: { x: 200, y: 200 },
         pageNumber: 1,

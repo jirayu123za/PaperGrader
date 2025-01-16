@@ -4,17 +4,24 @@ import CreateOutline from '../../../../../components/INS/INSProcess/Right/Create
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { Container, Flex, Loader, Button} from '@mantine/core';
+import { Container, Flex, Loader, Button } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { FaBars } from 'react-icons/fa';
 
 interface BoundingBox {
+  id: number; // Unique ID
+  questionId: string; // Question Identifier
   topLeft: { x: number; y: number };
   bottomRight: { x: number; y: number };
   pageNumber: number;
   title: string;
   points: number;
   type: 'NAME' | 'STUDENTID' | 'QUESTION';
+  subQuestions?: SubQuestion[];
+}
+interface SubQuestion {
+  title: string;
+  points: number;
 }
 
 export default function CreateOutlinePage() {
@@ -34,6 +41,8 @@ export default function CreateOutlinePage() {
   const handleNewQuestion = () => {
     const questionBoxes = form.values.boundingBoxes.filter((box) => box.type === 'QUESTION');
     const newBox: BoundingBox = {
+      id: Date.now(), // ใช้ timestamp เป็น unique ID
+      questionId: `Q${questionBoxes.length + 1}`, // เชื่อมกับ question
       topLeft: { x: 100, y: 100 },
       bottomRight: { x: 300, y: 200 },
       pageNumber: 1,
@@ -53,11 +62,13 @@ export default function CreateOutlinePage() {
   const handleEditName = () => {
     const existingIndex = form.values.boundingBoxes.findIndex((box) => box.type === 'NAME');
     let updatedBoxes: BoundingBox[];
-
+  
     if (existingIndex !== -1) {
       updatedBoxes = form.values.boundingBoxes.filter((_, index) => index !== existingIndex);
     } else {
       const newBox: BoundingBox = {
+        id: Date.now(), // Assign unique ID
+        questionId: 'Name', // Descriptive identifier
         topLeft: { x: 50, y: 50 },
         bottomRight: { x: 200, y: 100 },
         pageNumber: 1,
@@ -67,13 +78,14 @@ export default function CreateOutlinePage() {
       };
       updatedBoxes = [...form.values.boundingBoxes, newBox];
     }
-
+  
     form.setFieldValue('boundingBoxes', updatedBoxes);
-
+  
     if (assignment_id) {
       localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
     }
   };
+  
 
   const handleEditStudentID = () => {
     const existingIndex = form.values.boundingBoxes.findIndex((box) => box.type === 'STUDENTID');
@@ -83,6 +95,8 @@ export default function CreateOutlinePage() {
       updatedBoxes = form.values.boundingBoxes.filter((_, index) => index !== existingIndex);
     } else {
       const newBox: BoundingBox = {
+        id: Date.now(), // Assign a unique ID
+        questionId: 'STUDENTID', // Use a descriptive identifier
         topLeft: { x: 50, y: 150 },
         bottomRight: { x: 200, y: 200 },
         pageNumber: 1,
@@ -104,7 +118,7 @@ export default function CreateOutlinePage() {
     const updatedBoxes = [...form.values.boundingBoxes];
     updatedBoxes[index] = newBox;
     form.setFieldValue('boundingBoxes', updatedBoxes);
-
+  
     if (assignment_id) {
       localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
     }
@@ -201,49 +215,49 @@ export default function CreateOutlinePage() {
 
       {/* CreateOutline Section */}
       <Flex
-  style={{
-    position: 'fixed',
-    right: 0,
-    top: 0,
-    height: '100vh',
-    width: isOutlineCollapsed ? '3%' : '30%',
-    padding: isOutlineCollapsed ? '0' : '1rem',
-    overflowY: 'auto',
-    borderLeft: '1px solid #dee2e6',
-    transition: 'width 0.3s ease',
-    backgroundColor: '#f8f9fa',
-  }}
->  <Button
-    style={{
-      position: 'absolute',
-      top: '10px', // อยู่ใกล้ขอบด้านบน
-      right: isOutlineCollapsed ? '5px' : 'calc(30% - 30px)', // อยู่ตรงกลางของส่วนขวา
-      width: '40px',
-      height: '40px',
-      borderRadius: '50%',
-      backgroundColor: '#6665AC',
-      color: isOutlineCollapsed ? '#FFF': '#6665AC',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1000, // เพื่อให้แสดงอยู่ด้านหน้าสุด
-    }}
-    onClick={() => setOutlineCollapsed((prev) => !prev)}
-  >
-    <FaBars />
-  </Button>
-  {!isOutlineCollapsed && (
-    <CreateOutline
-      onNewQuestion={handleNewQuestion}
-      onEditName={handleEditName}
-      onEditStudentID={handleEditStudentID}
-      boundingBoxes={form.values.boundingBoxes}
-      removeBoundingBox={removeBoundingBox}
-      updateBoundingBox={updateBoundingBox}
-      onToggleCollapse={() => setOutlineCollapsed((prev) => !prev)} // Callback for collapsing
-    />
-  )}
-</Flex>
+        style={{
+          position: 'fixed',
+          right: 0,
+          top: 0,
+          height: '100vh',
+          width: isOutlineCollapsed ? '3%' : '30%',
+          padding: isOutlineCollapsed ? '0' : '1rem',
+          overflowY: 'auto',
+          borderLeft: '1px solid #dee2e6',
+          transition: 'width 0.3s ease',
+          backgroundColor: '#f8f9fa',
+        }}
+      >  <Button
+        style={{
+          position: 'absolute',
+          top: '10px', // อยู่ใกล้ขอบด้านบน
+          right: isOutlineCollapsed ? '5px' : 'calc(30% - 30px)', // อยู่ตรงกลางของส่วนขวา
+          width: '40px',
+          height: '40px',
+          borderRadius: '50%',
+          backgroundColor: '#6665AC',
+          color: isOutlineCollapsed ? '#FFF' : '#6665AC',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000, // เพื่อให้แสดงอยู่ด้านหน้าสุด
+        }}
+        onClick={() => setOutlineCollapsed((prev) => !prev)}
+      >
+          <FaBars />
+        </Button>
+        {!isOutlineCollapsed && (
+          <CreateOutline
+            onNewQuestion={handleNewQuestion}
+            onEditName={handleEditName}
+            onEditStudentID={handleEditStudentID}
+            boundingBoxes={form.values.boundingBoxes}
+            removeBoundingBox={removeBoundingBox}
+            updateBoundingBox={updateBoundingBox}
+            onToggleCollapse={() => setOutlineCollapsed((prev) => !prev)} // Callback for collapsing
+          />
+        )}
+      </Flex>
 
     </Container>
   );

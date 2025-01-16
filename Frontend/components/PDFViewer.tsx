@@ -8,6 +8,8 @@ import usePDFViewerStore from '../store/usePDFViewerStore';
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js`;
 
 interface BoundingBox {
+  id: number;
+  questionId: string;
   topLeft: { x: number; y: number };
   bottomRight: { x: number; y: number };
   pageNumber: number;
