@@ -25,6 +25,7 @@ interface PDFViewerProps {
   boundingBoxes: BoundingBox[];
   updateBoundingBox: (index: number, newBox: BoundingBox) => void;
   setBoundingBoxes: (boxes: BoundingBox[]) => void;
+  readOnly?: boolean;
 }
 
 const PDFViewer: React.FC<PDFViewerProps> = ({
@@ -33,6 +34,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   boundingBoxes,
   updateBoundingBox,
   setBoundingBoxes,
+  readOnly = false,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stageRef = useRef<any>(null);
@@ -77,15 +79,19 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       try {
         const parsedBoxes = JSON.parse(savedBoxes);
         if (Array.isArray(parsedBoxes)) {
-          setBoundingBoxes(parsedBoxes);
-        } else {
-          console.error('Invalid bounding box data format.');
+          const updatedBoxes = parsedBoxes.map((box: BoundingBox) => ({
+            ...box,
+            imageData: extractImageData(box), // ดึงภาพสำหรับแต่ละ BoundingBox
+          }));
+          setBoundingBoxes(updatedBoxes);
+          localStorage.setItem(`boundingBoxes-${assignmentId}`, JSON.stringify(updatedBoxes)); // บันทึกข้อมูลใหม่
         }
       } catch (error) {
         console.error('Error parsing bounding box data:', error);
       }
     }
   }, [assignmentId, setBoundingBoxes]);
+  
 
   // ฟังก์ชันดึงภาพที่ครอบโดย bounding box
   const extractImageData = (box: BoundingBox): string | null => {
@@ -216,10 +222,16 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                     : 'blue'
                 }
                 strokeWidth={2}
-                draggable
-                onDragEnd={(e) => handleDragEnd(index, e)}
-                onClick={() => setSelectedShapeIndex(index)}
-                onTransformEnd={() => handleTransformEnd(index)}
+                draggable={!readOnly} // ปิดการลากถ้า readOnly = true
+                onDragEnd={(e) => {
+                  if (!readOnly) handleDragEnd(index, e); // ไม่ทำงานถ้า readOnly = true
+                }}
+                onTransformEnd={() => {
+                  if (!readOnly) handleTransformEnd(index); // ไม่ทำงานถ้า readOnly = true
+                }}
+                onClick={() => {
+                  if (!readOnly) setSelectedShapeIndex(index); // ปิดการเลือกถ้า readOnly = true
+                }}
               />
               <Text
                 x={box.topLeft.x * scaleFactor}
@@ -241,6 +253,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
               />
             </React.Fragment>
           ))}
+          {!readOnly && (
           <Transformer
             ref={transformerRef}
             nodes={
@@ -260,6 +273,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
               'bottom-center',
             ]}
           />
+        )}
         </Layer>
       </Stage>
     </Container>
