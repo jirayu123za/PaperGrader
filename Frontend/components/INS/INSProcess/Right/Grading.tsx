@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Text, Title, Divider, NumberInput, Button, Flex, ActionIcon, Select, Textarea } from '@mantine/core';
 import { IconX, IconPlus } from '@tabler/icons-react';
+import { useRouter } from 'next/router';
+
+
 
 interface Rubric {
   points: number;
@@ -21,20 +24,36 @@ const Grading: React.FC = () => {
   const [comments, setComments] = useState<string>('');
   const [selectedComment, setSelectedComment] = useState<string | null>(null);
   const [selectedBoxId, setSelectedBoxId] = useState<number | null>(null);
-
+  const router = useRouter();
+  const { assignment_id } = router.query;
+  
+  // ดึงข้อมูล boundingBoxes จาก localStorage
   useEffect(() => {
-    const savedData = localStorage.getItem(`boundingBoxes-yourAssignmentId`);
+    if (!assignment_id) {
+      console.log('Assignment ID is not available.');
+      return;
+    }
+  
+    const savedData = localStorage.getItem(`boundingBoxes-${assignment_id}`);
+    console.log(`Fetching data for key: boundingBoxes-${assignment_id}`);
+    
     if (savedData) {
       try {
-        const parsedData = JSON.parse(savedData);
+        const parsedData: BoundingBox[] = JSON.parse(savedData);
         if (Array.isArray(parsedData)) {
+          console.log('Parsed boundingBoxes:', parsedData);
           setBoundingBoxes(parsedData);
+        } else {
+          console.error('Invalid bounding box data format.');
         }
       } catch (error) {
         console.error('Error parsing bounding box data:', error);
       }
+    } else {
+      console.log(`No data found in localStorage for key: boundingBoxes-${assignment_id}`);
     }
-  }, []);
+  }, [assignment_id]);
+  
 
   const handleSaveRubric = (
     boxIndex: number,
@@ -49,36 +68,31 @@ const Grading: React.FC = () => {
       updatedBoxes[boxIndex].rubrics[rubricIndex].description = value;
     }
     setBoundingBoxes(updatedBoxes);
-    localStorage.setItem(`boundingBoxes-yourAssignmentId`, JSON.stringify(updatedBoxes));
+    localStorage.setItem('boundingBoxes-${assignment_id}', JSON.stringify(updatedBoxes));
   };
 
   const handleAddRubric = (boxIndex: number) => {
     const updatedBoxes = [...boundingBoxes];
     updatedBoxes[boxIndex].rubrics.push({ points: 0, description: '' });
     setBoundingBoxes(updatedBoxes);
-    localStorage.setItem(`boundingBoxes-yourAssignmentId`, JSON.stringify(updatedBoxes));
+    localStorage.setItem('boundingBoxes-${assignment_id}', JSON.stringify(updatedBoxes));
   };
 
   const handleDeleteRubric = (boxIndex: number, rubricIndex: number) => {
     const updatedBoxes = [...boundingBoxes];
     updatedBoxes[boxIndex].rubrics.splice(rubricIndex, 1);
     setBoundingBoxes(updatedBoxes);
-    localStorage.setItem(`boundingBoxes-yourAssignmentId`, JSON.stringify(updatedBoxes));
+    localStorage.setItem('boundingBoxes-${assignment_id}', JSON.stringify(updatedBoxes));
   };
 
-  const totalPoints = boundingBoxes.reduce((sum, box) => sum + box.points, 0);
-  const earnedPoints = boundingBoxes.reduce((sum, box) => sum + box.earnedPoints, 0);
-
-  const filteredBoundingBoxes = selectedBoxId
-    ? boundingBoxes.filter((box) => box.id === selectedBoxId)
-    : boundingBoxes;
+  const selectedBox = boundingBoxes.find((box) => box.id === selectedBoxId);
 
   return (
     <Box style={{ padding: '1rem', overflowY: 'auto' }}>
       <Title order={3}>Grading</Title>
       <Divider my="sm" />
 
-      {/* Total Points Section */}
+      {/* Select BoundingBox */}
       <Flex align="center" gap="sm" my="sm">
         <Select
           placeholder="Select Question"
@@ -91,41 +105,42 @@ const Grading: React.FC = () => {
           clearable
           label="Select Question"
         />
-        <Text>Total Points: {earnedPoints} / {totalPoints}</Text>
+        <Text>
+          Total Points: {selectedBox?.earnedPoints || 0} / {selectedBox?.points || 0}
+        </Text>
       </Flex>
 
-      <NumberInput
-        label="Point Adjustment"
-        value={adjustment}
-        onChange={(value) => setAdjustment(value || 0)}
-      />
-
       {/* Rubric Section */}
-      {filteredBoundingBoxes.map((box, boxIndex) => (
-        <Box key={box.id} my="lg" p="sm" style={{ border: '1px solid #ccc', borderRadius: '8px' }}>
+      {selectedBox ? (
+        <Box my="lg" p="sm" style={{ border: '1px solid #ccc', borderRadius: '8px' }}>
           <Flex justify="space-between" align="center">
-            <Text>{box.title}</Text>
-            <Text>Points: {box.earnedPoints} / {box.points}</Text>
+            <Text>{selectedBox.title}</Text>
+            <Text>Points: {selectedBox.earnedPoints} / {selectedBox.points}</Text>
           </Flex>
 
-          {box.rubrics.length === 0 ? (
+          {selectedBox.rubrics.length === 0 ? (
             <Text color="dimmed">No rubrics available for this question. Add a new rubric below.</Text>
           ) : (
-            box.rubrics.map((rubric, rubricIndex) => (
+            selectedBox.rubrics.map((rubric, rubricIndex) => (
               <Flex key={rubricIndex} align="center" my="sm" gap="sm">
                 <NumberInput
+                  hideControls
                   value={rubric.points}
-                  onChange={(value) => handleSaveRubric(boxIndex, rubricIndex, 'points', value || 0)}
-                  style={{ width: '80px' }}
+                  onChange={(value) =>
+                    handleSaveRubric(boundingBoxes.indexOf(selectedBox), rubricIndex, 'points', value || 0)
+                  }
+                  style={{ width: '45px' }}
                 />
                 <Textarea
                   value={rubric.description}
-                  onChange={(e) => handleSaveRubric(boxIndex, rubricIndex, 'description', e.target.value)}
+                  onChange={(e) =>
+                    handleSaveRubric(boundingBoxes.indexOf(selectedBox), rubricIndex, 'description', e.target.value)
+                  }
                   style={{ flex: 1 }}
                 />
                 <ActionIcon
                   color="red"
-                  onClick={() => handleDeleteRubric(boxIndex, rubricIndex)}
+                  onClick={() => handleDeleteRubric(boundingBoxes.indexOf(selectedBox), rubricIndex)}
                 >
                   <IconX />
                 </ActionIcon>
@@ -135,12 +150,14 @@ const Grading: React.FC = () => {
 
           <Button
             leftIcon={<IconPlus />}
-            onClick={() => handleAddRubric(boxIndex)}
+            onClick={() => handleAddRubric(boundingBoxes.indexOf(selectedBox))}
           >
             Add Rubric Item
           </Button>
         </Box>
-      ))}
+      ) : (
+        <Text color="dimmed">Select a question to view and manage rubrics.</Text>
+      )}
 
       {/* Comments Section */}
       <Box my="lg">
@@ -158,7 +175,7 @@ const Grading: React.FC = () => {
         />
       </Box>
 
-      <Button color="green" fullWidth>
+      <Button  fullWidth>
         Save Grading
       </Button>
     </Box>
