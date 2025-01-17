@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import {Container,Title,Text,Button,Table,Flex,Divider,Box,TextInput,NumberInput,} from '@mantine/core';
+import { Container, Title, Text, Button, Table, Flex, Divider, Box, TextInput, NumberInput, } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { FaBars } from 'react-icons/fa';
 import { useDisclosure } from '@mantine/hooks';
@@ -106,12 +106,12 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
         points: box.points,
         type: box.type,
       }));
-  
+
       localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(dataToSave));
       alert('Outline saved successfully!');
     }
   };
-  
+
 
   const handleToggle = () => {
     toggle();
@@ -167,7 +167,7 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
 
       {!isCollapsed && (
         <Container size="sm" py="xl" px="md">
-          
+
           <Box pt={16} pl={16} pr={16}>
             <Text size="sm" color="dimmed">
               {form.values.boundingBoxes.length} bounding boxes total
@@ -197,95 +197,97 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {form.values.boundingBoxes.map((box, index) => (
-                <React.Fragment key={index}>
-                  <Table.Tr>
-                    <Table.Td>{box.questionId}</Table.Td>
-                    <Table.Td>
-                      <TextInput
-                        variant="unstyled"
-                        size="xs"
-                        value={box.title}
-                        onChange={(e) => handleInputChange(index, 'title', e.target.value)}
-                      />
-                    </Table.Td>
-                    <Table.Td>
-                      <NumberInput
-                        variant="unstyled"
-                        size="xs"
-                        value={box.points}
-                        onChange={(value) => handleInputChange(index, 'points', value)}
-                        hideControls
-                      />
-                    </Table.Td>
-                    <Table.Td>
-                      <Flex gap="xs">
-                        <Button
+              {form.values.boundingBoxes
+                .filter((box) => box.type !== 'NAME' && box.type !== 'STUDENTID')
+                .map((box, index) => (
+                  <React.Fragment key={index}>
+                    <Table.Tr>
+                      <Table.Td>{box.questionId}</Table.Td>
+                      <Table.Td>
+                        <TextInput
+                          variant="unstyled"
                           size="xs"
-                          color="red"
-                          variant="outline"
-                          onClick={() => removeBoundingBox(index)}
-                        >
-                          X
-                        </Button>
-                        <Button
+                          value={box.title}
+                          onChange={(e) => handleInputChange(index, 'title', e.target.value)}
+                        />
+                      </Table.Td>
+                      <Table.Td>
+                        <NumberInput
+                          variant="unstyled"
                           size="xs"
-                          color="blue"
-                          variant="outline"
-                          onClick={() => handleAddSubQuestion(index)}
-                        >
-                          +
-                        </Button>
-                      </Flex>
-                    </Table.Td>
-                  </Table.Tr>
-                  {box.subQuestions &&
-                    box.subQuestions.map((sub, subIndex) => (
-                      <Table.Tr key={`${index}-${subIndex}`}>
-                        <Table.Td style={{ paddingLeft: '1.5rem' }}>{`${index + 1}.${subIndex + 1}`}</Table.Td>
-                        <Table.Td>
-                          <TextInput
-                            variant="unstyled"
-                            size="xs"
-                            value={sub.title}
-                            onChange={(e) => {
-                              const updatedSubQuestions = box.subQuestions || [];
-                              updatedSubQuestions[subIndex].title = e.target.value;
-                              handleInputChange(index, 'subQuestions', updatedSubQuestions);
-                            }}
-                          />
-                        </Table.Td>
-                        <Table.Td>
-                          <NumberInput
-                            variant="unstyled"
-                            size="xs"
-                            value={sub.points}
-                            onChange={(value) => {
-                              const updatedSubQuestions = box.subQuestions || [];
-                              updatedSubQuestions[subIndex].points = typeof value === 'number' ? value : 0;
-                              handleInputChange(index, 'subQuestions', updatedSubQuestions);
-                            }}
-                            hideControls
-                          />
-                        </Table.Td>
-                        <Table.Td>
+                          value={box.points}
+                          onChange={(value) => handleInputChange(index, 'points', value)}
+                          hideControls
+                        />
+                      </Table.Td>
+                      <Table.Td>
+                        <Flex gap="xs">
                           <Button
                             size="xs"
                             color="red"
                             variant="outline"
-                            onClick={() => {
-                              const updatedSubQuestions = box.subQuestions || [];
-                              updatedSubQuestions.splice(subIndex, 1);
-                              handleInputChange(index, 'subQuestions', updatedSubQuestions);
-                            }}
+                            onClick={() => removeBoundingBox(index)}
                           >
                             X
                           </Button>
-                        </Table.Td>
-                      </Table.Tr>
-                    ))}
-                </React.Fragment>
-              ))}
+                          <Button
+                            size="xs"
+                            color="blue"
+                            variant="outline"
+                            onClick={() => handleAddSubQuestion(index)}
+                          >
+                            +
+                          </Button>
+                        </Flex>
+                      </Table.Td>
+                    </Table.Tr>
+                    {box.subQuestions &&
+                      box.subQuestions.map((sub, subIndex) => (
+                        <Table.Tr key={`${index}-${subIndex}`}>
+                          <Table.Td style={{ paddingLeft: '1.5rem' }}>{`${index + 1}.${subIndex + 1}`}</Table.Td>
+                          <Table.Td>
+                            <TextInput
+                              variant="unstyled"
+                              size="xs"
+                              value={sub.title}
+                              onChange={(e) => {
+                                const updatedSubQuestions = box.subQuestions || [];
+                                updatedSubQuestions[subIndex].title = e.target.value;
+                                handleInputChange(index, 'subQuestions', updatedSubQuestions);
+                              }}
+                            />
+                          </Table.Td>
+                          <Table.Td>
+                            <NumberInput
+                              variant="unstyled"
+                              size="xs"
+                              value={sub.points}
+                              onChange={(value) => {
+                                const updatedSubQuestions = box.subQuestions || [];
+                                updatedSubQuestions[subIndex].points = typeof value === 'number' ? value : 0;
+                                handleInputChange(index, 'subQuestions', updatedSubQuestions);
+                              }}
+                              hideControls
+                            />
+                          </Table.Td>
+                          <Table.Td>
+                            <Button
+                              size="xs"
+                              color="red"
+                              variant="outline"
+                              onClick={() => {
+                                const updatedSubQuestions = box.subQuestions || [];
+                                updatedSubQuestions.splice(subIndex, 1);
+                                handleInputChange(index, 'subQuestions', updatedSubQuestions);
+                              }}
+                            >
+                              X
+                            </Button>
+                          </Table.Td>
+                        </Table.Tr>
+                      ))}
+                  </React.Fragment>
+                ))}
               <Table.Tr>
                 <Table.Td colSpan={4} align="center">
                   <Button size="xs" variant="default" onClick={onNewQuestion}>
