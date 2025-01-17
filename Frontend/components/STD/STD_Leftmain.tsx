@@ -1,21 +1,34 @@
 import react from 'react';
 import { FaBars, FaHome, FaBook, FaCog } from 'react-icons/fa';
 import AccountMenu from '../Account';
-import Link from 'next/link';
 import { useDisclosure } from '@mantine/hooks';
-import { Button, Divider } from '@mantine/core';
+import { Button, Divider, Flex, Image, Stack } from '@mantine/core';
+import router from 'next/router';
 
 export default function STD_LeftMain() {
   const [isCollapsed, { toggle }] = useDisclosure(false);
+  const icons = {
+    home: <FaHome />,
+    book: <FaBook />,
+    cog: <FaCog />,
+  }
 
   return (
-    <div className={`relative h-screen flex flex-col justify-between border-r border-gray-300 ${isCollapsed ? 'w-16 p-4' : 'w-64 p-6'} bg-gray-100`}>
-      <div className="flex-grow">
-        {/* ส่วนบน: Header และชื่อคอร์ส */}
-        <div className="flex items-center justify-between mb-4">
-          <Link href="/STDCourseOverview" passHref>
-            <div className={`${isCollapsed ? 'hidden' : 'block'} text-2xl font-semibold cursor-pointer`}>Logo</div>
-          </Link>
+    <div className={`relative flex flex-col justify-between border-r transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} h-screen`}>
+      <Flex justify="space-between" align="center" p={12}
+        style={{
+        backgroundColor: '#f1f3f8',
+        }}
+      >
+        {/* Header and Course Name */}
+          {!isCollapsed && (
+            <Image
+              src="/Image/logo-ppgd.png"
+              alt="logo" w={200} h={60} p={2} 
+              style={{ cursor: 'pointer' }}
+              onClick={() => router.push('/STDCourseOverview')}
+            />
+          )}          
           <Button
             onClick={toggle}
             unstyled 
@@ -26,41 +39,73 @@ export default function STD_LeftMain() {
               className={`text-black transition-transform duration-300 ${isCollapsed ? '' : 'transform rotate-180'}`}
             />
           </Button>
-        </div>
-        
-        <Divider className="mb-4" size="sm" />
+      </Flex>
+
+      <Divider />
 
       {/* Main Menu */}
-      <div className={`flex-grow ${isCollapsed ? 'flex flex-col items-center' : ''}`}>
-        <div className={`flex flex-col space-y-4 ${isCollapsed ? 'items-center' : ''}`}>
-          {/* เมื่อคลิก Dashboard ไปที่ STDCourseOverview */}
-          <Link href={`/STDCourseOverview`} passHref>
-            <button className="flex items-center space-x-2 hover:text-teal-700">
-              <FaHome />
-              {!isCollapsed && <span>Dashboard</span>}
-            </button>
-          </Link>
+      <Stack
+        p={16} gap="xs"
+        className='flex-grow'
+        style={() => ({
+          backgroundColor: '#6665AC',
+        })}
+      >
 
-          {/* เมื่อคลิก Course ไปที่ STDCourse */}
-          <Link href={`/STDCourseOverview/CourseOverview`} passHref>
-            <button className="flex items-center space-x-2 hover:text-teal-700">
-              <FaBook />
-              {!isCollapsed && <span>Course</span>}
-            </button>
-          </Link>
+        <Button
+          // disabled={!course}
+          leftSection={icons.home}
+          variant='subtle'
+          style={() => ({
+            color: '#F9F9F9',
+            display: "flex",
+            justifyContent: isCollapsed ? "center" : "flex-start",
+          })}
+          onClick={() => {
+            router.push(`/STDCourseOverview`);
+          }}
+        >
+          {!isCollapsed && <span>Dashboard</span>}
+        </Button>
 
-          {/* <Link href={`/student/${studentId}/settings`} passHref> */}
-            <button className="flex items-center space-x-2 hover:text-teal-700">
-              <FaCog />
-              {!isCollapsed && <span>Settings</span>}
-            </button>
-          {/* </Link> */}
-        </div>
-      </div>
-    </div>
+        <Button
+          // disabled={!course}
+          leftSection={icons.book}
+          variant='subtle'
+          style={() => ({
+            color: '#F9F9F9',
+            display: "flex",
+            justifyContent: isCollapsed ? "center" : "flex-start",
+          })}
+          onClick={() => {
+            router.push(`/STDCourseOverview/CourseOverview`);
+          }}
+        >
+          {!isCollapsed && <span>Course</span>}
+        </Button>
+
+        <Button
+          // disabled={!course}
+          leftSection={icons.cog}
+          variant='subtle'
+          style={() => ({
+            color: '#F9F9F9',
+            display: "flex",
+            justifyContent: isCollapsed ? "center" : "flex-start",
+          })}
+          onClick={() => {
+            // router.push(`/student/${studentId}/settings`);
+            console.log('Settings');
+          }}
+        >
+          {!isCollapsed && <span>Settings</span>}
+        </Button>
+      </Stack>
     
-    {/* User Account Section */}
-    <AccountMenu isCollapsed={isCollapsed} />
+      {/* Account Section */}
+      <Stack pb={0.75}>
+        <AccountMenu isCollapsed={isCollapsed} />
+      </Stack>
   </div>
   );
 }
