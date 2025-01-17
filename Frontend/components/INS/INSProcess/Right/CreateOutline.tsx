@@ -24,7 +24,8 @@ interface SubQuestion {
 }
 
 interface CreateOutlineProps {
-  onNewQuestion: () => void;
+  currentPage: number; // เพิ่ม currentPage
+  onNewQuestion: (currentPage: number) => void; // รับ currentPage
   onEditName: () => void;
   onEditStudentID: () => void;
   boundingBoxes: BoundingBox[];
@@ -41,6 +42,7 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
   updateBoundingBox,
   removeBoundingBox,
   onToggleCollapse,
+  currentPage,
 }) => {
   const router = useRouter();
   const { assignment_id, course_id } = router.query;
@@ -62,6 +64,7 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
     updatedBoxes[index] = updatedBox;
     form.setFieldValue('boundingBoxes', updatedBoxes);
 
+    // บันทึกกลับไปที่ localStorage
     if (assignment_id) {
       localStorage.setItem(
         `boundingBoxes-${assignment_id}`,
@@ -198,7 +201,7 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
             </Table.Thead>
             <Table.Tbody>
               {form.values.boundingBoxes
-                .filter((box) => box.type !== 'NAME' && box.type !== 'STUDENTID')
+                .filter((box) => box.type !== 'NAME' && box.type !== 'STUDENTID' && box.pageNumber === currentPage) // กรองเฉพาะ Bounding Box ของหน้าปัจจุบัน
                 .map((box, index) => (
                   <React.Fragment key={index}>
                     <Table.Tr>
@@ -244,7 +247,9 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
                     {box.subQuestions &&
                       box.subQuestions.map((sub, subIndex) => (
                         <Table.Tr key={`${index}-${subIndex}`}>
-                          <Table.Td style={{ paddingLeft: '1.5rem' }}>{`${index + 1}.${subIndex + 1}`}</Table.Td>
+                          <Table.Td style={{ paddingLeft: '1.5rem' }}>
+                            {`${index + 1}.${subIndex + 1}`}
+                          </Table.Td>
                           <Table.Td>
                             <TextInput
                               variant="unstyled"
@@ -290,12 +295,13 @@ const CreateOutline: React.FC<CreateOutlineProps> = ({
                 ))}
               <Table.Tr>
                 <Table.Td colSpan={4} align="center">
-                  <Button size="xs" variant="default" onClick={onNewQuestion}>
+                  <Button size="xs" variant="default" onClick={() => onNewQuestion(currentPage)}>
                     + New Question
                   </Button>
                 </Table.Td>
               </Table.Tr>
             </Table.Tbody>
+
           </Table>
 
           <Divider />

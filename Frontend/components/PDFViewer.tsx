@@ -16,7 +16,7 @@ interface BoundingBox {
   title: string;
   points: number;
   type: 'NAME' | 'STUDENTID' | 'QUESTION';
-  imageData?: string | null; // เพิ่มฟิลด์สำหรับเก็บภาพที่ครอบ
+  imageData?: string | null;
 }
 
 interface PDFViewerProps {
@@ -26,6 +26,8 @@ interface PDFViewerProps {
   updateBoundingBox: (index: number, newBox: BoundingBox) => void;
   setBoundingBoxes: (boxes: BoundingBox[]) => void;
   readOnly?: boolean;
+  currentPage: number; // เพิ่ม currentPage
+  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const PDFViewer: React.FC<PDFViewerProps> = ({
@@ -43,12 +45,16 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const { scaleFactor, setScaleFactor, selectedShapeIndex, setSelectedShapeIndex } = usePDFViewerStore();
 
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+  const [currentPage, setCurrentPage] = useState(1); // หน้า PDF ปัจจุบัน
+  const [totalPages, setTotalPages] = useState(1); // จำนวนหน้าทั้งหมดของ PDF
 
   useEffect(() => {
-    const renderPDF = async () => {
+    const renderPDF = async (pageNum: number) => {
       const loadingTask = pdfjsLib.getDocument(fileUrl);
       const pdf = await loadingTask.promise;
-      const page = await pdf.getPage(1);
+      const page = await pdf.getPage(pageNum);
+
+      setTotalPages(pdf.numPages);
 
       const scale = 1.5;
       const viewport = page.getViewport({ scale });
@@ -70,10 +76,20 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       }
     };
 
-    renderPDF();
-  }, [fileUrl, setScaleFactor]);
+    renderPDF(currentPage);
+  }, [fileUrl, currentPage, setScaleFactor]);
 
   useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowRight') {
+        handleNextPage();
+      } else if (event.key === 'ArrowLeft') {
+        handlePreviousPage();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
     const savedBoxes = localStorage.getItem(`boundingBoxes-${assignmentId}`);
     if (savedBoxes) {
       try {
@@ -81,19 +97,21 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         if (Array.isArray(parsedBoxes)) {
           const updatedBoxes = parsedBoxes.map((box: BoundingBox) => ({
             ...box,
-            imageData: extractImageData(box), // ดึงภาพสำหรับแต่ละ BoundingBox
+            imageData: extractImageData(box),
           }));
           setBoundingBoxes(updatedBoxes);
-          localStorage.setItem(`boundingBoxes-${assignmentId}`, JSON.stringify(updatedBoxes)); // บันทึกข้อมูลใหม่
+          localStorage.setItem(`boundingBoxes-${assignmentId}`, JSON.stringify(updatedBoxes));
         }
       } catch (error) {
         console.error('Error parsing bounding box data:', error);
       }
     }
-  }, [assignmentId, setBoundingBoxes]);
-  
 
-  // ฟังก์ชันดึงภาพที่ครอบโดย bounding box
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [assignmentId, setBoundingBoxes]);
+
   const extractImageData = (box: BoundingBox): string | null => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
@@ -103,22 +121,19 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 
     const scale = scaleFactor;
 
-    // คำนวณขอบเขตของ bounding box บน canvas
     const x = box.topLeft.x * scale;
     const y = box.topLeft.y * scale;
     const width = (box.bottomRight.x - box.topLeft.x) * scale;
     const height = (box.bottomRight.y - box.topLeft.y) * scale;
 
-    // สร้าง canvas ชั่วคราวเพื่อดึงภาพ
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = width;
     tempCanvas.height = height;
     const tempCtx = tempCanvas.getContext('2d');
 
     if (tempCtx) {
-      // วาดภาพเฉพาะบริเวณ bounding box
       tempCtx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
-      return tempCanvas.toDataURL(); // ส่งกลับ Base64
+      return tempCanvas.toDataURL();
     }
 
     return null;
@@ -144,7 +159,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       },
     };
 
-    const imageData = extractImageData(updatedBox); // ดึงภาพใหม่หลังย้ายตำแหน่ง
+    const imageData = extractImageData(updatedBox);
     updateBoundingBox(index, { ...updatedBox, imageData });
   };
 
@@ -171,8 +186,20 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       },
     };
 
-    const imageData = extractImageData(updatedBox); // ดึงภาพใหม่หลังปรับขนาด
+    const imageData = extractImageData(updatedBox);
     updateBoundingBox(index, { ...updatedBox, imageData });
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
   };
 
   return (
@@ -199,83 +226,87 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         }}
       >
         <Layer>
-          {boundingBoxes.map((box, index) => (
-            <React.Fragment key={index}>
-              <Rect
-                id={`box-${index}`}
-                x={box.topLeft.x * scaleFactor}
-                y={box.topLeft.y * scaleFactor}
-                width={(box.bottomRight.x - box.topLeft.x) * scaleFactor}
-                height={(box.bottomRight.y - box.topLeft.y) * scaleFactor}
-                fill={
-                  box.type === 'NAME'
-                    ? 'rgba(0, 255, 0, 0.2)'
-                    : box.type === 'STUDENTID'
-                    ? 'rgba(255, 0, 0, 0.2)'
-                    : 'rgba(0, 0, 255, 0.2)'
-                }
-                stroke={
-                  box.type === 'NAME'
-                    ? 'green'
-                    : box.type === 'STUDENTID'
-                    ? 'red'
-                    : 'blue'
-                }
-                strokeWidth={2}
-                draggable={!readOnly} // ปิดการลากถ้า readOnly = true
-                onDragEnd={(e) => {
-                  if (!readOnly) handleDragEnd(index, e); // ไม่ทำงานถ้า readOnly = true
-                }}
-                onTransformEnd={() => {
-                  if (!readOnly) handleTransformEnd(index); // ไม่ทำงานถ้า readOnly = true
-                }}
-                onClick={() => {
-                  if (!readOnly) setSelectedShapeIndex(index); // ปิดการเลือกถ้า readOnly = true
-                }}
-              />
-              <Text
-                x={box.topLeft.x * scaleFactor}
-                y={box.topLeft.y * scaleFactor - 20}
-                text={
-                  box.type === 'QUESTION'
-                    ? ` ${box.title} (${box.points} pts)`
-                    : `${box.title}`
-                }
-                fontSize={14}
-                fontStyle="bold"
-                fill={
-                  box.type === 'NAME'
-                    ? 'green'
-                    : box.type === 'STUDENTID'
-                    ? 'red'
-                    : 'blue'
-                }
-              />
-            </React.Fragment>
-          ))}
+          {boundingBoxes
+            .filter((box) => box.pageNumber === currentPage) // กรองเฉพาะ boundingBoxes ของหน้าปัจจุบัน
+            .map((box, index) => (
+              <React.Fragment key={index}>
+                <Rect
+                  id={`box-${index}`}
+                  x={box.topLeft.x * scaleFactor}
+                  y={box.topLeft.y * scaleFactor}
+                  width={(box.bottomRight.x - box.topLeft.x) * scaleFactor}
+                  height={(box.bottomRight.y - box.topLeft.y) * scaleFactor}
+                  fill={
+                    box.type === 'NAME'
+                      ? 'rgba(0, 255, 0, 0.2)'
+                      : box.type === 'STUDENTID'
+                        ? 'rgba(255, 0, 0, 0.2)'
+                        : 'rgba(0, 0, 255, 0.2)'
+                  }
+                  stroke={
+                    box.type === 'NAME'
+                      ? 'green'
+                      : box.type === 'STUDENTID'
+                        ? 'red'
+                        : 'blue'
+                  }
+                  strokeWidth={2}
+                  draggable={!readOnly}
+                  onDragEnd={(e) => {
+                    if (!readOnly) handleDragEnd(index, e);
+                  }}
+                  onTransformEnd={() => {
+                    if (!readOnly) handleTransformEnd(index);
+                  }}
+                  onClick={() => {
+                    if (!readOnly) setSelectedShapeIndex(index);
+                  }}
+                />
+                <Text
+                  x={box.topLeft.x * scaleFactor}
+                  y={box.topLeft.y * scaleFactor - 20}
+                  text={
+                    box.type === 'QUESTION'
+                      ? ` ${box.title} (${box.points} pts)`
+                      : `${box.title}`
+                  }
+                  fontSize={14}
+                  fontStyle="bold"
+                  fill={
+                    box.type === 'NAME'
+                      ? 'green'
+                      : box.type === 'STUDENTID'
+                        ? 'red'
+                        : 'blue'
+                  }
+                />
+              </React.Fragment>
+            ))}
           {!readOnly && (
-          <Transformer
-            ref={transformerRef}
-            nodes={
-              selectedShapeIndex !== null
-                ? [stageRef.current?.findOne(`#box-${selectedShapeIndex}`)]
-                : []
-            }
-            rotateEnabled={false}
-            enabledAnchors={[
-              'top-left',
-              'top-right',
-              'bottom-left',
-              'bottom-right',
-              'middle-left',
-              'middle-right',
-              'top-center',
-              'bottom-center',
-            ]}
-          />
-        )}
+            <Transformer
+              ref={transformerRef}
+              nodes={
+                selectedShapeIndex !== null
+                  ? [stageRef.current?.findOne(`#box-${selectedShapeIndex}`)]
+                  : []
+              }
+              rotateEnabled={false}
+              enabledAnchors={[
+                'top-left',
+                'top-right',
+                'bottom-left',
+                'bottom-right',
+                'middle-left',
+                'middle-right',
+                'top-center',
+                'bottom-center',
+              ]}
+            />
+          )}
         </Layer>
       </Stage>
+
+
     </Container>
   );
 };
