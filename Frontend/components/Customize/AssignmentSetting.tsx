@@ -156,7 +156,7 @@ const AssignmentSetting: React.FC = () => {
               Basic Settings
             </Tabs.Tab>
             <Tabs.Tab value="customize-time" leftSection={clockIcon}>
-              Customize Time
+              Time Setting
             </Tabs.Tab>
             <Tabs.Tab value="submission-settings" leftSection={paperIcon}>
               Submission Settings

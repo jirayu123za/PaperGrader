@@ -79,7 +79,7 @@ const INTAssignment: React.FC = () => {
             <Table.Th>NAME</Table.Th>
             <Table.Th style={{ width: '20%', textAlign: 'center' }}>PUBLISHED GRADE</Table.Th>
             <Table.Th style={{ width: '20%', textAlign: 'center' }}>REGRADES </Table.Th>
-            <Table.Th style={{ width: '20%', textAlign: 'center' }}>SUBMISS BY</Table.Th>
+            <Table.Th style={{ width: '20%', textAlign: 'center' }}>SUBMIT BY</Table.Th>
             <Table.Th style={{ width: '20%', textAlign: 'center' }}>ACTIONS</Table.Th>
           </Table.Tr>
         </Table.Thead>
