@@ -7,7 +7,6 @@ interface Submission {
   studentCode: string;
   name: string;
   section: string;
-  fileName: string;
   submittedAt: string;
 }
 
@@ -16,35 +15,30 @@ const mockSubmissions: Submission[] = [
     studentCode: '630111',
     name: 'Jirayu',
     section: '801',
-    fileName: 'Jirayu_Assignment1.pdf',
     submittedAt: 'Dec 10 at 5:46PM',
   },
   {
     studentCode: '630222',
     name: 'Navadon Khunlertgit',
     section: '801',
-    fileName: 'Navadon_Assignment1.pdf',
     submittedAt: 'Dec 11 at 9:45PM',
   },
   {
     studentCode: '630333',
     name: 'Pulom',
     section: '802',
-    fileName: 'Pulom_Assignment1.pdf',
     submittedAt: 'Dec 21 at 5:21PM',
   },
   {
     studentCode: '630444',
     name: 'Test User',
     section: '802',
-    fileName: 'TestUser_Assignment1.pdf',
     submittedAt: 'Dec 13 at 4:06PM',
   },
   {
     studentCode: '630555',
     name: 'Example User',
     section: '803',
-    fileName: 'Example_Assignment1.pdf',
     submittedAt: 'Dec 14 at 2:30PM',
   },
 ];
@@ -71,7 +65,6 @@ const INSSubmissions: React.FC<INSSubmissionsProps> = () => {
   });
 
   const handleViewPDF = (studentCode: string) => {
-    // Redirect to the grading page
     router.push(
       `/courses/${course_id}/process/${assignment_id}/submissions/${studentCode}/question/question_id/Grade`
     );
@@ -88,37 +81,35 @@ const INSSubmissions: React.FC<INSSubmissionsProps> = () => {
           style={{ maxWidth: '300px' }}
         />
       </Flex>
-      <Table highlightOnHover>
-        <thead>
-          <tr>
-            <th style={{ textAlign: 'center' }}>Student Code</th>
-            <th>Name</th>
-            <th style={{ textAlign: 'center' }}>Section</th>
-            <th>PDF File</th>
-            <th style={{ textAlign: 'center' }}>Submitted At</th>
-            <th style={{ textAlign: 'center' }}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+      <Table striped highlightOnHover>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>Student ID</Table.Th>
+            <Table.Th>Name</Table.Th>
+            <Table.Th>Section</Table.Th>
+            <Table.Th>Submitted At</Table.Th>
+            <Table.Th>Actions</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
           {filteredSubmissions.map((submission, index) => (
-            <tr key={index}>
-              <td style={{ textAlign: 'center' }}>{submission.studentCode}</td>
-              <td>{submission.name}</td>
-              <td style={{ textAlign: 'center' }}>{submission.section}</td>
-              <td>{submission.fileName}</td>
-              <td style={{ textAlign: 'center' }}>{submission.submittedAt}</td>
-              <td style={{ textAlign: 'center' }}>
+            <Table.Tr key={index}>
+              <Table.Td>{submission.studentCode}</Table.Td>
+              <Table.Td>{submission.name}</Table.Td>
+              <Table.Td>{submission.section}</Table.Td>
+              <Table.Td>{submission.submittedAt}</Table.Td>
+              <Table.Td>
                 <Button
-                  variant="light"
-                  color="blue"
+                  size="xs"
+                  variant="outline"
                   onClick={() => handleViewPDF(submission.studentCode)}
                 >
                   View PDF
                 </Button>
-              </td>
-            </tr>
+              </Table.Td>
+            </Table.Tr>
           ))}
-        </tbody>
+        </Table.Tbody>
       </Table>
     </div>
   );
