@@ -41,4 +41,10 @@ type InstructorRepository interface {
 	FindInstructorsNameByCourseID(courseID uuid.UUID) ([]response.InstructorListResponse, error)
 
 	FindSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
+
+	// CRUD BoundingBox
+	AddBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
+	// FindBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error)
+	// ModifyBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
+	// RemoveBoundingBoxes(AssignmentID uuid.UUID) error
 }
