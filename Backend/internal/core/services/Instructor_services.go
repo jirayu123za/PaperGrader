@@ -31,16 +31,15 @@ type InstructorService interface {
 	CreateMultipleUserRoster(personalData []models.PersonalData, enrollmentLists []models.EnrollmentList) error
 	GetColumnsAndDataFromUploadedFile(fileBytes []byte) (map[string]interface{}, error)
 
-	GetCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error)
-	GetCourseByCourseID(CourseID uuid.UUID) (map[string]interface{}, error)
+	GetCoursesByUserID(UserID uuid.UUID) ([]response.CoursesResponse, error)
+	GetCourseByCourseID(CourseID uuid.UUID) (*response.CourseResponse, error)
 
-	GetInsAssignmentByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
+	GetInsAssignmentByCourseID(CourseID uuid.UUID) ([]response.InsAssignmentResponse, error)
+	GetAssignmentsByCourseID(CourseID uuid.UUID) ([]response.AssignmentsResponse, error)
+	GetActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]response.AssignmentActiveResponse, error)
+	GetAssignmentByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (*response.AssignmentResponse, error)
 
-	GetAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
-	GetActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
-	GetAssignmentByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error)
-
-	GetInstructorsNameByCourseID(courseID uuid.UUID) ([]*models.PersonalData, error)
+	GetInstructorsNameByCourseID(courseID uuid.UUID) ([]response.InstructorListResponse, error)
 
 	GetSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
 }
@@ -193,7 +192,7 @@ func (s *InstructorServiceImpl) GetColumnsAndDataFromUploadedFile(fileBytes []by
 	return columnsAndData, nil
 }
 
-func (s *InstructorServiceImpl) GetCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error) {
+func (s *InstructorServiceImpl) GetCoursesByUserID(UserID uuid.UUID) ([]response.CoursesResponse, error) {
 	courses, err := s.repo.FindCoursesByUserID(UserID)
 	if err != nil {
 		return nil, err
@@ -201,7 +200,7 @@ func (s *InstructorServiceImpl) GetCoursesByUserID(UserID uuid.UUID) ([]map[stri
 	return courses, nil
 }
 
-func (s *InstructorServiceImpl) GetCourseByCourseID(CourseID uuid.UUID) (map[string]interface{}, error) {
+func (s *InstructorServiceImpl) GetCourseByCourseID(CourseID uuid.UUID) (*response.CourseResponse, error) {
 	course, err := s.repo.FindCourseByCourseID(CourseID)
 	if err != nil {
 		return nil, err
@@ -209,7 +208,7 @@ func (s *InstructorServiceImpl) GetCourseByCourseID(CourseID uuid.UUID) (map[str
 	return course, nil
 }
 
-func (s *InstructorServiceImpl) GetInsAssignmentByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
+func (s *InstructorServiceImpl) GetInsAssignmentByCourseID(CourseID uuid.UUID) ([]response.InsAssignmentResponse, error) {
 	assignments, err := s.repo.FindInsAssignmentByCourseID(CourseID)
 	if err != nil {
 		return nil, err
@@ -217,7 +216,7 @@ func (s *InstructorServiceImpl) GetInsAssignmentByCourseID(CourseID uuid.UUID) (
 	return assignments, nil
 }
 
-func (s *InstructorServiceImpl) GetAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
+func (s *InstructorServiceImpl) GetAssignmentsByCourseID(CourseID uuid.UUID) ([]response.AssignmentsResponse, error) {
 	assignments, err := s.repo.FindAssignmentsByCourseID(CourseID)
 	if err != nil {
 		return nil, err
@@ -225,7 +224,7 @@ func (s *InstructorServiceImpl) GetAssignmentsByCourseID(CourseID uuid.UUID) ([]
 	return assignments, nil
 }
 
-func (s *InstructorServiceImpl) GetActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
+func (s *InstructorServiceImpl) GetActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]response.AssignmentActiveResponse, error) {
 	activeAssignments, err := s.repo.FindActiveAssignmentsByCourseID(CourseID)
 	if err != nil {
 		return nil, err
@@ -233,48 +232,15 @@ func (s *InstructorServiceImpl) GetActiveAssignmentsByCourseID(CourseID uuid.UUI
 	return activeAssignments, nil
 }
 
-func (s *InstructorServiceImpl) GetAssignmentByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error) {
-	data, err := s.repo.FindAssignmentByCourseIDAndAssignmentID(CourseID, AssignmentID)
+func (s *InstructorServiceImpl) GetAssignmentByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (*response.AssignmentResponse, error) {
+	assignmentSections, err := s.repo.FindAssignmentByCourseIDAndAssignmentID(CourseID, AssignmentID)
 	if err != nil {
 		return nil, err
 	}
-
-	if len(data) == 0 {
-		return nil, nil
-	}
-
-	assignment := map[string]interface{}{
-		"assignment_id":          data[0]["assignment_id"],
-		"assignment_name":        data[0]["assignment_name"],
-		"assignment_description": data[0]["assignment_description"],
-		"submiss_by":             data[0]["submiss_by"],
-		"grading_type":           data[0]["grading_type"],
-		"late_submiss":           data[0]["late_submiss"],
-		"published":              data[0]["published"],
-		"regrades":               data[0]["regrades"],
-		"group_submiss":          data[0]["group_submiss"],
-	}
-
-	assignmentSections := []map[string]interface{}{}
-	for _, row := range data {
-		section := map[string]interface{}{
-			"assignment_section_id": row["assignment_section_id"],
-			"release_date":          row["release_date"],
-			"due_date":              row["due_date"],
-			"cut_off_date":          row["cut_off_date"],
-			"section_id":            row["section_id"],
-			"section_name":          row["section_name"],
-		}
-		assignmentSections = append(assignmentSections, section)
-	}
-
-	return map[string]interface{}{
-		"assignment":          assignment,
-		"assignment_sections": assignmentSections,
-	}, nil
+	return assignmentSections, nil
 }
 
-func (s *InstructorServiceImpl) GetInstructorsNameByCourseID(courseID uuid.UUID) ([]*models.PersonalData, error) {
+func (s *InstructorServiceImpl) GetInstructorsNameByCourseID(courseID uuid.UUID) ([]response.InstructorListResponse, error) {
 	instructors, err := s.repo.FindInstructorsNameByCourseID(courseID)
 	if err != nil {
 		return nil, err

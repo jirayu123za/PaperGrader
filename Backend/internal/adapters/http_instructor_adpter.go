@@ -881,23 +881,9 @@ func (h *HttpInstructorHandler) GetCoursesByUserID(c *fiber.Ctx) error {
 		})
 	}
 
-	var response []map[string]interface{}
-	for _, course := range courses {
-		response = append(response, map[string]interface{}{
-			"course_id":          course["course_id"],
-			"course_name":        course["course_name"],
-			"course_code":        course["course_code"],
-			"course_description": course["course_description"],
-			"semester":           course["semester"],
-			"academic_year":      course["academic_year"],
-			"entry_code":         course["entry_code"],
-			"total_assignments":  course["total_assignments"],
-		})
-	}
-
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Courses are retrieved",
-		"courses": response,
+		"courses": courses,
 	})
 }
 
@@ -991,7 +977,6 @@ func (h *HttpInstructorHandler) GetActiveAssignmentsByCourseID(c *fiber.Ctx) err
 		})
 	}
 
-	// Modify the response to only return ...
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":            "Active assignments are retrieved",
 		"active_assignments": activeAssignments,
@@ -1049,18 +1034,9 @@ func (h *HttpInstructorHandler) GetInstructorsNameByCourseID(c *fiber.Ctx) error
 		})
 	}
 
-	var response []map[string]interface{}
-	for _, ins := range instructors {
-		response = append(response, map[string]interface{}{
-			"personalData_id": ins.PersonalDataID,
-			"instructor_name": ins.FirstName + " " + ins.LastName,
-		})
-	}
-
-	// Modify the response to only return ...
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":     "Instructors are retrieved",
-		"instructors": response,
+		"instructors": instructors,
 	})
 }
 

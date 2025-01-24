@@ -427,8 +427,8 @@ func (r *GormInstructorRepository) FindColumnsAndDataFromUploadedFile(fileBytes 
 	}, nil
 }
 
-func (r *GormInstructorRepository) FindCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error) {
-	var courses []map[string]interface{}
+func (r *GormInstructorRepository) FindCoursesByUserID(UserID uuid.UUID) ([]response.CoursesResponse, error) {
+	var courses []response.CoursesResponse
 
 	if err := r.db.
 		Table("courses").
@@ -446,8 +446,8 @@ func (r *GormInstructorRepository) FindCoursesByUserID(UserID uuid.UUID) ([]map[
 	return courses, nil
 }
 
-func (r *GormInstructorRepository) FindCourseByCourseID(CourseID uuid.UUID) (map[string]interface{}, error) {
-	var course map[string]interface{}
+func (r *GormInstructorRepository) FindCourseByCourseID(CourseID uuid.UUID) (*response.CourseResponse, error) {
+	var course response.CourseResponse
 
 	if err := r.db.
 		Table("courses").
@@ -456,70 +456,41 @@ func (r *GormInstructorRepository) FindCourseByCourseID(CourseID uuid.UUID) (map
 		Find(&course).Error; err != nil {
 		return nil, err
 	}
-	return course, nil
+	return &course, nil
 }
 
-func (r *GormInstructorRepository) FindInsAssignmentByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
-	var insAssignments []map[string]interface{}
+func (r *GormInstructorRepository) FindInsAssignmentByCourseID(CourseID uuid.UUID) ([]response.InsAssignmentResponse, error) {
+	var assignments []response.InsAssignmentResponse
+
 	if err := r.db.
 		Table("assignments").
-		Select(`
-			DISTINCT ON (assignments.assignment_id) assignments.assignment_id,
-			assignments.assignment_name,
-			assignments.submiss_by,
-			assignments.published,
-			assignments.regrades,
-			assignment_sections.release_date AS assignment_release_date,
-			assignment_sections.due_date AS assignment_due_date
-		`).
-		Joins("JOIN assignment_sections ON assignments.assignment_id = assignment_sections.assignment_id").
-		Joins("JOIN sections ON assignment_sections.section_id = sections.section_id").
+		Select("DISTINCT ON (assignments.assignment_id) assignments.assignment_id, assignments.assignment_name, assignments.submiss_by, assignments.published, assignments.regrades, assignment_sections.release_date AS assignment_release_date, assignment_sections.due_date AS assignment_due_date").
+		Joins("LEFT JOIN assignment_sections ON assignments.assignment_id = assignment_sections.assignment_id AND assignment_sections.deleted_at IS NULL").
 		Where("assignments.course_id = ? AND assignments.deleted_at IS NULL", CourseID).
-		Find(&insAssignments).Error; err != nil {
+		Find(&assignments).Error; err != nil {
 		return nil, err
 	}
 
-	var assignmentSections []map[string]interface{}
-	if err := r.db.
-		Table("assignment_sections").
-		Select(`
-			assignment_sections.assignment_id,
-			assignment_sections.assignment_section_id,
-			assignment_sections.cut_off_date,
-			assignment_sections.due_date,
-			assignment_sections.release_date,
-			sections.section_id,
-			sections.section_name
-		`).
-		Joins("JOIN sections ON assignment_sections.section_id = sections.section_id").
-		Where("assignment_sections.assignment_id IN (?)",
-			r.db.
-				Table("assignments").
-				Select("assignment_id").
-				Where("course_id = ? AND deleted_at IS NULL", CourseID),
-		).
-		Find(&assignmentSections).Error; err != nil {
-		return nil, err
+	for i := range assignments {
+		var assignmentSections []response.AssignmentSectionResponse
+
+		if err := r.db.
+			Table("assignment_sections").
+			Select("assignment_sections.assignment_id, assignment_sections.assignment_section_id, assignment_sections.release_date, assignment_sections.due_date, assignment_sections.cut_off_date, sections.section_id, sections.section_name").
+			Joins("LEFT JOIN sections ON assignment_sections.section_id = sections.section_id").
+			Where("assignment_sections.assignment_id = ?", assignments[i].AssignmentID).
+			Find(&assignmentSections).Error; err != nil {
+			return nil, err
+		}
+
+		assignments[i].AssignmentSections = assignmentSections
 	}
 
-	assignmentMap := make(map[string][]map[string]interface{})
-	for _, section := range assignmentSections {
-		assignmentID := section["assignment_id"].(string)
-		assignmentMap[assignmentID] = append(assignmentMap[assignmentID], section)
-	}
-
-	var result []map[string]interface{}
-	for _, assignment := range insAssignments {
-		assignmentID := assignment["assignment_id"].(string)
-		assignment["assignment_sections"] = assignmentMap[assignmentID]
-		result = append(result, assignment)
-	}
-
-	return result, nil
+	return assignments, nil
 }
 
-func (r *GormInstructorRepository) FindAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
-	var assignments []map[string]interface{}
+func (r *GormInstructorRepository) FindAssignmentsByCourseID(CourseID uuid.UUID) ([]response.AssignmentsResponse, error) {
+	var assignments []response.AssignmentsResponse
 
 	if err := r.db.
 		Table("assignments").
@@ -531,8 +502,8 @@ func (r *GormInstructorRepository) FindAssignmentsByCourseID(CourseID uuid.UUID)
 	return assignments, nil
 }
 
-func (r *GormInstructorRepository) FindActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error) {
-	var activeAssignments []map[string]interface{}
+func (r *GormInstructorRepository) FindActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]response.AssignmentActiveResponse, error) {
+	var activeAssignments []response.AssignmentActiveResponse
 	currentDate := time.Now()
 
 	if err := r.db.
@@ -555,29 +526,42 @@ func (r *GormInstructorRepository) FindActiveAssignmentsByCourseID(CourseID uuid
 	return activeAssignments, nil
 }
 
-func (r *GormInstructorRepository) FindAssignmentByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]map[string]interface{}, error) {
-	var assignmentDetails []map[string]interface{}
+func (r *GormInstructorRepository) FindAssignmentByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (*response.AssignmentResponse, error) {
+	var assignment response.Assignment
 
 	if err := r.db.
 		Table("assignments").
-		Select(`assignments.assignment_id, assignments.assignment_name, assignments.assignment_description, assignments.submiss_by, assignments.grading_type, assignments.late_submiss, assignments.published, assignments.regrades, assignments.group_submiss,
-				assignment_sections.assignment_section_id, assignment_sections.release_date, assignment_sections.due_date, assignment_sections.cut_off_date, 
-                sections.section_id, sections.section_name`).
-		Joins(`LEFT JOIN assignment_sections ON assignments.assignment_id = assignment_sections.assignment_id`).
-		Joins(`LEFT JOIN sections ON assignment_sections.section_id = sections.section_id`).
-		Where("assignments.course_id = ? AND assignments.assignment_id = ? AND assignments.deleted_at IS NULL", CourseID, AssignmentID).
-		Find(&assignmentDetails).Error; err != nil {
+		Select("assignment_id, assignment_name, assignment_description, submiss_by, grading_type, late_submiss, published, regrades, group_submiss").
+		Where("course_id = ? AND assignment_id = ? AND deleted_at IS NULL", CourseID, AssignmentID).
+		First(&assignment).Error; err != nil {
 		return nil, err
 	}
-	return assignmentDetails, nil
+
+	var assignmentSections []response.AssignmentSection
+
+	if err := r.db.
+		Table("assignment_sections").
+		Select("assignment_section_id, release_date, due_date, cut_off_date, sections.section_id, sections.section_name").
+		Joins("LEFT JOIN sections ON assignment_sections.section_id = sections.section_id").
+		Where("assignment_sections.assignment_id = ?", AssignmentID).
+		Find(&assignmentSections).Error; err != nil {
+		return nil, err
+	}
+
+	assignmentResponse := response.AssignmentResponse{
+		Assignment:         assignment,
+		AssignmentSections: assignmentSections,
+	}
+
+	return &assignmentResponse, nil
 }
 
-func (r *GormInstructorRepository) FindInstructorsNameByCourseID(courseID uuid.UUID) ([]*models.PersonalData, error) {
-	var instructors []*models.PersonalData
+func (r *GormInstructorRepository) FindInstructorsNameByCourseID(courseID uuid.UUID) ([]response.InstructorListResponse, error) {
+	var instructors []response.InstructorListResponse
 
 	if err := r.db.
 		Table("enrollment_lists").
-		Select("personal_data.personal_data_id, personal_data.first_name, personal_data.last_name").
+		Select("personal_data.personal_data_id, CONCAT(personal_data.first_name, '  ', personal_data.last_name) AS instructor_name").
 		Joins("JOIN personal_data ON enrollment_lists.personal_data_id = personal_data.personal_data_id").
 		Where("enrollment_lists.course_id = ? AND personal_data.role_type = ?", courseID, "INSTRUCTOR").
 		Find(&instructors).Error; err != nil {
