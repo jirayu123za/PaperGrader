@@ -220,10 +220,10 @@ func (h *HttpInstructorHandler) UpdateAssignmentAndAssignmentSection(c *fiber.Ct
 		})
 	}
 
-	assignmentName := c.FormValue("assignmentName")
-	assignmentDescription := c.FormValue("assignmentDescription")
-	submissBy := c.FormValue("submissionType")
-	gradingType := c.FormValue("scoringMethod")
+	assignmentName := c.FormValue("assignment_name")
+	assignmentDescription := c.FormValue("assignment_description")
+	submissBy := c.FormValue("submiss_by")
+	gradingType := c.FormValue("grading_type")
 	lateSubmissStr := c.FormValue("allowLateSubmissions")
 	lateSubmiss, err := strconv.ParseBool(lateSubmissStr)
 	if err != nil {
@@ -1061,5 +1061,37 @@ func (h *HttpInstructorHandler) GetInstructorsNameByCourseID(c *fiber.Ctx) error
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":     "Instructors are retrieved",
 		"instructors": response,
+	})
+}
+
+func (h *HttpInstructorHandler) GetSubmissionListByCourseIDAndAssignmentID(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	submissions, err := h.services.GetSubmissionListByCourseIDAndAssignmentID(courseID, assignmentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get submission list",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":     "Submission list is retrieved",
+		"submissions": submissions,
 	})
 }
