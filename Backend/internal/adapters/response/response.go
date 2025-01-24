@@ -124,3 +124,11 @@ type InstructorListResponse struct {
 	PersonalDataID uuid.UUID `json:"personalData_id"`
 	InstructorName string    `json:"instructor_name"`
 }
+
+// Struct for Ge tBoundingBox By Assignment Template
+type BoundingBoxTemplateResponse struct {
+	BoundingBoxID       uuid.UUID `json:"bounding_box_id"`
+	BoundingBoxPosition string    `json:"bounding_box_position"`
+	BoundingBoxType     string    `json:"bounding_box_type"`
+	BoundingBoxPage     uint      `json:"bounding_box_page"`
+}
