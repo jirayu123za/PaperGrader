@@ -600,3 +600,17 @@ func (r *GormInstructorRepository) AddBoundingBoxes(AssignmentID uuid.UUID, boun
 		return nil
 	})
 }
+
+func (r *GormInstructorRepository) FindBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error) {
+	var boundingBoxes []response.BoundingBoxTemplateResponse
+
+	if err := r.db.
+		Table("bounding_boxes").
+		Select("bounding_boxes.bounding_box_id, bounding_boxes.bounding_box_position, bounding_boxes.bounding_box_type, bounding_boxes.bounding_box_page").
+		Where("bounding_boxes.assignment_id = ?", AssignmentID).
+		Where("bounding_boxes.deleted_at IS NULL").
+		Find(&boundingBoxes).Error; err != nil {
+		return nil, err
+	}
+	return boundingBoxes, nil
+}
