@@ -157,6 +157,7 @@ func main() {
 	apiGroup.Get("/instructor/template/url", instructorHandler.GetPDFTemplateWithURL)
 	//!
 	apiGroup.Get("/instructor/submissions", instructorHandler.GetFileFormSubmission)
+	apiGroup.Get("/instructor/submissionsList", instructorHandler.GetSubmissionListByCourseIDAndAssignmentID)
 
 	apiGroup.Get("/student/dashboard", studentHandler.GetCoursesAndAssignments)
 	// test api get pdf files name
