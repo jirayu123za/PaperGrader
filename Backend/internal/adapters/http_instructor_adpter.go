@@ -1129,3 +1129,37 @@ func (h *HttpInstructorHandler) GetBoundingBoxesByAssignmentTemplate(c *fiber.Ct
 		"bounding_boxes": boundingBoxes,
 	})
 }
+
+func (h *HttpInstructorHandler) UpdateBoundingBoxes(c *fiber.Ctx) error {
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	var request struct {
+		BoundingBoxes []models.BoundingBox `json:"bounding_boxes"`
+	}
+
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid JSON format",
+			"error":   err.Error(),
+		})
+	}
+
+	if err := h.services.UpdateBoundingBoxes(assignmentID, request.BoundingBoxes); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to update bounding boxes",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":        "Bounding boxes are updated",
+		"bounding_boxes": request.BoundingBoxes,
+	})
+}
