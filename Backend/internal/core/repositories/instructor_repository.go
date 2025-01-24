@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/models"
 
 	"github.com/google/uuid"
@@ -40,5 +41,5 @@ type InstructorRepository interface {
 
 	FindInstructorsNameByCourseID(courseID uuid.UUID) ([]*models.PersonalData, error)
 
-	FindSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]map[string]interface{}, error)
+	FindSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
 }

@@ -3,6 +3,7 @@ package adapters
 import (
 	"bytes"
 	"fmt"
+	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/models"
 	"strings"
 	"time"
@@ -585,8 +586,8 @@ func (r *GormInstructorRepository) FindInstructorsNameByCourseID(courseID uuid.U
 	return instructors, nil
 }
 
-func (r *GormInstructorRepository) FindSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]map[string]interface{}, error) {
-	var submissionList []map[string]interface{}
+func (r *GormInstructorRepository) FindSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error) {
+	var submissionList []response.SubmissionResponse
 
 	if err := r.db.
 		Table("submissions").
@@ -598,7 +599,7 @@ func (r *GormInstructorRepository) FindSubmissionListByCourseIDAndAssignmentID(C
 		Where("enrollment_lists.course_id = ? AND submissions.assignment_id = ?", CourseID, AssignmentID).
 		Where("submissions.deleted_at IS NULL AND users.deleted_at IS NULL AND personal_data.deleted_at IS NULL AND sections.deleted_at IS NULL AND enrollment_lists.deleted_at IS NULL").
 		Order("submissions.submitted_at ASC").
-		Find(&submissionList).Error; err != nil {
+		Scan(&submissionList).Error; err != nil {
 		return nil, err
 	}
 	return submissionList, nil

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/core/repositories"
 	"paperGrader/internal/models"
 
@@ -41,7 +42,7 @@ type InstructorService interface {
 
 	GetInstructorsNameByCourseID(courseID uuid.UUID) ([]*models.PersonalData, error)
 
-	GetSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]map[string]interface{}, error)
+	GetSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
 }
 
 type InstructorServiceImpl struct {
@@ -281,7 +282,7 @@ func (s *InstructorServiceImpl) GetInstructorsNameByCourseID(courseID uuid.UUID)
 	return instructors, nil
 }
 
-func (s *InstructorServiceImpl) GetSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]map[string]interface{}, error) {
+func (s *InstructorServiceImpl) GetSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error) {
 	submissionList, err := s.repo.FindSubmissionListByCourseIDAndAssignmentID(CourseID, AssignmentID)
 	if err != nil {
 		return nil, err
