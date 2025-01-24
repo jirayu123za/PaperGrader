@@ -30,16 +30,15 @@ type InstructorRepository interface {
 
 	FindUserByEmail(email string) (map[string]interface{}, error)
 
-	FindCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error)
-	FindCourseByCourseID(CourseID uuid.UUID) (map[string]interface{}, error)
+	FindCoursesByUserID(UserID uuid.UUID) ([]response.CoursesResponse, error)
+	FindCourseByCourseID(CourseID uuid.UUID) (*response.CourseResponse, error)
 
-	FindInsAssignmentByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
+	FindInsAssignmentByCourseID(CourseID uuid.UUID) ([]response.InsAssignmentResponse, error)
+	FindAssignmentsByCourseID(CourseID uuid.UUID) ([]response.AssignmentsResponse, error)
+	FindActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]response.AssignmentActiveResponse, error)
+	FindAssignmentByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (*response.AssignmentResponse, error)
 
-	FindAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
-	FindActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
-	FindAssignmentByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]map[string]interface{}, error)
-
-	FindInstructorsNameByCourseID(courseID uuid.UUID) ([]*models.PersonalData, error)
+	FindInstructorsNameByCourseID(courseID uuid.UUID) ([]response.InstructorListResponse, error)
 
 	FindSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
 }
