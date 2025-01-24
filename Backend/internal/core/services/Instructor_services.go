@@ -45,7 +45,7 @@ type InstructorService interface {
 
 	CreateBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
 	GetBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error)
-	// UpdateBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
+	UpdateBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
 	// DeleteBoundingBoxes(AssignmentID uuid.UUID) error
 }
 
@@ -274,4 +274,11 @@ func (s *InstructorServiceImpl) GetBoundingBoxesByAssignmentTemplate(AssignmentI
 		return nil, err
 	}
 	return boundingBoxes, nil
+}
+
+func (s *InstructorServiceImpl) UpdateBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error {
+	if err := s.repo.ModifyBoundingBoxes(AssignmentID, boundingBoxes); err != nil {
+		return err
+	}
+	return nil
 }
