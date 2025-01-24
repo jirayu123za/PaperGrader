@@ -631,3 +631,13 @@ func (r *GormInstructorRepository) ModifyBoundingBoxes(AssignmentID uuid.UUID, b
 		return nil
 	})
 }
+
+func (r *GormInstructorRepository) RemoveBoundingBoxes(AssignmentID uuid.UUID, boundingBoxIDs []uuid.UUID) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("assignment_id = ? AND bounding_box_id IN ?", AssignmentID, boundingBoxIDs).
+			Delete(&models.BoundingBox{}).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}
