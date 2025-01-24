@@ -46,5 +46,5 @@ type InstructorRepository interface {
 	AddBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
 	FindBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error)
 	ModifyBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
-	// RemoveBoundingBoxes(AssignmentID uuid.UUID) error
+	RemoveBoundingBoxes(AssignmentID uuid.UUID, boundingBoxIDs []uuid.UUID) error
 }
