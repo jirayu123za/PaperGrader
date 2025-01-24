@@ -39,4 +39,6 @@ type InstructorRepository interface {
 	FindAssignmentByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]map[string]interface{}, error)
 
 	FindInstructorsNameByCourseID(courseID uuid.UUID) ([]*models.PersonalData, error)
+
+	FindSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]map[string]interface{}, error)
 }
