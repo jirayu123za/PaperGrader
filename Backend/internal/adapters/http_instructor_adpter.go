@@ -1163,3 +1163,33 @@ func (h *HttpInstructorHandler) UpdateBoundingBoxes(c *fiber.Ctx) error {
 		"bounding_boxes": request.BoundingBoxes,
 	})
 }
+
+func (h *HttpInstructorHandler) DeleteBoundingBoxes(c *fiber.Ctx) error {
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	var boundingBoxIDs []uuid.UUID
+	if err := c.BodyParser(&boundingBoxIDs); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid JSON format",
+			"error":   err.Error(),
+		})
+	}
+
+	if err := h.services.DeleteBoundingBoxes(assignmentID, boundingBoxIDs); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to delete bounding boxes",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Bounding boxes are deleted",
+	})
+}
