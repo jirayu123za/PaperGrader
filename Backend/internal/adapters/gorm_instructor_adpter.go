@@ -588,3 +588,15 @@ func (r *GormInstructorRepository) FindSubmissionListByCourseIDAndAssignmentID(C
 	}
 	return submissionList, nil
 }
+
+func (r *GormInstructorRepository) AddBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		for i := range boundingBoxes {
+			boundingBoxes[i].AssignmentID = AssignmentID
+			if err := tx.Create(&boundingBoxes[i]).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
