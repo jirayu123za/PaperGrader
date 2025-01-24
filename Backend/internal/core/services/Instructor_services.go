@@ -40,6 +40,8 @@ type InstructorService interface {
 	GetAssignmentByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error)
 
 	GetInstructorsNameByCourseID(courseID uuid.UUID) ([]*models.PersonalData, error)
+
+	GetSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]map[string]interface{}, error)
 }
 
 type InstructorServiceImpl struct {
@@ -277,4 +279,12 @@ func (s *InstructorServiceImpl) GetInstructorsNameByCourseID(courseID uuid.UUID)
 		return nil, err
 	}
 	return instructors, nil
+}
+
+func (s *InstructorServiceImpl) GetSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]map[string]interface{}, error) {
+	submissionList, err := s.repo.FindSubmissionListByCourseIDAndAssignmentID(CourseID, AssignmentID)
+	if err != nil {
+		return nil, err
+	}
+	return submissionList, nil
 }
