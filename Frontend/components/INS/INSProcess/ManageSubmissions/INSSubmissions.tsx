@@ -1,51 +1,11 @@
 import React from 'react';
-import { Table, Button, TextInput, Flex } from '@mantine/core';
+import { Table, Button, TextInput, Flex, Text } from '@mantine/core';
 import { useRouter } from 'next/router';
 import { useForm } from '@mantine/form';
+import { useFetchSubmissions } from '../../../../hooks/useFetchINS_Submission';
+import { useINS_SubmissionStore } from '../../../../store/useINS_SubmissionStore';
 
-interface Submission {
-  studentCode: string;
-  name: string;
-  section: string;
-  submittedAt: string;
-}
-
-const mockSubmissions: Submission[] = [
-  {
-    studentCode: '630111',
-    name: 'Jirayu',
-    section: '801',
-    submittedAt: 'Dec 10 at 5:46PM',
-  },
-  {
-    studentCode: '630222',
-    name: 'Navadon Khunlertgit',
-    section: '801',
-    submittedAt: 'Dec 11 at 9:45PM',
-  },
-  {
-    studentCode: '630333',
-    name: 'Pulom',
-    section: '802',
-    submittedAt: 'Dec 21 at 5:21PM',
-  },
-  {
-    studentCode: '630444',
-    name: 'Test User',
-    section: '802',
-    submittedAt: 'Dec 13 at 4:06PM',
-  },
-  {
-    studentCode: '630555',
-    name: 'Example User',
-    section: '803',
-    submittedAt: 'Dec 14 at 2:30PM',
-  },
-];
-
-interface INSSubmissionsProps {}
-
-const INSSubmissions: React.FC<INSSubmissionsProps> = () => {
+const INSSubmissions: React.FC = () => {
   const router = useRouter();
   const { course_id, assignment_id } = router.query;
 
@@ -55,12 +15,15 @@ const INSSubmissions: React.FC<INSSubmissionsProps> = () => {
     },
   });
 
-  const filteredSubmissions = mockSubmissions.filter((submission) => {
+  const { submissions } = useINS_SubmissionStore();
+  useFetchSubmissions(course_id as string, assignment_id as string);
+
+  const filteredSubmissions = submissions.filter((submission) => {
     const lowercasedTerm = form.values.searchTerm.toLowerCase();
     return (
-      submission.studentCode.includes(lowercasedTerm) ||
-      submission.name.toLowerCase().includes(lowercasedTerm) ||
-      submission.section.includes(lowercasedTerm)
+      submission.student_code.includes(lowercasedTerm) ||
+      submission.full_name.toLowerCase().includes(lowercasedTerm) ||
+      submission.section_name.includes(lowercasedTerm)
     );
   });
 
@@ -92,23 +55,30 @@ const INSSubmissions: React.FC<INSSubmissionsProps> = () => {
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {filteredSubmissions.map((submission, index) => (
-            <Table.Tr key={index}>
-              <Table.Td>{submission.studentCode}</Table.Td>
-              <Table.Td>{submission.name}</Table.Td>
-              <Table.Td>{submission.section}</Table.Td>
-              <Table.Td>{submission.submittedAt}</Table.Td>
+          {filteredSubmissions.map((submission) => (
+            <Table.Tr key={submission.submission_id}>
+              <Table.Td>{submission.student_code}</Table.Td>
+              <Table.Td>{submission.full_name}</Table.Td>
+              <Table.Td>{submission.section_name}</Table.Td>
+              <Table.Td>{new Date(submission.submitted_at).toLocaleString()}</Table.Td>
               <Table.Td>
                 <Button
                   size="xs"
                   variant="outline"
-                  onClick={() => handleViewPDF(submission.studentCode)}
+                  onClick={() => handleViewPDF(submission.student_code)}
                 >
                   View PDF
                 </Button>
               </Table.Td>
             </Table.Tr>
           ))}
+          {filteredSubmissions.length === 0 && (
+            <Table.Tr>
+              <Table.Td colSpan={5} style={{ textAlign: 'center' }}>
+                <Text color="dimmed">No submissions yet</Text>
+              </Table.Td>
+            </Table.Tr>
+          )}
         </Table.Tbody>
       </Table>
     </div>
