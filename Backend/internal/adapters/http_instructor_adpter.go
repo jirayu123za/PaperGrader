@@ -1083,7 +1083,12 @@ func (h *HttpInstructorHandler) CreateBoundingBoxes(c *fiber.Ctx) error {
 	}
 
 	var request struct {
-		BoundingBoxes []models.BoundingBox `json:"bounding_boxes"`
+		BoundingBoxes []struct {
+			BoundingBoxPosition string `json:"bounding_box_position"`
+			BoundingBoxType     string `json:"bounding_box_type"`
+			BoundingBoxPage     uint   `json:"bounding_box_page"`
+			BoundingBoxImage    string `json:"bounding_box_image"`
+		} `json:"bounding_boxes"`
 	}
 
 	if err := c.BodyParser(&request); err != nil {
@@ -1093,11 +1098,36 @@ func (h *HttpInstructorHandler) CreateBoundingBoxes(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := h.services.CreateBoundingBoxes(assignmentID, request.BoundingBoxes); err != nil {
+	var boundingBoxes []models.BoundingBox
+	for _, reqBox := range request.BoundingBoxes {
+		boundingBox := models.BoundingBox{
+			AssignmentID:        assignmentID,
+			BoundingBoxPosition: reqBox.BoundingBoxPosition,
+			BoundingBoxType:     models.BoundingBoxType(reqBox.BoundingBoxType),
+			BoundingBoxPage:     reqBox.BoundingBoxPage,
+		}
+
+		if imageData, err := utils.DecodeBase64(reqBox.BoundingBoxImage); err == nil {
+			boundingBox.BoundingBoxImage = imageData
+		} else {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"message": "Invalid Base64 encoding",
+				"error":   err.Error(),
+			})
+		}
+
+		boundingBoxes = append(boundingBoxes, boundingBox)
+	}
+
+	if err := h.services.CreateBoundingBoxes(assignmentID, boundingBoxes); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to create bounding boxes",
 			"error":   err.Error(),
 		})
+	}
+
+	for i := range boundingBoxes {
+		boundingBoxes[i].BoundingBoxImage = []byte(utils.EncodeBase64(boundingBoxes[i].BoundingBoxImage))
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
@@ -1141,7 +1171,12 @@ func (h *HttpInstructorHandler) UpdateBoundingBoxes(c *fiber.Ctx) error {
 	}
 
 	var request struct {
-		BoundingBoxes []models.BoundingBox `json:"bounding_boxes"`
+		BoundingBoxes []struct {
+			BoundingBoxPosition string `json:"bounding_box_position"`
+			BoundingBoxType     string `json:"bounding_box_type"`
+			BoundingBoxPage     uint   `json:"bounding_box_page"`
+			BoundingBoxImage    string `json:"bounding_box_image"`
+		} `json:"bounding_boxes"`
 	}
 
 	if err := c.BodyParser(&request); err != nil {
@@ -1151,7 +1186,28 @@ func (h *HttpInstructorHandler) UpdateBoundingBoxes(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := h.services.UpdateBoundingBoxes(assignmentID, request.BoundingBoxes); err != nil {
+	var boundingBoxes []models.BoundingBox
+	for _, reqBox := range request.BoundingBoxes {
+		boundingBox := models.BoundingBox{
+			AssignmentID:        assignmentID,
+			BoundingBoxPosition: reqBox.BoundingBoxPosition,
+			BoundingBoxType:     models.BoundingBoxType(reqBox.BoundingBoxType),
+			BoundingBoxPage:     reqBox.BoundingBoxPage,
+		}
+
+		if imageData, err := utils.DecodeBase64(reqBox.BoundingBoxImage); err == nil {
+			boundingBox.BoundingBoxImage = imageData
+		} else {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"message": "Invalid Base64 encoding",
+				"error":   err.Error(),
+			})
+		}
+
+		boundingBoxes = append(boundingBoxes, boundingBox)
+	}
+
+	if err := h.services.UpdateBoundingBoxes(assignmentID, boundingBoxes); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to update bounding boxes",
 			"error":   err.Error(),
