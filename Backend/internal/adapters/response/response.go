@@ -119,16 +119,17 @@ type CoursesResponse struct {
 	DeletedAt         *time.Time `json:"deleted_at"`
 }
 
-// Struct for GetInstructorsNameByCourseID(one structs)
+// Struct for Get InstructorsNameByCourseID(one structs)
 type InstructorListResponse struct {
 	PersonalDataID uuid.UUID `json:"personalData_id"`
 	InstructorName string    `json:"instructor_name"`
 }
 
-// Struct for Ge tBoundingBox By Assignment Template
+// Struct for Get BoundingBox By Assignment Template
 type BoundingBoxTemplateResponse struct {
 	BoundingBoxID       uuid.UUID `json:"bounding_box_id"`
 	BoundingBoxPosition string    `json:"bounding_box_position"`
 	BoundingBoxType     string    `json:"bounding_box_type"`
 	BoundingBoxPage     uint      `json:"bounding_box_page"`
+	BoundingBoxImage    string    `json:"bounding_box_image"`
 }
