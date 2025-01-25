@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"paperGrader/internal/adapters/response"
+	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
 	"strings"
 	"time"
@@ -602,17 +603,35 @@ func (r *GormInstructorRepository) AddBoundingBoxes(AssignmentID uuid.UUID, boun
 }
 
 func (r *GormInstructorRepository) FindBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error) {
-	var boundingBoxes []response.BoundingBoxTemplateResponse
+	var boundingBoxes []struct {
+		BoundingBoxID       uuid.UUID `json:"bounding_box_id"`
+		BoundingBoxPosition string    `json:"bounding_box_position"`
+		BoundingBoxType     string    `json:"bounding_box_type"`
+		BoundingBoxPage     uint      `json:"bounding_box_page"`
+		BoundingBoxImage    []byte    `json:"bounding_box_image"`
+	}
 
 	if err := r.db.
 		Table("bounding_boxes").
-		Select("bounding_boxes.bounding_box_id, bounding_boxes.bounding_box_position, bounding_boxes.bounding_box_type, bounding_boxes.bounding_box_page").
+		Select("bounding_box_id, bounding_box_position, bounding_box_type, bounding_box_page, bounding_box_image").
 		Where("bounding_boxes.assignment_id = ?", AssignmentID).
 		Where("bounding_boxes.deleted_at IS NULL").
 		Find(&boundingBoxes).Error; err != nil {
 		return nil, err
 	}
-	return boundingBoxes, nil
+
+	var responseBoundingBoxes []response.BoundingBoxTemplateResponse
+	for _, box := range boundingBoxes {
+		responseBoundingBoxes = append(responseBoundingBoxes, response.BoundingBoxTemplateResponse{
+			BoundingBoxID:       box.BoundingBoxID,
+			BoundingBoxPosition: box.BoundingBoxPosition,
+			BoundingBoxType:     box.BoundingBoxType,
+			BoundingBoxPage:     box.BoundingBoxPage,
+			BoundingBoxImage:    utils.EncodeBase64(box.BoundingBoxImage),
+		})
+	}
+
+	return responseBoundingBoxes, nil
 }
 
 func (r *GormInstructorRepository) ModifyBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error {
@@ -624,6 +643,7 @@ func (r *GormInstructorRepository) ModifyBoundingBoxes(AssignmentID uuid.UUID, b
 					"bounding_box_position": boundingBoxes[i].BoundingBoxPosition,
 					"bounding_box_type":     boundingBoxes[i].BoundingBoxType,
 					"bounding_box_page":     boundingBoxes[i].BoundingBoxPage,
+					"bounding_box_image":    boundingBoxes[i].BoundingBoxImage,
 				}).Error; err != nil {
 				return err
 			}
