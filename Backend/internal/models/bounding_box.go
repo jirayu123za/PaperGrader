@@ -21,6 +21,7 @@ type BoundingBox struct {
 	BoundingBoxPosition string          `gorm:"type:box;not null" json:"bounding_box_position"`
 	BoundingBoxType     BoundingBoxType `gorm:"type:bounding_box_type_enum;not null" json:"bounding_box_type"`
 	BoundingBoxPage     uint            `gorm:"not null" json:"bounding_box_page"`
+	BoundingBoxImage    []byte          `gorm:"type:bytea" json:"-"`
 	CreatedAt           time.Time
 	UpdatedAt           time.Time
 	DeletedAt           gorm.DeletedAt `gorm:"index"`
