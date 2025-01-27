@@ -1252,3 +1252,27 @@ func (h *HttpInstructorHandler) DeleteBoundingBoxes(c *fiber.Ctx) error {
 		"message": "Bounding boxes are deleted",
 	})
 }
+
+func (h *HttpInstructorHandler) GetQuestionsByAssignmentTemplate(c *fiber.Ctx) error {
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	questionsResp, err := h.services.GetQuestionsByAssignmentTemplate(assignmentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get questions",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":   "Questions are retrieved",
+		"questions": questionsResp,
+	})
+}
