@@ -160,7 +160,7 @@ func main() {
 	apiGroup.Get("/instructor/submissionsList", instructorHandler.GetSubmissionListByCourseIDAndAssignmentID)
 
 	// Bounding Box
-	apiGroup.Post("/instructor/boundingBoxes", instructorHandler.CreateBoundingBoxes)
+	apiGroup.Post("/instructor/boundingBoxes", instructorHandler.CreateBoundingBoxesAndQuestions)
 	apiGroup.Get("/instructor/boundingBoxes", instructorHandler.GetBoundingBoxesByAssignmentTemplate)
 	apiGroup.Put("/instructor/boundingBoxes", instructorHandler.UpdateBoundingBoxes)
 	apiGroup.Delete("/instructor/boundingBoxes", instructorHandler.DeleteBoundingBoxes)
