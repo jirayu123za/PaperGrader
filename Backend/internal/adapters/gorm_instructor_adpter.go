@@ -2,6 +2,7 @@ package adapters
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/core/utils"
@@ -873,4 +874,30 @@ func (r *GormInstructorRepository) RemoveBoundingBoxes(AssignmentID uuid.UUID, b
 		}
 		return nil
 	})
+}
+
+func (r *GormInstructorRepository) FindQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (*response.QuestionsTemplateResponse, error) {
+	var rubric struct {
+		RubricID   uuid.UUID
+		RubricData []byte
+	}
+
+	if err := r.db.
+		Table("rubrics").
+		Select("rubric_id, rubric_data").
+		Where("assignment_id = ?", AssignmentID).
+		Where("deleted_at IS NULL").
+		First(&rubric).Error; err != nil {
+		return nil, err
+	}
+
+	var rubricData map[string]interface{}
+	if err := json.Unmarshal(rubric.RubricData, &rubricData); err != nil {
+		return nil, fmt.Errorf("failed to parse rubric_data: %v", err)
+	}
+
+	return &response.QuestionsTemplateResponse{
+		RubricID:   rubric.RubricID,
+		RubricData: rubricData,
+	}, nil
 }
