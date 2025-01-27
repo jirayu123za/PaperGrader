@@ -165,6 +165,9 @@ func main() {
 	apiGroup.Put("/instructor/boundingBoxes", instructorHandler.UpdateBoundingBoxes)
 	apiGroup.Delete("/instructor/boundingBoxes", instructorHandler.DeleteBoundingBoxes)
 
+	// Questions
+	apiGroup.Get("/instructor/questions", instructorHandler.GetQuestionsByAssignmentTemplate)
+
 	apiGroup.Get("/student/dashboard", studentHandler.GetCoursesAndAssignments)
 	// test api get pdf files name
 	apiGroup.Get("/student/files", studentHandler.GetAssignmentNamesWithCourseIDAndAssignmentID)
