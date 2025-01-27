@@ -43,7 +43,7 @@ type InstructorService interface {
 
 	GetSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
 
-	CreateBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
+	CreateBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error
 	GetBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error)
 	UpdateBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
 	DeleteBoundingBoxes(AssignmentID uuid.UUID, boundingBoxIDs []uuid.UUID) error
@@ -261,8 +261,8 @@ func (s *InstructorServiceImpl) GetSubmissionListByCourseIDAndAssignmentID(Cours
 	return submissionList, nil
 }
 
-func (s *InstructorServiceImpl) CreateBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error {
-	if err := s.repo.AddBoundingBoxes(AssignmentID, boundingBoxes); err != nil {
+func (s *InstructorServiceImpl) CreateBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error {
+	if err := s.repo.AddBoundingBoxesAndQuestions(AssignmentID, boundingBoxes, rubricData); err != nil {
 		return err
 	}
 	return nil
