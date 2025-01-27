@@ -1072,7 +1072,7 @@ func (h *HttpInstructorHandler) GetSubmissionListByCourseIDAndAssignmentID(c *fi
 	})
 }
 
-func (h *HttpInstructorHandler) CreateBoundingBoxes(c *fiber.Ctx) error {
+func (h *HttpInstructorHandler) CreateBoundingBoxesAndQuestions(c *fiber.Ctx) error {
 	assignmentIDParam := c.Query("assignment_id")
 	assignmentID, err := uuid.Parse(assignmentIDParam)
 	if err != nil {
@@ -1089,6 +1089,7 @@ func (h *HttpInstructorHandler) CreateBoundingBoxes(c *fiber.Ctx) error {
 			BoundingBoxPage     uint   `json:"bounding_box_page"`
 			BoundingBoxImage    string `json:"bounding_box_image"`
 		} `json:"bounding_boxes"`
+		QuestionsData map[string]interface{} `json:"questions_data"`
 	}
 
 	if err := c.BodyParser(&request); err != nil {
@@ -1105,6 +1106,7 @@ func (h *HttpInstructorHandler) CreateBoundingBoxes(c *fiber.Ctx) error {
 			BoundingBoxPosition: reqBox.BoundingBoxPosition,
 			BoundingBoxType:     models.BoundingBoxType(reqBox.BoundingBoxType),
 			BoundingBoxPage:     reqBox.BoundingBoxPage,
+			BoundingBoxID:       uuid.New(),
 		}
 
 		if imageData, err := utils.DecodeBase64(reqBox.BoundingBoxImage); err == nil {
@@ -1119,9 +1121,9 @@ func (h *HttpInstructorHandler) CreateBoundingBoxes(c *fiber.Ctx) error {
 		boundingBoxes = append(boundingBoxes, boundingBox)
 	}
 
-	if err := h.services.CreateBoundingBoxes(assignmentID, boundingBoxes); err != nil {
+	if err := h.services.CreateBoundingBoxesAndQuestions(assignmentID, boundingBoxes, request.QuestionsData); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to create bounding boxes",
+			"message": "Failed to create bounding boxes and questions",
 			"error":   err.Error(),
 		})
 	}
@@ -1131,8 +1133,9 @@ func (h *HttpInstructorHandler) CreateBoundingBoxes(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"message":        "Bounding boxes are created",
-		"bounding_boxes": request.BoundingBoxes,
+		"message":        "Bounding boxes and questions are created",
+		"bounding_boxes": boundingBoxes,
+		"questions_data": request.QuestionsData,
 	})
 }
 
