@@ -81,6 +81,7 @@ export default function LeftMain() {
               order={2}
               style={{ color: '#F9F9F9' }}
               className={`${isCollapsed ? 'hidden' : 'block'}`}
+              lineClamp={1} 
             >
               {course.course_name}
             </Title>
@@ -88,6 +89,7 @@ export default function LeftMain() {
               size="sm"
               style={{ color: '#E9E9E9'}}
               className={`${isCollapsed ? 'hidden' : 'block'}`}
+              lineClamp={2} 
             >
               Introduction to {course.course_name}
             </Text>

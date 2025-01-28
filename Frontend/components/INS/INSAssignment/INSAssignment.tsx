@@ -4,7 +4,7 @@ import SecAssignment from './SecAssignment';
 import { useInsAssignmentStore } from '../../../store/useAssignmentStore';
 import { useFetchInsAssignments } from '../../../hooks/useFetchAssignments';
 import { useRouter } from 'next/router';
-import { Menu, Button, Paper, Table, Skeleton, Pagination, Collapse, Checkbox, Title, ScrollArea } from '@mantine/core';
+import { Menu, Button, Paper, Table, Skeleton, Pagination, Collapse, Checkbox, Title, ScrollArea ,Text} from '@mantine/core';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { useModalAssignmentSettingStore } from '../../../store/modal/useAssignmentSettingModal';
 import { usePagination } from '@mantine/hooks';
@@ -58,11 +58,11 @@ const INTAssignment: React.FC = () => {
   });
 
   const paginatedData = insAssignments
-  ? insAssignments.slice(
+    ? insAssignments.slice(
       (pagination.active - 1) * pageSize,
       pagination.active * pageSize
     )
-  : [];
+    : [];
 
   if (error) return <div>Error loading assignments: {error.message}</div>;
   if (!insAssignments || insAssignments.length === 0) {
@@ -119,8 +119,11 @@ const INTAssignment: React.FC = () => {
                     />
                   </Table.Td>
                   <Table.Td className="py-2 px-4 flex items-center gap-2">
-                    <span
-                      className="cursor-pointer hover:underline"
+                    <Text
+                      lineClamp={1} // จำกัดข้อความให้แสดงเพียง 1 บรรทัด
+                      size="sm"
+                      fw={500}
+                      style={{ cursor: 'pointer', flexGrow: 1 }}
                       onClick={() =>
                         router.push(
                           `/courses/${course_id}/process/${assignment.assignment_id}/CreateOutline`
@@ -128,9 +131,10 @@ const INTAssignment: React.FC = () => {
                       }
                     >
                       {assignment.assignment_name}
-                    </span>
+                    </Text>
                     <Button
                       variant="subtle"
+                      style={{ flexShrink: 0 }}
                       onClick={() => toggleAssignment(assignment.assignment_id)}
                     >
                       {expandedAssignments[assignment.assignment_id] ? <FiChevronUp /> : <FiChevronDown />}
