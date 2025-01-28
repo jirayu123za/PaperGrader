@@ -641,137 +641,11 @@ func (r *GormInstructorRepository) FindSubmissionListByCourseIDAndAssignmentID(C
 	return submissionList, nil
 }
 
-// func (r *GormInstructorRepository) AddBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error {
-// 	return r.db.Transaction(func(tx *gorm.DB) error {
-// 		var rubric *models.Rubric
-// 		hasQuestions := len(rubricData) > 0
-
-// 		if hasQuestions {
-// 			questions, exists := rubricData["questions"]
-// 			if !exists || questions == nil {
-// 				hasQuestions = false
-// 			} else {
-// 				rubric = &models.Rubric{
-// 					RubricID:     uuid.New(),
-// 					AssignmentID: AssignmentID,
-// 					RubricData:   make(map[string]interface{}),
-// 				}
-// 				if err := tx.Create(rubric).Error; err != nil {
-// 					return err
-// 				}
-// 			}
-// 		}
-
-// 		var questionBoundingBoxes []uuid.UUID
-
-// 		for i := range boundingBoxes {
-// 			boundingBoxes[i].AssignmentID = AssignmentID
-// 			boundingBoxes[i].BoundingBoxID = uuid.New()
-
-// 			if err := tx.Create(&boundingBoxes[i]).Error; err != nil {
-// 				return err
-// 			}
-
-// 			if boundingBoxes[i].BoundingBoxType == "question" {
-// 				questionBoundingBoxes = append(questionBoundingBoxes, boundingBoxes[i].BoundingBoxID)
-// 			}
-// 		}
-
-// 		if !hasQuestions {
-// 			return nil
-// 		}
-
-// 		questions := rubricData["questions"]
-// 		var questionEntries []map[string]interface{}
-// 		questionList, ok := questions.([]interface{})
-// 		if !ok {
-// 			singleQuestion, ok := rubricData["questions"].(map[string]interface{})
-// 			if !ok {
-// 				return fmt.Errorf("invalid question format in rubricData")
-// 			}
-// 			questionList = []interface{}{singleQuestion}
-// 		}
-
-// 		questionBoxIndex := 0
-
-// 		for _, q := range questionList {
-// 			qMap, ok := q.(map[string]interface{})
-// 			if !ok {
-// 				continue
-// 			}
-
-// 			questionID := uuid.New()
-// 			var questionBoundingBoxID uuid.UUID
-
-// 			subQuestions, hasSubquestions := qMap["subquestions"].([]interface{})
-
-// 			if hasSubquestions {
-// 				question := map[string]interface{}{
-// 					"question_id":    questionID.String(),
-// 					"question_point": qMap["question_point"],
-// 					"question_title": qMap["question_title"],
-// 				}
-// 				questionEntries = append(questionEntries, question)
-
-// 				for _, sq := range subQuestions {
-// 					sqMap, ok := sq.(map[string]interface{})
-// 					if !ok {
-// 						continue
-// 					}
-
-// 					subQuestionID := uuid.New()
-// 					var subBoundingBoxID uuid.UUID
-
-// 					if questionBoxIndex < len(questionBoundingBoxes) {
-// 						subBoundingBoxID = questionBoundingBoxes[questionBoxIndex]
-// 						questionBoxIndex++
-// 					} else {
-// 						return fmt.Errorf("bounding box not found for subquestion title: %s", sqMap["subquestion_title"])
-// 					}
-
-// 					subQuestion := map[string]interface{}{
-// 						"subquestion_id":     subQuestionID.String(),
-// 						"bounding_box_id":    subBoundingBoxID.String(),
-// 						"parent_question_id": questionID.String(),
-// 						"subquestion_point":  sqMap["subquestion_point"],
-// 						"subquestion_title":  sqMap["subquestion_title"],
-// 					}
-// 					questionEntries = append(questionEntries, subQuestion)
-// 				}
-// 			} else {
-// 				if questionBoxIndex < len(questionBoundingBoxes) {
-// 					questionBoundingBoxID = questionBoundingBoxes[questionBoxIndex]
-// 					questionBoxIndex++
-// 				} else {
-// 					return fmt.Errorf("bounding box not found for question title: %s", qMap["question_title"])
-// 				}
-
-// 				question := map[string]interface{}{
-// 					"question_id":     questionID.String(),
-// 					"bounding_box_id": questionBoundingBoxID.String(),
-// 					"question_point":  qMap["question_point"],
-// 					"question_title":  qMap["question_title"],
-// 				}
-// 				questionEntries = append(questionEntries, question)
-// 			}
-// 		}
-
-// 		if hasQuestions {
-// 			rubric.RubricData["questions"] = questionEntries
-// 			if err := tx.Model(&models.Rubric{}).
-// 				Where("rubric_id = ?", rubric.RubricID).
-// 				Update("rubric_data", rubric.RubricData).Error; err != nil {
-// 				return err
-// 			}
-// 		}
-// 		return nil
-// 	})
-// }
-
 func (r *GormInstructorRepository) AddBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		var rubric *models.Rubric
 		questionsData, hasQuestions := rubricData["questions"].([]interface{})
+
 		if hasQuestions && len(questionsData) > 0 {
 			rubric = &models.Rubric{
 				RubricID:     uuid.New(),
@@ -802,7 +676,7 @@ func (r *GormInstructorRepository) AddBoundingBoxesAndQuestions(AssignmentID uui
 			return nil
 		}
 
-		questionEntries := make([]map[string]interface{}, 0, len(questionsData)*2)
+		var formattedQuestions []map[string]interface{}
 		questionBoxIndex := 0
 
 		for _, q := range questionsData {
@@ -812,16 +686,15 @@ func (r *GormInstructorRepository) AddBoundingBoxesAndQuestions(AssignmentID uui
 			}
 
 			questionID := uuid.New()
-			subQuestions, hasSubQuestions := qMap["subquestions"].([]interface{})
-
 			questionEntry := map[string]interface{}{
 				"question_id":    questionID.String(),
 				"question_point": qMap["question_point"],
 				"question_title": qMap["question_title"],
 			}
 
-			if hasSubQuestions {
-				questionEntries = append(questionEntries, questionEntry)
+			if subQuestions, ok := qMap["subquestions"].([]interface{}); ok {
+				var formattedSubQuestions []map[string]interface{}
+
 				for _, sq := range subQuestions {
 					sqMap, ok := sq.(map[string]interface{})
 					if !ok {
@@ -834,34 +707,33 @@ func (r *GormInstructorRepository) AddBoundingBoxesAndQuestions(AssignmentID uui
 					}
 
 					subQuestionEntry := map[string]interface{}{
-						"subquestion_id":     subQuestionID.String(),
-						"bounding_box_id":    questionBoundingBoxes[questionBoxIndex].String(),
-						"parent_question_id": questionID.String(),
-						"subquestion_point":  sqMap["subquestion_point"],
-						"subquestion_title":  sqMap["subquestion_title"],
+						"subquestion_id":    subQuestionID.String(),
+						"bounding_box_id":   questionBoundingBoxes[questionBoxIndex].String(),
+						"subquestion_point": sqMap["subquestion_point"],
+						"subquestion_title": sqMap["subquestion_title"],
 					}
 
-					questionEntries = append(questionEntries, subQuestionEntry)
+					formattedSubQuestions = append(formattedSubQuestions, subQuestionEntry)
 					questionBoxIndex++
 				}
+				questionEntry["subquestions"] = formattedSubQuestions
 			} else {
 				if questionBoxIndex >= len(questionBoundingBoxes) {
 					return fmt.Errorf("bounding box not found for question: %s", qMap["question_title"])
 				}
-
 				questionEntry["bounding_box_id"] = questionBoundingBoxes[questionBoxIndex].String()
-				questionEntries = append(questionEntries, questionEntry)
 				questionBoxIndex++
 			}
+
+			formattedQuestions = append(formattedQuestions, questionEntry)
 		}
 
-		rubric.RubricData["questions"] = questionEntries
+		rubric.RubricData["questions"] = formattedQuestions
 		if err := tx.Model(&models.Rubric{}).
 			Where("rubric_id = ?", rubric.RubricID).
 			Update("rubric_data", rubric.RubricData).Error; err != nil {
 			return err
 		}
-
 		return nil
 	})
 }
