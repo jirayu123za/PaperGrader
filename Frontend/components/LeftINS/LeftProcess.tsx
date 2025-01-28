@@ -137,6 +137,7 @@ export default function LeftProcess() {
             <Title
               size="h4"
               className="pl-2 mb-4"
+              lineClamp={1} 
               style={{ ...styles, color: '#F9F9F9' }}
             >
               {assignmentLeftProcess.assignment_name}
