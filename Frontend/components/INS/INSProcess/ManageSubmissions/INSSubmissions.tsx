@@ -29,7 +29,7 @@ const INSSubmissions: React.FC = () => {
 
   const handleViewPDF = (studentCode: string) => {
     router.push(
-      `/courses/${course_id}/process/${assignment_id}/submissions/${studentCode}/question/question_id/Grade`
+      `/courses/${course_id}/process/${assignment_id}/submissions/${submissions}/Grade`
     );
   };
 
@@ -65,9 +65,9 @@ const INSSubmissions: React.FC = () => {
                 <Button
                   size="xs"
                   variant="outline"
-                  onClick={() => handleViewPDF(submission.student_code)}
+                  onClick={() => handleViewPDF(submission.submission_id)}
                 >
-                  View PDF
+                  View
                 </Button>
               </Table.Td>
             </Table.Tr>
