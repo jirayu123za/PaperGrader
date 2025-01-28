@@ -12,6 +12,7 @@ import (
 	"paperGrader/internal/storage"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
@@ -24,6 +25,10 @@ func main() {
 	app := fiber.New()
 	app.Use(logger.New(logger.Config{
 		Format: "${time} [${ip}] ${status} ${latency} ${method} ${path}\n",
+	}))
+
+	app.Use(compress.New(compress.Config{
+		Level: compress.LevelDefault,
 	}))
 
 	// Init GoogleOAuth configured
