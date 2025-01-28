@@ -139,6 +139,7 @@ func main() {
 
 	// File form add multiple users
 	apiGroup.Post("/instructor/roster/file", instructorHandler.GetColumnsAndDataFromUploadedFile)
+	apiGroup.Post("/instructor/roster/optionFile", instructorHandler.GetColumnsAndDataFromOptionFile)
 
 	apiGroup.Post("/instructor/assignment/files", instructorHandler.CreateAssignmentWithFiles)
 	apiGroup.Get("/instructor/assignments/sections", instructorHandler.GetInsAssignmentByCourseID)
