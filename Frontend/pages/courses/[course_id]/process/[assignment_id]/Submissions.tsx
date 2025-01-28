@@ -2,14 +2,16 @@ import { useEffect, useState } from 'react';
 import LeftProcess from '../../../../../components/LeftINS/LeftProcess';
 import INSSubmissions from '../../../../../components/INS/INSProcess/ManageSubmissions/INSSubmissions';
 import INSSubmissionsQuestion from '../../../../../components/INS/INSProcess/ManageSubmissions/INSSubmissionsQuesttion';
-import { Button, Flex } from '@mantine/core';
+import { Tabs, Loader } from '@mantine/core';
 
 export default function Submissions() {
   const [loading, setLoading] = useState<boolean>(true);
-  const [activeComponent, setActiveComponent] = useState<'submissions' | 'questions'>('submissions');
 
   useEffect(() => {
-    setLoading(false);
+    // Simulate loading for demonstration
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
   }, []);
 
   return (
@@ -19,28 +21,28 @@ export default function Submissions() {
 
       {/* Main Content */}
       <div className="flex-grow p-4">
-        <Flex justify="space-between" align="center" mb="md">
-          <h2>Manage Submissions</h2>
-          <Button
-            onClick={() =>
-              setActiveComponent(activeComponent === 'submissions' ? 'questions' : 'submissions')
-            }
-          >
-            {activeComponent === 'submissions' ? 'Switch to Questions' : 'Switch to Submissions'}
-          </Button>
-        </Flex>
+        <h2 className="mb-4">Manage Submissions</h2>
 
         {/* Loading Spinner */}
         {loading ? (
-          <div>Loading...</div>
+          <div className="flex justify-center items-center min-h-[200px]">
+            <Loader size="lg" />
+          </div>
         ) : (
-          <>
-            {activeComponent === 'submissions' ? (
+          <Tabs defaultValue="submissions">
+            <Tabs.List>
+              <Tabs.Tab value="submissions">Submissions</Tabs.Tab>
+              <Tabs.Tab value="questions">Questions</Tabs.Tab>
+            </Tabs.List>
+
+            <Tabs.Panel value="submissions" pt="md">
               <INSSubmissions onViewPDF={() => { }} />
-            ) : (
+            </Tabs.Panel>
+
+            <Tabs.Panel value="questions" pt="md">
               <INSSubmissionsQuestion />
-            )}
-          </>
+            </Tabs.Panel>
+          </Tabs>
         )}
       </div>
     </div>
