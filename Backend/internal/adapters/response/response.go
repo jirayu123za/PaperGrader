@@ -131,7 +131,6 @@ type BoundingBoxTemplateResponse struct {
 	BoundingBoxPosition string    `json:"bounding_box_position"`
 	BoundingBoxType     string    `json:"bounding_box_type"`
 	BoundingBoxPage     uint      `json:"bounding_box_page"`
-	BoundingBoxImage    string    `json:"bounding_box_image"`
 }
 
 // Struct for Get Questions By Assignment Template
