@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"paperGrader/internal/adapters/response"
-	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
 	"strings"
 	"time"
@@ -744,12 +743,11 @@ func (r *GormInstructorRepository) FindBoundingBoxesByAssignmentTemplate(Assignm
 		BoundingBoxPosition string    `json:"bounding_box_position"`
 		BoundingBoxType     string    `json:"bounding_box_type"`
 		BoundingBoxPage     uint      `json:"bounding_box_page"`
-		BoundingBoxImage    []byte    `json:"bounding_box_image"`
 	}
 
 	if err := r.db.
 		Table("bounding_boxes").
-		Select("bounding_box_id, bounding_box_position, bounding_box_type, bounding_box_page, bounding_box_image").
+		Select("bounding_box_id, bounding_box_position, bounding_box_type, bounding_box_page").
 		Where("bounding_boxes.assignment_id = ?", AssignmentID).
 		Where("bounding_boxes.deleted_at IS NULL").
 		Find(&boundingBoxes).Error; err != nil {
@@ -763,10 +761,8 @@ func (r *GormInstructorRepository) FindBoundingBoxesByAssignmentTemplate(Assignm
 			BoundingBoxPosition: box.BoundingBoxPosition,
 			BoundingBoxType:     box.BoundingBoxType,
 			BoundingBoxPage:     box.BoundingBoxPage,
-			BoundingBoxImage:    utils.EncodeBase64(box.BoundingBoxImage),
 		})
 	}
-
 	return responseBoundingBoxes, nil
 }
 
