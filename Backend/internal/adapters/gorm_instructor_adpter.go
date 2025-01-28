@@ -429,6 +429,56 @@ func (r *GormInstructorRepository) FindColumnsAndDataFromUploadedFile(fileBytes 
 	}, nil
 }
 
+func (r *GormInstructorRepository) FindColumnsAndDataFromOptionFile(fileBytes []byte) (map[string]interface{}, error) {
+	file, err := excelize.OpenReader(bytes.NewReader(fileBytes))
+	if err != nil {
+		return nil, err
+	}
+
+	defer file.Close()
+
+	sheets := file.GetSheetList()
+	if len(sheets) == 0 {
+		return nil, fmt.Errorf("no sheets found in the file")
+	}
+
+	sheetName := sheets[0]
+
+	rows, err := file.GetRows(sheetName)
+	if err != nil {
+		return nil, err
+	}
+
+	columns := []string{"StudentID", "FirstName", "LastName", "Email", "Section"}
+
+	data := []map[string]string{}
+	for _, row := range rows[1:] {
+		rowData := map[string]string{}
+
+		if len(row) > 0 {
+			rowData["StudentID"] = row[0]
+		}
+		if len(row) > 1 {
+			rowData["FirstName"] = row[1]
+		}
+		if len(row) > 2 {
+			rowData["LastName"] = row[2]
+		}
+		if len(row) > 3 {
+			rowData["Email"] = row[3]
+		}
+		if len(row) > 4 {
+			rowData["Section"] = row[4]
+		}
+		data = append(data, rowData)
+	}
+
+	return map[string]interface{}{
+		"columns": columns,
+		"data":    data,
+	}, nil
+}
+
 func (r *GormInstructorRepository) FindCoursesByUserID(UserID uuid.UUID) ([]response.CoursesResponse, error) {
 	var courses []response.CoursesResponse
 
