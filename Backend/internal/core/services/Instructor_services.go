@@ -30,6 +30,7 @@ type InstructorService interface {
 	CreateSingleUserRoster(personalData *models.PersonalData, enrollment *models.EnrollmentList) error
 	CreateMultipleUserRoster(personalData []models.PersonalData, enrollmentLists []models.EnrollmentList) error
 	GetColumnsAndDataFromUploadedFile(fileBytes []byte) (map[string]interface{}, error)
+	GetColumnsAndDataFromOptionFile(fileBytes []byte) (map[string]interface{}, error)
 
 	GetCoursesByUserID(UserID uuid.UUID) ([]response.CoursesResponse, error)
 	GetCourseByCourseID(CourseID uuid.UUID) (*response.CourseResponse, error)
@@ -194,6 +195,14 @@ func (s *InstructorServiceImpl) CreateMultipleUserRoster(personalData []models.P
 
 func (s *InstructorServiceImpl) GetColumnsAndDataFromUploadedFile(fileBytes []byte) (map[string]interface{}, error) {
 	columnsAndData, err := s.repo.FindColumnsAndDataFromUploadedFile(fileBytes)
+	if err != nil {
+		return nil, err
+	}
+	return columnsAndData, nil
+}
+
+func (s *InstructorServiceImpl) GetColumnsAndDataFromOptionFile(fileBytes []byte) (map[string]interface{}, error) {
+	columnsAndData, err := s.repo.FindColumnsAndDataFromOptionFile(fileBytes)
 	if err != nil {
 		return nil, err
 	}
