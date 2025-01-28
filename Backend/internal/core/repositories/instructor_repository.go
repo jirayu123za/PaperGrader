@@ -27,6 +27,7 @@ type InstructorRepository interface {
 	AddSingleUserRoster(personalData *models.PersonalData, enrollment *models.EnrollmentList) error
 	AddMultipleUserRoster(personalData []models.PersonalData, enrollmentLists []models.EnrollmentList) error
 	FindColumnsAndDataFromUploadedFile(fileBytes []byte) (map[string]interface{}, error)
+	FindColumnsAndDataFromOptionFile(fileBytes []byte) (map[string]interface{}, error)
 
 	FindUserByEmail(email string) (map[string]interface{}, error)
 
