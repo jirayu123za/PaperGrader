@@ -5,12 +5,14 @@ import { TagsInput } from '@mantine/core';
 import { useCreateSections } from '../../hooks/useCreate/useCreateSection';
 import { useRouter } from 'next/router';
 import { useDisclosure } from '@mantine/hooks';
+import { RiAddLargeLine } from 'react-icons/ri';
 
 const CreateSection: React.FC = () => {
   const router = useRouter();
   const { course_id } = router.query;
   const [opened, { open, close }] = useDisclosure(false);
   const { mutate } = useCreateSections();
+  const addSectionIcon = <RiAddLargeLine strokeWidth={4} size={10}/>
 
   const form = useForm({
     initialValues: {
@@ -37,15 +39,14 @@ const CreateSection: React.FC = () => {
 
   return (
     <>
-      <div className="fixed bottom-6 right-6">
-        <Button
-          variant="filled"
-          color="blue"
-          onClick={open}
-        >
-          Create Section
-        </Button>
-      </div>
+      <Button
+        onClick={open}
+        color='#4C6EF5'
+        leftSection={addSectionIcon}
+      >
+        Create Section
+      </Button>
+
       <Modal
         opened={opened}
         onClose={close}
