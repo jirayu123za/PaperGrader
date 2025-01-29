@@ -1,11 +1,12 @@
 import React from 'react';
-import { Table, Text, Button, Loader, Paper, Pagination, Skeleton } from '@mantine/core';
+import { Table, Text, Button, Loader, Paper, Pagination, Skeleton, Group } from '@mantine/core';
 import { useRouter } from 'next/router';
-import { useFetchSections } from '../../../hooks/Roster/useFetchSections';
-import { useSectionDetailsStore } from '../../../store/useRosterStore';
-import ViewStudentLists from '../ViewStudentList';
-import { useModalStore } from '../../../store/modal/useRosterModalStore';
+import { useFetchSections } from '../../hooks/Roster/useFetchSections';
+import { useSectionDetailsStore } from '../../store/useRosterStore';
+import ViewStudentLists from './ViewStudentList';
+import { useModalStore } from '../../store/modal/useRosterModalStore';
 import { usePagination } from '@mantine/hooks';
+import CreateSection from '../Create/CreateSection';
 
 const ManageSection: React.FC = () => {
   const router = useRouter();
@@ -31,18 +32,19 @@ const ManageSection: React.FC = () => {
 
   return (
     <div>
-    <div>
-      <div className="flex items-center space-x-2 mb-4">
-        <Text size="xl" fw={700}>
-          Sections
-        </Text>
-        <Text size="xl" color="dimmed">
-          {sectionDetails.length > 0 
-            ? `(${sectionDetails.length} Sections)` 
-            : 'No sections available for this course.'}
-        </Text>
-      </div>
-    </div>
+      <Group justify="space-between" align="center" mb="md" mt='md' ml={1}>
+        <Group gap="xs">
+          <Text size="xl" fw={700}>Sections</Text>
+          <Text size="xl" c="dimmed">
+            {sectionDetails.length > 0 
+              ? `(${sectionDetails.length} Sections)` 
+              : 'No sections available for this course.'}
+          </Text>
+        </Group>
+
+        {/* ใช้ ml="auto" เพื่อดันปุ่มไปขวาสุด */}
+        <CreateSection />
+      </Group>
 
       {sectionDetails.length > 0 ? (
       <Paper shadow="sm" radius="md" withBorder p="xl">
