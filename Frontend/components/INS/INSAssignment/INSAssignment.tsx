@@ -4,7 +4,7 @@ import SecAssignment from './SecAssignment';
 import { useInsAssignmentStore } from '../../../store/useAssignmentStore';
 import { useFetchInsAssignments } from '../../../hooks/useFetchAssignments';
 import { useRouter } from 'next/router';
-import { Menu, Button, Paper, Table, Skeleton, Pagination, Collapse, Checkbox, Title, ScrollArea ,Text} from '@mantine/core';
+import { Menu, Button, Paper, Table, Skeleton, Pagination, Collapse, Checkbox, Title, ScrollArea ,Text, Anchor} from '@mantine/core';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { useModalAssignmentSettingStore } from '../../../store/modal/useAssignmentSettingModal';
 import { usePagination } from '@mantine/hooks';
@@ -71,7 +71,9 @@ const INTAssignment: React.FC = () => {
 
   return (
     <Paper shadow="sm" radius="md" withBorder p="xl">
-      <h2 className="text-2xl font-semibold mb-4">{insAssignments.length} Assignments</h2>
+      <Text size="xl" fw={500} c={'black'} mb='md'ml='xs'>
+        {insAssignments.length} Assignments
+      </Text>
       <Table highlightOnHover verticalSpacing="md" className="min-w-full bg-white">
         <Table.Thead>
           <Table.Tr>
@@ -119,19 +121,20 @@ const INTAssignment: React.FC = () => {
                     />
                   </Table.Td>
                   <Table.Td className="py-2 px-4 flex items-center gap-2">
-                    <Text
-                      lineClamp={1} // จำกัดข้อความให้แสดงเพียง 1 บรรทัด
+                    <Anchor 
+                      lineClamp={1}
                       size="sm"
-                      fw={500}
-                      style={{ cursor: 'pointer', flexGrow: 1 }}
+                      c="black"
+                      title={assignment.assignment_name}
                       onClick={() =>
                         router.push(
                           `/courses/${course_id}/process/${assignment.assignment_id}/CreateOutline`
                         )
                       }
+                      style={{ cursor: 'pointer', flexGrow: 1 }}                        
                     >
                       {assignment.assignment_name}
-                    </Text>
+                    </Anchor>
                     <Button
                       variant="subtle"
                       style={{ flexShrink: 0 }}
