@@ -2,7 +2,7 @@ import React from 'react';
 import {FaBars,FaUser,FaCog,FaFileAlt,FaUsers,FaHome,} from 'react-icons/fa';
 import { IoStatsChart } from 'react-icons/io5';
 import { PiExportDuotone } from "react-icons/pi";
-import { Button, Divider, Flex, Skeleton, Image, Stack, Title, Text } from '@mantine/core';
+import { Button, Divider, Flex, Skeleton, Image, Stack, Title, Text, Anchor } from '@mantine/core';
 import { useInsCourseStore } from '../../store/useCourseStore';
 import { useFetchInstructorList } from '../../hooks/useFetchInstructorList';
 import { useInstructorListStore } from '../../store/useInstructorListStore';
@@ -14,7 +14,9 @@ import AccountMenu from '../Account';
 export default function LeftMain() {
   const router = useRouter();
   const { course_id } = router.query;
-  const [isCollapsed, { toggle }] = useDisclosure(false);
+  const [isCollapsed, { toggle: toggleCollapse }] = useDisclosure(false);
+  const [expandedName, { toggle: toggleExpandName }] = useDisclosure(false);
+  const [expandedDesc, { toggle: toggleExpandCourseDesc }] = useDisclosure(false);
   const { course } = useInsCourseStore();
   const { } = useFetchCourse(course_id as string);
   const { isLoading, error } = useFetchInstructorList(course_id as string);
@@ -46,7 +48,7 @@ export default function LeftMain() {
           />
         )}
         <Button
-          onClick={toggle}
+          onClick={toggleCollapse}
           variant="transparent"
           radius="md"
           styles={() => ({
@@ -76,24 +78,27 @@ export default function LeftMain() {
           backgroundColor: '#6665AC',
         }}>
         {course ? (
-          <>
-            <Title 
-              order={2}
-              style={{ color: '#F9F9F9' }}
-              className={`${isCollapsed ? 'hidden' : 'block'}`}
-              lineClamp={1} 
-            >
-              {course.course_name}
-            </Title>
-            <Text
-              size="sm"
-              style={{ color: '#E9E9E9'}}
-              className={`${isCollapsed ? 'hidden' : 'block'}`}
-              lineClamp={2} 
-            >
-              Introduction to {course.course_name}
-            </Text>
-          </>
+          !isCollapsed && (
+            <>
+              <Title
+                textWrap="balance"
+                order={2} 
+                style={{ color: "#F9F9F9",  cursor: "pointer"}}
+                lineClamp={expandedName ? undefined : 1}
+                onClick={toggleExpandName}
+              >
+                {course.course_name}
+              </Title>
+              <Text
+                size="sm"
+                style={{ color: "#E9E9E9", cursor: "pointer" }}
+                lineClamp={expandedDesc ? undefined : 2}
+                onClick={toggleExpandCourseDesc}
+              >
+                Introduction to {course.course_name}
+              </Text>
+            </>
+          )
         ) : (
           <>
             <Title 
