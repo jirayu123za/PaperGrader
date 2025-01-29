@@ -48,43 +48,40 @@ const CourseRoster: React.FC = () => {
   );
 
   return (
-    <div className="p-8">
+    <div>
       {/* Header */}
-      <div className="flex items-center space-x-2 mb-4">
-        <Skeleton visible={isLoading} height={28} width="40%">
-          <Text size="xl" fw={700}>
-            Course Roster {usersList.length > 0
-              ? `(${usersList.length} Members)`
-              : 'No members available for this course.'}
-          </Text>
-        </Skeleton>
+      <div className="flex items-center space-x-2 mb-4 mt-4 ml-1">
+        <Text size="xl" fw={700}> Course Roster </Text>
+        <Text size="xl" c="dimmed">
+          {usersList.length > 0
+            ? `(${usersList.length} Members)`
+            : 'No members available for this course.'}
+        </Text>
       </div>
 
       {/* Search and Filter */}
-      <div className="flex gap-4 mb-4">
-        <Skeleton visible={isLoading} height={40} width="60%">
-          <TextInput
-            placeholder="Search by name, email, or student ID"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.currentTarget.value)}
-            style={{ flex: 1 }}
-            disabled={isLoading}
-          />
-        </Skeleton>
-        <Skeleton visible={isLoading} height={40} width="20%">
-          <Select
-            placeholder="Filter by role"
-            data={[
-              { value: 'INSTRUCTOR', label: 'Instructor' },
-              { value: 'STUDENT', label: 'Student' },
-              { value: 'TA', label: 'TA' },
-            ]}
-            value={roleFilter}
-            onChange={setRoleFilter}
-            clearable
-            disabled={isLoading}
-          />
-        </Skeleton>
+      <div className="flex items-center gap-4 mb-4">
+        <TextInput
+          placeholder="Search by name, email, or student ID"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.currentTarget.value)}
+          style={{ flex: 1 }}
+          disabled={isLoading}
+        />
+        <Select
+          placeholder="Filter by role"
+          data={[
+            { value: 'INSTRUCTOR', label: 'Instructor' },
+            { value: 'STUDENT', label: 'Student' },
+            { value: 'TA', label: 'TA' },
+          ]}
+          value={roleFilter}
+          onChange={setRoleFilter}
+          clearable
+          disabled={isLoading}
+        />
+
+        <AddMember />
       </div>
 
       {/* Table */}
@@ -169,10 +166,6 @@ const CourseRoster: React.FC = () => {
           />
         </div>
       </Paper>
-
-      <div className="text-center mt-8">
-        <AddMember />
-      </div>
 
       <EditCourseMember />
     </div>
