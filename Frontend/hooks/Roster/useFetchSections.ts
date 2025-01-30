@@ -20,12 +20,13 @@ export const useFetchSections = (course_id: string) => {
         });
 
         const sections = response.data.sections || [];
-        setSectionDetails(sections); 
+        setSectionDetails(sections);
         return sections;
       } catch (error) {
         console.error(error);
         return [];
       }
     },
+    enabled: !!course_id,
   });
 };
