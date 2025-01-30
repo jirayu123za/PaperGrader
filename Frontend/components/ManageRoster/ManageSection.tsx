@@ -1,11 +1,11 @@
 import React from 'react';
-import { Table, Text, Button, Loader, Paper, Pagination, Skeleton, Group } from '@mantine/core';
+import { Table, Text, Button, Paper, Pagination, Skeleton, Flex } from '@mantine/core';
 import { useRouter } from 'next/router';
 import { useFetchSections } from '../../hooks/Roster/useFetchSections';
 import { useSectionDetailsStore } from '../../store/useRosterStore';
-import ViewStudentLists from './ViewStudentList';
 import { useModalStore } from '../../store/modal/useRosterModalStore';
 import { usePagination } from '@mantine/hooks';
+import ViewStudentLists from './ViewStudentList';
 import CreateSection from '../Create/CreateSection';
 
 const ManageSection: React.FC = () => {
@@ -31,30 +31,19 @@ const ManageSection: React.FC = () => {
   );
 
   return (
-    <div>
-      <Group justify="space-between" align="center" mb="md" mt='md' ml={1}>
-        <Group gap="xs">
-          <Text size="xl" fw={700}>Sections</Text>
-          <Text size="xl" c="dimmed">
-            {sectionDetails.length > 0 
-              ? `(${sectionDetails.length} Sections)` 
-              : 'No sections available for this course.'}
-          </Text>
-        </Group>
-
-        {/* ใช้ ml="auto" เพื่อดันปุ่มไปขวาสุด */}
-        <CreateSection />
-      </Group>
-
+    <>
       {sectionDetails.length > 0 ? (
-      <Paper shadow="sm" radius="md" withBorder p="xl">
+      <Paper shadow="sm" radius="md" withBorder p="xl" mt="md">
+        <Flex justify="flex-end">
+          <CreateSection />
+        </Flex>
         <Table highlightOnHover verticalSpacing="sm">
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Section Name</Table.Th>
-              <Table.Th style={{ textAlign: 'center' }}>Students Enrolled</Table.Th>
-              <Table.Th style={{ textAlign: 'center' }}>View</Table.Th>
-              <Table.Th>Remove</Table.Th>
+              <Table.Th ta='center'>Students Enrolled</Table.Th>
+              <Table.Th ta='center'>View</Table.Th>
+              <Table.Th pl='md'>Remove</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -83,9 +72,9 @@ const ManageSection: React.FC = () => {
                 ))
             :paginatedData.map((section) => (
               <Table.Tr key={section.section_id}>
-                <Table.Td>{section.section_name}</Table.Td>
-                <Table.Td style={{ textAlign: 'center' }}>{section.total_students}</Table.Td>
-                <Table.Td style={{ textAlign: 'center' }}>
+                <Table.Td pl="xl">{section.section_name}</Table.Td>
+                <Table.Td ta='center'>{section.total_students}</Table.Td>
+                <Table.Td ta='center'>
                   <Button
                     variant="subtle"
                     size="xs"
@@ -109,23 +98,30 @@ const ManageSection: React.FC = () => {
           </Table.Tbody>
         </Table>
 
-        <div className="flex justify-center mt-4">
-          <Pagination
-            total={totalPages}
-            siblings={1}
-            boundaries={1}
-            value={pagination.active}
-            onChange={pagination.setPage}
-          />
-        </div>
-        </Paper>
+        <Flex justify="space-between" align="center" mt="lg">
+          <Flex justify="center" style={{ flex: 1 }}>
+            <Pagination
+              total={totalPages}
+              siblings={1}
+              boundaries={1}
+              value={pagination.active}
+              onChange={pagination.setPage}
+            />
+          </Flex>
+          <Text size="lg" c="dimmed">
+            {sectionDetails.length > 0 
+              ? `(${sectionDetails.length} Sections)` 
+              : 'No sections available for this course.'}
+          </Text>
+        </Flex>
+      </Paper>
       ) : (
         <Text ta="center" color="dimmed">
           This course has no sections created yet.
         </Text>
       )}
       <ViewStudentLists />
-    </div>
+    </>
   );
 };
 
