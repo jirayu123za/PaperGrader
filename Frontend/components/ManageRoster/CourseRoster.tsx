@@ -1,12 +1,13 @@
 import React from 'react';
 import AddMember from '../AddStudent/AddMember';
 import EditCourseMember from '../Customize/EditCourseMember';
-import { Button, Table, Menu, Paper, Text, TextInput, Select, Skeleton, Pagination } from '@mantine/core';
+import { Button, Table, Menu, Paper, Text, TextInput, Select, Skeleton, Pagination, Flex } from '@mantine/core';
 import { useFetchUsersRoster } from '../../hooks/Roster/useFetchUsersRoster';
 import { useRouter } from 'next/router';
 import { useRosterStore } from '../../store/useRosterStore';
 import { useModalEditRosterMemberStore } from '../../store/modal/useRosterModalStore';
 import { usePagination } from '@mantine/hooks';
+import { IoSearch } from 'react-icons/io5';
 
 const CourseRoster: React.FC = () => {
   const router = useRouter();
@@ -14,6 +15,7 @@ const CourseRoster: React.FC = () => {
   const { isLoading, error } = useFetchUsersRoster(course_id as string);
   const { usersList, searchTerm, setSearchTerm, roleFilter, setRoleFilter } = useRosterStore();
   const { openModal } = useModalEditRosterMemberStore();
+  const searchIcon = <IoSearch />;
 
   const handleEditClick = (personal_data_id: string) => {
     openModal(personal_data_id);
@@ -48,44 +50,33 @@ const CourseRoster: React.FC = () => {
   );
 
   return (
-    <div>
-      {/* Header */}
-      <div className="flex items-center space-x-2 mb-4 mt-4 ml-1">
-        <Text size="xl" fw={700}> Course Roster </Text>
-        <Text size="xl" c="dimmed">
-          {usersList.length > 0
-            ? `(${usersList.length} Members)`
-            : 'No members available for this course.'}
-        </Text>
-      </div>
-
-      {/* Search and Filter */}
-      <div className="flex items-center gap-4 mb-4">
-        <TextInput
-          placeholder="Search by name, email, or student ID"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.currentTarget.value)}
-          style={{ flex: 1 }}
-          disabled={isLoading}
-        />
-        <Select
-          placeholder="Filter by role"
-          data={[
-            { value: 'INSTRUCTOR', label: 'Instructor' },
-            { value: 'STUDENT', label: 'Student' },
-            { value: 'TA', label: 'TA' },
-          ]}
-          value={roleFilter}
-          onChange={setRoleFilter}
-          clearable
-          disabled={isLoading}
-        />
-
-        <AddMember />
-      </div>
-
-      {/* Table */}
-      <Paper shadow="sm" radius="md" withBorder p="xl">
+    <>
+      <Paper shadow="sm" radius="md" withBorder p="xl" mt="md">
+        <Flex align="center" gap="xs" mb="md" justify="space-between">
+          <TextInput
+            placeholder="Search by name, email, or student ID"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.currentTarget.value)}
+            disabled={isLoading}
+            rightSection={searchIcon}
+            w="30%"
+          />
+          <Select
+            placeholder="Filter by role"
+            data={[
+              { value: 'INSTRUCTOR', label: 'Instructor' },
+              { value: 'STUDENT', label: 'Student' },
+              { value: 'TA', label: 'TA' },
+            ]}
+            value={roleFilter}
+            onChange={setRoleFilter}
+            clearable
+            disabled={isLoading}
+          />
+          <Flex ml="auto">
+            <AddMember />
+          </Flex>
+        </Flex>
         <Table highlightOnHover verticalSpacing="sm">
           <Table.Thead>
             <Table.Tr>
@@ -153,22 +144,28 @@ const CourseRoster: React.FC = () => {
                 </Table.Tr>
               ))}
           </Table.Tbody>
-
         </Table>
 
-        <div className="flex justify-center mt-4">
-          <Pagination
-            total={totalPages}
-            siblings={1}
-            boundaries={1}
-            value={pagination.active}
-            onChange={pagination.setPage}
-          />
-        </div>
+        <Flex justify="space-between" align="center" mt="lg">
+          <Flex justify="center" style={{ flex: 1 }}>
+            <Pagination
+              total={totalPages}
+              siblings={1}
+              boundaries={1}
+              value={pagination.active}
+              onChange={pagination.setPage}
+            />
+          </Flex>
+          <Text size="lg" c="dimmed">
+            {usersList.length > 0
+              ? `(${usersList.length} Members)`
+              : 'No members available for this course.'}
+          </Text>
+        </Flex>
       </Paper>
 
       <EditCourseMember />
-    </div>
+    </>
   );
 };
 
