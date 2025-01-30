@@ -1,9 +1,9 @@
 import React from 'react';
-import { Modal, Button, Divider, Alert } from '@mantine/core';
-import { FaUser, FaUsers } from "react-icons/fa";
 import SingleUser from './SingleUser';
 import CsvFile from './CsvFile';
 import SelectColumn from './SelectColumn';
+import { Modal, Button, Divider, Alert } from '@mantine/core';
+import { FaUser, FaUsers } from "react-icons/fa";
 import { IconInfoCircle } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
 import { MdOutlineGroupAdd } from 'react-icons/md';
@@ -21,13 +21,10 @@ const AddMemberModal: React.FC = () => {
 
   return (
     <>
-     <Button
-      onClick={open}
-      leftSection={addPersonIcon}
-      color='#4C6EF5'
-     >
-      Add Members
-     </Button>
+      <Button onClick={open} leftSection={addPersonIcon} color='#4C6EF5'>
+        Add Members
+      </Button>
+      
       <Modal opened={opened} onClose={close} title="Add Students or Staff">
         <Alert variant="light" color="blue" icon={<IconInfoCircle />}>
           Add a single user or upload a CSV file to add multiple users at once.
@@ -40,7 +37,7 @@ const AddMemberModal: React.FC = () => {
               close();
             }}
           >
-            <FaUser size={50} className="transition-colors duration-300" />
+            <FaUser size={40} className="transition-colors duration-300" />
             <p className="mt-2">Single User</p>
           </div>
 
