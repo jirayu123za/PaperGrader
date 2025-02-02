@@ -1,65 +1,52 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import 'pdfjs-dist/web/pdf_viewer.css';
-import { Container } from '@mantine/core';
+import { Container, Loader } from '@mantine/core';
 import { Stage, Layer, Rect, Transformer, Text } from 'react-konva';
+import { useFetchFile } from '../hooks/useFetchFile';
 import usePDFViewerStore from '../store/usePDFViewerStore';
+import useBoundingBoxStore from '../store/BoundingBox/useBoundingBoxStore';
+import { useForm } from '@mantine/form';
 
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js`;
 
-interface BoundingBox {
-  id: number;
-  questionId: string;
-  topLeft: { x: number; y: number };
-  bottomRight: { x: number; y: number };
-  pageNumber: number;
-  title: string;
-  points: number;
-  type: 'NAME' | 'STUDENTID' | 'QUESTION';
-  imageData?: string | null;
-}
-
 interface PDFViewerProps {
-  fileUrl: string;
+  courseId: string;
   assignmentId: string;
-  boundingBoxes: BoundingBox[];
-  updateBoundingBox: (index: number, newBox: BoundingBox) => void;
-  setBoundingBoxes: (boxes: BoundingBox[]) => void;
-  readOnly?: boolean;
-  currentPage: number; // เพิ่ม currentPage
-  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
+  currentPage: number;
+  setCurrentPage: (page: number) => void;
 }
 
-const PDFViewer: React.FC<PDFViewerProps> = ({
-  fileUrl,
-  assignmentId,
-  boundingBoxes,
-  updateBoundingBox,
-  setBoundingBoxes,
-  readOnly = false,
-}) => {
+const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPage }) => {
+  const { form: fileForm } = useFetchFile({ courseId, assignmentId });
+  const { setScaleFactor } = usePDFViewerStore();
+  const { boundingBoxes } = useBoundingBoxStore();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const stageRef = useRef<any>(null);
   const transformerRef = useRef<any>(null);
+  const rectRefs = useRef<{ [key: string]: any }>({});
+  const renderTaskRef = useRef<any>(null);
 
-  const { scaleFactor, setScaleFactor, selectedShapeIndex, setSelectedShapeIndex } = usePDFViewerStore();
-
-  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
-  const [currentPage, setCurrentPage] = useState(1); // หน้า PDF ปัจจุบัน
-  const [totalPages, setTotalPages] = useState(1); // จำนวนหน้าทั้งหมดของ PDF
+  const form = useForm({
+    initialValues: {
+      selectedBoxId: null as string | null,
+    },
+  });
 
   useEffect(() => {
     const renderPDF = async (pageNum: number) => {
-      const loadingTask = pdfjsLib.getDocument(fileUrl);
+      if (!fileForm.values.pdfUrl) return;
+
+      if (renderTaskRef.current) {
+        renderTaskRef.current.cancel();
+      }
+
+      const loadingTask = pdfjsLib.getDocument(fileForm.values.pdfUrl);
       const pdf = await loadingTask.promise;
       const page = await pdf.getPage(pageNum);
 
-      setTotalPages(pdf.numPages);
-
       const scale = 1.5;
-      const viewport = page.getViewport({ scale });
-
       setScaleFactor(scale);
+      const viewport = page.getViewport({ scale });
 
       const canvas = canvasRef.current;
       if (canvas) {
@@ -67,246 +54,110 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         canvas.width = viewport.width;
         canvas.height = viewport.height;
 
-        setCanvasSize({ width: viewport.width, height: viewport.height });
+        renderTaskRef.current = page.render({ canvasContext: context!, viewport });
 
-        await page.render({
-          canvasContext: context!,
-          viewport,
-        }).promise;
+        try {
+          await renderTaskRef.current.promise;
+          renderTaskRef.current = null;
+        } catch (error) {
+          console.warn('Render task cancelled or failed:', error);
+        }
       }
     };
 
     renderPDF(currentPage);
-  }, [fileUrl, currentPage, setScaleFactor]);
+  }, [fileForm.values.pdfUrl, currentPage, setScaleFactor]);
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'ArrowRight') {
-        handleNextPage();
-      } else if (event.key === 'ArrowLeft') {
-        handlePreviousPage();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    const savedBoxes = localStorage.getItem(`boundingBoxes-${assignmentId}`);
-    if (savedBoxes) {
-      try {
-        const parsedBoxes = JSON.parse(savedBoxes);
-        if (Array.isArray(parsedBoxes)) {
-          const updatedBoxes = parsedBoxes.map((box: BoundingBox) => ({
-            ...box,
-            imageData: extractImageData(box),
-          }));
-          setBoundingBoxes(updatedBoxes);
-          localStorage.setItem(`boundingBoxes-${assignmentId}`, JSON.stringify(updatedBoxes));
-        }
-      } catch (error) {
-        console.error('Error parsing bounding box data:', error);
+    if (form.values.selectedBoxId && transformerRef.current) {
+      const selectedNode = rectRefs.current[form.values.selectedBoxId];
+      if (selectedNode) {
+        transformerRef.current.nodes([selectedNode]);
+        transformerRef.current.getLayer().batchDraw();
       }
     }
+  }, [form.values.selectedBoxId]);
 
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [assignmentId, setBoundingBoxes]);
-
-  const extractImageData = (box: BoundingBox): string | null => {
-    const canvas = canvasRef.current;
-    if (!canvas) return null;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
-
-    const scale = scaleFactor;
-
-    const x = box.topLeft.x * scale;
-    const y = box.topLeft.y * scale;
-    const width = (box.bottomRight.x - box.topLeft.x) * scale;
-    const height = (box.bottomRight.y - box.topLeft.y) * scale;
-
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = width;
-    tempCanvas.height = height;
-    const tempCtx = tempCanvas.getContext('2d');
-
-    if (tempCtx) {
-      tempCtx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
-      return tempCanvas.toDataURL();
-    }
-
-    return null;
-  };
-
-  const handleDragEnd = (index: number, e: any) => {
-    const box = boundingBoxes[index];
-    const width = box.bottomRight.x - box.topLeft.x;
-    const height = box.bottomRight.y - box.topLeft.y;
-
-    const newTopLeftX = e.target.x() / scaleFactor;
-    const newTopLeftY = e.target.y() / scaleFactor;
-
-    const updatedBox = {
-      ...box,
-      topLeft: {
-        x: newTopLeftX,
-        y: newTopLeftY,
-      },
-      bottomRight: {
-        x: newTopLeftX + width,
-        y: newTopLeftY + height,
-      },
-    };
-
-    const imageData = extractImageData(updatedBox);
-    updateBoundingBox(index, { ...updatedBox, imageData });
-  };
-
-  const handleTransformEnd = (index: number) => {
-    const node = stageRef.current.findOne(`#box-${index}`);
-    const scaleX = node.scaleX();
-    const scaleY = node.scaleY();
-    const box = boundingBoxes[index];
-
-    const newWidth = (box.bottomRight.x - box.topLeft.x) * scaleX;
-    const newHeight = (box.bottomRight.y - box.topLeft.y) * scaleY;
-
-    const newBottomRightX = box.topLeft.x + newWidth;
-    const newBottomRightY = box.topLeft.y + newHeight;
-
-    node.scaleX(1);
-    node.scaleY(1);
-
-    const updatedBox = {
-      ...box,
-      bottomRight: {
-        x: newBottomRightX,
-        y: newBottomRightY,
-      },
-    };
-
-    const imageData = extractImageData(updatedBox);
-    updateBoundingBox(index, { ...updatedBox, imageData });
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage((prev) => prev + 1);
+  const handleStageClick = (e: any) => {
+    // ยกเลิกการเลือกถ้าคลิกนอก bounding box
+    if (e.target === e.target.getStage()) {
+      form.setFieldValue('selectedBoxId', null);
     }
   };
 
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
-    }
-  };
+  if (fileForm.values.loading) return <Loader />;
+  if (!fileForm.values.pdfUrl) return <div>No PDF available</div>;
 
   return (
-    <Container
-      style={{
-        position: 'relative',
-        width: '100%',
-        height: '100vh',
-        overflow: 'auto',
-        border: '1px solid #ccc',
-      }}
-    >
+    <Container style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'auto', border: '1px solid #ccc' }}>
+      {/* PDF Canvas */}
       <canvas ref={canvasRef} style={{ display: 'block' }} />
 
+      {/* Overlay สำหรับ Bounding Box */}
       <Stage
-        width={canvasSize.width}
-        height={canvasSize.height}
-        ref={stageRef}
-        style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'auto' }}
-        onMouseDown={(e) => {
-          if (e.target === e.target.getStage()) {
-            setSelectedShapeIndex(null);
-          }
-        }}
+        width={canvasRef.current?.width || 0}
+        height={canvasRef.current?.height || 0}
+        style={{ position: 'absolute', top: 0, left: 0 }}
+        onMouseDown={handleStageClick} // ตรวจจับการคลิกนอก bounding box
       >
         <Layer>
-          {boundingBoxes
-            .filter((box) => box.pageNumber === currentPage) // กรองเฉพาะ boundingBoxes ของหน้าปัจจุบัน
-            .map((box, index) => (
-              <React.Fragment key={index}>
-                <Rect
-                  id={`box-${index}`}
-                  x={box.topLeft.x * scaleFactor}
-                  y={box.topLeft.y * scaleFactor}
-                  width={(box.bottomRight.x - box.topLeft.x) * scaleFactor}
-                  height={(box.bottomRight.y - box.topLeft.y) * scaleFactor}
-                  fill={
-                    box.type === 'NAME'
-                      ? 'rgba(0, 255, 0, 0.2)'
-                      : box.type === 'STUDENTID'
-                        ? 'rgba(255, 0, 0, 0.2)'
-                        : 'rgba(0, 0, 255, 0.2)'
-                  }
-                  stroke={
-                    box.type === 'NAME'
-                      ? 'green'
-                      : box.type === 'STUDENTID'
-                        ? 'red'
-                        : 'blue'
-                  }
-                  strokeWidth={2}
-                  draggable={!readOnly}
-                  onDragEnd={(e) => {
-                    if (!readOnly) handleDragEnd(index, e);
-                  }}
-                  onTransformEnd={() => {
-                    if (!readOnly) handleTransformEnd(index);
-                  }}
-                  onClick={() => {
-                    if (!readOnly) setSelectedShapeIndex(index);
-                  }}
-                />
-                <Text
-                  x={box.topLeft.x * scaleFactor}
-                  y={box.topLeft.y * scaleFactor - 20}
-                  text={
-                    box.type === 'QUESTION'
-                      ? ` ${box.title} (${box.points} pts)`
-                      : `${box.title}`
-                  }
-                  fontSize={14}
-                  fontStyle="bold"
-                  fill={
-                    box.type === 'NAME'
-                      ? 'green'
-                      : box.type === 'STUDENTID'
-                        ? 'red'
-                        : 'blue'
-                  }
-                />
-              </React.Fragment>
-            ))}
-          {!readOnly && (
-            <Transformer
-              ref={transformerRef}
-              nodes={
-                selectedShapeIndex !== null
-                  ? [stageRef.current?.findOne(`#box-${selectedShapeIndex}`)]
-                  : []
-              }
-              rotateEnabled={false}
-              enabledAnchors={[
-                'top-left',
-                'top-right',
-                'bottom-left',
-                'bottom-right',
-                'middle-left',
-                'middle-right',
-                'top-center',
-                'bottom-center',
-              ]}
-            />
-          )}
+          {boundingBoxes &&
+            Array.isArray(boundingBoxes) &&
+            boundingBoxes
+              .filter((box) => box.bounding_box_page === currentPage)
+              .map((box) => {
+                const positions = box.bounding_box_position.match(/\d+/g);
+                if (!positions || positions.length < 4) {
+                  console.warn(`Invalid bounding_box_position format: ${box.bounding_box_position}`);
+                  return null;
+                }
+
+                const [x1, y1, x2, y2] = positions.map(Number);
+                const width = x2 - x1;
+                const height = y2 - y1;
+
+                return (
+                  <React.Fragment key={box.bounding_box_id}>
+                  {/* Rect */}
+                  <Rect
+                    ref={(node) => {
+                      rectRefs.current[box.bounding_box_id] = node;
+                    }}
+                    x={x1}
+                    y={y1}
+                    width={width}
+                    height={height}
+                    fill="rgba(0, 0, 255, 0.3)"
+                    stroke="blue"
+                    strokeWidth={2}
+                    onClick={() => form.setFieldValue('selectedBoxId', box.bounding_box_id)}
+                  />
+                
+                  {/* Header Bar */}
+                  <Rect
+                    x={x1}
+                    y={y1 - 20} // แสดงแถบเหนือ bounding box
+                    width={width}
+                    height={20}
+                    fill="gray"
+                  />
+                
+                  {/* Text for Question and Point */}
+                  <Text
+                    x={x1 + 5}
+                    y={y1 - 18} // แสดงข้อความในแถบ Header
+                    text={`${box.question}: ${box.point} point`}
+                    fontSize={12}
+                    fill="white"
+                    fontStyle="bold"
+                  />
+                </React.Fragment>
+                );
+              })}
+
+          <Transformer ref={transformerRef} />
         </Layer>
       </Stage>
-
-
     </Container>
   );
 };
