@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import AccountMenu from '../Account';
-import { FaBars, FaArrowLeft } from 'react-icons/fa';
+import { FaBars, FaArrowLeft, FaRegArrowAltCircleRight } from 'react-icons/fa';
 import { GiClockwiseRotation } from 'react-icons/gi';
 import { IoStatsChart } from 'react-icons/io5';
 import { IoMdSettings } from 'react-icons/io';
-import { Button, Container, Divider, Flex, Stack, Title, Transition, Text, Radio, Image } from '@mantine/core';
+import { Button, Container, Divider, Flex, Stack, Title, Transition, Text, Image } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useRouter } from 'next/router';
 import { useFetchAssignmentLeft } from '../../hooks/SideBar/useFetchAssignmentLeft';
@@ -18,14 +18,13 @@ export default function LeftProcess() {
   const giClockwiseRotation = <GiClockwiseRotation size={18} />;
   const ioStatsChart = <IoStatsChart size={18} />;
   const ioMdSettings = <IoMdSettings size={18} />;
-  const { course_id } = router.query;
-  const { assignment_id } = router.query;
+  const { course_id, assignment_id } = router.query;
   const { isLoading, isSuccess } = useFetchAssignmentLeft(course_id as string, assignment_id as string);
   const { assignmentLeftProcess } = useAssignmentLeftProcessStore();
 
+  // รายการตัวเลือกเมนู (นำ Create Rubric ออก)
   const options = [
     { key: 'editOutline', label: 'Edit Outline', href: `/courses/${course_id}/process/${assignment_id}/CreateOutline` },
-    { key: 'createRubric', label: 'Create rubric', href: `/courses/${course_id}/process/${assignment_id}/CreateRubric` },
     { key: 'manageScans', label: 'Manage Scans', href: `/courses/${course_id}/process/${assignment_id}/ManageScans` },
     { key: 'manageSubmissions', label: 'Manage Submissions', href: `/courses/${course_id}/process/${assignment_id}/Submissions` },
     { key: 'gradeSubmissions', label: 'Grade Submissions', href: `/courses/${course_id}/process/${assignment_id}/Grading` },
@@ -44,10 +43,10 @@ export default function LeftProcess() {
 
   return (
     <Container className={`relative flex flex-col justify-between border-r transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} h-screen`}>
-      {/* Top: Logo and Button Collapse */}
+      {/* Top: Logo and Collapse Button */}
       <Flex justify="space-between" align="center" p={12}
         style={{
-        backgroundColor: '#f1f3f8',
+          backgroundColor: '#f1f3f8',
         }}
       >
         {!isCollapsed && (
@@ -71,14 +70,12 @@ export default function LeftProcess() {
             },
           })}
         >
-          <FaBars
+          <FaRegArrowAltCircleRight
             size={24}
             style={{
               color: isCollapsed ? '#000000': '#000000',
             }}
-            className={`transition-transform duration-300 ${
-              isCollapsed ? '' : 'transform rotate-180'
-            }`}
+            className={`transition-transform duration-300 ${isCollapsed ? '' : 'transform rotate-180'}`}
           />
         </Button>
       </Flex>
@@ -92,7 +89,7 @@ export default function LeftProcess() {
           backgroundColor: '#6665AC',
         })}
       >
-        {/* Button back to course */}
+        {/* ปุ่ม Back to Course */}
         <Button
           variant="transparent"
           leftSection={faArrowLeft}
@@ -101,7 +98,6 @@ export default function LeftProcess() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: isCollapsed ? 'center' : 'flex-start',
-              // padding: isCollapsed ? '8px 20px' : '',
               ...clientStyles,
               color: '#F9F9F9',
             },
@@ -112,12 +108,7 @@ export default function LeftProcess() {
             }
           }}
         >
-          <Transition
-            mounted={!isCollapsed}
-            transition="fade"
-            duration={300}
-            timingFunction="ease"
-          >
+          <Transition mounted={!isCollapsed} transition="fade" duration={300} timingFunction="ease">
             {(styles) => (
               <Title size="md" style={{ ...styles, color: '#F9F9F9' }}>
                 Back to this course
@@ -125,14 +116,9 @@ export default function LeftProcess() {
             )}
           </Transition>
         </Button>        
-          
-        {/* Assignment's name */}
-        <Transition
-          mounted={!isCollapsed}
-          transition="fade"
-          duration={300}
-          timingFunction="ease"
-        >
+
+        {/* Assignment Name */}
+        <Transition mounted={!isCollapsed} transition="fade" duration={300} timingFunction="ease">
           {(styles) => (
             <Title
               size="h4"
@@ -144,29 +130,13 @@ export default function LeftProcess() {
             </Title>
           )}
         </Transition>
-      
-        {/* Options menu */}
+
+        {/* เมนูตัวเลือก */}
         {options.map((option) => (
           <Button
             key={option.key}
             variant="subtle"
             fullWidth
-            leftSection={
-              <Radio
-                value={option.key}
-                checked={activeOption === option.key}
-                onChange={() => handleOptionClick(option.key)}
-                styles={{
-                  label: {
-                    color: activeOption === option.key ? '#1C7ED6' : '#000000',
-                  },
-                  radio: {
-                    borderColor: activeOption === option.key ? '#1C7ED6' : '#ccc',
-                    backgroundColor: activeOption === option.key ? '#1C7ED6' : 'transparent',
-                  },
-                }}
-              />
-            }
             onClick={() => {
               handleOptionClick(option.key);
               router.push(option.href);
@@ -176,7 +146,6 @@ export default function LeftProcess() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: isCollapsed ? "center" : "flex-start",
-                // padding: isCollapsed ? '8px 20px' : '',
                 ...clientStyles,
                 color: activeOption === option.key ? '#424242' : '#FFFFFF',
                 backgroundColor: activeOption === option.key ? '#f8f9fa' : 'transparent',
@@ -185,12 +154,7 @@ export default function LeftProcess() {
               },
             }}
           >
-            <Transition
-              mounted={!isCollapsed}
-              transition="fade"
-              duration={300}
-              timingFunction="ease"
-            >
+            <Transition mounted={!isCollapsed} transition="fade" duration={300} timingFunction="ease">
               {(styles) => (
                 <Text size="sm" fw={500} style={{ ...styles }}>
                   {option.label}
@@ -218,18 +182,12 @@ export default function LeftProcess() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: isCollapsed ? 'center' : 'flex-start',
-              // padding: isCollapsed ? '8px 20px' : '',
               ...clientStyles,
               color: '#F9F9F9',
             },
           }}
         >
-          <Transition
-            mounted={!isCollapsed}
-            transition="fade"
-            duration={300}
-            timingFunction="ease"
-          >
+          <Transition mounted={!isCollapsed} transition="fade" duration={300} timingFunction="ease">
             {(styles) => (
               <Text size="sm" fw={500} style={{ ...styles, color: '#F9F9F9' }}>
                 Regrade Requests
@@ -247,50 +205,15 @@ export default function LeftProcess() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: isCollapsed ? 'center' : 'flex-start',
-              // padding: isCollapsed ? '8px 20px' : '',
               ...clientStyles,
               color: '#F9F9F9',
             },
           }}
         >
-          <Transition
-            mounted={!isCollapsed}
-            transition="fade"
-            duration={300}
-            timingFunction="ease"
-          >
+          <Transition mounted={!isCollapsed} transition="fade" duration={300} timingFunction="ease">
             {(styles) => (
               <Text size="sm" fw={500} style={{ ...styles, color: '#F9F9F9' }}>
                 Statistics
-              </Text>
-            )}
-          </Transition>
-        </Button>
-
-        <Button
-          variant="subtle"
-          leftSection={ioMdSettings}
-          fullWidth
-          styles={{
-            root: {
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: isCollapsed ? 'center' : 'flex-start',
-              // padding: isCollapsed ? '8px 20px' : '',
-              ...clientStyles,
-              color: '#F9F9F9',
-            },
-          }}
-        >
-          <Transition
-            mounted={!isCollapsed}
-            transition="fade"
-            duration={300}
-            timingFunction="ease"
-          >
-            {(styles) => (
-              <Text size="sm" fw={500} style={{ ...styles, color: '#F9F9F9' }}>
-                Settings
               </Text>
             )}
           </Transition>
