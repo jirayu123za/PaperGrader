@@ -1,52 +1,82 @@
 import { create } from 'zustand';
 
 interface BoundingBox {
-  id: string;
-  assignmentId: string;
-  position: string;
-  type: string;
-  page: number;
-  createdAt?: string;
-  updatedAt?: string;
+  bounding_box_id: string;
+  bounding_box_position: string;
+  bounding_box_type: string;
+  bounding_box_page: number;
 }
 
-interface Rubric {
-  id: string;
-  assignmentId: string;
-  rubricData: string; // JSON string
-  createdAt?: string;
-  updatedAt?: string;
+interface SubQuestion {
+  bounding_box_id: string;
+  subquestion_id: string;
+  subquestion_point: number;
+  subquestion_title: string;
+}
+
+interface Question {
+  question_id: string;
+  question_point: number;
+  question_title: string;
+  bounding_box_id?: string;
+  subquestions?: SubQuestion[];
+}
+
+interface RubricData {
+  rubric_id: string;
+  questions: Question[];
 }
 
 interface BoundingBoxStore {
   boundingBoxes: BoundingBox[];
-  rubric: Rubric | null;
+  rubricData: RubricData;
   setBoundingBoxes: (boxes: BoundingBox[]) => void;
+  setRubricData: (rubricData: RubricData) => void;
   addBoundingBox: (box: BoundingBox) => void;
+  addQuestion: (question: Question) => void;
   updateBoundingBox: (id: string, updatedBox: Partial<BoundingBox>) => void;
+  updateQuestion: (id: string, updatedQuestion: Partial<Question>) => void;
   removeBoundingBox: (id: string) => void;
-  setRubric: (rubric: Rubric) => void;
-  clearRubric: () => void;
+  removeQuestion: (id: string) => void;
 }
 
 const useBoundingBoxStore = create<BoundingBoxStore>((set) => ({
   boundingBoxes: [],
-  rubric: null,
-  setBoundingBoxes: (boxes) => set(() => ({ boundingBoxes: boxes })),
-  addBoundingBox: (box) =>
-    set((state) => ({ boundingBoxes: [...state.boundingBoxes, box] })),
+  rubricData: { rubric_id: '', questions: [] },
+
+  setBoundingBoxes: (boxes) => set({ boundingBoxes: boxes }),
+  setRubricData: (rubricData) => set({ rubricData }),
+
+  addBoundingBox: (box) => set((state) => ({ boundingBoxes: [...state.boundingBoxes, box] })),
+  addQuestion: (question) => set((state) => ({ rubricData: { ...state.rubricData, questions: [...state.rubricData.questions, question] } })),
+
   updateBoundingBox: (id, updatedBox) =>
     set((state) => ({
-      boundingBoxes: state.boundingBoxes.map((box) =>
-        box.id === id ? { ...box, ...updatedBox } : box
-      ),
+      boundingBoxes: state.boundingBoxes.map((box) => (box.bounding_box_id === id ? { ...box, ...updatedBox } : box)),
     })),
-  removeBoundingBox: (id) =>
+
+  updateQuestion: (id, updatedQuestion) =>
     set((state) => ({
-      boundingBoxes: state.boundingBoxes.filter((box) => box.id !== id),
+      rubricData: {
+        ...state.rubricData,
+        questions: state.rubricData.questions.map((q) =>
+          q.question_id === id ? { ...q, ...updatedQuestion } : q
+        ),
+      },
     })),
-  setRubric: (rubric) => set(() => ({ rubric })),
-  clearRubric: () => set(() => ({ rubric: null })),
+
+  removeBoundingBox: (id) =>
+    set((state) => ({ boundingBoxes: state.boundingBoxes.filter((box) => box.bounding_box_id !== id) })),
+
+  removeQuestion: (id) =>
+    set((state) => ({
+      rubricData: {
+        ...state.rubricData,
+        questions: state.rubricData.questions.filter((q) => q.question_id !== id),
+      },
+    })),
 }));
+
+
 
 export default useBoundingBoxStore;

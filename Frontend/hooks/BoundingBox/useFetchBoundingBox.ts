@@ -1,108 +1,128 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'; 
 import axios from 'axios';
 import useBoundingBoxStore from '../../store/BoundingBox/useBoundingBoxStore';
 
-const API_BASE_URL = '/api/api/instructor/boundingBoxes';
+const API_BASE_URL = '/api/api/instructor';
 
 interface BoundingBox {
-  id: string;
-  assignmentId: string;
-  position: string;
-  type: string;
-  page: number;
-  createdAt?: string;
-  updatedAt?: string;
+  bounding_box_id: string;
+  bounding_box_position: string;
+  bounding_box_type: string;
+  bounding_box_page: number;
 }
 
-interface Rubric {
-  id: string;
-  assignmentId: string;
-  rubricData: string; // JSON string
-  createdAt?: string;
-  updatedAt?: string;
+interface SubQuestion {
+  bounding_box_id: string;
+  subquestion_id: string;
+  subquestion_point: number;
+  subquestion_title: string;
 }
 
-// Fetch all bounding boxes and rubrics for an assignment
-export const useFetchBoundingBoxesAndRubrics = (assignmentId: string) => {
-  const { setBoundingBoxes, setRubric } = useBoundingBoxStore();
+interface Question {
+  question_id: string;
+  question_point: number;
+  question_title: string;
+  bounding_box_id?: string;
+  subquestions?: SubQuestion[];
+}
+
+interface RubricData {
+  rubric_id: string;
+  questions: Question[];
+}
+
+interface BoundingBoxAndQuestionsResponse {
+  boundingBoxes: BoundingBox[];
+  rubricData: RubricData;
+}
+
+//  ดึงข้อมูล BoundingBoxes + Questions (JSONB)
+export const useFetchBoundingBoxesAndQuestions = (assignmentId: string) => {
+  const { setBoundingBoxes, setRubricData } = useBoundingBoxStore();
 
   return useQuery({
-    queryKey: ['boundingBoxesAndRubrics', assignmentId],
-    queryFn: async () => {
-      const response = await axios.get(`${API_BASE_URL}?assignmentId=${assignmentId}`);
-      setBoundingBoxes(response.data.boundingBoxes);
-      setRubric(response.data.rubric);
-      return response.data;
+    queryKey: ['boundingBoxesAndQuestions', assignmentId],
+    queryFn: async (): Promise<BoundingBoxAndQuestionsResponse> => {
+      const [boundingBoxesRes, questionsRes] = await Promise.all([
+        axios.get(`${API_BASE_URL}/boundingBoxes?assignment_id=${assignmentId}`),
+        axios.get(`${API_BASE_URL}/questions?assignment_id=${assignmentId}`)
+      ]);
+
+      const boundingBoxes = boundingBoxesRes.data.bounding_boxes;
+      const rubricData = questionsRes.data.questions.rubric_data;
+
+      // อัปเดต Zustand Store
+      setBoundingBoxes(boundingBoxes);
+      setRubricData(rubricData);
+
+      return { boundingBoxes, rubricData };
     },
     enabled: Boolean(assignmentId),
   });
 };
 
-// Add bounding box and rubric
-export const useAddBoundingBoxAndRubric = (assignmentId: string) => {
+// 📌 Mutation: เพิ่ม BoundingBox + Question (PUT)
+export const useAddBoundingBoxAndQuestion = (assignmentId: string) => {
   const queryClient = useQueryClient();
-  const { addBoundingBox, setRubric } = useBoundingBoxStore();
+  const { addBoundingBox, addQuestion } = useBoundingBoxStore();
 
   return useMutation<
-    { boundingBox: BoundingBox; rubric: Rubric },
+    { boundingBox: BoundingBox; question: Question },
     Error,
-    { boundingBox: Omit<BoundingBox, 'id'>; rubric: Omit<Rubric, 'id'> }
+    { boundingBox: Omit<BoundingBox, 'bounding_box_id'>; question: Omit<Question, 'question_id'> }
   >({
     mutationFn: async (data) => {
-      const response = await axios.post(`${API_BASE_URL}?assignmentId=${assignmentId}`, data);
+      const response = await axios.put(`${API_BASE_URL}/boundingBoxes?assignment_id=${assignmentId}`, data);
       return response.data;
     },
     onSuccess: (data) => {
       addBoundingBox(data.boundingBox);
-      setRubric(data.rubric);
-      queryClient.invalidateQueries({ queryKey: ['boundingBoxesAndRubrics'] });
+      addQuestion(data.question);
+      queryClient.invalidateQueries({ queryKey: ['boundingBoxesAndQuestions', assignmentId] });
     },
   });
 };
 
-// Update bounding box and rubric
-export const useUpdateBoundingBoxAndRubric = (assignmentId: string) => {
+// 📌 Mutation: อัปเดต BoundingBox + Question (PUT)
+export const useUpdateBoundingBoxAndQuestion = (assignmentId: string) => {
   const queryClient = useQueryClient();
-  const { updateBoundingBox } = useBoundingBoxStore();
+  const { updateBoundingBox, updateQuestion } = useBoundingBoxStore();
 
   return useMutation<
-    { boundingBox: BoundingBox; rubric: Rubric },
+    { boundingBox: BoundingBox; question: Question },
     Error,
-    {
-      boundingBox: { id: string; updatedBox: Partial<Omit<BoundingBox, 'id'>> };
-      rubric?: { id: string; updatedRubric: Partial<Rubric> }; // ทำให้ rubric เป็น optional
-    }
+    { boundingBox: Partial<BoundingBox>; question: Partial<Question> }
   >({
     mutationFn: async (data) => {
-      const response = await axios.put(`${API_BASE_URL}?assignmentId=${assignmentId}`, data);
+      const response = await axios.put(`${API_BASE_URL}/boundingBoxes?assignment_id=${assignmentId}`, data);
       return response.data;
     },
     onSuccess: (data) => {
-      updateBoundingBox(data.boundingBox.id, data.boundingBox);
-      queryClient.invalidateQueries({ queryKey: ['boundingBoxesAndRubrics'] });
+      updateBoundingBox(data.boundingBox.bounding_box_id, data.boundingBox);
+      updateQuestion(data.question.question_id, data.question);
+      queryClient.invalidateQueries({ queryKey: ['boundingBoxesAndQuestions', assignmentId] });
     },
   });
 };
 
-
-// Remove bounding box and rubric
-export const useRemoveBoundingBoxAndRubric = (assignmentId: string) => {
+// 📌 Mutation: ลบ BoundingBox + Question (DELETE)
+export const useRemoveBoundingBoxAndQuestion = (assignmentId: string) => {
   const queryClient = useQueryClient();
-  const { removeBoundingBox, clearRubric } = useBoundingBoxStore();
+  const { removeBoundingBox, removeQuestion } = useBoundingBoxStore();
 
   return useMutation<
-    { boundingBoxId: string; rubricId: string },
+    { boundingBoxId: string; questionId: string },
     Error,
-    { boundingBoxId: string; rubricId: string }
+    { boundingBoxId: string; questionId: string }
   >({
     mutationFn: async (data) => {
-      await axios.delete(`${API_BASE_URL}?assignmentId=${assignmentId}`, { data });
+      await axios.delete(`${API_BASE_URL}/boundingBoxes?assignment_id=${assignmentId}`, { data });
       return data;
     },
     onSuccess: (data) => {
       removeBoundingBox(data.boundingBoxId);
-      clearRubric();
-      queryClient.invalidateQueries({ queryKey: ['boundingBoxesAndRubrics'] });
+      removeQuestion(data.questionId);
+      queryClient.invalidateQueries({ queryKey: ['boundingBoxesAndQuestions', assignmentId] });
     },
   });
 };
