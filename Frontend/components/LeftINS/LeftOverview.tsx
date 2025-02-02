@@ -1,4 +1,4 @@
-import { FaBars } from 'react-icons/fa';
+import { FaRegArrowAltCircleRight } from "react-icons/fa";
 import { Button, Divider, Flex, Image, Stack, Text, Title } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import AccountMenu from '../Account';
@@ -28,7 +28,7 @@ export default function LeftOverview() {
             },
           })}
         >
-          <FaBars
+          <FaRegArrowAltCircleRight
             size={24}
             style={{
               color: isCollapsed ? '#000000': '#000000',

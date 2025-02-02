@@ -1,5 +1,5 @@
 import React from 'react';
-import {FaBars,FaUser,FaCog,FaFileAlt,FaUsers,FaHome,} from 'react-icons/fa';
+import {FaBars,FaUser,FaCog,FaFileAlt,FaUsers,FaHome,FaRegArrowAltCircleRight} from 'react-icons/fa';
 import { IoStatsChart } from 'react-icons/io5';
 import { PiExportDuotone } from "react-icons/pi";
 import { Button, Divider, Flex, Skeleton, Image, Stack, Title, Text, Anchor } from '@mantine/core';
@@ -59,7 +59,7 @@ export default function LeftMain() {
             },
           })}
         >
-          <FaBars
+          <FaRegArrowAltCircleRight
             size={24}
             style={{
               color: isCollapsed ? '#000000': '#000000',
