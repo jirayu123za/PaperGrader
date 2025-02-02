@@ -65,8 +65,10 @@ const useBoundingBoxStore = create<BoundingBoxStore>((set) => ({
       },
     })),
 
-  removeBoundingBox: (id) =>
-    set((state) => ({ boundingBoxes: state.boundingBoxes.filter((box) => box.bounding_box_id !== id) })),
+  removeBoundingBox: (boxId) =>
+    set((state) => ({
+      boundingBoxes: state.boundingBoxes.filter((box) => box.bounding_box_id !== boxId),
+    })),
 
   removeQuestion: (id) =>
     set((state) => ({
@@ -76,6 +78,8 @@ const useBoundingBoxStore = create<BoundingBoxStore>((set) => ({
       },
     })),
 }));
+
+
 
 
 
