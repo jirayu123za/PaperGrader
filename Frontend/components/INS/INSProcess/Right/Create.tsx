@@ -27,7 +27,7 @@ interface CreateProps {
 }
 
 const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
-  const { addBoundingBox, addQuestion, removeQuestion, updateQuestion } = useBoundingBoxStore();
+  const { addBoundingBox, addQuestion, removeQuestion, updateQuestion,removeBoundingBox } = useBoundingBoxStore();
   const router = useRouter();
   const { assignment_id, course_id } = router.query;
   const [isCollapsed, { toggle }] = useDisclosure(false);
@@ -103,14 +103,32 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
   };
 
   const handleRemoveQuestion = (questionId: string) => {
-    removeQuestion(questionId);
+    // ค้นหา Question ที่ต้องการลบ
+    const questionToRemove = rubricData.questions.find((q) => q.question_id === questionId);
+  
+    if (questionToRemove) {
+      // ลบ Bounding Box ที่เชื่อมโยงกับ Question (กรณีมี subquestions)
+      questionToRemove.subquestions?.forEach((sub) => {
+        removeBoundingBox(sub.bounding_box_id); // ลบ Bounding Box ที่เชื่อมโยง
+      });
+  
+      // ลบ Bounding Box ที่เชื่อมโยงกับ Question (กรณีไม่มี subquestions)
+      if (questionToRemove.bounding_box_id) {
+        removeBoundingBox(questionToRemove.bounding_box_id); // ลบ Bounding Box ที่เชื่อมโยง
+      }
+  
+      // ลบ Question จาก Store
+      removeQuestion(questionId);
+    }
   };
-
+  
   const handleChangeQuestion = (questionId: string, value: string) => {
+    // Update the question title in the rubricData
     updateQuestion(questionId, { question_title: value });
   };
-
+  
   const handleChangePoint = (questionId: string, value: number) => {
+    // Update the question point in the rubricData
     updateQuestion(questionId, { question_point: value });
   };
 

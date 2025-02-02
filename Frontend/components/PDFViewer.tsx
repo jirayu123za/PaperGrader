@@ -20,11 +20,12 @@ interface PDFViewerProps {
 const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPage }) => {
   const { form: fileForm } = useFetchFile({ courseId, assignmentId });
   const { setScaleFactor } = usePDFViewerStore();
-  const { boundingBoxes } = useBoundingBoxStore();
+  const { boundingBoxes, rubricData } = useBoundingBoxStore(); // Retrieve rubricData for question details
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const transformerRef = useRef<any>(null);
   const rectRefs = useRef<{ [key: string]: any }>({});
   const renderTaskRef = useRef<any>(null);
+  const { updateBoundingBox } = useBoundingBoxStore();
 
   const form = useForm({
     initialValues: {
@@ -74,15 +75,33 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPa
       if (selectedNode) {
         transformerRef.current.nodes([selectedNode]);
         transformerRef.current.getLayer().batchDraw();
+      } else {
+        transformerRef.current?.detach();
+        transformerRef.current?.getLayer().batchDraw();
       }
     }
-  }, [form.values.selectedBoxId]);
+  }, [form.values.selectedBoxId, boundingBoxes]);
+  
+
 
   const handleStageClick = (e: any) => {
-    // ยกเลิกการเลือกถ้าคลิกนอก bounding box
     if (e.target === e.target.getStage()) {
       form.setFieldValue('selectedBoxId', null);
+      transformerRef.current?.detach();
+      transformerRef.current?.getLayer().batchDraw();
     }
+  };
+
+  const getQuestionForBox = (boundingBoxId: string) => {
+    const question = rubricData?.questions?.find((q) =>
+      q.subquestions?.some((sub) => sub.bounding_box_id === boundingBoxId)
+    );
+    const subquestion = question?.subquestions?.find(
+      (sub) => sub.bounding_box_id === boundingBoxId
+    );
+    return subquestion
+      ? { title: subquestion.subquestion_title, point: subquestion.subquestion_point }
+      : { title: question?.question_title || '', point: question?.question_point || 0 };
   };
 
   if (fileForm.values.loading) return <Loader />;
@@ -90,15 +109,13 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPa
 
   return (
     <Container style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'auto', border: '1px solid #ccc' }}>
-      {/* PDF Canvas */}
       <canvas ref={canvasRef} style={{ display: 'block' }} />
 
-      {/* Overlay สำหรับ Bounding Box */}
       <Stage
         width={canvasRef.current?.width || 0}
         height={canvasRef.current?.height || 0}
         style={{ position: 'absolute', top: 0, left: 0 }}
-        onMouseDown={handleStageClick} // ตรวจจับการคลิกนอก bounding box
+        onMouseDown={handleStageClick}
       >
         <Layer>
           {boundingBoxes &&
@@ -116,42 +133,44 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPa
                 const width = x2 - x1;
                 const height = y2 - y1;
 
+                const { title, point } = getQuestionForBox(box.bounding_box_id);
+
                 return (
                   <React.Fragment key={box.bounding_box_id}>
-                  {/* Rect */}
-                  <Rect
-                    ref={(node) => {
-                      rectRefs.current[box.bounding_box_id] = node;
-                    }}
-                    x={x1}
-                    y={y1}
-                    width={width}
-                    height={height}
-                    fill="rgba(0, 0, 255, 0.3)"
-                    stroke="blue"
-                    strokeWidth={2}
-                    onClick={() => form.setFieldValue('selectedBoxId', box.bounding_box_id)}
-                  />
-                
-                  {/* Header Bar */}
-                  <Rect
-                    x={x1}
-                    y={y1 - 20} // แสดงแถบเหนือ bounding box
-                    width={width}
-                    height={20}
-                    fill="gray"
-                  />
-                
-                  {/* Text for Question and Point */}
-                  <Text
-                    x={x1 + 5}
-                    y={y1 - 18} // แสดงข้อความในแถบ Header
-                    text={`${box.question}: ${box.point} point`}
-                    fontSize={12}
-                    fill="white"
-                    fontStyle="bold"
-                  />
-                </React.Fragment>
+                    <Rect
+                      ref={(node) => {
+                        rectRefs.current[box.bounding_box_id] = node;
+                      }}
+                      x={x1}
+                      y={y1}
+                      width={width}
+                      height={height}
+                      fill="rgba(0, 0, 255, 0.3)"
+                      stroke="blue"
+                      strokeWidth={2}
+                      draggable // เปิดใช้งานการลาก
+                      onClick={() => form.setFieldValue('selectedBoxId', box.bounding_box_id)}
+                      onDragEnd={(e) => {
+                        // อัปเดตตำแหน่งของ bounding box ใน store
+                        const newX1 = e.target.x();
+                        const newY1 = e.target.y();
+                        const newX2 = newX1 + width;
+                        const newY2 = newY1 + height;
+
+                        // ค้นหาและอัปเดต bounding box
+                        const updatedBoundingBox = {
+                          ...box,
+                          bounding_box_position: `(${newX1},${newY1}),(${newX2},${newY2})`,
+                        };
+                        updateBoundingBox(box.bounding_box_id, updatedBoundingBox); // ใช้ฟังก์ชันใน store
+                      }}
+                    />
+
+
+                    <Rect x={x1} y={y1 - 20} width={width} height={20} fill="gray" />
+
+                    <Text x={x1 + 5} y={y1 - 18} text={`${title}: ${point} point`} fontSize={12} fill="white" fontStyle="bold" />
+                  </React.Fragment>
                 );
               })}
 
