@@ -1,28 +1,40 @@
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import useCSVdataStore from '../store/add member/useCSVdataStore';
+import useTemplateStore from '../store/BoundingBox/useTemplateStore';
 
 interface FileUploadParams {
     file: File;
 }
 
-const uploadFile = async ({ file }: FileUploadParams) => {
-    console.log('Uploading file:', file);
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const { data } = await axios.post('/api/api/instructor/roster/file', formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data',
-        },
-    });
-
-    return data.result;
-};
-
 export const useUploadFile = () => {
     const { setCsvData } = useCSVdataStore();
+    const { selectedTemplate } = useTemplateStore();
+
+    const uploadFile = async ({ file }: FileUploadParams) => {
+        console.log('Uploading file:', file);
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        let apiUri = '';
+
+        if (selectedTemplate === 1) {
+            apiUri = '/api/api/instructor/roster/file';
+        } else if (selectedTemplate === 2) {
+            apiUri = '/api/api/instructor/roster/optionFile';
+        } else {
+            throw new Error('Invalid template selected: ' + selectedTemplate);
+        }
+
+        const { data } = await axios.post(apiUri, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        return data.result;
+    };
 
     return useMutation({
         mutationFn: uploadFile,
