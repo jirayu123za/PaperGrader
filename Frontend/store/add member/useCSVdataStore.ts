@@ -11,6 +11,8 @@ interface CsvDataStore {
   clearCsvData: () => void;
   selectedFile: File | null;
   setSelectedFile: (file: File | null) => void;
+  formValues: any;
+  setFormValues: (values: any) => void;
 }
 
 const useCSVdataStore = create<CsvDataStore>((set) => ({
@@ -19,6 +21,8 @@ const useCSVdataStore = create<CsvDataStore>((set) => ({
   clearCsvData: () => set({ csvData: null }),
   selectedFile: null,
   setSelectedFile: (file: File | null) => set({ selectedFile: file }),
+  formValues: null,
+  setFormValues: (values: any) => set({ formValues: values }),
 }));
 
 export default useCSVdataStore;
