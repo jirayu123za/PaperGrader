@@ -1,23 +1,17 @@
 import React from 'react';
 import SingleUser from './SingleUser';
-import CsvFile from './CsvFile';
-import SelectColumn from './SelectColumn';
 import { Modal, Button, Divider, Alert } from '@mantine/core';
 import { FaUser, FaUsers } from "react-icons/fa";
 import { IconInfoCircle } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
 import { MdOutlineGroupAdd } from 'react-icons/md';
+import { SelectMethods } from './SelectMethods';
 
 const AddMemberModal: React.FC = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const [singleUserOpened, { open: openSingleUser, close: closeSingleUser }] = useDisclosure(false);
-  const [csvOpened, { open: openCsv, close: closeCsv }] = useDisclosure(false);
-  const [selectColumnOpened, { open: openSelectColumn, close: closeSelectColumn }] = useDisclosure(false);
+  const [selectMethodsOpened, { open: openSelectMethods, close: closeSelectMethods }] = useDisclosure(false);
   const addPersonIcon = <MdOutlineGroupAdd size={18} />;
-  const handleNextFromCsvFile = () => {
-    closeCsv();
-    openSelectColumn();
-  };
 
   return (
     <>
@@ -46,7 +40,7 @@ const AddMemberModal: React.FC = () => {
           <div
             className="flex flex-col items-center cursor-pointer hover:text-blue-500"
             onClick={() => {
-              openCsv();
+              openSelectMethods();
               close();
             }}
           >
@@ -68,15 +62,10 @@ const AddMemberModal: React.FC = () => {
         onClose={closeSingleUser}
       />
       {/* CSV File Modal */}
-      <CsvFile
-        isOpen={csvOpened}
-        onClose={closeCsv}
-        onNext={handleNextFromCsvFile}
+      <SelectMethods 
+        isOpen={selectMethodsOpened} 
+        onClose={closeSelectMethods}
       />
-      {/* Select Column Modal */}
-      <SelectColumn 
-        isOpen={selectColumnOpened} 
-        onClose={closeSelectColumn} />
     </>
   );
 };
