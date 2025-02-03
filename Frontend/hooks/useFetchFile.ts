@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { useForm, UseFormReturnType } from '@mantine/form';
+import { useQuery } from '@tanstack/react-query';
+import { useSubmissionFileStore } from '../store/useINS_SubmissionStore';
 import axios from 'axios';
 
 interface FetchFileParams {
@@ -50,4 +52,35 @@ export const useFetchFile = ({ courseId, assignmentId }: FetchFileParams): UseFe
     form,
     refetch: fetchFileUrl, // ฟังก์ชัน refetch เพื่อดึงข้อมูลใหม่
   };
+};
+
+interface SubmissionFileResponse {
+  message: string;
+  submission_file_url: string;
+}
+
+export const useFetchSubmissionFile = (course_id: string, assignment_id: string, submission_id: string) => {
+  const setSubmissionFile = useSubmissionFileStore((state) => state.setSubmissionFile);
+
+  return useQuery<SubmissionFileResponse>({
+    queryKey: ['submission_file_url', course_id, assignment_id, submission_id],
+    queryFn: async () => {
+      const response = await axios.get('/api/api/instructor/submission/fileURL', {
+        params: {
+          course_id: course_id,
+          assignment_id: assignment_id,
+          submission_id: submission_id,
+        },
+      });
+
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch submission file');
+      }
+      if (response.data.submission_file_url) {
+        setSubmissionFile({ submission_file_url: response.data.submission_file_url });
+      }
+      return response.data;
+    },
+    enabled: !!course_id && !!assignment_id && !!submission_id,
+  });
 };
