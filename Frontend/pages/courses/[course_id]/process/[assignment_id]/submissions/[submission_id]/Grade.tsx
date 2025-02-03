@@ -1,170 +1,147 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Flex, Loader, Button } from '@mantine/core';
-import { useForm } from '@mantine/form';
 import { FaBars } from 'react-icons/fa';
 import { useRouter } from 'next/router';
 import LeftProcess from '../../../../../../../components/LeftINS/LeftProcess';
 import Grading from '../../../../../../../components/INS/INSProcess/Right/Grading';
 import GradePdfViewer from '../../../../../../../components/INS/GradePdfViewer';
 
-interface BoundingBox {
-  id: number;
-  questionId: string;
-  topLeft: { x: number; y: number };
-  bottomRight: { x: number; y: number };
-  pageNumber: number;
-  title: string;
-  points: number;
-  type: 'NAME' | 'STUDENTID' | 'QUESTION';
-}
+// interface BoundingBox {
+//   id: number;
+//   questionId: string;
+//   topLeft: { x: number; y: number };
+//   bottomRight: { x: number; y: number };
+//   pageNumber: number;
+//   title: string;
+//   points: number;
+//   type: 'NAME' | 'STUDENTID' | 'QUESTION';
+// }
 
 export default function GradePage() {
-  const router = useRouter();
-  const { assignment_id, course_id } = router.query;
+  // const router = useRouter();
+  // const { assignment_id, course_id } = router.query;
+  // const [isOutlineCollapsed, setOutlineCollapsed] = useState(false);
+  // const [currentPage, setCurrentPage] = useState(1);
 
-  const [isOutlineCollapsed, setOutlineCollapsed] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1); // หน้าปัจจุบันของ PDF
+  // const form = useForm({
+  //   initialValues: {
+  //     loading: true,
+  //     boundingBoxes: [] as BoundingBox[],
+  //   },
+  // });
 
-  const form = useForm({
-    initialValues: {
-      pdfUrl: '',
-      loading: true,
-      boundingBoxes: [] as BoundingBox[],
-    },
-  });
+  // const handleNewQuestion = () => {
+  //   const questionBoxes = form.values.boundingBoxes.filter((box) => box.type === 'QUESTION');
+  //   const newBox: BoundingBox = {
+  //     id: Date.now(),
+  //     questionId: `Q${questionBoxes.length + 1}`,
+  //     topLeft: { x: 100, y: 100 },
+  //     bottomRight: { x: 300, y: 200 },
+  //     pageNumber: currentPage,
+  //     title: `Q${questionBoxes.length + 1}: New Question`,
+  //     points: 1,
+  //     type: 'QUESTION',
+  //   };
 
-  const handleNewQuestion = () => {
-    const questionBoxes = form.values.boundingBoxes.filter((box) => box.type === 'QUESTION');
-    const newBox: BoundingBox = {
-      id: Date.now(),
-      questionId: `Q${questionBoxes.length + 1}`,
-      topLeft: { x: 100, y: 100 },
-      bottomRight: { x: 300, y: 200 },
-      pageNumber: currentPage,
-      title: `Q${questionBoxes.length + 1}: New Question`,
-      points: 1,
-      type: 'QUESTION',
-    };
+  //   const updatedBoxes = [...form.values.boundingBoxes, newBox];
+  //   form.setFieldValue('boundingBoxes', updatedBoxes);
 
-    const updatedBoxes = [...form.values.boundingBoxes, newBox];
-    form.setFieldValue('boundingBoxes', updatedBoxes);
+  //   if (assignment_id) {
+  //     localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+  //   }
+  // };
 
-    if (assignment_id) {
-      localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
-    }
-  };
+  // const handleEditName = () => {
+  //   const existingIndex = form.values.boundingBoxes.findIndex((box) => box.type === 'NAME');
+  //   let updatedBoxes: BoundingBox[];
 
-  const handleEditName = () => {
-    const existingIndex = form.values.boundingBoxes.findIndex((box) => box.type === 'NAME');
-    let updatedBoxes: BoundingBox[];
+  //   if (existingIndex !== -1) {
+  //     updatedBoxes = form.values.boundingBoxes.filter((_, index) => index !== existingIndex);
+  //   } else {
+  //     const newBox: BoundingBox = {
+  //       id: Date.now(),
+  //       questionId: 'NAME',
+  //       topLeft: { x: 50, y: 50 },
+  //       bottomRight: { x: 200, y: 100 },
+  //       pageNumber: currentPage,
+  //       title: 'Name',
+  //       points: 0,
+  //       type: 'NAME',
+  //     };
+  //     updatedBoxes = [...form.values.boundingBoxes, newBox];
+  //   }
 
-    if (existingIndex !== -1) {
-      updatedBoxes = form.values.boundingBoxes.filter((_, index) => index !== existingIndex);
-    } else {
-      const newBox: BoundingBox = {
-        id: Date.now(),
-        questionId: 'NAME',
-        topLeft: { x: 50, y: 50 },
-        bottomRight: { x: 200, y: 100 },
-        pageNumber: currentPage,
-        title: 'Name',
-        points: 0,
-        type: 'NAME',
-      };
-      updatedBoxes = [...form.values.boundingBoxes, newBox];
-    }
+  //   form.setFieldValue('boundingBoxes', updatedBoxes);
 
-    form.setFieldValue('boundingBoxes', updatedBoxes);
+  //   if (assignment_id) {
+  //     localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+  //   }
+  // };
 
-    if (assignment_id) {
-      localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
-    }
-  };
+  // const handleEditStudentID = () => {
+  //   const existingIndex = form.values.boundingBoxes.findIndex((box) => box.type === 'STUDENTID');
+  //   let updatedBoxes: BoundingBox[];
 
-  const handleEditStudentID = () => {
-    const existingIndex = form.values.boundingBoxes.findIndex((box) => box.type === 'STUDENTID');
-    let updatedBoxes: BoundingBox[];
+  //   if (existingIndex !== -1) {
+  //     updatedBoxes = form.values.boundingBoxes.filter((_, index) => index !== existingIndex);
+  //   } else {
+  //     const newBox: BoundingBox = {
+  //       id: Date.now(),
+  //       questionId: 'STUDENTID',
+  //       topLeft: { x: 50, y: 150 },
+  //       bottomRight: { x: 200, y: 200 },
+  //       pageNumber: currentPage,
+  //       title: 'Student ID',
+  //       points: 0,
+  //       type: 'STUDENTID',
+  //     };
+  //     updatedBoxes = [...form.values.boundingBoxes, newBox];
+  //   }
 
-    if (existingIndex !== -1) {
-      updatedBoxes = form.values.boundingBoxes.filter((_, index) => index !== existingIndex);
-    } else {
-      const newBox: BoundingBox = {
-        id: Date.now(),
-        questionId: 'STUDENTID',
-        topLeft: { x: 50, y: 150 },
-        bottomRight: { x: 200, y: 200 },
-        pageNumber: currentPage,
-        title: 'Student ID',
-        points: 0,
-        type: 'STUDENTID',
-      };
-      updatedBoxes = [...form.values.boundingBoxes, newBox];
-    }
+  //   form.setFieldValue('boundingBoxes', updatedBoxes);
 
-    form.setFieldValue('boundingBoxes', updatedBoxes);
+  //   if (assignment_id) {
+  //     localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+  //   }
+  // };
 
-    if (assignment_id) {
-      localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
-    }
-  };
+  // const updateBoundingBox = (index: number, newBox: BoundingBox) => {
+  //   const updatedBoxes = [...form.values.boundingBoxes];
+  //   updatedBoxes[index] = newBox;
+  //   form.setFieldValue('boundingBoxes', updatedBoxes);
 
-  const updateBoundingBox = (index: number, newBox: BoundingBox) => {
-    const updatedBoxes = [...form.values.boundingBoxes];
-    updatedBoxes[index] = newBox;
-    form.setFieldValue('boundingBoxes', updatedBoxes);
+  //   if (assignment_id) {
+  //     localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
+  //   }
+  // };
 
-    if (assignment_id) {
-      localStorage.setItem(`boundingBoxes-${assignment_id}`, JSON.stringify(updatedBoxes));
-    }
-  };
-
-  useEffect(() => {
-    const loadPdfFromPublic = () => {
-      const pdfPath = '/pdf/test01.pdf';
-      form.setFieldValue('pdfUrl', pdfPath);
-      form.setFieldValue('loading', false);
-    };
-
-    const loadBoundingBoxes = () => {
-      const savedBoxes = localStorage.getItem(`boundingBoxes-${assignment_id}`);
-      if (savedBoxes) {
-        try {
-          const parsedBoxes: BoundingBox[] = JSON.parse(savedBoxes);
-          if (Array.isArray(parsedBoxes)) {
-            form.setFieldValue('boundingBoxes', parsedBoxes);
-          }
-        } catch (error) {
-          console.error('Error parsing bounding box data:', error);
-        }
-      }
-    };
-
-    loadPdfFromPublic();
-    loadBoundingBoxes();
-  }, [assignment_id, course_id]);
+  // useEffect(() => {
+  //   const loadBoundingBoxes = () => {
+  //     const savedBoxes = localStorage.getItem(`boundingBoxes-${assignment_id}`);
+  //     if (savedBoxes) {
+  //       try {
+  //         const parsedBoxes: BoundingBox[] = JSON.parse(savedBoxes);
+  //         if (Array.isArray(parsedBoxes)) {
+  //           form.setFieldValue('boundingBoxes', parsedBoxes);
+  //         }
+  //       } catch (error) {
+  //         console.error('Error parsing bounding box data:', error);
+  //       }
+  //     }
+  //   };
+  //   loadBoundingBoxes();
+  // }, [assignment_id, course_id]);
 
   return (
-    <Container fluid className="flex min-h-screen overflow-hidden" style={{ margin: 0, padding: 0 }}>
-      {/* Sidebar */}
-      <Flex
-        style={{
-          position: 'fixed',
-          left: 0,
-          top: 0,
-          height: '100vh',
-          width: '15%',
-          borderRight: '1px solid #dee2e6',
-          overflow: 'hidden',
-        }}
-      >
-        <LeftProcess />
-      </Flex>
+    <Container fluid className="flex min-h-screen overflow-hidden">
+      {/* Left sidebar */}
+      <LeftProcess />
 
       {/* Main Content */}
       <Flex
         style={{
-          marginLeft: '15%',
-          marginRight: isOutlineCollapsed ? '0%' : '30%',
+          // marginLeft: '15%',
+          // marginRight: isOutlineCollapsed ? '0%' : '30%',
           flex: 1,
           overflow: 'auto',
           display: 'flex',
@@ -173,22 +150,15 @@ export default function GradePage() {
           transition: 'margin-right 0.3s ease',
         }}
       >
-        {form.values.loading ? (
-          <Loader />
-        ) : form.values.pdfUrl ? (
-          <GradePdfViewer
-            fileUrl={form.values.pdfUrl}
-            boundingBoxes={form.values.boundingBoxes}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-          />
-        ) : (
-          <div>No PDF available</div>
-        )}
+        <GradePdfViewer
+          // boundingBoxes={form.values.boundingBoxes}
+          // currentPage={currentPage}
+          // setCurrentPage={setCurrentPage}
+        />
       </Flex>
 
       {/* CreateOutline Section */}
-      <Flex
+      {/* <Flex
         style={{
           position: 'fixed',
           right: 0,
@@ -221,18 +191,17 @@ export default function GradePage() {
         >
           <FaBars />
         </Button>
-        {!isOutlineCollapsed && (
-          <Grading 
-            onNewQuestion={handleNewQuestion}
-            onEditName={handleEditName}
-            onEditStudentID={handleEditStudentID}
-            boundingBoxes={form.values.boundingBoxes}
-            removeBoundingBox={() => {}}
-            updateBoundingBox={updateBoundingBox}
-            onToggleCollapse={() => setOutlineCollapsed((prev) => !prev)}
-          />
-        )}
-      </Flex>
+      </Flex> */}
+
+      <Grading 
+        // onNewQuestion={handleNewQuestion}
+        // onEditName={handleEditName}
+        // onEditStudentID={handleEditStudentID}
+        // boundingBoxes={form.values.boundingBoxes}
+        // removeBoundingBox={() => {}}
+        // updateBoundingBox={updateBoundingBox}
+        // onToggleCollapse={() => setOutlineCollapsed((prev) => !prev)}
+      />
     </Container>
   );
 }
