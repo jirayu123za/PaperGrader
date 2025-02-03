@@ -1,87 +1,133 @@
 import React from 'react';
-import { Table, Button, TextInput, Flex, Text } from '@mantine/core';
+import { Table, TextInput, Flex, Text, Paper, Pagination, Select, ActionIcon } from '@mantine/core';
 import { useRouter } from 'next/router';
-import { useForm } from '@mantine/form';
 import { useFetchSubmissions } from '../../../../hooks/useFetchINS_Submission';
 import { useINS_SubmissionStore } from '../../../../store/useINS_SubmissionStore';
+import { usePagination } from '@mantine/hooks';
+import { IoListOutline, IoSearch } from 'react-icons/io5';
+import { FaRegFilePdf } from 'react-icons/fa';
 
 const INSSubmissions: React.FC = () => {
   const router = useRouter();
   const { course_id, assignment_id } = router.query;
+  const icons = {
+    submissionsList: <IoListOutline />,
+    searchIcon: <IoSearch />,
+    submissionFile: <FaRegFilePdf />
+  };
 
-  const form = useForm({
-    initialValues: {
-      searchTerm: '',
-    },
-  });
-
-  const { submissions } = useINS_SubmissionStore();
-  useFetchSubmissions(course_id as string, assignment_id as string);
+  // Need implement submissionFilter, setSubmissionFilter
+  const { submissions, searchTerm, setSearchTerm } = useINS_SubmissionStore();
+  const { isLoading, error } = useFetchSubmissions(course_id as string, assignment_id as string);
 
   const filteredSubmissions = submissions.filter((submission) => {
-    const lowercasedTerm = form.values.searchTerm.toLowerCase();
-    return (
-      submission.student_code.includes(lowercasedTerm) ||
-      submission.full_name.toLowerCase().includes(lowercasedTerm) ||
-      submission.section_name.includes(lowercasedTerm)
-    );
+    const matchesSearch = searchTerm
+      ? submission.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        submission.student_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        submission.section_name.toLowerCase().includes(searchTerm.toLowerCase())
+      : true;
+    
+    // const matchesSubmission -> Need implement
+    return matchesSearch;
   });
 
-  const handleViewPDF = (studentCode: string) => {
+  const pageSize = 10;
+  const totalPages = Math.ceil(filteredSubmissions.length / pageSize);
+  const pagination = usePagination({
+    total: totalPages,
+    initialPage: 1,
+    siblings: 1,
+    boundaries: 1,
+  });
+  const paginatedData = filteredSubmissions.slice(
+    (pagination.active - 1) * pageSize,
+    pagination.active * pageSize
+  );
+
+  const handleViewPDF = (submission_id: string) => {
     router.push(
-      `/courses/${course_id}/process/${assignment_id}/submissions/${submissions}/Grade`
+      `/courses/${course_id}/process/${assignment_id}/submissions/${submission_id}/Grade`
     );
   };
 
   return (
-    <div style={{ padding: '1rem' }}>
-      <Flex justify="space-between" align="center" mb="md">
-        <h3>Submissions for Assignment</h3>
+    <Paper shadow="sm" radius="md" withBorder p="xl">
+      <Flex align="center" gap="xs" mb="md">
         <TextInput
           placeholder="Search by Student Code, Name, or Section"
-          value={form.values.searchTerm}
-          onChange={(event) => form.setFieldValue('searchTerm', event.currentTarget.value)}
-          style={{ maxWidth: '300px' }}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.currentTarget.value)}
+          disabled={submissions.length === 0 || isLoading }
+          rightSection={icons.searchIcon}
+          w="25%"
         />
+        <Select
+          placeholder="Filter by submitted"
+          data={[
+            { value: 'NOT_SUBMITTED', label: 'Not submitted' },
+          ]}
+          // value={roleFilter}
+          // onChange={setRoleFilter}
+          clearable
+          disabled={submissions.length === 0 || isLoading }
+        />        
       </Flex>
-      <Table striped highlightOnHover>
+      <Table highlightOnHover verticalSpacing="md">
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Student ID</Table.Th>
-            <Table.Th>Name</Table.Th>
+            <Table.Th w="25%">Name</Table.Th>
             <Table.Th>Section</Table.Th>
             <Table.Th>Submitted At</Table.Th>
-            <Table.Th>Actions</Table.Th>
+            <Table.Th>View</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {filteredSubmissions.map((submission) => (
+          {paginatedData.map((submission) => (
             <Table.Tr key={submission.submission_id}>
               <Table.Td>{submission.student_code}</Table.Td>
               <Table.Td>{submission.full_name}</Table.Td>
-              <Table.Td>{submission.section_name}</Table.Td>
+              <Table.Td pl={24}>{submission.section_name}</Table.Td>
               <Table.Td>{new Date(submission.submitted_at).toLocaleString()}</Table.Td>
               <Table.Td>
-                <Button
-                  size="xs"
-                  variant="outline"
-                  onClick={() => handleViewPDF(submission.submission_id)}
-                >
-                  View
-                </Button>
+                <ActionIcon
+                  variant="transparent"
+                  aria-label="view PDF" 
+                  onClick={() => 
+                    handleViewPDF(submission.submission_id)
+                  }>
+                  {icons.submissionFile}
+                </ActionIcon>               
               </Table.Td>
             </Table.Tr>
           ))}
           {filteredSubmissions.length === 0 && (
             <Table.Tr>
               <Table.Td colSpan={5} style={{ textAlign: 'center' }}>
-                <Text color="dimmed">No submissions yet</Text>
+                <Text c="dimmed">No submissions yet</Text>
               </Table.Td>
             </Table.Tr>
           )}
         </Table.Tbody>
       </Table>
-    </div>
+
+      <Flex justify="space-between" align="center" mt="lg">
+        <Flex justify="center" style={{ flex: 1 }}>
+          <Pagination
+            total={totalPages}
+            siblings={1}
+            boundaries={1}
+            value={pagination.active}
+            onChange={pagination.setPage}
+          />
+        </Flex>
+        <Text size="lg" c="dimmed">
+          {submissions.length > 0
+            ? `(${submissions.length} Submissions)`
+            : 'No submissions yet'}
+        </Text>
+      </Flex>      
+    </Paper>
   );
 };
 
