@@ -43,6 +43,7 @@ type InstructorService interface {
 	GetInstructorsNameByCourseID(courseID uuid.UUID) ([]response.InstructorListResponse, error)
 
 	GetSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
+	GetSubmissionFileURL(CourseID uuid.UUID, AssignmentID uuid.UUID, SubmissionID uuid.UUID) (submissionFileURL string, err error)
 
 	CreateBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error
 	GetBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error)
@@ -271,6 +272,19 @@ func (s *InstructorServiceImpl) GetSubmissionListByCourseIDAndAssignmentID(Cours
 		return nil, err
 	}
 	return submissionList, nil
+}
+
+func (s *InstructorServiceImpl) GetSubmissionFileURL(CourseID uuid.UUID, AssignmentID uuid.UUID, SubmissionID uuid.UUID) (submissionFileURL string, err error) {
+	fileName, err := s.repo.FindSubmissionFileName(AssignmentID, SubmissionID)
+	if err != nil {
+		return "", err
+	}
+
+	fileURL, err := s.minioRepo.FindFileFromMinIO(CourseID.String(), AssignmentID.String(), fileName)
+	if err != nil {
+		return "", err
+	}
+	return fileURL, nil
 }
 
 func (s *InstructorServiceImpl) CreateBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error {
