@@ -138,6 +138,20 @@ func (r *GormInstructorRepository) FindFileFormSubmission(CourseID uuid.UUID, As
 	return fileNames, nil
 }
 
+func (r *GormInstructorRepository) FindSubmissionFileName(AssignmentID uuid.UUID, SubmissionID uuid.UUID) (fileName string, err error) {
+	var submissionFile models.Submission
+	if err := r.db.Table("submissions").
+		Select("submission_file_name").
+		Where("assignment_id = ? AND submission_id = ?", AssignmentID, SubmissionID).
+		Where("deleted_at IS NULL").
+		Order("submitted_at DESC").
+		Limit(1).
+		First(&submissionFile).Error; err != nil {
+		return "", err
+	}
+	return submissionFile.SubmissionFileName, nil
+}
+
 func (r *GormInstructorRepository) AddAssignmentFile(file *models.AssignmentFile) error {
 	if result := r.db.Create(file); result.Error != nil {
 		return result.Error
