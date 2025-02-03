@@ -164,6 +164,7 @@ func main() {
 	//!
 	apiGroup.Get("/instructor/submissions", instructorHandler.GetFileFormSubmission)
 	apiGroup.Get("/instructor/submissionsList", instructorHandler.GetSubmissionListByCourseIDAndAssignmentID)
+	apiGroup.Get("/instructor/submission/fileURL", instructorHandler.GetSubmissionFileURL)
 
 	// Bounding Box
 	apiGroup.Post("/instructor/boundingBoxes", instructorHandler.CreateBoundingBoxesAndQuestions)
