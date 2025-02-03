@@ -42,6 +42,7 @@ type InstructorRepository interface {
 	FindInstructorsNameByCourseID(courseID uuid.UUID) ([]response.InstructorListResponse, error)
 
 	FindSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
+	FindSubmissionFileName(AssignmentID uuid.UUID, SubmissionID uuid.UUID) (fileName string, err error)
 
 	// CRUD BoundingBox
 	AddBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error
