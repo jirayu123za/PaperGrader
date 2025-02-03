@@ -31,3 +31,17 @@ export const useINS_SubmissionStore = create<INSSubmissionStoreState>((set) => (
   // submissionFilter: null,
   // setSubmissionFilter: (role) => set({ submissionFilter: role }),
 }));
+
+interface SubmissionFile {
+  submission_file_url: string;
+}
+
+interface SubmissionFileStoreState {
+  submissionFile: SubmissionFile;
+  setSubmissionFile: (submissionFile: SubmissionFile) => void;
+}
+
+export const useSubmissionFileStore = create<SubmissionFileStoreState>((set) => ({
+  submissionFile: { submission_file_url: '' },
+  setSubmissionFile: (submissionFile) => set({ submissionFile }),
+}));
