@@ -1312,6 +1312,13 @@ func (h *HttpInstructorHandler) GetQuestionsByAssignmentTemplate(c *fiber.Ctx) e
 		})
 	}
 
+	if questionsResp.RubricID == uuid.Nil {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"message":   "No questions found",
+			"questions": []interface{}{},
+		})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":   "Questions are retrieved",
 		"questions": questionsResp,
