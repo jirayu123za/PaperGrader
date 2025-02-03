@@ -48,7 +48,7 @@ export const SecondStep = () => {
             alt={selectedImage.alt}
             mb="xl"
             fit="contain"
-            mah={300}
+            mah={200}
           />
         )}
         <Paper
