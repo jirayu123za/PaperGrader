@@ -103,34 +103,44 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
   };
 
   const handleRemoveQuestion = (questionId: string) => {
-    // ค้นหา Question ที่ต้องการลบ
     const questionToRemove = rubricData.questions.find((q) => q.question_id === questionId);
-  
+
     if (questionToRemove) {
-      // ลบ Bounding Box ที่เชื่อมโยงกับ Question (กรณีมี subquestions)
       questionToRemove.subquestions?.forEach((sub) => {
-        removeBoundingBox(sub.bounding_box_id); // ลบ Bounding Box ที่เชื่อมโยง
+        removeBoundingBox(sub.bounding_box_id);
       });
-  
-      // ลบ Bounding Box ที่เชื่อมโยงกับ Question (กรณีไม่มี subquestions)
+
       if (questionToRemove.bounding_box_id) {
-        removeBoundingBox(questionToRemove.bounding_box_id); // ลบ Bounding Box ที่เชื่อมโยง
+        removeBoundingBox(questionToRemove.bounding_box_id);
       }
-  
-      // ลบ Question จาก Store
+
       removeQuestion(questionId);
     }
   };
-  
+
   const handleChangeQuestion = (questionId: string, value: string) => {
-    // Update the question title in the rubricData
     updateQuestion(questionId, { question_title: value });
   };
-  
+
   const handleChangePoint = (questionId: string, value: number) => {
-    // Update the question point in the rubricData
     updateQuestion(questionId, { question_point: value });
   };
+
+
+  const createBoundingBox = (type: "NAME" | "STUDENTID") => {
+    const x = Math.random() * 100 + 50; // ตำแหน่ง X สุ่ม
+    const y = Math.random() * 100 + 50; // ตำแหน่ง Y สุ่ม
+
+    const newBoundingBox: BoundingBox = {
+      bounding_box_id: `temp-${Date.now()}`,
+      bounding_box_position: `(${x},${y}),(${x + 100},${y + 50})`, // กำหนดขนาด
+      bounding_box_type: type,
+      bounding_box_page: currentPage,
+    };
+
+    addBoundingBox(newBoundingBox);
+  };
+
 
   return (
     <Container className={`fixed top-0 right-0 h-full transition-all duration-300 bg-white shadow-lg ${isCollapsed ? 'w-25' : 'w-[450px]'}`}
@@ -159,11 +169,18 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
               <Tabs.Tab value="grading">Grading</Tabs.Tab>
             </Tabs.List>
           </Tabs>
-
+          <Flex gap="sm" justify="center" mb="md">
+            <Button onClick={() => createBoundingBox("NAME")} variant="outline" color="blue">
+              Name
+            </Button>
+            <Button onClick={() => createBoundingBox("STUDENTID")} variant="outline" color="green">
+              Student ID
+            </Button>
+          </Flex>
           {form.values.activeTab === 'outline' ? (
             <>
               <Box pt={16} pl={16} pr={16}>
-                <Text size="sm" color="dimmed">Total Questions: {rubricData.questions.length}</Text>
+                <Text size="sm" color="dimmed">Total Questions: {rubricData?.questions?.length || 0}</Text>
               </Box>
 
               <Text size="sm" c="dimmed" pt={16} pl={16} pr={16}>
