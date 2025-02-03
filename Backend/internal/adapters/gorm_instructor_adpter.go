@@ -3,6 +3,7 @@ package adapters
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/models"
@@ -800,13 +801,18 @@ func (r *GormInstructorRepository) FindQuestionsByAssignmentTemplate(AssignmentI
 		RubricData []byte
 	}
 
-	if err := r.db.
+	err := r.db.
 		Table("rubrics").
 		Select("rubric_id, rubric_data").
 		Where("assignment_id = ?", AssignmentID).
 		Where("deleted_at IS NULL").
-		First(&rubric).Error; err != nil {
-		return nil, err
+		First(&rubric).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return &response.QuestionsTemplateResponse{
+			RubricID:   uuid.Nil,
+			RubricData: map[string]interface{}{},
+		}, nil
 	}
 
 	var rubricData map[string]interface{}
