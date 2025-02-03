@@ -100,7 +100,7 @@ const Grading: React.FC = () => {
     const selectedBox = boundingBoxes.find((box) => box.id === selectedBoxId);
 
     return (
-        <Box style={{ padding: '1rem', overflowY: 'auto' }}>
+        <Box className='shadow-md bg-[#f1f3f8]' p="lg">
             <Title order={3}>Grading</Title>
             <Divider my="sm" />
 
