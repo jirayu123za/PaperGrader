@@ -27,7 +27,7 @@ interface CreateProps {
 }
 
 const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
-  const { addBoundingBox, addQuestion, removeQuestion, updateQuestion,removeBoundingBox } = useBoundingBoxStore();
+  const { addBoundingBox, addQuestion, removeQuestion, updateQuestion, removeBoundingBox } = useBoundingBoxStore();
   const router = useRouter();
   const { assignment_id, course_id } = router.query;
   const [isCollapsed, { toggle }] = useDisclosure(false);
@@ -197,7 +197,7 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                  {rubricData.questions.map((question, index) => (
+                  {rubricData?.questions?.map((question, index) => (
                     <Table.Tr key={question.question_id}>
                       <Table.Td>{index + 1}</Table.Td>
                       <Table.Td>
