@@ -1,67 +1,92 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Container } from '@mantine/core';
+import { Button, Container, Flex } from '@mantine/core';
 import { Stage, Layer, Rect, Text } from 'react-konva';
 import * as pdfjsLib from 'pdfjs-dist';
-import 'pdfjs-dist/web/pdf_viewer.css';
+// import 'pdfjs-dist/web/pdf_viewer.css';
+import { useFetchSubmissionFile } from '../../hooks/useFetchFile';
+import { useSubmissionFileStore } from '../../store/useINS_SubmissionStore';
+import { useRouter } from 'next/router';
 
-(pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js`;
+(pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
 
-interface BoundingBox {
-  id: number;
-  questionId: string;
-  topLeft: { x: number; y: number };
-  bottomRight: { x: number; y: number };
-  pageNumber: number;
-  title: string;
-  points: number;
-  type: 'NAME' | 'STUDENTID' | 'QUESTION';
-}
+// interface BoundingBox {
+//   id: number;
+//   questionId: string;
+//   topLeft: { x: number; y: number };
+//   bottomRight: { x: number; y: number };
+//   pageNumber: number;
+//   title: string;
+//   points: number;
+//   type: 'NAME' | 'STUDENTID' | 'QUESTION';
+// }
 
-interface GradePdfViewerProps {
-  fileUrl: string;
-  boundingBoxes: BoundingBox[];
-  onBoundingBoxesChange?: (updatedBoundingBoxes: BoundingBox[]) => void;
-}
+// interface GradePdfViewerProps {
+//   fileUrl: string;
+//   boundingBoxes: BoundingBox[];
+//   onBoundingBoxesChange?: (updatedBoundingBoxes: BoundingBox[]) => void;
+// }
 
-const GradePdfViewer: React.FC<GradePdfViewerProps> = ({
-  fileUrl,
-  boundingBoxes,
-  onBoundingBoxesChange,
-}) => {
+// const GradePdfViewer: React.FC<GradePdfViewerProps> = ({ boundingBoxes, onBoundingBoxesChange }) => {
+const GradePdfViewer: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const renderTaskRef = useRef<any>(null);
 
-  // Load and render PDF
+  const router = useRouter();
+  const { assignment_id, course_id, submission_id } = router.query;
+  const { isLoading, error } = useFetchSubmissionFile(course_id as string, assignment_id as string, submission_id as string);
+  const { submissionFile } = useSubmissionFileStore();
+
   useEffect(() => {
     const renderPDF = async (pageNum: number) => {
-      const loadingTask = pdfjsLib.getDocument(fileUrl);
-      const pdf = await loadingTask.promise;
-      const page = await pdf.getPage(pageNum);
+      try {
+        const response = await fetch(submissionFile.submission_file_url);
+        const arrayBuffer = await response.arrayBuffer();
+        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+        const pdf = await loadingTask.promise;
+        const page = await pdf.getPage(pageNum);
 
-      setTotalPages(pdf.numPages);
+        setTotalPages(pdf.numPages);
 
-      const scale = 1.5;
-      const viewport = page.getViewport({ scale });
+        const scale = 1;
+        const viewport = page.getViewport({ scale });
 
-      const canvas = canvasRef.current;
-      if (canvas) {
-        const context = canvas.getContext('2d');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
+        const canvas = canvasRef.current;
+        if (canvas) {
+          const context = canvas.getContext('2d');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
 
-        setCanvasSize({ width: viewport.width, height: viewport.height });
+          setCanvasSize({ width: viewport.width, height: viewport.height });
 
-        await page.render({
-          canvasContext: context!,
-          viewport,
-        }).promise;
+          if (renderTaskRef.current) {
+            renderTaskRef.current.cancel();
+          }
+
+          renderTaskRef.current = page.render({
+            canvasContext: context!,
+            viewport,
+          });
+
+          await renderTaskRef.current.promise;
+        }
+      } catch (error) {
+        console.error('Error rendering PDF:', error);
       }
     };
 
-    renderPDF(currentPage);
-  }, [fileUrl, currentPage]);
+    if (submissionFile.submission_file_url) {
+      renderPDF(currentPage);
+    }
+
+    return () => {
+      if (renderTaskRef.current) {
+        renderTaskRef.current.cancel();
+      }
+    };
+  }, [currentPage, submissionFile.submission_file_url]);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -77,15 +102,18 @@ const GradePdfViewer: React.FC<GradePdfViewerProps> = ({
 
   return (
     <Container
-      style={{
-        position: 'relative',
-        width: '100%',
-        height: '100vh',
-        overflow: 'auto',
-        border: '1px solid #ccc',
-      }}
+      // style={{
+      //   position: 'relative',
+      //   width: '100%',
+      //   height: '100vh',
+      //   overflow: 'auto',
+      //   border: '1px solid #ccc',
+      // }}
     >
-      <canvas ref={canvasRef} style={{ display: 'block' }} />
+      <canvas 
+        ref={canvasRef}
+        className='border-2 border-gray-400 shadow-xs'
+      />
 
       <Stage
         width={canvasSize.width}
@@ -93,11 +121,11 @@ const GradePdfViewer: React.FC<GradePdfViewerProps> = ({
         style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
       >
         <Layer>
-          {boundingBoxes
+          {/* {boundingBoxes
             .filter((box) => box.pageNumber === currentPage)
             .map((box, index) => (
-              <React.Fragment key={index}>
-                <Rect
+              <React.Fragment key={index}> */}
+                {/* <Rect
                   x={box.topLeft.x * 1.5}
                   y={box.topLeft.y * 1.5}
                   width={(box.bottomRight.x - box.topLeft.x) * 1.5}
@@ -131,20 +159,28 @@ const GradePdfViewer: React.FC<GradePdfViewerProps> = ({
                       ? 'red'
                       : 'blue'
                   }
-                />
-              </React.Fragment>
-            ))}
+                /> */}
+              {/* </React.Fragment>
+            ))} */}
         </Layer>
       </Stage>
 
-      <div style={{ position: 'absolute', bottom: 10, right: 10, zIndex: 10 }}>
-        <button disabled={currentPage === 1} onClick={handlePreviousPage}>
+      <Flex justify="space-between" align="center" mt="lg">
+        <Button
+          variant="transparent"
+          disabled={currentPage === 1 || isLoading} 
+          onClick={handlePreviousPage}
+        >
           Previous Page
-        </button>
-        <button disabled={currentPage === totalPages} onClick={handleNextPage}>
+        </Button>
+        <Button 
+          variant="transparent"
+          disabled={currentPage === totalPages || isLoading} 
+          onClick={handleNextPage}
+        >
           Next Page
-        </button>
-      </div>
+        </Button>
+      </Flex>
     </Container>
   );
 };
