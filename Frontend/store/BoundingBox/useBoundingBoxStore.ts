@@ -41,18 +41,30 @@ interface BoundingBoxStore {
 }
 
 const useBoundingBoxStore = create<BoundingBoxStore>((set) => ({
-  boundingBoxes: [],
-  rubricData: { rubric_id: '', questions: [] },
+  boundingBoxes: [], // ค่าเริ่มต้น
+  rubricData: { rubric_id: '', questions: [] }, // ค่าเริ่มต้น
 
   setBoundingBoxes: (boxes) => set({ boundingBoxes: boxes }),
   setRubricData: (rubricData) => set({ rubricData }),
 
-  addBoundingBox: (box) => set((state) => ({ boundingBoxes: [...state.boundingBoxes, box] })),
-  addQuestion: (question) => set((state) => ({ rubricData: { ...state.rubricData, questions: [...state.rubricData.questions, question] } })),
+  addBoundingBox: (box) =>
+    set((state) => ({
+      boundingBoxes: [...state.boundingBoxes, box], // เพิ่ม bounding box ใหม่
+    })),
+    
+  addQuestion: (question) =>
+    set((state) => ({
+      rubricData: {
+        ...state.rubricData,
+        questions: [...state.rubricData.questions, question], // เพิ่มคำถามใหม่
+      },
+    })),
 
   updateBoundingBox: (id, updatedBox) =>
     set((state) => ({
-      boundingBoxes: state.boundingBoxes.map((box) => (box.bounding_box_id === id ? { ...box, ...updatedBox } : box)),
+      boundingBoxes: state.boundingBoxes.map((box) =>
+        box.bounding_box_id === id ? { ...box, ...updatedBox } : box
+      ),
     })),
 
   updateQuestion: (id, updatedQuestion) =>
@@ -78,9 +90,5 @@ const useBoundingBoxStore = create<BoundingBoxStore>((set) => ({
       },
     })),
 }));
-
-
-
-
 
 export default useBoundingBoxStore;

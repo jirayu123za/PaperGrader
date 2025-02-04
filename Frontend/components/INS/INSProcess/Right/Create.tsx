@@ -27,7 +27,7 @@ interface CreateProps {
 }
 
 const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
-  const { addBoundingBox, addQuestion, removeQuestion, updateQuestion, removeBoundingBox } = useBoundingBoxStore();
+  const { addBoundingBox, addQuestion, removeQuestion, updateQuestion, removeBoundingBox,setRubricData } = useBoundingBoxStore();
   const router = useRouter();
   const { assignment_id, course_id } = router.query;
   const [isCollapsed, { toggle }] = useDisclosure(false);
@@ -52,6 +52,11 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
   };
 
   const handleNewQuestion = () => {
+    if (!rubricData || !rubricData.questions) {
+      console.error('rubricData or questions is undefined');
+      return;
+    }
+
     const newBoundingBox: BoundingBox = {
       bounding_box_id: `temp-${Date.now()}`,
       bounding_box_position: `(50,50),(150,150)`,
@@ -65,11 +70,13 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
       question_title: `Question ${rubricData.questions.length + 1}`,
     };
 
-    addBoundingBox(newBoundingBox);
-    addQuestion(newQuestion);
+    // อัปเดต Store
+    addBoundingBox(newBoundingBox); // เพิ่ม Bounding Box
+    addQuestion(newQuestion); // เพิ่มคำถาม
 
-    console.log('✅ Bounding Boxes:', boundingBoxes);
+    console.log('✅ Added Bounding Box and Question:', { newBoundingBox, newQuestion });
   };
+
 
   const handleSave = () => {
     if (!assignment_id) return;
@@ -141,6 +148,13 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
     addBoundingBox(newBoundingBox);
   };
 
+  useEffect(() => {
+    if (!rubricData || !Array.isArray(rubricData.questions)) {
+      setRubricData({ rubric_id: assignment_id as string, questions: [] });
+    }
+  }, [rubricData, setRubricData, assignment_id]);
+  
+  
 
   return (
     <Container className={`fixed top-0 right-0 h-full transition-all duration-300 bg-white shadow-lg ${isCollapsed ? 'w-25' : 'w-[450px]'}`}
@@ -204,7 +218,9 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
                       <Table.Td>
                         <TextInput
                           value={question.question_title}
-                          onChange={(event) => handleChangeQuestion(question.question_id, event.currentTarget.value)}
+                          onChange={(event) =>
+                            handleChangeQuestion(question.question_id, event.currentTarget.value)
+                          }
                         />
                       </Table.Td>
                       <Table.Td style={{ textAlign: 'center' }}>
@@ -216,7 +232,12 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
                         />
                       </Table.Td>
                       <Table.Td>
-                        <Button size="xs" color="red" variant="outline" onClick={() => handleRemoveQuestion(question.question_id)}>
+                        <Button
+                          size="xs"
+                          color="red"
+                          variant="outline"
+                          onClick={() => handleRemoveQuestion(question.question_id)}
+                        >
                           X
                         </Button>
                       </Table.Td>
@@ -224,7 +245,9 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
                   ))}
                   <Table.Tr>
                     <Table.Td colSpan={4} align="center">
-                      <Button size="xs" variant="default" onClick={handleNewQuestion}>+ New Question</Button>
+                      <Button size="xs" variant="default" onClick={handleNewQuestion}>
+                        + New Question
+                      </Button>
                     </Table.Td>
                   </Table.Tr>
                 </Table.Tbody>

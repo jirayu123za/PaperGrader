@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'; 
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import useBoundingBoxStore from '../../store/BoundingBox/useBoundingBoxStore';
 
@@ -45,13 +45,12 @@ export const useFetchBoundingBoxesAndQuestions = (assignmentId: string) => {
     queryFn: async (): Promise<BoundingBoxAndQuestionsResponse> => {
       const [boundingBoxesRes, questionsRes] = await Promise.all([
         axios.get(`${API_BASE_URL}/boundingBoxes?assignment_id=${assignmentId}`),
-        axios.get(`${API_BASE_URL}/questions?assignment_id=${assignmentId}`)
+        axios.get(`${API_BASE_URL}/questions?assignment_id=${assignmentId}`),
       ]);
 
-      const boundingBoxes = boundingBoxesRes.data.bounding_boxes;
-      const rubricData = questionsRes.data.questions.rubric_data;
+      const boundingBoxes = boundingBoxesRes.data.bounding_boxes || []; // ค่าเริ่มต้นเป็น []
+      const rubricData = questionsRes.data.questions.rubric_data || { rubric_id: '', questions: [] };
 
-      // อัปเดต Zustand Store
       setBoundingBoxes(boundingBoxes);
       setRubricData(rubricData);
 
