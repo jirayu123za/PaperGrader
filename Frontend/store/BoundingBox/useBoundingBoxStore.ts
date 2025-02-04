@@ -41,22 +41,22 @@ interface BoundingBoxStore {
 }
 
 const useBoundingBoxStore = create<BoundingBoxStore>((set) => ({
-  boundingBoxes: [], // ค่าเริ่มต้น
-  rubricData: { rubric_id: '', questions: [] }, // ค่าเริ่มต้น
+  boundingBoxes: [], 
+  rubricData: { rubric_id: '', questions: [] }, 
 
   setBoundingBoxes: (boxes) => set({ boundingBoxes: boxes }),
   setRubricData: (rubricData) => set({ rubricData }),
 
   addBoundingBox: (box) =>
     set((state) => ({
-      boundingBoxes: [...state.boundingBoxes, box], // เพิ่ม bounding box ใหม่
+      boundingBoxes: [...state.boundingBoxes, box], 
     })),
-    
+
   addQuestion: (question) =>
     set((state) => ({
       rubricData: {
         ...state.rubricData,
-        questions: [...state.rubricData.questions, question], // เพิ่มคำถามใหม่
+        questions: [...state.rubricData.questions, question], 
       },
     })),
 

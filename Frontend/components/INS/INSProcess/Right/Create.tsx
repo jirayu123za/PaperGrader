@@ -19,6 +19,7 @@ interface Question {
   question_id: string;
   question_point: number;
   question_title: string;
+  bounding_box_id?: string;
 }
 
 interface CreateProps {
@@ -27,7 +28,7 @@ interface CreateProps {
 }
 
 const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
-  const { addBoundingBox, addQuestion, removeQuestion, updateQuestion, removeBoundingBox,setRubricData } = useBoundingBoxStore();
+  const { addBoundingBox, addQuestion, removeQuestion, updateQuestion, removeBoundingBox, setRubricData ,setBoundingBoxes } = useBoundingBoxStore();
   const router = useRouter();
   const { assignment_id, course_id } = router.query;
   const [isCollapsed, { toggle }] = useDisclosure(false);
@@ -67,9 +68,9 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
     const newQuestion: Question = {
       question_id: `temp-${Date.now()}`,
       question_point: 0,
-      question_title: `Question ${rubricData.questions.length + 1}`,
+      question_title: `Question ${rubricData.questions.length + 1 || 1}`,
+      bounding_box_id: newBoundingBox.bounding_box_id, // เชื่อม bounding_box_id
     };
-
     // อัปเดต Store
     addBoundingBox(newBoundingBox); // เพิ่ม Bounding Box
     addQuestion(newQuestion); // เพิ่มคำถาม
@@ -81,8 +82,13 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
   const handleSave = () => {
     if (!assignment_id) return;
 
-    const newBoundingBoxes = boundingBoxes.filter((box) => box.bounding_box_id.startsWith('temp-'));
-    const newQuestions = rubricData.questions.filter((question) => question.question_id.startsWith('temp-'));
+    const newBoundingBoxes = Array.isArray(boundingBoxes)
+      ? boundingBoxes.filter((box) => box.bounding_box_id.startsWith('temp-'))
+      : [];
+
+    const newQuestions = Array.isArray(rubricData.questions)
+      ? rubricData.questions.filter((question) => question.question_id.startsWith('temp-'))
+      : [];
 
     newBoundingBoxes.forEach((box, index) => {
       addBoundingBoxAndQuestion(
@@ -135,16 +141,14 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
 
 
   const createBoundingBox = (type: "NAME" | "STUDENTID") => {
-    const x = Math.random() * 100 + 50; // ตำแหน่ง X สุ่ม
-    const y = Math.random() * 100 + 50; // ตำแหน่ง Y สุ่ม
-
+  
     const newBoundingBox: BoundingBox = {
       bounding_box_id: `temp-${Date.now()}`,
-      bounding_box_position: `(${x},${y}),(${x + 100},${y + 50})`, // กำหนดขนาด
+      bounding_box_position: `(100,100),(300,300)`,
       bounding_box_type: type,
       bounding_box_page: currentPage,
     };
-
+    console.log('สร้าง BoundingBox:', newBoundingBox);
     addBoundingBox(newBoundingBox);
   };
 
@@ -154,7 +158,14 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
     }
   }, [rubricData, setRubricData, assignment_id]);
   
+  useEffect(() => {
+    if (!boundingBoxes || !Array.isArray(boundingBoxes)) {
+      setBoundingBoxes([]);
+    }
+  }, [boundingBoxes, setBoundingBoxes]);
   
+
+
 
   return (
     <Container className={`fixed top-0 right-0 h-full transition-all duration-300 bg-white shadow-lg ${isCollapsed ? 'w-25' : 'w-[450px]'}`}
@@ -213,11 +224,11 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
                 </Table.Thead>
                 <Table.Tbody>
                   {rubricData?.questions?.map((question, index) => (
-                    <Table.Tr key={question.question_id}>
+                    <Table.Tr key={question.question_id || index}>
                       <Table.Td>{index + 1}</Table.Td>
                       <Table.Td>
                         <TextInput
-                          value={question.question_title}
+                          value={question.question_title ||''}
                           onChange={(event) =>
                             handleChangeQuestion(question.question_id, event.currentTarget.value)
                           }
@@ -226,7 +237,7 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
                       <Table.Td style={{ textAlign: 'center' }}>
                         <NumberInput
                           hideControls
-                          value={question.question_point}
+                          value={question.question_point || 0 }
                           onChange={(value) => handleChangePoint(question.question_id, value as number)}
                           min={0}
                         />

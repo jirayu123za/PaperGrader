@@ -81,7 +81,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPa
       }
     }
   }, [form.values.selectedBoxId, boundingBoxes]);
-  
+
 
 
   const handleStageClick = (e: any) => {
@@ -93,15 +93,20 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPa
   };
 
   const getQuestionForBox = (boundingBoxId: string) => {
+    // หา Question ที่ตรงกับ boundingBoxId
     const question = rubricData?.questions?.find((q) =>
-      q.subquestions?.some((sub) => sub.bounding_box_id === boundingBoxId)
+      q.bounding_box_id === boundingBoxId
     );
-    const subquestion = question?.subquestions?.find(
-      (sub) => sub.bounding_box_id === boundingBoxId
-    );
-    return subquestion
-      ? { title: subquestion.subquestion_title, point: subquestion.subquestion_point }
-      : { title: question?.question_title || '', point: question?.question_point || 0 };
+
+    if (!question) {
+      console.warn(`No question found for boundingBoxId: ${boundingBoxId}`);
+      return { title: '', point: 0 }; // คืนค่าที่ว่างเปล่า
+    }
+
+    return {
+      title: question.question_title || '',
+      point: question.question_point || 0,
+    };
   };
 
   if (fileForm.values.loading) return <Loader />;
@@ -123,6 +128,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPa
             boundingBoxes
               .filter((box) => box.bounding_box_page === currentPage)
               .map((box) => {
+                if (!box || !box.bounding_box_position) {
+                  console.warn('Invalid bounding box:', box);
+                  return null;
+                }
                 const positions = box.bounding_box_position.match(/\d+/g);
                 if (!positions || positions.length < 4) {
                   console.warn(`Invalid bounding_box_position format: ${box.bounding_box_position}`);
@@ -132,8 +141,30 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPa
                 const [x1, y1, x2, y2] = positions.map(Number);
                 const width = x2 - x1;
                 const height = y2 - y1;
-
                 const { title, point } = getQuestionForBox(box.bounding_box_id);
+
+
+                const displayTitle =
+                  box.bounding_box_type === 'NAME'
+                    ? 'Name' // ข้อความสำหรับ Bounding Box ที่เป็น NAME
+                    : box.bounding_box_type === 'STUDENTID'
+                      ? 'Student ID' // ข้อความสำหรับ Bounding Box ที่เป็น STUDENTID
+                      : `${title}: ${point} point`; // ข้อความสำหรับ Bounding Box ที่เป็น Question
+
+                const color =
+                  box.bounding_box_type === 'NAME'
+                    ? 'rgba(0, 255, 0, 0.3)'
+                    : box.bounding_box_type === 'STUDENTID'
+                      ? 'rgba(255, 165, 0, 0.3)'
+                      : 'rgba(0, 0, 255, 0.3)';
+
+                const strokeColor =
+                  box.bounding_box_type === 'NAME'
+                    ? 'green'
+                    : box.bounding_box_type === 'STUDENTID'
+                      ? 'orange'
+                      : 'blue';
+
 
                 return (
                   <React.Fragment key={box.bounding_box_id}>
@@ -145,8 +176,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPa
                       y={y1}
                       width={width}
                       height={height}
-                      fill="rgba(0, 0, 255, 0.3)"
-                      stroke="blue"
+                      fill={color}
+                      stroke={strokeColor}
                       strokeWidth={2}
                       draggable // เปิดใช้งานการลาก
                       onClick={() => form.setFieldValue('selectedBoxId', box.bounding_box_id)}
@@ -169,7 +200,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPa
 
                     <Rect x={x1} y={y1 - 20} width={width} height={20} fill="gray" />
 
-                    <Text x={x1 + 5} y={y1 - 18} text={`${title}: ${point} point`} fontSize={12} fill="white" fontStyle="bold" />
+                    <Text x={x1 + 5} y={y1 - 18} text={displayTitle} fontSize={12} fill="white" fontStyle="bold" />
                   </React.Fragment>
                 );
               })}
