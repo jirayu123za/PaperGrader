@@ -3,13 +3,12 @@ import PDFViewer from '../../../../../components/PDFViewer';
 import CreateOutline from '../../../../../components/INS/INSProcess/Right/Create';
 import { useRouter } from 'next/router';
 import { Container, Flex, Loader, Button } from '@mantine/core';
-import { FaBars } from 'react-icons/fa';
+import { FaRegArrowAltCircleLeft } from "react-icons/fa";
 import { useForm } from '@mantine/form';
 
 export default function CreateOutlinePage() {
   const router = useRouter();
   const { assignment_id, course_id } = router.query;
-
 
   const form = useForm({
     initialValues: {
@@ -39,7 +38,7 @@ export default function CreateOutlinePage() {
       <Flex
         style={{
           marginLeft: '15%',
-          marginRight: form.values.isOutlineCollapsed ? '0%' : '30%',
+          marginRight: form.values.isOutlineCollapsed ? '5%' : '30%',
           flex: 1,
           overflow: 'auto',
           display: 'flex',
@@ -67,7 +66,7 @@ export default function CreateOutlinePage() {
           right: 0,
           top: 0,
           height: '100vh',
-          width: form.values.isOutlineCollapsed ? '3%' : '30%',
+          width: form.values.isOutlineCollapsed ? '5%' : '30%',
           padding: form.values.isOutlineCollapsed ? '0' : '1rem',
           overflowY: 'auto',
           borderLeft: '1px solid #dee2e6',
@@ -77,22 +76,28 @@ export default function CreateOutlinePage() {
       >
         <Button
           style={{
-            position: 'absolute',
+            position: 'absolute', // ใช้ absolute เพื่อตรึงปุ่ม
             top: '10px',
-            right: form.values.isOutlineCollapsed ? '5px' : 'calc(30% - 30px)',
+            right: form.values.isOutlineCollapsed ? '20px' : '50px', // ตำแหน่งคงที่ไม่ให้กระทบ PDFViewer
             width: '40px',
             height: '40px',
             borderRadius: '50%',
             backgroundColor: '#6665AC',
-            color: form.values.isOutlineCollapsed ? '#FFF' : '#6665AC',
+            color: form.values.isOutlineCollapsed ? '#FFF': '#6665AC',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
             zIndex: 1000,
+            transition: 'right 0.3s ease', // เพิ่มการลื่นไหลของการเปลี่ยนตำแหน่ง
           }}
           onClick={() => form.setFieldValue('isOutlineCollapsed', !form.values.isOutlineCollapsed)}
         >
-          <FaBars />
+          <FaRegArrowAltCircleLeft
+            style={{
+              transform: form.values.isOutlineCollapsed ? 'rotate(0)' : 'rotate(180deg)', // หมุนไอคอนตามสถานะ
+              transition: 'transform 0.3s ease', // เพิ่ม transition ให้กับการหมุน
+            }}
+          />
         </Button>
 
         {!form.values.isOutlineCollapsed && (
