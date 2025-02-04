@@ -218,6 +218,35 @@ export default function LeftProcess() {
             )}
           </Transition>
         </Button>
+
+        <Button
+          variant="subtle"
+          leftSection={ioMdSettings}
+          fullWidth
+          styles={{
+            root: {
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: isCollapsed ? 'center' : 'flex-start',
+              // padding: isCollapsed ? '8px 20px' : '',
+              ...clientStyles,
+              color: '#F9F9F9',
+            },
+          }}
+        >
+          <Transition
+            mounted={!isCollapsed}
+            transition="fade"
+            duration={300}
+            timingFunction="ease"
+          >
+            {(styles) => (
+              <Text size="sm" fw={500} style={{ ...styles, color: '#F9F9F9' }}>
+                Settings
+              </Text>
+            )}
+          </Transition>
+        </Button>
       </Stack>    
 
       {/* Account Section */}
