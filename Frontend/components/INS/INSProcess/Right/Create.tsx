@@ -169,16 +169,17 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
               <Tabs.Tab value="grading">Grading</Tabs.Tab>
             </Tabs.List>
           </Tabs>
-          <Flex gap="sm" justify="center" mb="md">
-            <Button onClick={() => createBoundingBox("NAME")} variant="outline" color="blue">
-              Name
-            </Button>
-            <Button onClick={() => createBoundingBox("STUDENTID")} variant="outline" color="green">
-              Student ID
-            </Button>
-          </Flex>
+
           {form.values.activeTab === 'outline' ? (
             <>
+              <Flex gap="sm" justify="center" mb="md">
+                <Button onClick={() => createBoundingBox("NAME")} variant="outline" color="blue">
+                  Name
+                </Button>
+                <Button onClick={() => createBoundingBox("STUDENTID")} variant="outline" color="green">
+                  Student ID
+                </Button>
+              </Flex>
               <Box pt={16} pl={16} pr={16}>
                 <Text size="sm" color="dimmed">Total Questions: {rubricData?.questions?.length || 0}</Text>
               </Box>
