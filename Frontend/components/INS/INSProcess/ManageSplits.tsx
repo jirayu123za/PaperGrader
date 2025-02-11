@@ -140,7 +140,6 @@ export const ManageSplits = () => {
                                         </Flex>
                                     ) : (
                                         <Autocomplete
-                                            style={{ option: { Highlight } }}
                                             placeholder="Select student or enter name"
                                             // data={studentsList.map((student) => ({
                                             //     value: student.personal_data_id,
