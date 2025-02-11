@@ -21,7 +21,7 @@ type User struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
-	Submissions []Submission   `gorm:"foreignKey:UserID"`
+	Submissions []Submission   `gorm:"foreignKey:SubmittedBy"`
 	Uploads     []Upload       `gorm:"foreignKey:UserID"`
 }
 
