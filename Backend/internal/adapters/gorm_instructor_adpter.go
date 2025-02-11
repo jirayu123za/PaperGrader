@@ -118,7 +118,6 @@ func (r *GormInstructorRepository) FindAssignmentNameTemplate(CourseID uuid.UUID
 	return assignmentFile.AssignmentFileName, nil
 }
 
-// !
 func (r *GormInstructorRepository) FindFileFormSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, err error) {
 	var submissionFiles []models.Submission
 	if err := r.db.Raw(`
@@ -150,6 +149,28 @@ func (r *GormInstructorRepository) FindSubmissionFileName(AssignmentID uuid.UUID
 		return "", err
 	}
 	return submissionFile.SubmissionFileName, nil
+}
+
+func (r *GormInstructorRepository) FindStudentListForSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForSubmissionResponse, error) {
+	var studentList []response.StudentListForSubmissionResponse
+	if err := r.db.Table("personal_data").
+		Select(`
+		personal_data.personal_data_id,
+		CONCAT(personal_data.first_name, ' ', personal_data.last_name) AS full_name,
+		personal_data.email,
+		personal_data.student_code,
+		CASE WHEN submissions.submission_id IS NOT NULL THEN TRUE ELSE FALSE END AS has_submission
+	`).
+		Joins("JOIN enrollment_lists ON enrollment_lists.personal_data_id = personal_data.personal_data_id").
+		Joins("LEFT JOIN submissions ON submissions.belongs_to = personal_data.personal_data_id AND submissions.assignment_id = ?", AssignmentID).
+		Where("enrollment_lists.course_id = ?", CourseID).
+		Where("personal_data.role_type = ?", "STUDENT").
+		Where("personal_data.deleted_at IS NULL").
+		Where("enrollment_lists.deleted_at IS NULL").
+		Scan(&studentList).Error; err != nil {
+		return nil, err
+	}
+	return studentList, nil
 }
 
 func (r *GormInstructorRepository) AddAssignmentFile(file *models.AssignmentFile) error {
