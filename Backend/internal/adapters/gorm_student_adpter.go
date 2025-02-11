@@ -1,6 +1,7 @@
 package adapters
 
 import (
+	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/models"
 
 	"github.com/google/uuid"
@@ -16,6 +17,20 @@ func NewGormStudentRepository(db *gorm.DB) *GormStudentRepository {
 	return &GormStudentRepository{
 		db: db,
 	}
+}
+
+func (r *GormStudentRepository) FindPersonalDataIDByUserID(UserID uuid.UUID) (uuid.UUID, error) {
+	var result response.PersonalDataIDResponse
+	if err := r.db.
+		Table("personal_data").
+		Select("personal_data.personal_data_id").
+		Joins("JOIN users ON users.email = personal_data.email").
+		Where("users.user_id = ?", UserID).
+		Where("personal_data.deleted_at IS NULL").
+		First(&result).Error; err != nil {
+		return uuid.Nil, err
+	}
+	return result.PersonalDataID, nil
 }
 
 func (r *GormStudentRepository) AddSubmissionFile(submission *models.Submission) error {
