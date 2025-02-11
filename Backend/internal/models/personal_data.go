@@ -15,6 +15,7 @@ type PersonalData struct {
 	Email          string           `gorm:"type:varchar(50); not null" json:"email"`
 	RoleType       string           `gorm:"type:varchar(50); not null" json:"role_type"`
 	EnrollmentList []EnrollmentList `gorm:"foreignKey:PersonalDataID"`
+	Submission     []Submission     `gorm:"foreignKey:BelongsTo"`
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 	DeletedAt      gorm.DeletedAt `gorm:"index"`
