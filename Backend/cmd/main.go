@@ -161,10 +161,12 @@ func main() {
 	// test api get template file name
 	apiGroup.Get("/instructor/template/name", instructorHandler.GetAssignmentNameTemplate)
 	apiGroup.Get("/instructor/template/url", instructorHandler.GetPDFTemplateWithURL)
-	//!
+
+	// Submission
 	apiGroup.Get("/instructor/submissions", instructorHandler.GetFileFormSubmission)
 	apiGroup.Get("/instructor/submissionsList", instructorHandler.GetSubmissionListByCourseIDAndAssignmentID)
 	apiGroup.Get("/instructor/submission/fileURL", instructorHandler.GetSubmissionFileURL)
+	apiGroup.Get("/instructor/submission/studentList", instructorHandler.GetStudentListForSubmission)
 
 	// Bounding Box
 	apiGroup.Post("/instructor/boundingBoxes", instructorHandler.CreateBoundingBoxesAndQuestions)
