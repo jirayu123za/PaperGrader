@@ -138,3 +138,7 @@ type QuestionsTemplateResponse struct {
 	RubricID   uuid.UUID              `json:"rubric_id"`
 	RubricData map[string]interface{} `json:"rubric_data"`
 }
+
+type PersonalDataIDResponse struct {
+	PersonalDataID uuid.UUID `json:"personal_data_id"`
+}
