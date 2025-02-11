@@ -642,7 +642,7 @@ func (r *GormInstructorRepository) FindSubmissionListByCourseIDAndAssignmentID(C
 	if err := r.db.
 		Table("submissions").
 		Select("submissions.submission_id, submissions.submitted_at, personal_data.personal_data_id, personal_data.student_code, CONCAT(personal_data.first_name, ' ', personal_data.last_name) AS full_name, personal_data.email, sections.section_name").
-		Joins("JOIN users ON submissions.user_id = users.user_id").
+		Joins("JOIN users ON submissions.submitted_by = users.user_id").
 		Joins("JOIN personal_data ON users.email = personal_data.email").
 		Joins("JOIN enrollment_lists ON personal_data.personal_data_id = enrollment_lists.personal_data_id").
 		Joins("JOIN sections ON enrollment_lists.section_id = sections.section_id").
