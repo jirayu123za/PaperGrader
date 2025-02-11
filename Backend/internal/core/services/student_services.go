@@ -9,13 +9,14 @@ import (
 
 // Primary port
 type StudentService interface {
+	GetPersonalDataIDByUserID(UserID uuid.UUID) (uuid.UUID, error)
+	CreateSubmissionFile(submission *models.Submission) error
+
 	GetCoursesAndAssignments(UserID uuid.UUID) ([]map[string]interface{}, error)
 	GetAssignmentNamesWithCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, err error)
 	GetPDFFileNamesAndURLs(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, fileURLs []string, err error)
-	CreateSubmissionFile(submission *models.Submission) error
 	GetCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error)
 	GetAssignmentsByCourseID(CourseID uuid.UUID) (map[string]interface{}, error)
-
 	GetCourseByCourseID(CourseID uuid.UUID) (map[string]interface{}, error)
 }
 
@@ -30,6 +31,10 @@ func NewStudentService(repo repositories.StudentRepository, minioRepo repositori
 		repo:      repo,
 		minioRepo: minioRepo,
 	}
+}
+
+func (s *StudentServiceImpl) GetPersonalDataIDByUserID(UserID uuid.UUID) (uuid.UUID, error) {
+	return s.repo.FindPersonalDataIDByUserID(UserID)
 }
 
 func (s *StudentServiceImpl) CreateSubmissionFile(submission *models.Submission) error {
