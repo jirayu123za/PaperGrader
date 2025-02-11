@@ -51,6 +51,14 @@ func (h *HttpStudentHandler) CreateSubmissionFile(c *fiber.Ctx) error {
 		})
 	}
 
+	personalDataID, err := h.services.GetPersonalDataIDByUserID(userID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to find student in course",
+			"error":   err.Error(),
+		})
+	}
+
 	file, err := c.FormFile("file")
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -62,9 +70,9 @@ func (h *HttpStudentHandler) CreateSubmissionFile(c *fiber.Ctx) error {
 	versionedFileName := fmt.Sprintf("%s_%s", uuid.New().String(), file.Filename)
 
 	submission := &models.Submission{
-		UserID:       userID,
-		AssignmentID: assignmentID,
-		//SubmissionFileName: file.Filename,
+		SubmittedBy:        userID,
+		BelongsTo:          personalDataID,
+		AssignmentID:       assignmentID,
 		SubmissionFileName: versionedFileName,
 		SubmittedAt:        time.Now(),
 	}
