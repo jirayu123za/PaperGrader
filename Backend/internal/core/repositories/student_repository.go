@@ -7,6 +7,8 @@ import (
 )
 
 type StudentRepository interface {
+	// Find Personal ID by User ID
+	FindPersonalDataIDByUserID(UserID uuid.UUID) (uuid.UUID, error)
 	// submit assignment file to minio
 	AddSubmissionFile(submission *models.Submission) error
 
