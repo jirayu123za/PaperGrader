@@ -9,6 +9,7 @@ interface BoundingBox {
   bounding_box_position: string;
   bounding_box_type: string;
   bounding_box_page: number;
+  bounding_box_image: string;
 }
 
 interface SubQuestion {
@@ -49,7 +50,13 @@ export const useFetchBoundingBoxesAndQuestions = (assignmentId: string) => {
       ]);
 
       const boundingBoxes = boundingBoxesRes.data.bounding_boxes || []; // ค่าเริ่มต้นเป็น []
-      const rubricData = questionsRes.data.questions.rubric_data || { rubric_id: '', questions: [] };
+      const rubricData = questionsRes.data.questions?.rubric_data || { rubric_id: `temp-${Date.now()}`, questions: [] };
+
+
+
+      if (!rubricData.rubric_id) {
+        rubricData.rubric_id = `temp-${Date.now()}`; // สร้าง rubric_id ชั่วคราว
+      }
 
       setBoundingBoxes(boundingBoxes);
       setRubricData(rubricData);
@@ -60,27 +67,57 @@ export const useFetchBoundingBoxesAndQuestions = (assignmentId: string) => {
   });
 };
 
-// 📌 Mutation: เพิ่ม BoundingBox + Question (PUT)
+// 📌 Mutation: เพิ่ม BoundingBox + Question (POST)
 export const useAddBoundingBoxAndQuestion = (assignmentId: string) => {
   const queryClient = useQueryClient();
   const { addBoundingBox, addQuestion } = useBoundingBoxStore();
 
   return useMutation<
-    { boundingBox: BoundingBox; question: Question },
+    void,
     Error,
-    { boundingBox: Omit<BoundingBox, 'bounding_box_id'>; question: Omit<Question, 'question_id'> }
+    { boundingBoxes: Omit<BoundingBox, "bounding_box_id">[]; questionsData?: { questions: Question[] } }
   >({
     mutationFn: async (data) => {
-      const response = await axios.put(`${API_BASE_URL}/boundingBoxes?assignment_id=${assignmentId}`, data);
-      return response.data;
+      console.log("📤 กำลังส่งข้อมูลไปยัง API...");
+      console.log("🟢 assignment_id ที่ถูกส่งไป:", assignmentId);
+
+      const payload = {
+        bounding_boxes: data.boundingBoxes.map(box => ({
+          bounding_box_position: box.bounding_box_position,
+          bounding_box_type: box.bounding_box_type,
+          bounding_box_page: box.bounding_box_page,
+          bounding_box_image: box.bounding_box_image || "", // ตรวจสอบว่ามีค่าหรือไม่
+        })),
+        questions_data: data.questionsData && data.questionsData.questions.length > 0 
+          ? { 
+              questions: data.questionsData.questions.map(question => ({
+                question_id: question.question_id || `temp-${Date.now()}`, // ถ้าไม่มีให้สร้าง temp id
+                question_point: question.question_point || 0,
+                question_title: question.question_title || "Untitled Question",
+                subquestions: question.subquestions?.map(subq => ({
+                  subquestion_id: subq.subquestion_id || `temp-${Date.now()}`,
+                  subquestion_point: subq.subquestion_point || 0,
+                  subquestion_title: subq.subquestion_title || "Untitled Subquestion"
+                })) || []
+              }))
+            }
+          : null, // ถ้าไม่มี questions ส่งเป็น `null`
+      };
+
+      const response = await axios.post(`${API_BASE_URL}/boundingBoxes?assignment_id=${assignmentId}`, payload);
+
+      console.log("✅ Response จาก API:", response.data);
     },
-    onSuccess: (data) => {
-      addBoundingBox(data.boundingBox);
-      addQuestion(data.question);
-      queryClient.invalidateQueries({ queryKey: ['boundingBoxesAndQuestions', assignmentId] });
+    onSuccess: () => {
+      console.log("✅ Success! Data ถูกบันทึก");
+      queryClient.invalidateQueries({ queryKey: ["boundingBoxesAndQuestions", assignmentId] });
+    },
+    onError: (error) => {
+      console.error("❌ Error ในการบันทึกข้อมูล:", error);
     },
   });
 };
+
 
 // 📌 Mutation: อัปเดต BoundingBox + Question (PUT)
 export const useUpdateBoundingBoxAndQuestion = (assignmentId: string) => {

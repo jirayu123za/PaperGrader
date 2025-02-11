@@ -13,6 +13,7 @@ interface BoundingBox {
   bounding_box_position: string;
   bounding_box_type: string;
   bounding_box_page: number;
+  bounding_box_image: string;
 }
 
 interface Question {
@@ -20,6 +21,14 @@ interface Question {
   question_point: number;
   question_title: string;
   bounding_box_id?: string;
+  subquestions?: SubQuestion[]; 
+}
+
+interface SubQuestion {
+  bounding_box_id: string;
+  subquestion_id: string;
+  subquestion_point: number;
+  subquestion_title: string;
 }
 
 interface CreateProps {
@@ -28,7 +37,7 @@ interface CreateProps {
 }
 
 const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
-  const { addBoundingBox, addQuestion, removeQuestion, updateQuestion, removeBoundingBox, setRubricData ,setBoundingBoxes } = useBoundingBoxStore();
+  const { addBoundingBox, addQuestion, removeQuestion, updateQuestion, removeBoundingBox, setRubricData, setBoundingBoxes } = useBoundingBoxStore();
   const router = useRouter();
   const { assignment_id, course_id } = router.query;
   const [isCollapsed, { toggle }] = useDisclosure(false);
@@ -60,17 +69,20 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
 
     const newBoundingBox: BoundingBox = {
       bounding_box_id: `temp-${Date.now()}`,
-      bounding_box_position: `(50,50),(150,150)`,
+      bounding_box_position: `(100,100),(300,300)`,
       bounding_box_type: 'question',
       bounding_box_page: currentPage,
+      bounding_box_image: '',
     };
 
     const newQuestion: Question = {
-      question_id: `temp-${Date.now()}`,
+      question_id: `temp-${Date.now()}`, // เพิ่ม question_id
       question_point: 0,
       question_title: `Question ${rubricData.questions.length + 1 || 1}`,
-      bounding_box_id: newBoundingBox.bounding_box_id, // เชื่อม bounding_box_id
+      bounding_box_id: newBoundingBox.bounding_box_id,
+      subquestions: [], // เพิ่ม subquestions
     };
+
     // อัปเดต Store
     addBoundingBox(newBoundingBox); // เพิ่ม Bounding Box
     addQuestion(newQuestion); // เพิ่มคำถาม
@@ -78,9 +90,21 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
     console.log('✅ Added Bounding Box and Question:', { newBoundingBox, newQuestion });
   };
 
+  useEffect(() => {
+    console.log("📌 Bounding Boxes ใน Store:", boundingBoxes);
+  }, [boundingBoxes]);
+
+  useEffect(() => {
+    console.log("🟢 rubricData อัปเดต:", rubricData);
+  }, [rubricData]);
 
   const handleSave = () => {
     if (!assignment_id) return;
+
+    if (!rubricData.rubric_id) {
+      console.error("❌ rubric_id is missing! Cannot save data.");
+      return;
+    }
 
     const newBoundingBoxes = Array.isArray(boundingBoxes)
       ? boundingBoxes.filter((box) => box.bounding_box_id.startsWith('temp-'))
@@ -90,28 +114,28 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
       ? rubricData.questions.filter((question) => question.question_id.startsWith('temp-'))
       : [];
 
+    console.log("📌 Bounding Boxes ที่จะส่งไป:", newBoundingBoxes);
+    console.log("📌 Questions ที่จะส่งไป:", newQuestions);
+
     newBoundingBoxes.forEach((box, index) => {
-      addBoundingBoxAndQuestion(
-        {
-          boundingBox: {
-            bounding_box_position: box.bounding_box_position,
-            bounding_box_type: box.bounding_box_type,
-            bounding_box_page: box.bounding_box_page,
-          },
-          question: {
-            question_point: newQuestions[index]?.question_point || 0,
-            question_title: newQuestions[index]?.question_title || `Question ${index + 1}`,
-          },
-        },
-        {
-          onSuccess: () => {
-            console.log('✅ Data Saved to Backend');
-          },
-          onError: (error) => {
-            console.error('❌ Failed to Save Data', error);
-          },
-        }
-      );
+      addBoundingBoxAndQuestion({
+        boundingBoxes: newBoundingBoxes.map((box) => ({
+          bounding_box_position: box.bounding_box_position,
+          bounding_box_type: box.bounding_box_type,
+          bounding_box_page: box.bounding_box_page,
+          bounding_box_image: box.bounding_box_image,
+        })),
+        questionsData: newQuestions.length > 0
+          ? {
+              questions: newQuestions.map((question) => ({
+                question_id: question.question_id || `temp-${Date.now()}`,
+                question_point: question.question_point || 0,
+                question_title: question.question_title || `Question ${question.question_id}`,
+                subquestions: question.subquestions || [],
+              })),
+            }
+          : undefined, // ถ้าไม่มี questions ให้ส่ง undefined
+      });
     });
   };
 
@@ -141,12 +165,14 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
 
 
   const createBoundingBox = (type: "NAME" | "STUDENTID") => {
-  
+
     const newBoundingBox: BoundingBox = {
       bounding_box_id: `temp-${Date.now()}`,
       bounding_box_position: `(100,100),(300,300)`,
       bounding_box_type: type,
       bounding_box_page: currentPage,
+      bounding_box_image: '',
+      
     };
     console.log('สร้าง BoundingBox:', newBoundingBox);
     addBoundingBox(newBoundingBox);
@@ -157,13 +183,13 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
       setRubricData({ rubric_id: assignment_id as string, questions: [] });
     }
   }, [rubricData, setRubricData, assignment_id]);
-  
+
   useEffect(() => {
     if (!boundingBoxes || !Array.isArray(boundingBoxes)) {
       setBoundingBoxes([]);
     }
   }, [boundingBoxes, setBoundingBoxes]);
-  
+
 
 
 
@@ -224,21 +250,21 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
                 </Table.Thead>
                 <Table.Tbody>
                   {rubricData?.questions?.map((question, index) => (
-                    <Table.Tr key={question.question_id || index}>
+                    <Table.Tr key={question?.question_id || index}>
                       <Table.Td>{index + 1}</Table.Td>
                       <Table.Td>
                         <TextInput
-                          value={question.question_title ||''}
+                          value={question?.question_title || ''}
                           onChange={(event) =>
-                            handleChangeQuestion(question.question_id, event.currentTarget.value)
+                            handleChangeQuestion(question?.question_id, event.currentTarget.value)
                           }
                         />
                       </Table.Td>
                       <Table.Td style={{ textAlign: 'center' }}>
                         <NumberInput
                           hideControls
-                          value={question.question_point || 0 }
-                          onChange={(value) => handleChangePoint(question.question_id, value as number)}
+                          value={question?.question_point || 0}
+                          onChange={(value) => handleChangePoint(question?.question_id, value as number)}
                           min={0}
                         />
                       </Table.Td>
@@ -247,7 +273,7 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
                           size="xs"
                           color="red"
                           variant="outline"
-                          onClick={() => handleRemoveQuestion(question.question_id)}
+                          onClick={() => handleRemoveQuestion(question?.question_id)}
                         >
                           X
                         </Button>

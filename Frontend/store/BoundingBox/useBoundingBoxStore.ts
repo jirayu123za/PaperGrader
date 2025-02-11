@@ -5,6 +5,7 @@ interface BoundingBox {
   bounding_box_position: string;
   bounding_box_type: string;
   bounding_box_page: number;
+  bounding_box_image: string;
 }
 
 interface SubQuestion {

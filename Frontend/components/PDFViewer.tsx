@@ -126,7 +126,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPa
           {boundingBoxes &&
             Array.isArray(boundingBoxes) &&
             boundingBoxes
-              .filter((box) => box.bounding_box_page === currentPage)
+              .filter((box) => box && box.bounding_box_page === currentPage)
               .map((box) => {
                 if (!box || !box.bounding_box_position) {
                   console.warn('Invalid bounding box:', box);
