@@ -1,7 +1,10 @@
-import { Anchor, Badge, Box, Flex, Select, Table, TextInput, Image, Group, Text, Pagination } from '@mantine/core';
+import React, { useState } from 'react';
+import { Anchor, Badge, Box, Flex, Select, Table, TextInput, Image, Group, Text, Pagination, Combobox, useCombobox, InputBase, Input, Autocomplete, AutocompleteProps, Loader } from '@mantine/core';
 import { usePagination } from '@mantine/hooks';
 import { IconSearch, IconEdit } from '@tabler/icons-react';
-import React, { useState } from 'react';
+import { useRouter } from 'next/router';
+import { useFetchStudentsList } from '../../../hooks/ManageScan/useFetchStudentsList';
+import { useStudentsListStore } from '../../../store/ManageScan/useStudentsListStore';
 
 interface SubmissionData {
     id: string;
@@ -24,6 +27,11 @@ const mockSubmissions: SubmissionData[] = Array.from({ length: 35 }, (_, i) => (
 }));
 
 export const ManageSplits = () => {
+    const router = useRouter();
+    const { assignment_id, course_id } = router.query;
+    const { isLoading, error } = useFetchStudentsList(course_id as string, assignment_id as string);
+    const { studentsList } = useStudentsListStore();
+
     const [submissions, setSubmissions] = useState(mockSubmissions);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterStatus, setFilterStatus] = useState<'All' | 'Auto-Assigned' | 'Unassigned'>('All');
@@ -52,6 +60,30 @@ export const ManageSplits = () => {
             prev.map((submission) => (submission.id === id ? { ...submission, studentName: name } : submission))
         );
     };
+
+    const autocompleteData = [
+        {
+          group: 'Unassigned to submission',
+          items: studentsList
+            .filter((student) => !student.has_submission)
+            .map((student) => ({
+              value: student.personal_data_id,
+              label: student.full_name,
+              student,
+            })),
+        },
+        {
+          group: 'Already assigned to submission',
+          items: studentsList
+            .filter((student) => student.has_submission)
+            .map((student) => ({
+              value: student.personal_data_id,
+              label: student.full_name,
+              student,
+              disabled: true,
+            })),
+        },
+    ];
 
     return (
         <Box maw='100%'>
@@ -107,22 +139,35 @@ export const ManageSplits = () => {
                                             <IconEdit size={14} style={{ marginLeft: '8px', cursor: 'pointer' }} />
                                         </Flex>
                                     ) : (
-                                        <TextInput
-                                            placeholder="Enter student name"
-                                            value={submission.studentName || ''}
-                                            onChange={(e) => handleStudentNameChange(submission.id, e.currentTarget.value)}
-                                        />
+                                        <Autocomplete
+                                            style={{ option: { Highlight } }}
+                                            placeholder="Select student or enter name"
+                                            // data={studentsList.map((student) => ({
+                                            //     value: student.personal_data_id,
+                                            //     label: student.full_name,
+                                            //   }))}
+                                            styles={{
+                                                option: {
+                                                  minHeight: '40px',
+                                                },
+                                            }}
+                                            data={autocompleteData}
+                                            limit={10}
+                                            maxDropdownHeight={200}
+                                            comboboxProps={{ transitionProps: { transition: 'pop', duration: 200 } }}
+                                        />                                        
                                     )}
                                 </Table.Td>
                                 <Table.Td>
                                     {submission.sectionsSubmitted !== '-' ? (
                                         <Text>{submission.sectionsSubmitted}</Text>
                                     ) : (
-                                        <Select
-                                            placeholder="Select section"
-                                            data={['801', '802', '803']}
-                                            onChange={(value) => handleStudentNameChange(submission.id, value || '')}
-                                        />
+                                        // <Select
+                                        //     placeholder="Select section"
+                                        //     data={['801', '802', '803']}
+                                        //     onChange={(value) => handleStudentNameChange(submission.id, value || '')}
+                                        // />
+                                        <></>
                                     )}
                                 </Table.Td>
                                 <Table.Td>
