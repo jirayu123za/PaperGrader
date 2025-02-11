@@ -192,7 +192,7 @@ func (r *GormInstructorRepository) FindRosterByCourseID(CourseID uuid.UUID) ([]m
 				WHERE enrollment_lists.course_id = ?
 				GROUP BY enrollment_lists.personal_data_id
 				) AS grouped_sections ON grouped_sections.personal_data_id = personal_data.personal_data_id`, CourseID).
-		Joins("LEFT JOIN submissions ON enrollment_lists.personal_data_id = submissions.user_id AND submissions.assignment_id IN (SELECT assignment_id FROM assignments WHERE assignments.course_id = ?)", CourseID).
+		Joins("LEFT JOIN submissions ON enrollment_lists.personal_data_id = submissions.submitted_by AND submissions.assignment_id IN (SELECT assignment_id FROM assignments WHERE assignments.course_id = ?)", CourseID).
 		Where("enrollment_lists.course_id = ? AND enrollment_lists.deleted_at IS NULL", CourseID).
 		Group("personal_data.personal_data_id, personal_data.first_name, personal_data.last_name, personal_data.email, personal_data.student_code, personal_data.role_type, grouped_sections.section_names").
 		Order(`CASE WHEN grouped_sections.section_names LIKE '001%' THEN 0 ELSE 1 END, grouped_sections.section_names ASC`).
