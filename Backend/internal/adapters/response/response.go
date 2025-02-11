@@ -142,3 +142,11 @@ type QuestionsTemplateResponse struct {
 type PersonalDataIDResponse struct {
 	PersonalDataID uuid.UUID `json:"personal_data_id"`
 }
+
+type StudentListForSubmissionResponse struct {
+	PersonalDataID uuid.UUID `json:"personal_data_id"`
+	FullName       string    `json:"full_name"`
+	Email          string    `json:"email"`
+	StudentCode    string    `json:"student_code"`
+	HasSubmission  bool      `json:"has_submission"`
+}
