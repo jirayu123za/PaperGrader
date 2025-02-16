@@ -811,7 +811,6 @@ func (r *GormInstructorRepository) ModifyBoundingBoxes(AssignmentID uuid.UUID, b
 					"bounding_box_position": boundingBoxes[i].BoundingBoxPosition,
 					"bounding_box_type":     boundingBoxes[i].BoundingBoxType,
 					"bounding_box_page":     boundingBoxes[i].BoundingBoxPage,
-					"bounding_box_image":    boundingBoxes[i].BoundingBoxImage,
 				}).Error; err != nil {
 				return err
 			}

@@ -1201,7 +1201,6 @@ func (h *HttpInstructorHandler) CreateBoundingBoxesAndQuestions(c *fiber.Ctx) er
 			BoundingBoxPosition string `json:"bounding_box_position"`
 			BoundingBoxType     string `json:"bounding_box_type"`
 			BoundingBoxPage     uint   `json:"bounding_box_page"`
-			BoundingBoxImage    string `json:"bounding_box_image"`
 		} `json:"bounding_boxes"`
 		QuestionsData map[string]interface{} `json:"questions_data"`
 	}
@@ -1222,16 +1221,6 @@ func (h *HttpInstructorHandler) CreateBoundingBoxesAndQuestions(c *fiber.Ctx) er
 			BoundingBoxPage:     reqBox.BoundingBoxPage,
 			BoundingBoxID:       uuid.New(),
 		}
-
-		if imageData, err := utils.DecodeBase64(reqBox.BoundingBoxImage); err == nil {
-			boundingBox.BoundingBoxImage = imageData
-		} else {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"message": "Invalid Base64 encoding",
-				"error":   err.Error(),
-			})
-		}
-
 		boundingBoxes = append(boundingBoxes, boundingBox)
 	}
 
@@ -1240,10 +1229,6 @@ func (h *HttpInstructorHandler) CreateBoundingBoxesAndQuestions(c *fiber.Ctx) er
 			"message": "Failed to create bounding boxes and questions",
 			"error":   err.Error(),
 		})
-	}
-
-	for i := range boundingBoxes {
-		boundingBoxes[i].BoundingBoxImage = []byte(utils.EncodeBase64(boundingBoxes[i].BoundingBoxImage))
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
@@ -1292,7 +1277,6 @@ func (h *HttpInstructorHandler) UpdateBoundingBoxes(c *fiber.Ctx) error {
 			BoundingBoxPosition string `json:"bounding_box_position"`
 			BoundingBoxType     string `json:"bounding_box_type"`
 			BoundingBoxPage     uint   `json:"bounding_box_page"`
-			BoundingBoxImage    string `json:"bounding_box_image"`
 		} `json:"bounding_boxes"`
 	}
 
@@ -1311,16 +1295,6 @@ func (h *HttpInstructorHandler) UpdateBoundingBoxes(c *fiber.Ctx) error {
 			BoundingBoxType:     models.BoundingBoxType(reqBox.BoundingBoxType),
 			BoundingBoxPage:     reqBox.BoundingBoxPage,
 		}
-
-		if imageData, err := utils.DecodeBase64(reqBox.BoundingBoxImage); err == nil {
-			boundingBox.BoundingBoxImage = imageData
-		} else {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"message": "Invalid Base64 encoding",
-				"error":   err.Error(),
-			})
-		}
-
 		boundingBoxes = append(boundingBoxes, boundingBox)
 	}
 
