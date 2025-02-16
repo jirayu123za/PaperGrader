@@ -77,12 +77,12 @@ const INSManageScans: React.FC = () => {
         </Alert>
 
         {/* Descriptions */}
-        <Text size="sm" mb="xs" mt={16}>
+        {/* <Text size="sm" mb="xs" mt={16}>
           Upload scans in PDF format. A single file can contain multiple student submissions (it is
           more efficient to scan in batches). Multiple files can be uploaded at once.
-        </Text>
+        </Text> */}
 
-        <Text size="sm">
+        {/* <Text size="sm">
           PaperGrader attempts to split each uploaded scan into submissions. The proposed split depends
           on the length of the{' '}
           <Anchor
@@ -94,7 +94,7 @@ const INSManageScans: React.FC = () => {
           . For scans that are not automatically split, click <b>Show</b> to review the proposed
           submissions (you can change split points and re-order pages), then click <b>Create
           Submissions</b>.
-        </Text>
+        </Text> */}
       </Box>
 
       {/* Right Section */}
