@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Anchor, Badge, Box, Flex, Select, Table, TextInput, Image, Text, Pagination, Autocomplete, ActionIcon } from '@mantine/core';
+import { Anchor, Badge, Box, Flex, Select, Table, TextInput, Image, Text, Pagination, Autocomplete, ActionIcon, Stack } from '@mantine/core';
 import { usePagination } from '@mantine/hooks';
 import { IconSearch, IconEdit } from '@tabler/icons-react';
 import { RiDeleteBinLine } from "react-icons/ri";
@@ -18,7 +18,7 @@ interface SubmissionData {
 }
 
 const mockSubmissions: SubmissionData[] = Array.from({ length: 35 }, (_, i) => ({
-    id: (i + 1).toString(),
+    id: (660612000 + i).toString(),
     imageUrl: 'https://placehold.co/400x150',
     studentName: i % 3 === 0 ? `User ${i + 1}` : null,
     sectionsSubmitted: i % 4 === 0 ? `${801 + (i % 3)}` : '-',
@@ -135,12 +135,15 @@ export const ManageSplits = () => {
                                 </Table.Td>
                                 <Table.Td>
                                     {submission.studentName ? (
-                                        <Flex align="center">
-                                            <Text>{submission.studentName}</Text>
-                                            <ActionIcon variant="transparent" ml={8} aria-label="Edit Student Name" className='cursor-pointer'>
-                                                <IconEdit size={16}/>
-                                            </ActionIcon>
-                                        </Flex>
+                                        <Stack gap={1}>
+                                            <Flex align="center">
+                                                <Text>{submission.studentName}</Text>
+                                                <ActionIcon variant="transparent" ml={8} aria-label="Edit Student Name" className='cursor-pointer'>
+                                                    <IconEdit size={16}/>
+                                                </ActionIcon>
+                                            </Flex>
+                                            <Text size='sm' c="dimmed">{submission.id}</Text>
+                                        </Stack>
                                     ) : (
                                         <Autocomplete
                                             placeholder="Select student or enter name"
