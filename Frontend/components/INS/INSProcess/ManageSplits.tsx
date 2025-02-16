@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Anchor, Badge, Box, Flex, Select, Table, TextInput, Image, Group, Text, Pagination, Combobox, useCombobox, InputBase, Input, Autocomplete, AutocompleteProps, Loader } from '@mantine/core';
+import { Anchor, Badge, Box, Flex, Select, Table, TextInput, Image, Text, Pagination, Autocomplete, ActionIcon } from '@mantine/core';
 import { usePagination } from '@mantine/hooks';
 import { IconSearch, IconEdit } from '@tabler/icons-react';
+import { RiDeleteBinLine } from "react-icons/ri";
 import { useRouter } from 'next/router';
 import { useFetchStudentsList } from '../../../hooks/ManageScan/useFetchStudentsList';
 import { useStudentsListStore } from '../../../store/ManageScan/useStudentsListStore';
@@ -122,8 +123,8 @@ export const ManageSplits = () => {
                             <Table.Th w="20%">Student</Table.Th>
                             <Table.Th w="15%">Sections Submitted</Table.Th>
                             <Table.Th w="15%">Submission Time</Table.Th>
-                            <Table.Th w="10%">Graded</Table.Th>
-                            <Table.Th w="10%">Details</Table.Th>
+                            <Table.Th w="10%" ta='center'>Graded</Table.Th>
+                            <Table.Th w="10%" ta='center'>Delete Submission</Table.Th>
                         </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
@@ -136,7 +137,9 @@ export const ManageSplits = () => {
                                     {submission.studentName ? (
                                         <Flex align="center">
                                             <Text>{submission.studentName}</Text>
-                                            <IconEdit size={14} style={{ marginLeft: '8px', cursor: 'pointer' }} />
+                                            <ActionIcon variant="transparent" ml={8} aria-label="Edit Student Name" className='cursor-pointer'>
+                                                <IconEdit size={16}/>
+                                            </ActionIcon>
                                         </Flex>
                                     ) : (
                                         <Autocomplete
@@ -172,13 +175,15 @@ export const ManageSplits = () => {
                                 <Table.Td>
                                     <Text>{submission.submissionTime}</Text>
                                 </Table.Td>
-                                <Table.Td>
-                                    <Badge color={submission.graded > 0 ? 'orange' : 'red'}>
+                                <Table.Td ta='center'>
+                                    <Badge w={52} color={submission.graded > 0 ? 'orange' : 'red'}>
                                         {submission.graded}%
                                     </Badge>
                                 </Table.Td>
-                                <Table.Td>
-                                    <Anchor href="#">Show Details</Anchor>
+                                <Table.Td ta='center'>
+                                    <ActionIcon variant="transparent" aria-label="Delete Submission">
+                                        <RiDeleteBinLine size={20} />
+                                    </ActionIcon>
                                 </Table.Td>
                             </Table.Tr>
                         ))}
