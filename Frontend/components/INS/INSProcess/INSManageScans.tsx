@@ -1,12 +1,14 @@
 import React, { useRef } from 'react';
 import { useRouter } from 'next/router';
-import { Text, Alert, Anchor, FileInput, Box, Flex } from '@mantine/core';
+import { Text, Alert, Anchor, FileInput, Box, Flex, Progress } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
+import { useUploadSubmissionFile } from '../../../hooks/ManageScan/useUploadSubmissionFile';
 
 const INSManageScans: React.FC = () => {
   const router = useRouter();
   const { assignment_id, course_id } = router.query;
   const fileInputRef = useRef<HTMLButtonElement>(null);
+  const { mutate: uploadSubmissionFile, isPending } = useUploadSubmissionFile();
 
   const handleBoxClick = () => {
     fileInputRef.current?.click();
@@ -24,7 +26,12 @@ const INSManageScans: React.FC = () => {
   };
 
   const handleFileChange = (files: File[]) => {
-    files.forEach(file => console.log(file));
+    // files.forEach(file => console.log(file));
+    uploadSubmissionFile({
+      assignment_id: assignment_id as string,
+      course_id: course_id as string,
+      files: files,
+    });
   };
 
   return (
@@ -115,17 +122,28 @@ const INSManageScans: React.FC = () => {
         onDrop={handleDrop}
         onDragOver={handleDragOver}
       >
-        <Text size="sm" c="dimmed">
-          Drop files on this area, or click and select files.
-        </Text>
-        <FileInput 
-          placeholder="Select PDF Files" 
-          display='none'
-          multiple
-          ref={fileInputRef}
-          onChange={(files) => handleFileChange(files)}
-          accept=".pdf" 
-        />
+        {isPending ? (
+          <>
+            <Progress value={100} animated color="blue" size="md" w="80%" />
+            <Text size="sm" c="dimmed" mt="xs">
+              Uploading files...
+            </Text>
+          </>
+        ) : (
+          <>
+            <Text size="sm" c="dimmed">
+              Drop files on this area, or click and select files.
+            </Text>
+            <FileInput 
+              placeholder="Select PDF Files" 
+              display='none'
+              multiple
+              ref={fileInputRef}
+              onChange={(files) => handleFileChange(files)}
+              accept=".pdf" 
+            />          
+          </>
+        )}
       </Box>
     </Flex>
   );
