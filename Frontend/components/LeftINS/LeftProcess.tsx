@@ -8,11 +8,11 @@ import { Button, Container, Divider, Flex, Stack, Title, Transition, Text, Image
 import { useDisclosure } from '@mantine/hooks';
 import { useRouter } from 'next/router';
 import { useFetchAssignmentLeft } from '../../hooks/SideBar/useFetchAssignmentLeft';
-import { useAssignmentLeftProcessStore } from '../../store/useLeftProcessStore';
+import { useAssignmentLeftProcessStore, useLeftProcessStore } from '../../store/useLeftProcessStore';
+
 
 export default function LeftProcess() {
   const [isCollapsed, { toggle }] = useDisclosure(false);
-  const [activeOption, setActiveOption] = useState<string | null>(null);
   const router = useRouter();
   const faArrowLeft = <FaArrowLeft size={18} />;
   const giClockwiseRotation = <GiClockwiseRotation size={18} />;
@@ -21,8 +21,16 @@ export default function LeftProcess() {
   const { course_id, assignment_id } = router.query;
   const { isLoading, isSuccess } = useFetchAssignmentLeft(course_id as string, assignment_id as string);
   const { assignmentLeftProcess } = useAssignmentLeftProcessStore();
+  const { activeOption, setActiveOption } = useLeftProcessStore();
 
-  // รายการตัวเลือกเมนู (นำ Create Rubric ออก)
+  useEffect(() => {
+    const currentPath = router.asPath; 
+    const activeKey = options.find((opt) => currentPath.startsWith(opt.href))?.key || '';
+    setActiveOption(activeKey);
+  }, [router.asPath]); 
+  
+
+
   const options = [
     { key: 'editOutline', label: 'Edit Outline', href: `/courses/${course_id}/process/${assignment_id}/CreateOutline` },
     { key: 'manageScans', label: 'Manage Scans', href: `/courses/${course_id}/process/${assignment_id}/ManageScans` },
@@ -52,7 +60,7 @@ export default function LeftProcess() {
         {!isCollapsed && (
           <Image
             src="/Image/logo-ppgd.png"
-            alt="logo" w={200} h={60} p={2} 
+            alt="logo" w={200} h={60} p={2}
             style={{ cursor: 'pointer' }}
             onClick={() => router.push('/INSCourseOverview')}
           />
@@ -65,7 +73,7 @@ export default function LeftProcess() {
           styles={() => ({
             root: {
               border: 'none',
-              padding: isCollapsed ? "0 0 0 8px" : "0", 
+              padding: isCollapsed ? "0 0 0 8px" : "0",
               height: 'auto',
             },
           })}
@@ -73,7 +81,7 @@ export default function LeftProcess() {
           <FaRegArrowAltCircleRight
             size={24}
             style={{
-              color: isCollapsed ? '#000000': '#000000',
+              color: isCollapsed ? '#000000' : '#000000',
             }}
             className={`transition-transform duration-300 ${isCollapsed ? '' : 'transform rotate-180'}`}
           />
@@ -115,7 +123,7 @@ export default function LeftProcess() {
               </Title>
             )}
           </Transition>
-        </Button>        
+        </Button>
 
         {/* Assignment Name */}
         <Transition mounted={!isCollapsed} transition="fade" duration={300} timingFunction="ease">
@@ -123,7 +131,7 @@ export default function LeftProcess() {
             <Title
               size="h4"
               className="pl-2 mb-4"
-              lineClamp={1} 
+              lineClamp={1}
               style={{ ...styles, color: '#F9F9F9' }}
             >
               {assignmentLeftProcess.assignment_name}
@@ -133,36 +141,36 @@ export default function LeftProcess() {
 
         {/* เมนูตัวเลือก */}
         {options.map((option) => (
-          <Button
-            key={option.key}
-            variant="subtle"
-            fullWidth
-            onClick={() => {
-              handleOptionClick(option.key);
-              router.push(option.href);
-            }}
-            styles={{
-              root: {
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: isCollapsed ? "center" : "flex-start",
-                ...clientStyles,
-                color: activeOption === option.key ? '#424242' : '#FFFFFF',
-                backgroundColor: activeOption === option.key ? '#f8f9fa' : 'transparent',
-                borderRadius: '8px',
-                transition: 'background-color 0.3s, color 0.3s',
-              },
-            }}
-          >
-            <Transition mounted={!isCollapsed} transition="fade" duration={300} timingFunction="ease">
-              {(styles) => (
-                <Text size="sm" fw={500} style={{ ...styles }}>
-                  {option.label}
-                </Text>
-              )}
-            </Transition>
-          </Button>
-        ))}
+  <Button
+    key={option.key}
+    variant="subtle"
+    fullWidth
+    onClick={() => {
+      setActiveOption(option.key);
+      router.push(option.href);
+    }}
+    styles={{
+      root: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: isCollapsed ? "center" : "flex-start",
+        color: activeOption === option.key ? '#424242' : '#FFFFFF',
+        backgroundColor: activeOption === option.key ? '#f8f9fa' : 'transparent',
+        borderRadius: '8px',
+        transition: 'background-color 0.3s, color 0.3s',
+        padding: '10px 16px',
+        '&:hover': {
+          backgroundColor: '#4e4d9f',
+          color: '#ffffff',
+        },
+      },
+    }}
+  >
+    <Transition mounted={!isCollapsed} transition="fade" duration={300} timingFunction="ease">
+      {(styles) => <Text size="sm" fw={500} style={{ ...styles }}>{option.label}</Text>}
+    </Transition>
+  </Button>
+))}
 
         <Divider
           style={{
@@ -173,23 +181,23 @@ export default function LeftProcess() {
         />
 
         {/* Footer */}
-        <Button
-          variant="subtle"
-          leftSection={giClockwiseRotation}
-          fullWidth
+        <Button variant="subtle" leftSection={<GiClockwiseRotation size={18} />} fullWidth
           styles={{
             root: {
               display: 'flex',
               alignItems: 'center',
               justifyContent: isCollapsed ? 'center' : 'flex-start',
-              ...clientStyles,
               color: '#F9F9F9',
+              padding: '10px 16px',
+              '&:hover': {
+                backgroundColor: '#e0e0e0',
+                color: '#000000',
+              },
             },
-          }}
-        >
+          }}>
           <Transition mounted={!isCollapsed} transition="fade" duration={300} timingFunction="ease">
             {(styles) => (
-              <Text size="sm" fw={500} style={{ ...styles, color: '#F9F9F9' }}>
+              <Text size="sm" fw={500} style={{ ...styles }}>
                 Regrade Requests
               </Text>
             )}
@@ -247,7 +255,7 @@ export default function LeftProcess() {
             )}
           </Transition>
         </Button>
-      </Stack>    
+      </Stack>
 
       {/* Account Section */}
       <Stack pb={0.75}>

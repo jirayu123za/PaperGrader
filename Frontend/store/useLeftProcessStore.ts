@@ -19,3 +19,16 @@ export const useAssignmentLeftProcessStore = create<AssignmentLeftProcessStore>(
     },
     setAssignmentLeftProcess: (assignmentLeftProcess) => set({ assignmentLeftProcess }),
 }));
+
+
+
+
+interface LeftProcessStore {
+    activeOption: string | null; 
+    setActiveOption: (key: string | null) => void; 
+  }
+
+export const useLeftProcessStore = create<LeftProcessStore>((set) => ({
+  activeOption: null,
+  setActiveOption: (option) => set({ activeOption: option }),
+}));
