@@ -75,7 +75,12 @@ export const useAddBoundingBoxAndQuestion = (assignmentId: string) => {
   return useMutation<
     void,
     Error,
-    { boundingBoxes: Omit<BoundingBox, "bounding_box_id">[]; questionsData?: { questions: Question[] } }
+    {
+      boundingBoxes: Omit<BoundingBox, "bounding_box_id">[];
+      questionsData?: {
+        questions: Omit<Question, "question_id">[]
+      }
+    }
   >({
     mutationFn: async (data) => {
       console.log("📤 กำลังส่งข้อมูลไปยัง API...");
@@ -86,23 +91,19 @@ export const useAddBoundingBoxAndQuestion = (assignmentId: string) => {
           bounding_box_position: box.bounding_box_position,
           bounding_box_type: box.bounding_box_type,
           bounding_box_page: box.bounding_box_page,
-          bounding_box_image: box.bounding_box_image || "", // ตรวจสอบว่ามีค่าหรือไม่
+          bounding_box_image: box.bounding_box_image || "", // ✅ ตรวจสอบว่ามี image หรือไม่
         })),
-        questions_data: data.questionsData && data.questionsData.questions.length > 0 
-          ? { 
-              questions: data.questionsData.questions.map(question => ({
-                question_id: question.question_id || `temp-${Date.now()}`, // ถ้าไม่มีให้สร้าง temp id
-                question_point: question.question_point || 0,
-                question_title: question.question_title || "Untitled Question",
-                subquestions: question.subquestions?.map(subq => ({
-                  subquestion_id: subq.subquestion_id || `temp-${Date.now()}`,
-                  subquestion_point: subq.subquestion_point || 0,
-                  subquestion_title: subq.subquestion_title || "Untitled Subquestion"
-                })) || []
-              }))
-            }
-          : null, // ถ้าไม่มี questions ส่งเป็น `null`
+        questions_data: data.questionsData && data.questionsData.questions.length > 0
+          ? {
+            questions: data.questionsData.questions.map(question => ({
+              question_point: question.question_point,
+              question_title: question.question_title,
+            }))
+          }
+          : undefined, // ✅ ถ้าไม่มี questions ให้ส่ง undefined
       };
+
+      console.log("📦 Payload ที่จะส่งไป:", JSON.stringify(payload, null, 2));
 
       const response = await axios.post(`${API_BASE_URL}/boundingBoxes?assignment_id=${assignmentId}`, payload);
 
