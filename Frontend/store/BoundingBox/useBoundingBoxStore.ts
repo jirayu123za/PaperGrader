@@ -61,12 +61,15 @@ const useBoundingBoxStore = create<BoundingBoxStore>((set) => ({
       },
     })),
 
-  updateBoundingBox: (id, updatedBox) =>
-    set((state) => ({
-      boundingBoxes: state.boundingBoxes.map((box) =>
-        box.bounding_box_id === id ? { ...box, ...updatedBox } : box
-      ),
-    })),
+    updateBoundingBox: (id, updatedBox) =>
+      set((state) => ({
+        boundingBoxes: state.boundingBoxes.map((box) =>
+          box.bounding_box_id === id
+            ? { ...box, ...updatedBox, bounding_box_position: updatedBox.bounding_box_position || box.bounding_box_position }
+            : box
+        ),
+      })),
+    
 
   updateQuestion: (id, updatedQuestion) =>
     set((state) => ({

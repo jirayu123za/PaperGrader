@@ -26,6 +26,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPa
   const rectRefs = useRef<{ [key: string]: any }>({});
   const renderTaskRef = useRef<any>(null);
   const { updateBoundingBox } = useBoundingBoxStore();
+  
 
   const form = useForm({
     initialValues: {
@@ -112,6 +113,24 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPa
   if (fileForm.values.loading) return <Loader />;
   if (!fileForm.values.pdfUrl) return <div>No PDF available</div>;
 
+  const parseBoundingBoxPosition = (position: string) => {
+    const positions = position.match(/-?\d+(\.\d+)?/g); // ✅ รองรับค่าติดลบและทศนิยม
+    if (!positions || positions.length < 4) {
+      console.warn(`⚠️ bounding_box_position format ผิดพลาด: ${position}`);
+      return { x: 0, y: 0, width: 50, height: 50 };
+    }
+  
+    const [x1, y1, x2, y2] = positions.map(Number);
+  
+    return {
+      x: Math.round(x1),
+      y: Math.round(y1),
+      width: Math.round(x2 - x1),
+      height: Math.round(y2 - y1),
+    };
+  };
+
+  
   return (
     <Container style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'auto', border: '1px solid #ccc' }}>
       <canvas ref={canvasRef} style={{ display: 'block' }} />
@@ -182,24 +201,29 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPa
                       draggable // เปิดใช้งานการลาก
                       onClick={() => form.setFieldValue('selectedBoxId', box.bounding_box_id)}
                       onDragEnd={(e) => {
-                        // อัปเดตตำแหน่งของ bounding box ใน store
-                        const newX1 = e.target.x();
-                        const newY1 = e.target.y();
-                        const newX2 = newX1 + width;
-                        const newY2 = newY1 + height;
-
-                        // ค้นหาและอัปเดต bounding box
+                        const node = e.target;
+                        const scale = canvasRef.current?.width ? canvasRef.current.width / (canvasRef.current.offsetWidth || 1) : 1; // คำนวณ scale factor
+                      
+                        const newX1 = Math.round(node.x() * scale);
+                        const newY1 = Math.round(node.y() * scale);
+                        const newX2 = Math.round((node.x() + width) * scale);
+                        const newY2 = Math.round((node.y() + height) * scale);
+                      
                         const updatedBoundingBox = {
                           ...box,
                           bounding_box_position: `(${newX1},${newY1}),(${newX2},${newY2})`,
                         };
-                        updateBoundingBox(box.bounding_box_id, updatedBoundingBox); // ใช้ฟังก์ชันใน store
+                      
+                        console.log("✅ Updated Bounding Box Position:", updatedBoundingBox);
+                      
+                        updateBoundingBox(box.bounding_box_id, updatedBoundingBox);
+                        transformerRef.current?.getLayer()?.batchDraw();
                       }}
+                      
                     />
 
-
-                    <Rect x={x1} y={y1 - 20} width={width} height={20} fill="gray" />
-
+                      
+                    <Rect x={x1} y={y1 - 25} width={width} height={22} fill="gray" opacity={0.7} />
                     <Text x={x1 + 5} y={y1 - 18} text={displayTitle} fontSize={12} fill="white" fontStyle="bold" />
                   </React.Fragment>
                 );
