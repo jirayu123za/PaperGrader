@@ -49,13 +49,13 @@ export const useFetchBoundingBoxesAndQuestions = (assignmentId: string) => {
         axios.get(`${API_BASE_URL}/questions?assignment_id=${assignmentId}`),
       ]);
 
-      const boundingBoxes = boundingBoxesRes.data.bounding_boxes || []; // ค่าเริ่มต้นเป็น []
+      const boundingBoxes = boundingBoxesRes.data.bounding_boxes || [];
       const rubricData = questionsRes.data.questions?.rubric_data || { rubric_id: `temp-${Date.now()}`, questions: [] };
 
 
 
       if (!rubricData.rubric_id) {
-        rubricData.rubric_id = `temp-${Date.now()}`; // สร้าง rubric_id ชั่วคราว
+        rubricData.rubric_id = `temp-${Date.now()}`; 
       }
 
       setBoundingBoxes(boundingBoxes);
@@ -91,7 +91,7 @@ export const useAddBoundingBoxAndQuestion = (assignmentId: string) => {
           bounding_box_position: box.bounding_box_position,
           bounding_box_type: box.bounding_box_type,
           bounding_box_page: box.bounding_box_page,
-          bounding_box_image: box.bounding_box_image || "", // ✅ ตรวจสอบว่ามี image หรือไม่
+          bounding_box_image: box.bounding_box_image || "", 
         })),
         questions_data: data.questionsData && data.questionsData.questions.length > 0
           ? {
@@ -100,7 +100,7 @@ export const useAddBoundingBoxAndQuestion = (assignmentId: string) => {
               question_title: question.question_title,
             }))
           }
-          : undefined, // ✅ ถ้าไม่มี questions ให้ส่ง undefined
+          : undefined, 
       };
 
       console.log("📦 Payload ที่จะส่งไป:", JSON.stringify(payload, null, 2));
@@ -110,11 +110,12 @@ export const useAddBoundingBoxAndQuestion = (assignmentId: string) => {
       console.log("✅ Response จาก API:", response.data);
     },
     onSuccess: () => {
-      console.log("✅ Success! Data ถูกบันทึก");
+      console.log(" Success! Data ถูกบันทึก");
       queryClient.invalidateQueries({ queryKey: ["boundingBoxesAndQuestions", assignmentId] });
+      
     },
     onError: (error) => {
-      console.error("❌ Error ในการบันทึกข้อมูล:", error);
+      console.error(" Error ในการบันทึกข้อมูล:", error);
     },
   });
 };
