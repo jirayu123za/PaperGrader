@@ -27,6 +27,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPa
   const renderTaskRef = useRef<any>(null);
   const { updateBoundingBox } = useBoundingBoxStore();
   
+  
 
   const form = useForm({
     initialValues: {
@@ -130,6 +131,26 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPa
     };
   };
 
+
+  const normalizeBoundingBoxPosition = (position: string) => {
+    const positions = position.match(/-?\d+(\.\d+)?/g);
+    if (!positions || positions.length < 4) return { x: 0, y: 0, width: 50, height: 50 };
+
+    let [x1, y1, x2, y2] = positions.map(Number);
+
+    // ตรวจสอบว่าค่าพิกัดสลับกันหรือไม่
+    if (x1 > x2) [x1, x2] = [x2, x1];
+    if (y1 > y2) [y1, y2] = [y2, y1];
+
+    return {
+        x: x1,
+        y: y1,
+        width: x2 - x1,
+        height: y2 - y1
+    };
+};
+
+
   
   return (
     <Container style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'auto', border: '1px solid #ccc' }}>
@@ -156,13 +177,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPa
                   console.warn(`Invalid bounding_box_position format: ${box.bounding_box_position}`);
                   return null;
                 }
-
+                
                 const [x1, y1, x2, y2] = positions.map(Number);
-                const width = x2 - x1;
-                const height = y2 - y1;
                 const { title, point } = getQuestionForBox(box.bounding_box_id);
-
-
+                const { x, y, width, height } = normalizeBoundingBoxPosition(box.bounding_box_position);
                 const displayTitle =
                   box.bounding_box_type === 'NAME'
                     ? 'Name' // ข้อความสำหรับ Bounding Box ที่เป็น NAME
