@@ -217,7 +217,7 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
           <Tabs value={form.values.activeTab} onChange={(value) => form.setFieldValue('activeTab', value || 'outline')}>
             <Tabs.List>
               <Tabs.Tab value="outline">Create Outline</Tabs.Tab>
-              <Tabs.Tab value="grading">Grading</Tabs.Tab>
+              <Tabs.Tab value="grading">Create Rubrics</Tabs.Tab>
             </Tabs.List>
           </Tabs>
 
