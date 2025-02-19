@@ -42,6 +42,8 @@ type InstructorService interface {
 
 	GetInstructorsNameByCourseID(courseID uuid.UUID) ([]response.InstructorListResponse, error)
 
+	CreateSubmissionFiles(submission []models.Submission) error
+	GetSubmissionFiles(AssignmentID uuid.UUID) ([]response.SubmissionFilesResponse, error)
 	GetSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
 	GetSubmissionFileURL(CourseID uuid.UUID, AssignmentID uuid.UUID, SubmissionID uuid.UUID) (submissionFileURL string, err error)
 	GetStudentListForSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForSubmissionResponse, error)
@@ -265,6 +267,21 @@ func (s *InstructorServiceImpl) GetInstructorsNameByCourseID(courseID uuid.UUID)
 		return nil, err
 	}
 	return instructors, nil
+}
+
+func (s *InstructorServiceImpl) CreateSubmissionFiles(submission []models.Submission) error {
+	if err := s.repo.AddSubmissionFiles(submission); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *InstructorServiceImpl) GetSubmissionFiles(AssignmentID uuid.UUID) ([]response.SubmissionFilesResponse, error) {
+	submissionFiles, err := s.repo.FindSubmissionFiles(AssignmentID)
+	if err != nil {
+		return nil, err
+	}
+	return submissionFiles, nil
 }
 
 func (s *InstructorServiceImpl) GetSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error) {
