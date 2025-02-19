@@ -1081,6 +1081,113 @@ func (h *HttpInstructorHandler) GetInstructorsNameByCourseID(c *fiber.Ctx) error
 	})
 }
 
+func (h *HttpInstructorHandler) CreateSubmissionFiles(c *fiber.Ctx) error {
+	userID, err := utils.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid user_id in JWT",
+			"error":   err.Error(),
+		})
+	}
+
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Failed to get multipart form",
+			"error":   err.Error(),
+		})
+	}
+
+	files := form.File["files"]
+	if len(files) == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "No files uploaded",
+		})
+	}
+
+	var submissions []models.Submission
+	for _, file := range files {
+		versionedFileName := fmt.Sprintf("%s_%s", uuid.New().String(), file.Filename)
+
+		submissions = append(submissions, models.Submission{
+			SubmittedBy:        userID,
+			BelongsTo:          uuid.NullUUID{UUID: uuid.Nil, Valid: false},
+			AssignmentID:       assignmentID,
+			SubmissionFileName: versionedFileName,
+			SubmittedAt:        time.Now(),
+		})
+
+		fileContent, err := file.Open()
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to open file",
+				"error":   err.Error(),
+			})
+		}
+		defer fileContent.Close()
+
+		if err := h.minioServices.CreateFileToMinIO(fileContent, courseID.String(), assignmentID.String(), versionedFileName); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to upload file",
+				"error":   err.Error(),
+			})
+		}
+	}
+
+	if err := h.services.CreateSubmissionFiles(submissions); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to create submission files",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Create submissions files is successfully",
+	})
+}
+
+func (h *HttpInstructorHandler) GetSubmissionFiles(c *fiber.Ctx) error {
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	submissions, err := h.services.GetSubmissionFiles(assignmentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get submission files",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":     "Submission files are retrieved",
+		"submissions": submissions,
+	})
+}
+
 func (h *HttpInstructorHandler) GetSubmissionListByCourseIDAndAssignmentID(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
