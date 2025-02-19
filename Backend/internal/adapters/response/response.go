@@ -150,3 +150,9 @@ type StudentListForSubmissionResponse struct {
 	StudentCode    string    `json:"student_code"`
 	HasSubmission  bool      `json:"has_submission"`
 }
+
+type SubmissionFilesResponse struct {
+	SubmissionID       uuid.UUID `json:"submission_id"`
+	SubmissionFileName string    `json:"submission_file_name"`
+	SubmittedAt        time.Time `json:"submitted_at"`
+}
