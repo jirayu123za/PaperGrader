@@ -657,6 +657,27 @@ func (r *GormInstructorRepository) FindInstructorsNameByCourseID(courseID uuid.U
 	return instructors, nil
 }
 
+func (r *GormInstructorRepository) AddSubmissionFiles(submissionFiles []models.Submission) error {
+	if err := r.db.Create(&submissionFiles).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *GormInstructorRepository) FindSubmissionFiles(AssignmentID uuid.UUID) ([]response.SubmissionFilesResponse, error) {
+	var submissionFiles []response.SubmissionFilesResponse
+
+	if err := r.db.
+		Table("submissions").
+		Select("submission_id, submission_file_name, submitted_at").
+		Where("assignment_id = ?", AssignmentID).
+		Where("deleted_at IS NULL").
+		Find(&submissionFiles).Error; err != nil {
+		return nil, err
+	}
+	return submissionFiles, nil
+}
+
 func (r *GormInstructorRepository) FindSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error) {
 	var submissionList []response.SubmissionResponse
 
