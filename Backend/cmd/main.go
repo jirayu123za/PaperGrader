@@ -163,6 +163,8 @@ func main() {
 	apiGroup.Get("/instructor/template/url", instructorHandler.GetPDFTemplateWithURL)
 
 	// Submission
+	apiGroup.Post("/instructor/submission/files", instructorHandler.CreateSubmissionFiles)
+	apiGroup.Get("/instructor/submission/files", instructorHandler.GetSubmissionFiles)
 	apiGroup.Get("/instructor/submissions", instructorHandler.GetFileFormSubmission)
 	apiGroup.Get("/instructor/submissionsList", instructorHandler.GetSubmissionListByCourseIDAndAssignmentID)
 	apiGroup.Get("/instructor/submission/fileURL", instructorHandler.GetSubmissionFileURL)
