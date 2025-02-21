@@ -666,9 +666,9 @@ func (r *GormInstructorRepository) AddSubmissionFiles(submissionFiles []models.S
 }
 
 func (r *GormInstructorRepository) AddSubmissionAFile(submissionFile []models.Submission) error {
-	// if err := r.db.Create(submissionFile).Error; err != nil {
-	// 	return err
-	// }
+	if err := r.db.Create(submissionFile).Error; err != nil {
+		return err
+	}
 	log.Println(submissionFile)
 	return nil
 }
