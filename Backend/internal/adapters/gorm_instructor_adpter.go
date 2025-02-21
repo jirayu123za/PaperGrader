@@ -697,6 +697,18 @@ func (r *GormInstructorRepository) FindSubmissionListByCourseIDAndAssignmentID(C
 	return submissionList, nil
 }
 
+func (r *GormInstructorRepository) FindAssignmentTemplateName(AssignmentID uuid.UUID) (string, error) {
+	var assignmentFile models.AssignmentFile
+
+	if err := r.db.Table("assignment_files").
+		Select("assignment_file_name").
+		Where("assignment_id = ? AND is_template = true AND deleted_at IS NULL", AssignmentID).
+		First(&assignmentFile).Error; err != nil {
+		return "", err
+	}
+	return assignmentFile.AssignmentFileName, nil
+}
+
 func (r *GormInstructorRepository) AddBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		var rubric *models.Rubric
