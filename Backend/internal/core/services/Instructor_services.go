@@ -43,6 +43,7 @@ type InstructorService interface {
 	GetInstructorsNameByCourseID(courseID uuid.UUID) ([]response.InstructorListResponse, error)
 
 	CreateSubmissionFiles(submission []models.Submission) error
+	CreateSubmissionAFile(submissionFile []models.Submission) error
 	GetSubmissionFiles(AssignmentID uuid.UUID) ([]response.SubmissionFilesResponse, error)
 	GetSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
 	GetSubmissionFileURL(CourseID uuid.UUID, AssignmentID uuid.UUID, SubmissionID uuid.UUID) (submissionFileURL string, err error)
@@ -272,6 +273,13 @@ func (s *InstructorServiceImpl) GetInstructorsNameByCourseID(courseID uuid.UUID)
 
 func (s *InstructorServiceImpl) CreateSubmissionFiles(submission []models.Submission) error {
 	if err := s.repo.AddSubmissionFiles(submission); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *InstructorServiceImpl) CreateSubmissionAFile(submissionFile []models.Submission) error {
+	if err := s.repo.AddSubmissionAFile(submissionFile); err != nil {
 		return err
 	}
 	return nil
