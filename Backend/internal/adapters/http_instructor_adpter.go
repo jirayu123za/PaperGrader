@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"os"
 	"paperGrader/internal/core/services"
 	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -332,39 +335,6 @@ func (h *HttpInstructorHandler) UpdateAssignmentAndAssignmentSection(c *fiber.Ct
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Assignment and sections were updated successfully",
-	})
-}
-
-func (h *HttpInstructorHandler) GetAssignmentNameTemplate(c *fiber.Ctx) error {
-	courseIDParam := c.Query("course_id")
-	courseID, err := uuid.Parse(courseIDParam)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid course_id",
-			"error":   err.Error(),
-		})
-	}
-
-	assignmentIDParam := c.Query("assignment_id")
-	assignmentID, err := uuid.Parse(assignmentIDParam)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid assignment_id",
-			"error":   err.Error(),
-		})
-	}
-
-	templateFile, err := h.services.GetAssignmentNameTemplate(courseID, assignmentID)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to get assignment template",
-			"error":   err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message":  "Assignment template is retrieved",
-		"template": templateFile,
 	})
 }
 
@@ -1290,6 +1260,183 @@ func (h *HttpInstructorHandler) GetStudentListForSubmission(c *fiber.Ctx) error 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":  "Student list is retrieved",
 		"students": students,
+	})
+}
+
+func (h *HttpInstructorHandler) GetAssignmentTemplateCount(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	pageCount, err := h.services.GetAssignmentTemplateCount(courseID, assignmentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get assignment template count",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Assignment template count is retrieved",
+		"page":    pageCount,
+	})
+}
+
+func (h *HttpInstructorHandler) CreateSubmissionAFile(c *fiber.Ctx) error {
+	userID, err := utils.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid user_id in JWT",
+			"error":   err.Error(),
+		})
+	}
+
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	pagePerSubmission, err := h.services.GetAssignmentTemplateCount(courseID, assignmentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get assignment template count",
+			"error":   err.Error(),
+		})
+	}
+
+	fileHeader, err := c.FormFile("file")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Failed to get file",
+			"error":   err.Error(),
+		})
+	}
+
+	srcFile, err := fileHeader.Open()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to open file",
+			"error":   err.Error(),
+		})
+	}
+	defer srcFile.Close()
+
+	tempDir := os.TempDir()
+	tempFilePath := filepath.Join(tempDir, fmt.Sprintf("%s.pdf", uuid.New().String()))
+
+	tempFile, err := os.Create(tempFilePath)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to create temp file",
+			"error":   err.Error(),
+		})
+	}
+	defer os.Remove(tempFilePath)
+	defer tempFile.Close()
+
+	_, err = io.Copy(tempFile, srcFile)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to copy file content",
+			"error":   err.Error(),
+		})
+	}
+
+	submissionPageCount, err := utils.GetPDFPageCount(tempFilePath)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get PDF page count",
+			"error":   err.Error(),
+		})
+	}
+
+	numSubmissions := submissionPageCount / pagePerSubmission
+	if submissionPageCount%pagePerSubmission > 0 {
+		numSubmissions++
+	}
+
+	var submissions []models.Submission
+	for i := 0; i < numSubmissions; i++ {
+		startPage := (i * pagePerSubmission) + 1
+		endPage := startPage + pagePerSubmission - 1
+		if endPage > submissionPageCount {
+			endPage = submissionPageCount
+		}
+
+		fileNameWithoutExt := strings.TrimSuffix(fileHeader.Filename, filepath.Ext(fileHeader.Filename))
+		submissionFileName := fmt.Sprintf("%s_submission_%d%s", fileNameWithoutExt, i+1, filepath.Ext(fileHeader.Filename))
+		outputDir := filepath.Join(os.TempDir(), submissionFileName)
+		os.MkdirAll(outputDir, os.ModePerm)
+		// fmt.Println("Extracting Pages:", startPage, "-", endPage, "to", outputDir)
+
+		err := utils.ExtractPDFPages(tempFilePath, outputDir, startPage, endPage)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to split PDF",
+				"error":   err.Error(),
+			})
+		}
+
+		submissions = append(submissions, models.Submission{
+			SubmittedBy:        userID,
+			AssignmentID:       assignmentID,
+			SubmissionFileName: submissionFileName,
+			SubmittedAt:        time.Now(),
+		})
+
+		// splitFile, err := os.Open(outputPath)
+		// if err != nil {
+		// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		// 		"message": "Failed to open split file",
+		// 		"error":   err.Error(),
+		// 	})
+		// }
+		// defer splitFile.Close()
+
+		// if err := h.minioServices.CreateFileToMinIO(splitFile, courseID.String(), assignmentID.String(), submissionFileName); err != nil {
+		// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		// 		"message": "Failed to upload split file",
+		// 		"error":   err.Error(),
+		// 	})
+		// }
+	}
+
+	if err := h.services.CreateSubmissionAFile(submissions); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to create submission files",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Submission files created successfully",
 	})
 }
 
