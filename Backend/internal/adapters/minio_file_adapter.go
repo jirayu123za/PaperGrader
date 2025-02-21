@@ -1,7 +1,9 @@
 package adapters
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"net/url"
@@ -11,6 +13,7 @@ import (
 	"time"
 
 	"github.com/minio/minio-go/v7"
+	"github.com/pdfcpu/pdfcpu/pkg/api"
 )
 
 type MinIORepository struct {
@@ -118,4 +121,28 @@ func (r *MinIORepository) FindFilesAndNames(CourseID, AssignmentID, fileNames []
 	}
 
 	return fileURLs, fileNamesResult, nil
+}
+
+func (r *MinIORepository) FindTemplatePageCountFromMinIO(CourseID, AssignmentID, fileName string) (int, error) {
+	ctx := context.Background()
+	objectName := filepath.Join(CourseID, AssignmentID, fileName)
+	objectName = strings.ReplaceAll(objectName, "\\", "/")
+
+	object, err := r.client.GetObject(ctx, r.bucketName, objectName, minio.GetObjectOptions{})
+	if err != nil {
+		return 0, fmt.Errorf("failed to retrieve file from MinIO: %v", err)
+	}
+	defer object.Close()
+
+	fileBuffer := new(bytes.Buffer)
+	if _, err := io.Copy(fileBuffer, object); err != nil {
+		return 0, fmt.Errorf("failed to read file buffer: %v", err)
+	}
+
+	pageCount, err := api.PageCount(bytes.NewReader(fileBuffer.Bytes()), nil)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count PDF pages: %v", err)
+	}
+
+	return pageCount, nil
 }
