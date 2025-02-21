@@ -22,7 +22,11 @@ func main() {
 	port := os.Getenv("PORT")
 
 	// Init fiber server
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		StreamRequestBody: true,
+		BodyLimit:         50 * 1024 * 1024,
+	})
+
 	app.Use(logger.New(logger.Config{
 		Format: "${time} [${ip}] ${status} ${latency} ${method} ${path}\n",
 	}))
