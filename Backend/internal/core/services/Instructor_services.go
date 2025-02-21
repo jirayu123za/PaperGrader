@@ -47,6 +47,7 @@ type InstructorService interface {
 	GetSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
 	GetSubmissionFileURL(CourseID uuid.UUID, AssignmentID uuid.UUID, SubmissionID uuid.UUID) (submissionFileURL string, err error)
 	GetStudentListForSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForSubmissionResponse, error)
+	GetAssignmentTemplateCount(CourseID uuid.UUID, AssignmentID uuid.UUID) (int, error)
 
 	CreateBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error
 	GetBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error)
@@ -311,6 +312,20 @@ func (s *InstructorServiceImpl) GetStudentListForSubmission(CourseID uuid.UUID, 
 		return nil, err
 	}
 	return studentList, nil
+}
+
+func (s *InstructorServiceImpl) GetAssignmentTemplateCount(CourseID uuid.UUID, AssignmentID uuid.UUID) (int, error) {
+	templateName, err := s.repo.FindAssignmentTemplateName(AssignmentID)
+	if err != nil {
+		return 0, err
+	}
+
+	templateCount, err := s.minioRepo.FindTemplatePageCountFromMinIO(CourseID.String(), AssignmentID.String(), templateName)
+	if err != nil {
+		return 0, err
+	}
+
+	return templateCount, nil
 }
 
 func (s *InstructorServiceImpl) CreateBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error {
