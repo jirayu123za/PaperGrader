@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/models"
 	"strings"
@@ -669,7 +668,6 @@ func (r *GormInstructorRepository) AddSubmissionAFile(submissionFile []models.Su
 	if err := r.db.Create(submissionFile).Error; err != nil {
 		return err
 	}
-	log.Println(submissionFile)
 	return nil
 }
 
