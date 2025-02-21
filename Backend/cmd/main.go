@@ -162,17 +162,18 @@ func main() {
 	apiGroup.Get("/instructor/courses", instructorHandler.GetCoursesByUserID)
 	apiGroup.Get("/instructor/course", instructorHandler.GetCourseByCourseID)
 
-	// test api get template file name
-	apiGroup.Get("/instructor/template/name", instructorHandler.GetAssignmentNameTemplate)
+	// Assignment template url
 	apiGroup.Get("/instructor/template/url", instructorHandler.GetPDFTemplateWithURL)
 
 	// Submission
 	apiGroup.Post("/instructor/submission/files", instructorHandler.CreateSubmissionFiles)
+	apiGroup.Post("/instructor/submission/file", instructorHandler.CreateSubmissionAFile)
 	apiGroup.Get("/instructor/submission/files", instructorHandler.GetSubmissionFiles)
 	apiGroup.Get("/instructor/submissions", instructorHandler.GetFileFormSubmission)
 	apiGroup.Get("/instructor/submissionsList", instructorHandler.GetSubmissionListByCourseIDAndAssignmentID)
 	apiGroup.Get("/instructor/submission/fileURL", instructorHandler.GetSubmissionFileURL)
 	apiGroup.Get("/instructor/submission/studentList", instructorHandler.GetStudentListForSubmission)
+	apiGroup.Get("/instructor/submission/test", instructorHandler.GetAssignmentTemplateCount)
 
 	// Bounding Box
 	apiGroup.Post("/instructor/boundingBoxes", instructorHandler.CreateBoundingBoxesAndQuestions)
