@@ -1331,101 +1331,111 @@ func (h *HttpInstructorHandler) CreateSubmissionAFile(c *fiber.Ctx) error {
 		})
 	}
 
-	fileHeader, err := c.FormFile("file")
+	form, err := c.MultipartForm()
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Failed to get file",
+			"message": "Failed to parse form data",
 			"error":   err.Error(),
 		})
 	}
 
-	srcFile, err := fileHeader.Open()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to open file",
-			"error":   err.Error(),
+	files := form.File["files"]
+	if len(files) == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "No files uploaded",
 		})
-	}
-	defer srcFile.Close()
-
-	tempDir := os.TempDir()
-	tempFilePath := filepath.Join(tempDir, fmt.Sprintf("%s.pdf", uuid.New().String()))
-
-	tempFile, err := os.Create(tempFilePath)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to create temp file",
-			"error":   err.Error(),
-		})
-	}
-	defer os.Remove(tempFilePath)
-	defer tempFile.Close()
-
-	_, err = io.Copy(tempFile, srcFile)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to copy file content",
-			"error":   err.Error(),
-		})
-	}
-
-	submissionPageCount, err := utils.GetPDFPageCount(tempFilePath)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to get PDF page count",
-			"error":   err.Error(),
-		})
-	}
-
-	numSubmissions := submissionPageCount / pagePerSubmission
-	if submissionPageCount%pagePerSubmission > 0 {
-		numSubmissions++
 	}
 
 	var submissions []models.Submission
-	for i := 0; i < numSubmissions; i++ {
-		startPage := (i * pagePerSubmission) + 1
-		endPage := startPage + pagePerSubmission - 1
-		if endPage > submissionPageCount {
-			endPage = submissionPageCount
-		}
 
-		fileNameWithoutExt := strings.TrimSuffix(fileHeader.Filename, filepath.Ext(fileHeader.Filename))
-		submissionFileName := fmt.Sprintf("%s_submission_%d%s", fileNameWithoutExt, i+1, filepath.Ext(fileHeader.Filename))
-		outputDir := filepath.Join(os.TempDir(), submissionFileName)
-		os.MkdirAll(outputDir, os.ModePerm)
-		// fmt.Println("Extracting Pages:", startPage, "-", endPage, "to", outputDir)
-
-		err := utils.ExtractPDFPages(tempFilePath, outputDir, startPage, endPage)
+	for _, fileHeader := range files {
+		srcFile, err := fileHeader.Open()
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Failed to split PDF",
+				"message": "Failed to open file",
+				"error":   err.Error(),
+			})
+		}
+		defer srcFile.Close()
+
+		tempDir := os.TempDir()
+		tempFilePath := filepath.Join(tempDir, fmt.Sprintf("%s.pdf", uuid.New().String()))
+		tempFile, err := os.Create(tempFilePath)
+
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to create temp file",
+				"error":   err.Error(),
+			})
+		}
+		defer os.Remove(tempFilePath)
+		defer tempFile.Close()
+
+		_, err = io.Copy(tempFile, srcFile)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to copy file content",
 				"error":   err.Error(),
 			})
 		}
 
-		submissions = append(submissions, models.Submission{
-			SubmittedBy:        userID,
-			AssignmentID:       assignmentID,
-			SubmissionFileName: submissionFileName,
-			SubmittedAt:        time.Now(),
-		})
+		submissionPageCount, err := utils.GetPDFPageCount(tempFilePath)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to get PDF page count",
+				"error":   err.Error(),
+			})
+		}
 
-		// splitFile, err := os.Open(outputPath)
-		// if err != nil {
-		// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-		// 		"message": "Failed to open split file",
-		// 		"error":   err.Error(),
-		// 	})
-		// }
-		// defer splitFile.Close()
+		numSubmissions := submissionPageCount / pagePerSubmission
+		if submissionPageCount%pagePerSubmission > 0 {
+			numSubmissions++
+		}
 
-		// if err := h.minioServices.CreateFileToMinIO(splitFile, courseID.String(), assignmentID.String(), submissionFileName); err != nil {
-		// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-		// 		"message": "Failed to upload split file",
-		// 		"error":   err.Error(),
-		// 	})
-		// }
+		fileNameWithoutExt := strings.TrimSuffix(fileHeader.Filename, filepath.Ext(fileHeader.Filename))
+
+		for i := 0; i < numSubmissions; i++ {
+			startPage := (i * pagePerSubmission) + 1
+			endPage := startPage + pagePerSubmission - 1
+			if endPage > submissionPageCount {
+				endPage = submissionPageCount
+			}
+
+			mergedFilePath, err := utils.ExtractPDFPages(tempFilePath, startPage, endPage)
+			if err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"message": "Failed to process PDF pages",
+					"error":   err.Error(),
+				})
+			}
+			defer os.Remove(mergedFilePath)
+
+			mergedFile, err := os.Open(mergedFilePath)
+			if err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"message": "Failed to open merged PDF file",
+					"error":   err.Error(),
+				})
+			}
+			defer mergedFile.Close()
+
+			submissionFileName := fmt.Sprintf("%s_submission_%d%s", fileNameWithoutExt, i+1, filepath.Ext(fileHeader.Filename))
+
+			err = h.minioServices.CreateFileToMinIO(mergedFile, courseID.String(), assignmentID.String(), submissionFileName)
+			if err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"message": "Failed to upload merged PDF file",
+					"error":   err.Error(),
+				})
+			}
+
+			submissions = append(submissions, models.Submission{
+				SubmittedBy:        userID,
+				AssignmentID:       assignmentID,
+				SubmissionFileName: submissionFileName,
+				SubmittedAt:        time.Now(),
+			})
+		}
 	}
 
 	if err := h.services.CreateSubmissionAFile(submissions); err != nil {
