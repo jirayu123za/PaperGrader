@@ -9,9 +9,9 @@ import { useFetchSubmissionFiles } from '../../../hooks/ManageScan/useFetchSubmi
 import { useSubmissionFilesStore } from '../../../store/ManageScan/useSubmissionFiles';
 
 const INSManageScans: React.FC = () => {
+  const fileInputRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
   const { assignment_id, course_id } = router.query;
-  const fileInputRef = useRef<HTMLButtonElement>(null);
   const { data: submissionFiles, isLoading } = useFetchSubmissionFiles(assignment_id as string);
   const { submissions, visibleCount, setVisibleCount } = useSubmissionFilesStore();
   const { mutate: uploadSubmissionFile, isPending } = useUploadSubmissionFile();
@@ -22,8 +22,10 @@ const INSManageScans: React.FC = () => {
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    if (event.dataTransfer.files.length > 0) {
-      console.log(event.dataTransfer.files[0]);
+
+    const files = Array.from(event.dataTransfer.files);  
+    if (files.length > 0) {
+      handleFileChange(files);
     }
   };
 
@@ -32,7 +34,6 @@ const INSManageScans: React.FC = () => {
   };
 
   const handleFileChange = (files: File[]) => {
-    // files.forEach(file => console.log(file));
     uploadSubmissionFile({
       assignment_id: assignment_id as string,
       course_id: course_id as string,
