@@ -5,9 +5,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"mime/multipart"
 	"net/url"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -41,26 +41,8 @@ func (r *MinIORepository) AddFileToMinIO(file multipart.File, CourseID, Assignme
 		}
 	}
 
-	//! add version name
-	//versionedFileName := fmt.Sprintf("%s_%s", uuid.New().String(), fileName)
 	objectName := filepath.Join(CourseID, AssignmentID, fileName)
-	//objectName := filepath.Join(CourseID, AssignmentID, versionedFileName)
 	objectName = strings.ReplaceAll(objectName, "\\", "/")
-
-	tempDir := os.TempDir()
-	tempFilePath := filepath.Join(tempDir, fileName)
-	//! add version name
-	//tempFilePath := filepath.Join(tempDir, versionedFileName)
-	tempFile, err := os.Create(tempFilePath)
-	if err != nil {
-		return err
-	}
-	defer tempFile.Close()
-
-	_, err = io.Copy(tempFile, file)
-	if err != nil {
-		return err
-	}
 
 	contentType := "application/octet-stream"
 	if strings.HasSuffix(fileName, ".png") {
@@ -75,14 +57,12 @@ func (r *MinIORepository) AddFileToMinIO(file multipart.File, CourseID, Assignme
 		contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 	}
 
-	_, err = r.client.FPutObject(ctx, r.bucketName, objectName, tempFilePath, minio.PutObjectOptions{
+	_, err = r.client.PutObject(ctx, r.bucketName, objectName, file, -1, minio.PutObjectOptions{
 		ContentType: contentType,
 	})
 	if err != nil {
 		return err
 	}
-
-	defer os.Remove(tempFilePath)
 
 	return nil
 }
@@ -127,6 +107,7 @@ func (r *MinIORepository) FindTemplatePageCountFromMinIO(CourseID, AssignmentID,
 	ctx := context.Background()
 	objectName := filepath.Join(CourseID, AssignmentID, fileName)
 	objectName = strings.ReplaceAll(objectName, "\\", "/")
+	log.Println(objectName)
 
 	object, err := r.client.GetObject(ctx, r.bucketName, objectName, minio.GetObjectOptions{})
 	if err != nil {
