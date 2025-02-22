@@ -11,9 +11,13 @@ interface StudentsList {
 interface StudentsListStore {
     studentsList: StudentsList[];
     setStudentsList: (studentsList: StudentsList[]) => void;
+    pageSize: number;
+    setPageSize: (size: number) => void;
 }
 
 export const useStudentsListStore = create<StudentsListStore>((set) => ({
     studentsList: [],
     setStudentsList: (studentsList) => set({ studentsList }),
+    pageSize: 5,
+    setPageSize: (size) => set({ pageSize: size }),
 }));
