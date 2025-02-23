@@ -156,3 +156,12 @@ type SubmissionFilesResponse struct {
 	SubmissionFileName string    `json:"submission_file_name"`
 	SubmittedAt        time.Time `json:"submitted_at"`
 }
+
+type SubmissionListForManagementResponse struct {
+	SubmissionID uuid.UUID `json:"submission_id"`
+	SectionName  string    `json:"section_name"`
+	FullName     string    `json:"full_name"`
+	StudentCode  string    `json:"student_code"`
+	HasAssigned  bool      `json:"has_assigned"`
+	SubmittedAt  time.Time `json:"submitted_at"`
+}
