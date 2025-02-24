@@ -694,6 +694,15 @@ func (r *GormInstructorRepository) AddSubmissionAFile(submissionFile []models.Su
 	return nil
 }
 
+func (r *GormInstructorRepository) ModifySubmissionList(SubmissionID uuid.UUID, AssignmentID uuid.UUID, PersonalDataID uuid.UUID) error {
+	if err := r.db.Table("submissions").
+		Where("submission_id = ? AND assignment_id = ? AND belongs_to IS NULL", SubmissionID, AssignmentID).
+		Update("belongs_to", PersonalDataID).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *GormInstructorRepository) FindSubmissionFiles(AssignmentID uuid.UUID) ([]response.SubmissionFilesResponse, error) {
 	var submissionFiles []response.SubmissionFilesResponse
 
