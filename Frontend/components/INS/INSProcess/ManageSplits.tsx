@@ -8,6 +8,7 @@ import { useRouter } from 'next/router';
 import { useFetchStudentsList } from '../../../hooks/ManageScan/useFetchStudentsList';
 import { useStudentsListStore } from '../../../store/ManageScan/useStudentsListStore';
 import { useFetchSubmissionsList } from '../../../hooks/ManageScan/useFetchSubmissionsList';
+import { useUpdateSubmission } from '../../../hooks/ManageScan/useUpdateSubmission';
 
 export const ManageSplits = () => {
     const router = useRouter();
@@ -15,6 +16,7 @@ export const ManageSplits = () => {
     const { isLoading: isLoadingStudents, error: errorStudents } = useFetchStudentsList(course_id as string, assignment_id as string);
     const { isLoading: isLoadingSubmissions, error: errorSubmissions } = useFetchSubmissionsList(course_id as string, assignment_id as string);
     const { studentsList, submissionsList, searchQuery, setSearchQuery, filterStatus, setFilterStatus, pageSize, setPageSize } = useStudentsListStore();
+    const { mutate: updateSubmission, isPending } = useUpdateSubmission();
 
     const submissions = submissionsList.map(sub => ({
         ...sub,
@@ -46,12 +48,6 @@ export const ManageSplits = () => {
     
     const message = `Showing ${pageSize * (pagination.active - 1) + 1} – ${Math.min(filteredSubmissions.length, pageSize * pagination.active)} of ${filteredSubmissions.length}`;
     const combobox = useCombobox();
-    
-    // const handleStudentNameChange = (id: string, name: string) => {
-    //     setSubmissions((prev) =>
-    //         prev.map((submission) => (submission.id === id ? { ...submission, studentName: name } : submission))
-    //     );
-    // };
 
     const autocompleteData = [
         {
@@ -76,6 +72,19 @@ export const ManageSplits = () => {
             })),
         },
     ];
+
+    const handleEditStudentName = (submission_id: string, full_name: string | null) => {
+        // if (!full_name) return;
+        // const selectedStudent = studentsList.find(student => student.full_name === full_name);
+        // if (selectedStudent) {
+        //     updateSubmission({
+        //         submission_id,
+        //         assignment_id: assignment_id as string,
+        //         personal_data_id: selectedStudent.personal_data_id,
+        //     });
+        // }
+        console.log('Edit student name:', submission_id, full_name);
+    };
 
     return (
         <Box maw='100%'>
@@ -133,7 +142,13 @@ export const ManageSplits = () => {
                                                 <Stack gap={1}>
                                                     <Flex align="center">
                                                         <Text>{submission.full_name}</Text>
-                                                        <ActionIcon variant="transparent" ml={8} aria-label="Edit Student Name" className='cursor-pointer'>
+                                                        <ActionIcon 
+                                                            variant="transparent" 
+                                                            ml={8} 
+                                                            aria-label="Edit Student Name"
+                                                            className='cursor-pointer'
+                                                            onClick={() => handleEditStudentName(submission.submission_id, submission.full_name)}
+                                                        >
                                                             <IconEdit size={16}/>
                                                         </ActionIcon>
                                                     </Flex>
@@ -151,6 +166,16 @@ export const ManageSplits = () => {
                                                     limit={10}
                                                     maxDropdownHeight={200}
                                                     comboboxProps={{ transitionProps: { transition: 'pop', duration: 200 } }}
+                                                    onOptionSubmit={(value) => {
+                                                        const selectedStudent = studentsList.find(student => student.personal_data_id === value);
+                                                        if (selectedStudent) {
+                                                            updateSubmission({
+                                                                submission_id: submission.submission_id,
+                                                                assignment_id: assignment_id as string,
+                                                                personal_data_id: selectedStudent.personal_data_id,
+                                                            });
+                                                        }
+                                                    }}
                                                 />                                        
                                             )}
                                         </Table.Td>
