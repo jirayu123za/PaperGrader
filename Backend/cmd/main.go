@@ -173,6 +173,7 @@ func main() {
 	apiGroup.Get("/instructor/submissionsList", instructorHandler.GetSubmissionListByCourseIDAndAssignmentID)
 	apiGroup.Get("/instructor/submission/fileURL", instructorHandler.GetSubmissionFileURL)
 	apiGroup.Get("/instructor/submission/manage", instructorHandler.GetSubmissionsListForManagement)
+	apiGroup.Patch("/instructor/submission/manage", instructorHandler.UpdateSubmissionList)
 	apiGroup.Get("/instructor/submission/studentList", instructorHandler.GetStudentListForSubmission)
 	apiGroup.Get("/instructor/submission/test", instructorHandler.GetAssignmentTemplateCount)
 
