@@ -84,7 +84,7 @@ export const ManageSplits = () => {
                     <Text span fw={700}>{`${submissions.length}`}</Text> Submissions - 
                     <Text span fw={700}>{`${submissions.filter(s => s.full_name).length}`}</Text> Students Have Been Matched
                 </Text>    
-                {filteredSubmissions.length > 0 && (            
+                {submissions.length > 0 && (            
                     <Flex align="center" gap="sm">
                         <Select
                             placeholder="Select Status"
@@ -109,7 +109,7 @@ export const ManageSplits = () => {
             </Flex>
 
             <Box>
-                {filteredSubmissions.length > 0 && (
+                {submissions.length > 0 && (
                     <ScrollArea h="612px">
                         <Table highlightOnHover w="100%" miw='900px'>
                             <Table.Thead>
@@ -181,7 +181,7 @@ export const ManageSplits = () => {
                     </ScrollArea>
                 )}
 
-                {filteredSubmissions.length > 0 && (       
+                {submissions.length > 0 && (       
                     <Flex justify="space-between" mt="xs" align="center">
                         <Flex flex={1} justify="center">
                             <Pagination 
