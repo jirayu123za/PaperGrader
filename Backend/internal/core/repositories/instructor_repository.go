@@ -45,6 +45,7 @@ type InstructorRepository interface {
 	//! AddSubmissionFiles function is not implemented in the repository
 	AddSubmissionFiles(submission []models.Submission) error
 	AddSubmissionAFile(submissionFile []models.Submission) error
+	ModifySubmissionList(SubmissionID uuid.UUID, AssignmentID uuid.UUID, PersonalDataID uuid.UUID) error
 	FindSubmissionFiles(AssignmentID uuid.UUID) ([]response.SubmissionFilesResponse, error)
 	FindSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
 	FindSubmissionFileName(AssignmentID uuid.UUID, SubmissionID uuid.UUID) (fileName string, err error)
