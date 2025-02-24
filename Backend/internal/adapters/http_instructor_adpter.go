@@ -1134,6 +1134,46 @@ func (h *HttpInstructorHandler) CreateSubmissionFiles(c *fiber.Ctx) error {
 	})
 }
 
+func (h *HttpInstructorHandler) UpdateSubmissionList(c *fiber.Ctx) error {
+	submissionIDParam := c.Query("submission_id")
+	submissionID, err := uuid.Parse(submissionIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid submission_id",
+			"error":   err.Error(),
+		})
+	}
+
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	personalDataIDParam := c.Query("personal_data_id")
+	personalDataID, err := uuid.Parse(personalDataIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid personal_data_id",
+			"error":   err.Error(),
+		})
+	}
+
+	if err := h.services.UpdateSubmissionList(submissionID, assignmentID, personalDataID); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to update submission",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Submission is updated",
+	})
+}
+
 func (h *HttpInstructorHandler) GetSubmissionFiles(c *fiber.Ctx) error {
 	assignmentIDParam := c.Query("assignment_id")
 	assignmentID, err := uuid.Parse(assignmentIDParam)
