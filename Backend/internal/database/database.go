@@ -86,6 +86,7 @@ func ConnectPostgres(migrate bool) *gorm.DB {
 			models.EnrollmentList{},
 			&models.PersonalData{},
 			&models.Submission{},
+			&models.SubmissionBox{},
 			&models.AssignmentSection{},
 			&models.Upload{},
 			&models.BoundingBox{},
