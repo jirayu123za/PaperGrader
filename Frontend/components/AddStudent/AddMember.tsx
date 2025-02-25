@@ -1,73 +1,49 @@
 import React from 'react';
 import SingleUser from './SingleUser';
-import { Modal, Button, Divider, Alert } from '@mantine/core';
+import { Menu, Button } from '@mantine/core';
 import { FaUser, FaUsers } from "react-icons/fa";
-import { IconInfoCircle } from '@tabler/icons-react';
-import { useDisclosure } from '@mantine/hooks';
 import { MdOutlineGroupAdd } from 'react-icons/md';
 import { SelectMethods } from './SelectMethods';
+import { useDisclosure } from '@mantine/hooks';
 
-const AddMemberModal: React.FC = () => {
-  const [opened, { open, close }] = useDisclosure(false);
+const AddMemberDropdown: React.FC = () => {
   const [singleUserOpened, { open: openSingleUser, close: closeSingleUser }] = useDisclosure(false);
   const [selectMethodsOpened, { open: openSelectMethods, close: closeSelectMethods }] = useDisclosure(false);
   const addPersonIcon = <MdOutlineGroupAdd size={18} />;
 
   return (
     <>
-      <Button onClick={open} leftSection={addPersonIcon} color='#4C6EF5'>
-        Add Members
-      </Button>
-      
-      <Modal opened={opened} onClose={close} title="Add Students or Staff">
-        <Alert variant="light" color="blue" icon={<IconInfoCircle />}>
-          Add a single user or upload a CSV file to add multiple users at once.
-        </Alert>
-        <div className="flex justify-around items-center mt-6">
-          <div
-            className="flex flex-col items-center cursor-pointer hover:text-blue-500"
-            onClick={() => {
-              openSingleUser();
-              close();
-            }}
-          >
-            <FaUser size={40} className="transition-colors duration-300" />
-            <p className="mt-2">Single User</p>
-          </div>
-
-          <Divider orientation="vertical" />
-
-          <div
-            className="flex flex-col items-center cursor-pointer hover:text-blue-500"
-            onClick={() => {
-              openSelectMethods();
-              close();
-            }}
-          >
-            <FaUsers size={50} className="transition-colors duration-300" />
-            <p className="mt-2">CSV File</p>
-          </div>
-        </div>
-
-        <div className="flex justify-end mt-6">
-          <Button variant="filled" color="red" onClick={close}>
-            Cancel
+      {/* Dropdown Menu */}
+      <Menu shadow="md" width={200}>
+        <Menu.Target>
+          <Button leftSection={addPersonIcon} color='#4C6EF5'>
+            Add Members
           </Button>
-        </div>
-      </Modal>
+        </Menu.Target>
+
+        <Menu.Dropdown>
+          <Menu.Item
+            leftSection={<FaUser size={16} />}
+            onClick={openSingleUser} 
+          >
+            Single User
+          </Menu.Item>
+          <Menu.Item
+            leftSection={<FaUsers size={16} />}
+            onClick={openSelectMethods} 
+          >
+            Import CSV
+          </Menu.Item>
+        </Menu.Dropdown>
+      </Menu>
 
       {/* Single user Modal */}  
-      <SingleUser
-        isOpen={singleUserOpened}
-        onClose={closeSingleUser}
-      />
+      <SingleUser isOpen={singleUserOpened} onClose={closeSingleUser} />
+      
       {/* CSV File Modal */}
-      <SelectMethods 
-        isOpen={selectMethodsOpened} 
-        onClose={closeSelectMethods}
-      />
+      <SelectMethods isOpen={selectMethodsOpened} onClose={closeSelectMethods} />
     </>
   );
 };
 
-export default AddMemberModal;
+export default AddMemberDropdown;
