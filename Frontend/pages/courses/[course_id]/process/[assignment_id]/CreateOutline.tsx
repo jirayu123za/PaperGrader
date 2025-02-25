@@ -51,8 +51,6 @@ export default function CreateOutlinePage() {
           <PDFViewer
             courseId={course_id as string}
             assignmentId={assignment_id as string}
-            currentPage={form.values.currentPage} // ✅ ใช้ค่า currentPage จาก useForm
-            setCurrentPage={(page) => form.setFieldValue('currentPage', page)} // ✅ อัปเดตค่า currentPage
           />
         ) : (
           <Loader />
