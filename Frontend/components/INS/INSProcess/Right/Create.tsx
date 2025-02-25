@@ -13,7 +13,6 @@ interface BoundingBox {
   bounding_box_position: string;
   bounding_box_type: string;
   bounding_box_page: number;
-  bounding_box_image: string;
 }
 
 interface Question {
@@ -21,7 +20,7 @@ interface Question {
   question_point: number;
   question_title: string;
   bounding_box_id?: string;
-  subquestions?: SubQuestion[]; 
+  subquestions?: SubQuestion[];
 }
 
 interface SubQuestion {
@@ -72,7 +71,6 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
       bounding_box_position: `(100,100),(300,300)`,
       bounding_box_type: 'question',
       bounding_box_page: currentPage,
-      bounding_box_image: '',
     };
 
     const newQuestion: Question = {
@@ -126,13 +124,13 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
         })),
         questionsData: newQuestions.length > 0
           ? {
-              questions: newQuestions.map((question) => ({
-                question_id: question.question_id || `temp-${Date.now()}`,
-                question_point: question.question_point || 0,
-                question_title: question.question_title || `Question ${question.question_id}`,
-                subquestions: question.subquestions || [],
-              })),
-            }
+            questions: newQuestions.map((question) => ({
+              question_id: question.question_id || `temp-${Date.now()}`,
+              question_point: question.question_point || 0,
+              question_title: question.question_title || `Question ${question.question_id}`,
+              subquestions: question.subquestions || [],
+            })),
+          }
           : undefined, // ถ้าไม่มี questions ให้ส่ง undefined
       });
     });
@@ -170,8 +168,7 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
       bounding_box_position: `(100,100),(300,300)`,
       bounding_box_type: type,
       bounding_box_page: currentPage,
-      bounding_box_image: '',
-      
+
     };
     console.log('สร้าง BoundingBox:', newBoundingBox);
     addBoundingBox(newBoundingBox);
@@ -190,6 +187,23 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
   }, [boundingBoxes, setBoundingBoxes]);
 
 
+  const handleNewSubQuestion = (questionId: string) => {
+    const question = rubricData.questions.find(q => q.question_id === questionId);
+    const subIndex = (question?.subquestions?.length || 0) + 1;
+
+    const newSubQuestion: SubQuestion = {
+      bounding_box_id: `temp-${Date.now()}`,
+      subquestion_id: `sub-temp-${Date.now()}`,
+      subquestion_point: 0,
+      subquestion_title: `${question?.question_title}.${subIndex}`, // แสดงเป็น "เลขข้อใหญ่.1", "เลขข้อใหญ่.2"
+    };
+
+    updateQuestion(questionId, {
+      subquestions: [...(question?.subquestions || []), newSubQuestion],
+    });
+
+    console.log('✅ Added Subquestion:', newSubQuestion);
+  };
 
 
   return (
@@ -249,35 +263,98 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
                 </Table.Thead>
                 <Table.Tbody>
                   {rubricData?.questions?.map((question, index) => (
-                    <Table.Tr key={question?.question_id || index}>
-                      <Table.Td>{index + 1}</Table.Td>
-                      <Table.Td>
-                        <TextInput
-                          value={question?.question_title || ''}
-                          onChange={(event) =>
-                            handleChangeQuestion(question?.question_id, event.currentTarget.value)
-                          }
-                        />
-                      </Table.Td>
-                      <Table.Td style={{ textAlign: 'center' }}>
-                        <NumberInput
-                          hideControls
-                          value={question?.question_point || 0}
-                          onChange={(value) => handleChangePoint(question?.question_id, value as number)}
-                          min={0}
-                        />
-                      </Table.Td>
-                      <Table.Td>
-                        <Button
-                          size="xs"
-                          color="red"
-                          variant="outline"
-                          onClick={() => handleRemoveQuestion(question?.question_id)}
-                        >
-                          X
-                        </Button>
-                      </Table.Td>
-                    </Table.Tr>
+                    <React.Fragment key={question?.question_id || index}>
+                      <Table.Tr>
+                        <Table.Td>{index + 1}</Table.Td>
+                        <Table.Td>
+                          <TextInput
+                            value={question?.question_title || ''}
+                            onChange={(event) =>
+                              handleChangeQuestion(question?.question_id, event.currentTarget.value)
+                            }
+                          />
+                        </Table.Td>
+                        <Table.Td style={{ textAlign: 'center' }}>
+                          <NumberInput
+                            hideControls
+                            value={question?.question_point || 0}
+                            onChange={(value) => handleChangePoint(question?.question_id, value as number)}
+                            min={0}
+                          />
+                        </Table.Td>
+                        <Table.Td style={{ textAlign: 'center' }}>
+                          <Button
+                            size="xs"
+                            color="blue"
+                            variant="outline"
+                            onClick={() => handleNewSubQuestion(question?.question_id)}
+                          >
+                            +
+                          </Button>
+                        </Table.Td>
+                        <Table.Td>
+                          <Button
+                            size="xs"
+                            color="red"
+                            variant="outline"
+                            onClick={() => handleRemoveQuestion(question?.question_id)}
+                          >
+                            X
+                          </Button>
+                        </Table.Td>
+                      </Table.Tr>
+                      {/* แสดง Subquestions ใต้ Question */}
+                      {question.subquestions && question.subquestions.map((sub, subIndex) => (
+                        <Table.Tr key={sub.subquestion_id} style={{ backgroundColor: '#f9f9f9' }}>
+                          <Table.Td style={{ paddingLeft: '30px' }}>{index + 1}.{subIndex + 1}</Table.Td>
+                          <Table.Td>
+                            <TextInput
+                              value={sub.subquestion_title}
+                              onChange={(event) =>
+                                updateQuestion(question.question_id, {
+                                  subquestions: question.subquestions?.map(sq =>
+                                    sq.subquestion_id === sub.subquestion_id
+                                      ? { ...sq, subquestion_title: event.currentTarget.value }
+                                      : sq
+                                  ),
+                                })
+                              }
+                            />
+                          </Table.Td>
+                          <Table.Td style={{ textAlign: 'center' }}>
+                            <NumberInput
+                              hideControls
+                              value={sub.subquestion_point}
+                              onChange={(value) =>
+                                updateQuestion(question.question_id, {
+                                  subquestions: question.subquestions?.map(sq =>
+                                    sq.subquestion_id === sub.subquestion_id
+                                      ? { ...sq, subquestion_point: value as number }
+                                      : sq
+                                  ),
+                                })
+                              }
+                              min={0}
+                            />
+                          </Table.Td>
+                          <Table.Td>
+                            <Button
+                              size="xs"
+                              color="red"
+                              variant="outline"
+                              onClick={() => {
+                                updateQuestion(question.question_id, {
+                                  subquestions: question.subquestions?.filter(sq => sq.subquestion_id !== sub.subquestion_id),
+                                });
+                              }}
+                            >
+                              X
+                            </Button>
+                          </Table.Td>
+                        </Table.Tr>
+                      ))}
+                    </React.Fragment>
+
                   ))}
                   <Table.Tr>
                     <Table.Td colSpan={4} align="center">
