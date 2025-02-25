@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import 'pdfjs-dist/web/pdf_viewer.css';
 import { Container, Loader } from '@mantine/core';
-import { Stage, Layer, Rect, Transformer, Text } from 'react-konva';
+import { Stage, Layer, Rect, Transformer, Text, Line } from 'react-konva';
 import { useFetchFile } from '../hooks/useFetchFile';
 import usePDFViewerStore from '../store/usePDFViewerStore';
 import useBoundingBoxStore from '../store/BoundingBox/useBoundingBoxStore';
@@ -34,28 +34,35 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId }) => {
   useEffect(() => {
     const renderPDF = async () => {
       if (!fileForm.values.pdfUrl || !pdfContainerRef.current) return;
-
+    
       const loadingTask = pdfjsLib.getDocument(fileForm.values.pdfUrl);
       const pdf = await loadingTask.promise;
       const numPages = pdf.numPages;
-
+    
       pdfContainerRef.current.innerHTML = ''; // ล้างค่าเดิมก่อน render ใหม่
-
+    
+      // ✅ ป้องกัน pdfPagesRef มีค่าเกิน numPages
+      Object.keys(pdfPagesRef.current).forEach((pageNum) => {
+        if (Number(pageNum) > numPages) {
+          delete pdfPagesRef.current[Number(pageNum)];
+        }
+      });
+    
       for (let pageNum = 1; pageNum <= numPages; pageNum++) {
         const page = await pdf.getPage(pageNum);
         const scale = 1.5;
         setScaleFactor(scale);
         const viewport = page.getViewport({ scale });
-
+    
         const canvas = document.createElement('canvas');
         canvas.width = viewport.width;
         canvas.height = viewport.height;
         pdfPagesRef.current[pageNum] = canvas;
         pdfContainerRef.current.appendChild(canvas);
-
+    
         const context = canvas.getContext('2d');
         renderTaskRef.current = page.render({ canvasContext: context!, viewport });
-
+    
         try {
           await renderTaskRef.current.promise;
         } catch (error) {
@@ -63,6 +70,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId }) => {
         }
       }
     };
+    
 
     renderPDF();
   }, [fileForm.values.pdfUrl, setScaleFactor]);
@@ -146,6 +154,33 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId }) => {
                 </React.Fragment>
               );
             })}
+          {Object.keys(pdfPagesRef.current).map((pageNumStr, index) => {
+            const pageNum = Number(pageNumStr);
+            if (!pdfPagesRef.current[pageNum]) return null;
+
+            const yOffset = (pageNum - 1) * pdfPagesRef.current[1].height; // คำนวณตำแหน่งเส้น
+            return (
+              <React.Fragment key={`page-separator-${pageNum}`}>
+                {/* เส้นแบ่งหน้า */}
+                <Line
+                  points={[0, yOffset + pdfPagesRef.current[pageNum].height, pdfPagesRef.current[pageNum].width, yOffset + pdfPagesRef.current[pageNum].height]}
+                  stroke="black"
+                  strokeWidth={2}
+                  dash={[10, 5]} // เส้นประ
+                />
+                {/* หมายเลขหน้า */}
+                <Text
+                  x={pdfPagesRef.current[pageNum].width / 2 - 20}
+                  y={yOffset + pdfPagesRef.current[pageNum].height + 5}
+                  text={`Page ${pageNum}`}
+                  fontSize={14}
+                  fill="black"
+                  fontStyle="bold"
+                />
+              </React.Fragment>
+            );
+          })}
+
           <Transformer ref={transformerRef} />
         </Layer>
       </Stage>
