@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import 'pdfjs-dist/web/pdf_viewer.css';
 import { Container, Loader } from '@mantine/core';
-import { Stage, Layer, Rect, Transformer, Text, Line } from 'react-konva';
+import { Stage, Layer, Rect, Transformer, Text } from 'react-konva';
 import { useFetchFile } from '../hooks/useFetchFile';
 import usePDFViewerStore from '../store/usePDFViewerStore';
 import useBoundingBoxStore from '../store/BoundingBox/useBoundingBoxStore';
@@ -23,8 +23,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId }) => {
   const transformerRef = useRef<any>(null);
   const rectRefs = useRef<{ [key: string]: any }>({});
   const renderTaskRef = useRef<any>(null);
-  const pdfPagesRef = useRef<Map<number, HTMLCanvasElement>>(new Map());
-  const pageHeights = useRef<Map<number, number>>(new Map());
+  const pdfPagesRef = useRef<{ [key: number]: HTMLCanvasElement }>({});
 
   const form = useForm({
     initialValues: {
@@ -41,7 +40,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId }) => {
       const numPages = pdf.numPages;
 
       pdfContainerRef.current.innerHTML = ''; // ล้างค่าเดิมก่อน render ใหม่
-      let totalHeight = 0;
 
       for (let pageNum = 1; pageNum <= numPages; pageNum++) {
         const page = await pdf.getPage(pageNum);
@@ -52,11 +50,9 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId }) => {
         const canvas = document.createElement('canvas');
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-        pdfPagesRef.current.set(pageNum, canvas);
-        pageHeights.current.set(pageNum, totalHeight); // บันทึกตำแหน่ง Y ของแต่ละหน้า
-        totalHeight += viewport.height;
-
+        pdfPagesRef.current[pageNum] = canvas;
         pdfContainerRef.current.appendChild(canvas);
+
         const context = canvas.getContext('2d');
         renderTaskRef.current = page.render({ canvasContext: context!, viewport });
 
@@ -115,48 +111,41 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId }) => {
     <Container style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'auto', border: '1px solid #ccc' }}>
       <div ref={pdfContainerRef} style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '20px' }} />
 
-      <Stage 
-        width={pdfPagesRef.current.get(1)?.width || 0} 
-        height={Array.from(pdfPagesRef.current.values()).reduce((sum, canvas) => sum + canvas.height, 0)}
-        style={{ position: 'absolute', top: 0, left: 0 }} 
-        onMouseDown={handleStageClick}
-      >
+      <Stage width={pdfPagesRef.current[1]?.width || 0} height={Object.values(pdfPagesRef.current).reduce((sum, canvas) => sum + canvas.height, 0)}
+        style={{ position: 'absolute', top: 0, left: 0 }} onMouseDown={handleStageClick}>
         <Layer>
-          {/* ✅ เส้นแบ่งหน้า PDF ที่ถูกต้อง */}
-          {Array.from(pageHeights.current.entries()).map(([page, yPosition]) => {
-            const pageCanvas = pdfPagesRef.current.get(page);
-            if (!pageCanvas) return null;
-            const pageBottom = yPosition + pageCanvas.height;
+          {boundingBoxes &&
+            boundingBoxes.map((box) => {
+              if (!box.bounding_box_position || !pdfPagesRef.current[box.bounding_box_page]) return null;
 
-            return (
-              <Line
-                key={`page-separator-${page}`}
-                points={[0, pageBottom, pageCanvas.width, pageBottom]}
-                stroke="red"
-                strokeWidth={2}
-                dash={[10, 5]}
-              />
-            );
-          })}
+              const { x, y, width, height } = normalizeBoundingBoxPosition(box.bounding_box_position);
+              const { title, point } = getQuestionForBox(box.bounding_box_id);
 
-          {/* ✅ Bounding Box */}
-          {boundingBoxes.map((box) => {
-            if (!box.bounding_box_position || !pdfPagesRef.current.get(box.bounding_box_page)) return null;
+              const displayTitle = box.bounding_box_type === 'NAME' ? 'Name' :
+                box.bounding_box_type === 'STUDENTID' ? 'Student ID' : `${title}: ${point} point`;
 
-            const { x, y, width, height } = normalizeBoundingBoxPosition(box.bounding_box_position);
-            const { title, point } = getQuestionForBox(box.bounding_box_id);
-            const pageOffset = pageHeights.current.get(box.bounding_box_page) || 0;
+              const color = box.bounding_box_type === 'NAME' ? 'rgba(0, 255, 0, 0.3)' :
+                box.bounding_box_type === 'STUDENTID' ? 'rgba(255, 165, 0, 0.3)' : 'rgba(0, 0, 255, 0.3)';
 
-            return (
-              <Rect 
-                key={box.bounding_box_id}
-                x={x} y={y + pageOffset} width={width} height={height} 
-                fill="rgba(0, 0, 255, 0.3)" stroke="blue" strokeWidth={2}
-                draggable
-                onClick={() => form.setFieldValue('selectedBoxId', box.bounding_box_id)}
-              />
-            );
-          })}
+              const strokeColor = box.bounding_box_type === 'NAME' ? 'green' :
+                box.bounding_box_type === 'STUDENTID' ? 'orange' : 'blue';
+
+              return (
+                <React.Fragment key={box.bounding_box_id}>
+                  <Rect ref={(node) => { rectRefs.current[box.bounding_box_id] = node; }} x={x} y={y + (box.bounding_box_page - 1) * pdfPagesRef.current[1].height}
+                    width={width} height={height} fill={color} stroke={strokeColor} strokeWidth={2} draggable
+                    onClick={() => form.setFieldValue('selectedBoxId', box.bounding_box_id)}
+                    onDragEnd={(e) => {
+                      const node = e.target;
+                      const newX = Math.round(node.x());
+                      const newY = Math.round(node.y() - (box.bounding_box_page - 1) * pdfPagesRef.current[1].height);
+                      updateBoundingBox(box.bounding_box_id, { bounding_box_position: `(${newX},${newY},${newX + width},${newY + height})` });
+                    }} />
+                  <Rect x={x} y={y - 25 + (box.bounding_box_page - 1) * pdfPagesRef.current[1].height} width={width} height={22} fill="gray" opacity={0.7} />
+                  <Text x={x + 5} y={y - 18 + (box.bounding_box_page - 1) * pdfPagesRef.current[1].height} text={displayTitle} fontSize={12} fill="white" fontStyle="bold" />
+                </React.Fragment>
+              );
+            })}
           <Transformer ref={transformerRef} />
         </Layer>
       </Stage>
