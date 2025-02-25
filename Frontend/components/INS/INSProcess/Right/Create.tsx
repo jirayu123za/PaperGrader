@@ -123,7 +123,6 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
           bounding_box_position: box.bounding_box_position,
           bounding_box_type: box.bounding_box_type,
           bounding_box_page: box.bounding_box_page,
-          bounding_box_image: box.bounding_box_image,
         })),
         questionsData: newQuestions.length > 0
           ? {
