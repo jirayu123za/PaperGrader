@@ -57,6 +57,7 @@ func ConnectPostgres(migrate bool) *gorm.DB {
 		db.Migrator().DropTable(
 		// &models.AssignmentSection{},
 		// &models.AssignmentFile{},
+		// &models.SubmissionBox{},
 		// &models.Submission{},
 		// // &models.Enrollment{},
 		// // &models.InstructorList{},
@@ -69,8 +70,6 @@ func ConnectPostgres(migrate bool) *gorm.DB {
 		// // &models.UserGroup{},
 		// // &models.University{},
 		// &models.Upload{},
-		// &models.Question{},
-		// &models.BoundingBox{},
 		// &models.BoundingBox{},
 		// &models.Rubric{},
 		)
