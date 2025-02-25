@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import 'pdfjs-dist/web/pdf_viewer.css';
 import { Container, Loader } from '@mantine/core';
-import { Stage, Layer, Rect, Transformer, Text } from 'react-konva';
+import { Stage, Layer, Rect, Transformer, Text, Line } from 'react-konva';
 import { useFetchFile } from '../hooks/useFetchFile';
 import usePDFViewerStore from '../store/usePDFViewerStore';
 import useBoundingBoxStore from '../store/BoundingBox/useBoundingBoxStore';
@@ -13,21 +13,18 @@ import { useForm } from '@mantine/form';
 interface PDFViewerProps {
   courseId: string;
   assignmentId: string;
-  currentPage: number;
-  setCurrentPage: (page: number) => void;
 }
 
-const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPage }) => {
+const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId }) => {
   const { form: fileForm } = useFetchFile({ courseId, assignmentId });
   const { setScaleFactor } = usePDFViewerStore();
-  const { boundingBoxes, rubricData } = useBoundingBoxStore(); // Retrieve rubricData for question details
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { boundingBoxes, rubricData, updateBoundingBox } = useBoundingBoxStore();
+  const pdfContainerRef = useRef<HTMLDivElement>(null);
   const transformerRef = useRef<any>(null);
   const rectRefs = useRef<{ [key: string]: any }>({});
   const renderTaskRef = useRef<any>(null);
-  const { updateBoundingBox } = useBoundingBoxStore();
-  
-  
+  const pdfPagesRef = useRef<Map<number, HTMLCanvasElement>>(new Map());
+  const pageHeights = useRef<Map<number, number>>(new Map());
 
   const form = useForm({
     initialValues: {
@@ -36,40 +33,43 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPa
   });
 
   useEffect(() => {
-    const renderPDF = async (pageNum: number) => {
-      if (!fileForm.values.pdfUrl) return;
-
-      if (renderTaskRef.current) {
-        renderTaskRef.current.cancel();
-      }
+    const renderPDF = async () => {
+      if (!fileForm.values.pdfUrl || !pdfContainerRef.current) return;
 
       const loadingTask = pdfjsLib.getDocument(fileForm.values.pdfUrl);
       const pdf = await loadingTask.promise;
-      const page = await pdf.getPage(pageNum);
+      const numPages = pdf.numPages;
 
-      const scale = 1.5;
-      setScaleFactor(scale);
-      const viewport = page.getViewport({ scale });
+      pdfContainerRef.current.innerHTML = ''; // ล้างค่าเดิมก่อน render ใหม่
+      let totalHeight = 0;
 
-      const canvas = canvasRef.current;
-      if (canvas) {
-        const context = canvas.getContext('2d');
+      for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const scale = 1.5;
+        setScaleFactor(scale);
+        const viewport = page.getViewport({ scale });
+
+        const canvas = document.createElement('canvas');
         canvas.width = viewport.width;
         canvas.height = viewport.height;
+        pdfPagesRef.current.set(pageNum, canvas);
+        pageHeights.current.set(pageNum, totalHeight); // บันทึกตำแหน่ง Y ของแต่ละหน้า
+        totalHeight += viewport.height;
 
+        pdfContainerRef.current.appendChild(canvas);
+        const context = canvas.getContext('2d');
         renderTaskRef.current = page.render({ canvasContext: context!, viewport });
 
         try {
           await renderTaskRef.current.promise;
-          renderTaskRef.current = null;
         } catch (error) {
           console.warn('Render task cancelled or failed:', error);
         }
       }
     };
 
-    renderPDF(currentPage);
-  }, [fileForm.values.pdfUrl, currentPage, setScaleFactor]);
+    renderPDF();
+  }, [fileForm.values.pdfUrl, setScaleFactor]);
 
   useEffect(() => {
     if (form.values.selectedBoxId && transformerRef.current) {
@@ -84,8 +84,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPa
     }
   }, [form.values.selectedBoxId, boundingBoxes]);
 
-
-
   const handleStageClick = (e: any) => {
     if (e.target === e.target.getStage()) {
       form.setFieldValue('selectedBoxId', null);
@@ -95,158 +93,70 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ courseId, assignmentId, currentPa
   };
 
   const getQuestionForBox = (boundingBoxId: string) => {
-    // หา Question ที่ตรงกับ boundingBoxId
-    const question = rubricData?.questions?.find((q) =>
-      q.bounding_box_id === boundingBoxId
-    );
-
-    if (!question) {
-      console.warn(`No question found for boundingBoxId: ${boundingBoxId}`);
-      return { title: '', point: 0 }; // คืนค่าที่ว่างเปล่า
-    }
-
-    return {
-      title: question.question_title || '',
-      point: question.question_point || 0,
-    };
+    const question = rubricData?.questions?.find((q) => q.bounding_box_id === boundingBoxId);
+    return question ? { title: question.question_title, point: question.question_point } : { title: '', point: 0 };
   };
 
   if (fileForm.values.loading) return <Loader />;
   if (!fileForm.values.pdfUrl) return <div>No PDF available</div>;
-
-  const parseBoundingBoxPosition = (position: string) => {
-    const positions = position.match(/-?\d+(\.\d+)?/g); // ✅ รองรับค่าติดลบและทศนิยม
-    if (!positions || positions.length < 4) {
-      console.warn(`⚠️ bounding_box_position format ผิดพลาด: ${position}`);
-      return { x: 0, y: 0, width: 50, height: 50 };
-    }
-  
-    const [x1, y1, x2, y2] = positions.map(Number);
-  
-    return {
-      x: Math.round(x1),
-      y: Math.round(y1),
-      width: Math.round(x2 - x1),
-      height: Math.round(y2 - y1),
-    };
-  };
-
 
   const normalizeBoundingBoxPosition = (position: string) => {
     const positions = position.match(/-?\d+(\.\d+)?/g);
     if (!positions || positions.length < 4) return { x: 0, y: 0, width: 50, height: 50 };
 
     let [x1, y1, x2, y2] = positions.map(Number);
-
-    // ตรวจสอบว่าค่าพิกัดสลับกันหรือไม่
     if (x1 > x2) [x1, x2] = [x2, x1];
     if (y1 > y2) [y1, y2] = [y2, y1];
 
-    return {
-        x: x1,
-        y: y1,
-        width: x2 - x1,
-        height: y2 - y1
-    };
-};
+    return { x: x1, y: y1, width: x2 - x1, height: y2 - y1 };
+  };
 
-
-  
   return (
     <Container style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'auto', border: '1px solid #ccc' }}>
-      <canvas ref={canvasRef} style={{ display: 'block' }} />
+      <div ref={pdfContainerRef} style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '20px' }} />
 
-      <Stage
-        width={canvasRef.current?.width || 0}
-        height={canvasRef.current?.height || 0}
-        style={{ position: 'absolute', top: 0, left: 0 }}
+      <Stage 
+        width={pdfPagesRef.current.get(1)?.width || 0} 
+        height={Array.from(pdfPagesRef.current.values()).reduce((sum, canvas) => sum + canvas.height, 0)}
+        style={{ position: 'absolute', top: 0, left: 0 }} 
         onMouseDown={handleStageClick}
       >
         <Layer>
-          {boundingBoxes &&
-            Array.isArray(boundingBoxes) &&
-            boundingBoxes
-              .filter((box) => box && box.bounding_box_page === currentPage)
-              .map((box) => {
-                if (!box || !box.bounding_box_position) {
-                  console.warn('Invalid bounding box:', box);
-                  return null;
-                }
-                const positions = box.bounding_box_position.match(/\d+/g);
-                if (!positions || positions.length < 4) {
-                  console.warn(`Invalid bounding_box_position format: ${box.bounding_box_position}`);
-                  return null;
-                }
-                
-                const [x1, y1, x2, y2] = positions.map(Number);
-                const { title, point } = getQuestionForBox(box.bounding_box_id);
-                const { x, y, width, height } = normalizeBoundingBoxPosition(box.bounding_box_position);
-                const displayTitle =
-                  box.bounding_box_type === 'NAME'
-                    ? 'Name' // ข้อความสำหรับ Bounding Box ที่เป็น NAME
-                    : box.bounding_box_type === 'STUDENTID'
-                      ? 'Student ID' // ข้อความสำหรับ Bounding Box ที่เป็น STUDENTID
-                      : `${title}: ${point} point`; // ข้อความสำหรับ Bounding Box ที่เป็น Question
+          {/* ✅ เส้นแบ่งหน้า PDF ที่ถูกต้อง */}
+          {Array.from(pageHeights.current.entries()).map(([page, yPosition]) => {
+            const pageCanvas = pdfPagesRef.current.get(page);
+            if (!pageCanvas) return null;
+            const pageBottom = yPosition + pageCanvas.height;
 
-                const color =
-                  box.bounding_box_type === 'NAME'
-                    ? 'rgba(0, 255, 0, 0.3)'
-                    : box.bounding_box_type === 'STUDENTID'
-                      ? 'rgba(255, 165, 0, 0.3)'
-                      : 'rgba(0, 0, 255, 0.3)';
+            return (
+              <Line
+                key={`page-separator-${page}`}
+                points={[0, pageBottom, pageCanvas.width, pageBottom]}
+                stroke="red"
+                strokeWidth={2}
+                dash={[10, 5]}
+              />
+            );
+          })}
 
-                const strokeColor =
-                  box.bounding_box_type === 'NAME'
-                    ? 'green'
-                    : box.bounding_box_type === 'STUDENTID'
-                      ? 'orange'
-                      : 'blue';
+          {/* ✅ Bounding Box */}
+          {boundingBoxes.map((box) => {
+            if (!box.bounding_box_position || !pdfPagesRef.current.get(box.bounding_box_page)) return null;
 
+            const { x, y, width, height } = normalizeBoundingBoxPosition(box.bounding_box_position);
+            const { title, point } = getQuestionForBox(box.bounding_box_id);
+            const pageOffset = pageHeights.current.get(box.bounding_box_page) || 0;
 
-                return (
-                  <React.Fragment key={box.bounding_box_id}>
-                    <Rect
-                      ref={(node) => {
-                        rectRefs.current[box.bounding_box_id] = node;
-                      }}
-                      x={x1}
-                      y={y1}
-                      width={width}
-                      height={height}
-                      fill={color}
-                      stroke={strokeColor}
-                      strokeWidth={2}
-                      draggable // เปิดใช้งานการลาก
-                      onClick={() => form.setFieldValue('selectedBoxId', box.bounding_box_id)}
-                      onDragEnd={(e) => {
-                        const node = e.target;
-                        const scale = canvasRef.current?.width ? canvasRef.current.width / (canvasRef.current.offsetWidth || 1) : 1; // คำนวณ scale factor
-                      
-                        const newX1 = Math.round(node.x() * scale);
-                        const newY1 = Math.round(node.y() * scale);
-                        const newX2 = Math.round((node.x() + width) * scale);
-                        const newY2 = Math.round((node.y() + height) * scale);
-                      
-                        const updatedBoundingBox = {
-                          ...box,
-                          bounding_box_position: `(${newX1},${newY1}),(${newX2},${newY2})`,
-                        };
-                      
-                        console.log("✅ Updated Bounding Box Position:", updatedBoundingBox);
-                      
-                        updateBoundingBox(box.bounding_box_id, updatedBoundingBox);
-                        transformerRef.current?.getLayer()?.batchDraw();
-                      }}
-                      
-                    />
-
-                      
-                    <Rect x={x1} y={y1 - 25} width={width} height={22} fill="gray" opacity={0.7} />
-                    <Text x={x1 + 5} y={y1 - 18} text={displayTitle} fontSize={12} fill="white" fontStyle="bold" />
-                  </React.Fragment>
-                );
-              })}
-
+            return (
+              <Rect 
+                key={box.bounding_box_id}
+                x={x} y={y + pageOffset} width={width} height={height} 
+                fill="rgba(0, 0, 255, 0.3)" stroke="blue" strokeWidth={2}
+                draggable
+                onClick={() => form.setFieldValue('selectedBoxId', box.bounding_box_id)}
+              />
+            );
+          })}
           <Transformer ref={transformerRef} />
         </Layer>
       </Stage>
