@@ -5,7 +5,6 @@ interface BoundingBox {
   bounding_box_position: string;
   bounding_box_type: string;
   bounding_box_page: number;
-  bounding_box_image: string;
 }
 
 interface SubQuestion {
@@ -48,11 +47,17 @@ const useBoundingBoxStore = create<BoundingBoxStore>((set) => ({
   setBoundingBoxes: (boxes) => set({ boundingBoxes: boxes }),
   setRubricData: (rubricData) => set({ rubricData }),
 
+
   addBoundingBox: (box) =>
     set((state) => ({
-      boundingBoxes: [...state.boundingBoxes, box], 
+      boundingBoxes: [...state.boundingBoxes, { 
+        bounding_box_id: box.bounding_box_id,
+        bounding_box_position: box.bounding_box_position,
+        bounding_box_type: box.bounding_box_type,
+        bounding_box_page: box.bounding_box_page
+      }],
     })),
-
+    
   addQuestion: (question) =>
     set((state) => ({
       rubricData: {
@@ -65,10 +70,15 @@ const useBoundingBoxStore = create<BoundingBoxStore>((set) => ({
       set((state) => ({
         boundingBoxes: state.boundingBoxes.map((box) =>
           box.bounding_box_id === id
-            ? { ...box, ...updatedBox, bounding_box_position: updatedBox.bounding_box_position || box.bounding_box_position }
+            ? {
+                ...box,
+                ...updatedBox,
+                bounding_box_position: updatedBox.bounding_box_position || box.bounding_box_position,
+              }
             : box
         ),
       })),
+    
     
 
   updateQuestion: (id, updatedQuestion) =>
