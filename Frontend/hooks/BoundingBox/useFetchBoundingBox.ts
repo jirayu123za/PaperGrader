@@ -9,7 +9,6 @@ interface BoundingBox {
   bounding_box_position: string;
   bounding_box_type: string;
   bounding_box_page: number;
-  bounding_box_image: string;
 }
 
 interface SubQuestion {
@@ -49,15 +48,23 @@ export const useFetchBoundingBoxesAndQuestions = (assignmentId: string) => {
         axios.get(`${API_BASE_URL}/questions?assignment_id=${assignmentId}`),
       ]);
 
-      const boundingBoxes = boundingBoxesRes.data.bounding_boxes || [];
-      const rubricData = questionsRes.data.questions?.rubric_data || { rubric_id: `temp-${Date.now()}`, questions: [] };
+      let boundingBoxes = boundingBoxesRes.data.bounding_boxes || [];
+      let rubricData = questionsRes.data.questions?.rubric_data || { rubric_id: `temp-${Date.now()}`, questions: [] };
 
 
+      rubricData.questions = rubricData.questions.map((question: Question) => {
+        const matchingBoundingBox: BoundingBox | undefined = boundingBoxes.find(
+          (box: BoundingBox) => box.bounding_box_id === question.bounding_box_id
+        );
 
-      if (!rubricData.rubric_id) {
-        rubricData.rubric_id = `temp-${Date.now()}`; 
-      }
+        return {
+          ...question,
+          boundingBox: matchingBoundingBox || null, // ✅ เพิ่มข้อมูล Bounding Box ลงใน Question
+        };
+      });
 
+
+      // 🔥 เก็บค่าใหม่ที่จับคู่แล้วใน Zustand Store
       setBoundingBoxes(boundingBoxes);
       setRubricData(rubricData);
 
@@ -67,58 +74,38 @@ export const useFetchBoundingBoxesAndQuestions = (assignmentId: string) => {
   });
 };
 
+
 // 📌 Mutation: เพิ่ม BoundingBox + Question (POST)
 export const useAddBoundingBoxAndQuestion = (assignmentId: string) => {
   const queryClient = useQueryClient();
-  const { addBoundingBox, addQuestion } = useBoundingBoxStore();
+  const { boundingBoxes, rubricData } = useBoundingBoxStore(); // ✅ ดึงข้อมูลจาก store
 
-  return useMutation<
-    void,
-    Error,
-    {
-      boundingBoxes: Omit<BoundingBox, "bounding_box_id">[];
-      questionsData?: {
-        questions: Omit<Question, "question_id">[]
-      }
-    }
-  >({
-    mutationFn: async (data) => {
-      console.log("📤 กำลังส่งข้อมูลไปยัง API...");
-      console.log("🟢 assignment_id ที่ถูกส่งไป:", assignmentId);
-
+  return useMutation<void, Error, void>({
+    mutationFn: async () => {
       const payload = {
-        bounding_boxes: data.boundingBoxes.map(box => ({
-          bounding_box_position: box.bounding_box_position,
-          bounding_box_type: box.bounding_box_type,
-          bounding_box_page: box.bounding_box_page,
-          bounding_box_image: box.bounding_box_image || "", 
-        })),
-        questions_data: data.questionsData && data.questionsData.questions.length > 0
-          ? {
-            questions: data.questionsData.questions.map(question => ({
-              question_point: question.question_point,
-              question_title: question.question_title,
-            }))
-          }
-          : undefined, 
+        bounding_boxes: boundingBoxes, // ✅ ส่งข้อมูล boundingBoxes ตรง ๆ
+        questions_data: rubricData?.questions?.length
+          ? { questions: rubricData.questions }
+          : undefined, // ✅ ถ้าไม่มีคำถาม ให้ส่ง undefined
       };
 
-      console.log("📦 Payload ที่จะส่งไป:", JSON.stringify(payload, null, 2));
-
-      const response = await axios.post(`${API_BASE_URL}/boundingBoxes?assignment_id=${assignmentId}`, payload);
+      console.log("📤 Data ที่จะส่งไป API:", JSON.stringify(payload, null, 2));
+      const response = await axios.post(`${API_BASE_URL}/boundingBoxes?assignment_id=${assignmentId}`, payload, {
+        headers: { "Content-Type": "application/json" }
+      });
 
       console.log("✅ Response จาก API:", response.data);
     },
     onSuccess: () => {
-      console.log(" Success! Data ถูกบันทึก");
+      console.log("✅ Success! Data ถูกบันทึก");
       queryClient.invalidateQueries({ queryKey: ["boundingBoxesAndQuestions", assignmentId] });
-      
     },
     onError: (error) => {
-      console.error(" Error ในการบันทึกข้อมูล:", error);
+      console.error("❌ Error ในการบันทึกข้อมูล:", error);
     },
   });
 };
+
 
 
 // 📌 Mutation: อัปเดต BoundingBox + Question (PUT)
