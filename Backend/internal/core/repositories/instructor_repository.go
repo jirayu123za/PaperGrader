@@ -42,7 +42,6 @@ type InstructorRepository interface {
 	FindInstructorsNameByCourseID(courseID uuid.UUID) ([]response.InstructorListResponse, error)
 
 	// CRUD operations for Submissions
-	//! AddSubmissionFiles function is not implemented in the repository
 	AddSubmissionFiles(submission []models.Submission) error
 	AddSubmissionAFile(submissionFile []models.Submission) error
 	ModifySubmissionList(SubmissionID uuid.UUID, AssignmentID uuid.UUID, PersonalDataID uuid.UUID) error
@@ -53,9 +52,14 @@ type InstructorRepository interface {
 	FindStudentListForSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForSubmissionResponse, error)
 	FindAssignmentTemplateName(AssignmentID uuid.UUID) (string, error)
 
+	//! CRUD SubmissionBox
+	ADDCroppedSubmissionBox(submissionID uuid.UUID, bbox models.SubmissionBox, fileName string) error
+
 	// CRUD BoundingBox
 	AddBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error
 	FindBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error)
+	//! For submission
+	FindBoundingBoxesType(AssignmentID uuid.UUID) ([]response.SubmissionBoxPositionResponse, error)
 	ModifyBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
 	RemoveBoundingBoxes(AssignmentID uuid.UUID, boundingBoxIDs []uuid.UUID) error
 
