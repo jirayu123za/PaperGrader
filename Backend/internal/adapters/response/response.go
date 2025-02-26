@@ -165,3 +165,8 @@ type SubmissionListForManagementResponse struct {
 	HasAssigned  bool      `json:"has_assigned"`
 	SubmittedAt  time.Time `json:"submitted_at"`
 }
+
+type SubmissionBoxPositionResponse struct {
+	BoundingBoxType     string `json:"bounding_box_type"`
+	BoundingBoxPosition string `json:"bounding_box_position"`
+}
