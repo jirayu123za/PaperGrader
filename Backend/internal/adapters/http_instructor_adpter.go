@@ -1395,6 +1395,14 @@ func (h *HttpInstructorHandler) CreateSubmissionAFile(c *fiber.Ctx) error {
 		})
 	}
 
+	boundingBoxesPosition, err := h.services.GetBoundingBoxesType(assignmentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get bounding boxes type position",
+			"error":   err.Error(),
+		})
+	}
+
 	pagePerSubmission, err := h.services.GetAssignmentTemplateCount(courseID, assignmentID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -1501,24 +1509,87 @@ func (h *HttpInstructorHandler) CreateSubmissionAFile(c *fiber.Ctx) error {
 				})
 			}
 
-			submissions = append(submissions, models.Submission{
+			submission := models.Submission{
 				SubmittedBy:        userID,
 				AssignmentID:       assignmentID,
 				SubmissionFileName: submissionFileName,
 				SubmittedAt:        time.Now(),
-			})
+			}
+			submissions = append(submissions, submission)
+
+			//!
+			submissionFirstPage := 1
+
+			for _, bbox := range boundingBoxesPosition {
+				croppedFilePath, err := utils.CropPDFByBoundingBox(mergedFilePath, submissionFileName, bbox.BoundingBoxType, bbox.BoundingBoxPosition, submissionFirstPage)
+				if err != nil {
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+						"message": fmt.Sprintf("Failed to crop PDF for %s", bbox.BoundingBoxType),
+						"error":   err.Error(),
+					})
+				}
+
+				croppedFileData, err := os.ReadFile(croppedFilePath)
+				if err != nil {
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+						"message": "Failed to read cropped file",
+						"error":   err.Error(),
+					})
+				}
+
+				err = h.minioServices.CreateCroppedImage(courseID.String(), assignmentID.String(), filepath.Base(croppedFilePath), croppedFileData)
+				if err != nil {
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+						"message": "Failed to upload cropped file",
+						"error":   err.Error(),
+					})
+				}
+				os.Remove(croppedFilePath)
+			}
 		}
 	}
 
-	if err := h.services.CreateSubmissionAFile(submissions); err != nil {
+	// if err := h.services.CreateSubmissionAFile(submissions); err != nil {
+	// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+	// 		"message": "Failed to create submission files",
+	// 		"error":   err.Error(),
+	// 	})
+	// }
+
+	// 	if err := h.services.CreateCroppedSubmissionBox(submission.SubmissionID, submissionBox, submission.SubmissionFileName); err != nil {
+	// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+	// 			"message": "Failed to create submission box",
+	// 			"error":   err.Error(),
+	// 		})
+	// 	}
+	// }
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Submission files created successfully",
+	})
+}
+
+func (h *HttpInstructorHandler) GetBoundingBoxesTypePosition(c *fiber.Ctx) error {
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	boundingBoxesTypePosition, err := h.services.GetBoundingBoxesType(assignmentID)
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to create submission files",
+			"message": "Failed to get bounding boxes type position",
 			"error":   err.Error(),
 		})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Submission files created successfully",
+		"message": "Bounding boxes type position are retrieved",
+		"result":  boundingBoxesTypePosition,
 	})
 }
 
