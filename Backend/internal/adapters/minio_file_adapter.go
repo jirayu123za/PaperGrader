@@ -84,8 +84,8 @@ func (r *MinIORepository) AddCroppedImage(CourseID, AssignmentID, fileName strin
 	objectName = strings.ReplaceAll(objectName, "\\", "/")
 
 	_, err = r.client.PutObject(ctx, r.bucketName, objectName, bytes.NewReader(fileData), int64(len(fileData)), minio.PutObjectOptions{
-		// ContentType: "application/pdf",
-		ContentType: "image/png",
+		ContentType: "application/pdf",
+		// ContentType: "image/png",
 	})
 
 	if err != nil {
