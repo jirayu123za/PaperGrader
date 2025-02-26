@@ -748,6 +748,19 @@ func (r *GormInstructorRepository) FindAssignmentTemplateName(AssignmentID uuid.
 	return assignmentFile.AssignmentFileName, nil
 }
 
+// For submission box
+func (r *GormInstructorRepository) ADDCroppedSubmissionBox(submissionID uuid.UUID, bbox models.SubmissionBox, fileName string) error {
+	submissionBox := models.SubmissionBox{
+		SubmissionID:          submissionID,
+		SubmissionBoxFileName: fileName,
+	}
+
+	if err := r.db.Table("submission_boxes").Create(&submissionBox).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *GormInstructorRepository) AddBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		var rubric *models.Rubric
@@ -872,6 +885,20 @@ func (r *GormInstructorRepository) FindBoundingBoxesByAssignmentTemplate(Assignm
 		})
 	}
 	return responseBoundingBoxes, nil
+}
+
+// For submission
+func (r *GormInstructorRepository) FindBoundingBoxesType(AssignmentID uuid.UUID) ([]response.SubmissionBoxPositionResponse, error) {
+	var boundingBoxes []response.SubmissionBoxPositionResponse
+
+	if err := r.db.
+		Table("bounding_boxes").
+		Select("bounding_box_position, bounding_box_type").
+		Where("assignment_id = ? AND bounding_box_type IN ('name', 'id') AND deleted_at IS NULL", AssignmentID).
+		Find(&boundingBoxes).Error; err != nil {
+		return nil, err
+	}
+	return boundingBoxes, nil
 }
 
 func (r *GormInstructorRepository) ModifyBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error {
