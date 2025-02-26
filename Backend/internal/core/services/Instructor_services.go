@@ -52,8 +52,14 @@ type InstructorService interface {
 	GetStudentListForSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForSubmissionResponse, error)
 	GetAssignmentTemplateCount(CourseID uuid.UUID, AssignmentID uuid.UUID) (int, error)
 
+	//!
+	CreateCroppedSubmissionBox(submissionID uuid.UUID, bbox models.SubmissionBox, fileName string) error
+
 	CreateBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error
 	GetBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error)
+	//!
+	GetBoundingBoxesType(AssignmentID uuid.UUID) ([]response.SubmissionBoxPositionResponse, error)
+
 	UpdateBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
 	DeleteBoundingBoxes(AssignmentID uuid.UUID, boundingBoxIDs []uuid.UUID) error
 
@@ -353,6 +359,14 @@ func (s *InstructorServiceImpl) GetAssignmentTemplateCount(CourseID uuid.UUID, A
 	return templateCount, nil
 }
 
+// !
+func (s *InstructorServiceImpl) CreateCroppedSubmissionBox(submissionID uuid.UUID, bbox models.SubmissionBox, fileName string) error {
+	if err := s.repo.ADDCroppedSubmissionBox(submissionID, bbox, fileName); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *InstructorServiceImpl) CreateBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error {
 	if err := s.repo.AddBoundingBoxesAndQuestions(AssignmentID, boundingBoxes, rubricData); err != nil {
 		return err
@@ -362,6 +376,15 @@ func (s *InstructorServiceImpl) CreateBoundingBoxesAndQuestions(AssignmentID uui
 
 func (s *InstructorServiceImpl) GetBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error) {
 	boundingBoxes, err := s.repo.FindBoundingBoxesByAssignmentTemplate(AssignmentID)
+	if err != nil {
+		return nil, err
+	}
+	return boundingBoxes, nil
+}
+
+// !
+func (s *InstructorServiceImpl) GetBoundingBoxesType(AssignmentID uuid.UUID) ([]response.SubmissionBoxPositionResponse, error) {
+	boundingBoxes, err := s.repo.FindBoundingBoxesType(AssignmentID)
 	if err != nil {
 		return nil, err
 	}
