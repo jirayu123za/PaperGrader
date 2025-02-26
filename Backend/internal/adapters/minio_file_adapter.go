@@ -67,6 +67,52 @@ func (r *MinIORepository) AddFileToMinIO(file multipart.File, CourseID, Assignme
 	return nil
 }
 
+func (r *MinIORepository) AddCroppedImage(CourseID, AssignmentID, fileName string, fileData []byte) error {
+	ctx := context.Background()
+	exists, err := r.client.BucketExists(ctx, r.bucketName)
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		if err := r.client.MakeBucket(ctx, r.bucketName, minio.MakeBucketOptions{Region: "ap-southeast-1"}); err != nil {
+			return err
+		}
+	}
+
+	objectName := filepath.Join(CourseID, AssignmentID, fileName)
+	objectName = strings.ReplaceAll(objectName, "\\", "/")
+
+	_, err = r.client.PutObject(ctx, r.bucketName, objectName, bytes.NewReader(fileData), int64(len(fileData)), minio.PutObjectOptions{
+		// ContentType: "application/pdf",
+		ContentType: "image/png",
+	})
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *MinIORepository) FindSubmissionFile(CourseID, AssignmentID, fileName string) ([]byte, error) {
+	ctx := context.Background()
+	objectName := filepath.Join(CourseID, AssignmentID, fileName)
+	objectName = strings.ReplaceAll(objectName, "\\", "/")
+
+	object, err := r.client.GetObject(ctx, r.bucketName, objectName, minio.GetObjectOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve file from MinIO: %v", err)
+	}
+	defer object.Close()
+
+	fileBuffer := new(bytes.Buffer)
+	if _, err := io.Copy(fileBuffer, object); err != nil {
+		return nil, fmt.Errorf("failed to read file buffer: %v", err)
+	}
+
+	return fileBuffer.Bytes(), nil
+}
+
 func (r *MinIORepository) FindFileFromMinIO(CourseID, AssignmentID, fileName string) (string, error) {
 	ctx := context.Background()
 	objectName := filepath.Join(CourseID, AssignmentID, fileName)
