@@ -1521,7 +1521,8 @@ func (h *HttpInstructorHandler) CreateSubmissionAFile(c *fiber.Ctx) error {
 			submissionFirstPage := 1
 
 			for _, bbox := range boundingBoxesPosition {
-				croppedFilePath, err := utils.CropPDFByBoundingBox(mergedFilePath, submissionFileName, bbox.BoundingBoxType, bbox.BoundingBoxPosition, submissionFirstPage)
+				// croppedFilePath, err := utils.CropPDFByBoundingBox(mergedFilePath, submissionFileName, bbox.BoundingBoxType, bbox.BoundingBoxPosition, submissionFirstPage)
+				croppedFilePath, err := utils.CropPDFToImage(mergedFilePath, submissionFileName, bbox.BoundingBoxType, bbox.BoundingBoxPosition, submissionFirstPage)
 				if err != nil {
 					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 						"message": fmt.Sprintf("Failed to crop PDF for %s", bbox.BoundingBoxType),
