@@ -2,6 +2,8 @@ package utils
 
 import (
 	"fmt"
+	"image"
+	"image/png"
 	"log"
 	"math"
 	"os"
@@ -160,5 +162,68 @@ func CropPDFByBoundingBox(inputPath, submissionFileName, bboxType string, positi
 	if err != nil {
 		return "", fmt.Errorf("failed to crop PDF: %v", err)
 	}
+	return croppedFilePath, nil
+}
+
+func CropPDFToImage(inputPath, submissionFileName, bboxType string, positionStr string, pageNumber int) (string, error) {
+	tempDir, err := os.MkdirTemp("", "pdf_images")
+	if err != nil {
+		return "", fmt.Errorf("failed to create temp directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	err = api.ExtractImagesFile(inputPath, tempDir, []string{fmt.Sprintf("%d", pageNumber)}, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to extract images from PDF: %v", err)
+	}
+
+	files, err := os.ReadDir(tempDir)
+	if err != nil || len(files) == 0 {
+		return "", fmt.Errorf("failed to find extracted images")
+	}
+
+	imageFilePath := filepath.Join(tempDir, files[0].Name())
+
+	imgFile, err := os.Open(imageFilePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open extracted image: %v", err)
+	}
+	defer imgFile.Close()
+
+	img, _, err := image.Decode(imgFile)
+	if err != nil {
+		return "", fmt.Errorf("failed to decode extracted image: %v", err)
+	}
+
+	position, err := ParseBoundingBoxPosition(positionStr)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse bounding box: %v", err)
+	}
+
+	bounds := img.Bounds()
+	if int(position.X2) > bounds.Max.X || int(position.Y2) > bounds.Max.Y ||
+		int(position.X1) < 0 || int(position.Y1) < 0 {
+		return "", fmt.Errorf("bounding box is out of image bounds")
+	}
+
+	rect := image.Rect(int(position.X1), int(position.Y1), int(position.X2), int(position.Y2))
+	croppedImg := img.(interface {
+		SubImage(r image.Rectangle) image.Image
+	}).SubImage(rect)
+
+	croppedFileName := fmt.Sprintf("%s_%s.png", strings.TrimSuffix(submissionFileName, ".pdf"), bboxType)
+	croppedFilePath := filepath.Join(os.TempDir(), croppedFileName)
+
+	outFile, err := os.Create(croppedFilePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to create cropped image file: %v", err)
+	}
+	defer outFile.Close()
+
+	err = png.Encode(outFile, croppedImg)
+	if err != nil {
+		return "", fmt.Errorf("failed to encode cropped image: %v", err)
+	}
+
 	return croppedFilePath, nil
 }
