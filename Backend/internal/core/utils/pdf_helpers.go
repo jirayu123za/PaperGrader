@@ -2,8 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"image"
-	"image/png"
 	"log"
 	"math"
 	"os"
@@ -132,16 +130,21 @@ func ConvertBoundingBoxPosition(original BoundingBoxPosition, pageHeight float64
 	}
 }
 
-func CropPDFByBoundingBox(inputPath, submissionFileName, bboxType string, positionStr string, pageNumber int) (string, error) {
+func CropPDFWithBoundingBox(inputPath, submissionFileName, bboxType string, positionStr string, pageNumber int) (string, error) {
+	log.Printf("Start cropping PDF: %s, Page: %d, BBox Type: %s, Position: %s", inputPath, pageNumber, bboxType, positionStr)
+
 	position, err := ParseBoundingBoxPosition(positionStr)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse BoundingBoxPosition: %v", err)
+		log.Printf("Failed to parse bounding box: %v", err)
+		return "", fmt.Errorf("failed to parse bounding box: %v", err)
 	}
+	log.Printf("Parsed bounding box: %+v", position)
 
-	_, pageHeight, err := GetPDFPageSize(inputPath, pageNumber)
+	pageWidth, pageHeight, err := GetPDFPageSize(inputPath, pageNumber)
 	if err != nil {
 		return "", fmt.Errorf("failed to get PDF page size: %v", err)
 	}
+	log.Printf("PDF page size: %.2f x %.2f", pageWidth, pageHeight)
 
 	convertedBox := ConvertBoundingBoxPosition(position, pageHeight)
 
@@ -151,79 +154,47 @@ func CropPDFByBoundingBox(inputPath, submissionFileName, bboxType string, positi
 			UR: types.Point{X: convertedBox.X2, Y: convertedBox.Y2},
 		},
 	}
-	croppedFileName := fmt.Sprintf("%s_%s.pdf", strings.TrimSuffix(submissionFileName, ".pdf"), bboxType)
-	croppedFilePath := filepath.Join(os.TempDir(), croppedFileName)
 
-	log.Printf("📌 Cropping submission file: %s (Page: %d)", inputPath, pageNumber)
-	log.Printf("🔹 Bounding Box: {X1: %.2f, Y1: %.2f, X2: %.2f, Y2: %.2f}", position.X1, position.Y1, position.X2, position.Y2)
-	log.Printf("📝 Saving cropped file: %s", croppedFilePath)
+	croppedPDFPath := filepath.Join(os.TempDir(), fmt.Sprintf("%s_%s_cropped.pdf", strings.TrimSuffix(submissionFileName, ".pdf"), bboxType))
+	log.Printf("Cropped PDF path: %s", croppedPDFPath)
 
-	err = api.CropFile(inputPath, croppedFilePath, []string{strconv.Itoa(pageNumber)}, box, nil)
+	err = api.CropFile(inputPath, croppedPDFPath, []string{strconv.Itoa(pageNumber)}, box, nil)
 	if err != nil {
+		log.Printf("Failed to crop PDF: %v", err)
 		return "", fmt.Errorf("failed to crop PDF: %v", err)
 	}
-	return croppedFilePath, nil
-}
+	log.Printf("Successfully cropped PDF: %s", croppedPDFPath)
+	defer os.Remove(croppedPDFPath)
 
-func CropPDFToImage(inputPath, submissionFileName, bboxType string, positionStr string, pageNumber int) (string, error) {
-	tempDir, err := os.MkdirTemp("", "pdf_images")
+	if _, err := os.Stat(croppedPDFPath); os.IsNotExist(err) {
+		log.Printf("Cropped PDF file does not exist: %s", croppedPDFPath)
+		return "", fmt.Errorf("cropped PDF file does not exist")
+	}
+
+	err = api.SplitFile(croppedPDFPath, os.TempDir(), 1, nil)
 	if err != nil {
-		return "", fmt.Errorf("failed to create temp directory: %v", err)
+		log.Printf("Failed to split cropped PDF: %v", err)
+		return "", fmt.Errorf("failed to split cropped PDF: %v", err)
 	}
-	defer os.RemoveAll(tempDir)
+	log.Printf("Successfully split cropped PDF into separate pages")
 
-	err = api.ExtractImagesFile(inputPath, tempDir, []string{fmt.Sprintf("%d", pageNumber)}, nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to extract images from PDF: %v", err)
-	}
+	finalPDFPath := filepath.Join(os.TempDir(), fmt.Sprintf("%s_%s_cropped_1.pdf", strings.TrimSuffix(submissionFileName, ".pdf"), bboxType))
+	log.Printf("Extracted first page to: %s", finalPDFPath)
 
-	files, err := os.ReadDir(tempDir)
-	if err != nil || len(files) == 0 {
-		return "", fmt.Errorf("failed to find extracted images")
-	}
-
-	imageFilePath := filepath.Join(tempDir, files[0].Name())
-
-	imgFile, err := os.Open(imageFilePath)
-	if err != nil {
-		return "", fmt.Errorf("failed to open extracted image: %v", err)
-	}
-	defer imgFile.Close()
-
-	img, _, err := image.Decode(imgFile)
-	if err != nil {
-		return "", fmt.Errorf("failed to decode extracted image: %v", err)
+	if _, err := os.Stat(finalPDFPath); os.IsNotExist(err) {
+		log.Printf("Extracted first page PDF file does not exist: %s", finalPDFPath)
+		return "", fmt.Errorf("extracted first page PDF file does not exist")
 	}
 
-	position, err := ParseBoundingBoxPosition(positionStr)
-	if err != nil {
-		return "", fmt.Errorf("failed to parse bounding box: %v", err)
+	files, err := filepath.Glob(filepath.Join(os.TempDir(), fmt.Sprintf("%s_%s_cropped_*.pdf", strings.TrimSuffix(submissionFileName, ".pdf"), bboxType)))
+	if err == nil {
+		for _, f := range files {
+			if f != finalPDFPath {
+				os.Remove(f)
+			}
+		}
 	}
 
-	bounds := img.Bounds()
-	if int(position.X2) > bounds.Max.X || int(position.Y2) > bounds.Max.Y ||
-		int(position.X1) < 0 || int(position.Y1) < 0 {
-		return "", fmt.Errorf("bounding box is out of image bounds")
-	}
-
-	rect := image.Rect(int(position.X1), int(position.Y1), int(position.X2), int(position.Y2))
-	croppedImg := img.(interface {
-		SubImage(r image.Rectangle) image.Image
-	}).SubImage(rect)
-
-	croppedFileName := fmt.Sprintf("%s_%s.png", strings.TrimSuffix(submissionFileName, ".pdf"), bboxType)
-	croppedFilePath := filepath.Join(os.TempDir(), croppedFileName)
-
-	outFile, err := os.Create(croppedFilePath)
-	if err != nil {
-		return "", fmt.Errorf("failed to create cropped image file: %v", err)
-	}
-	defer outFile.Close()
-
-	err = png.Encode(outFile, croppedImg)
-	if err != nil {
-		return "", fmt.Errorf("failed to encode cropped image: %v", err)
-	}
-
-	return croppedFilePath, nil
+	log.Printf("Final cropped single-page PDF saved: %s", finalPDFPath)
+	return finalPDFPath, nil
 }
