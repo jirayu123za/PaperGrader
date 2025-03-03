@@ -158,12 +158,14 @@ type SubmissionFilesResponse struct {
 }
 
 type SubmissionListForManagementResponse struct {
-	SubmissionID uuid.UUID `json:"submission_id"`
-	SectionName  string    `json:"section_name"`
-	FullName     string    `json:"full_name"`
-	StudentCode  string    `json:"student_code"`
-	HasAssigned  bool      `json:"has_assigned"`
-	SubmittedAt  time.Time `json:"submitted_at"`
+	SubmissionID       uuid.UUID `json:"submission_id"`
+	SectionName        string    `json:"section_name"`
+	FullName           string    `json:"full_name"`
+	StudentCode        string    `json:"student_code"`
+	HasAssigned        bool      `json:"has_assigned"`
+	SubmittedAt        time.Time `json:"submitted_at"`
+	SubmissionBoxFiles string    `json:"submission_box_files"`
+	SubmissionBoxURLs  []string  `json:"submission_box_urls"`
 }
 
 type SubmissionBoxPositionResponse struct {
