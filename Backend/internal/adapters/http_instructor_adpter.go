@@ -1426,8 +1426,6 @@ func (h *HttpInstructorHandler) CreateSubmissionAFile(c *fiber.Ctx) error {
 		})
 	}
 
-	var submissions []models.Submission
-
 	for _, fileHeader := range files {
 		srcFile, err := fileHeader.Open()
 		if err != nil {
@@ -1515,7 +1513,13 @@ func (h *HttpInstructorHandler) CreateSubmissionAFile(c *fiber.Ctx) error {
 				SubmissionFileName: submissionFileName,
 				SubmittedAt:        time.Now(),
 			}
-			submissions = append(submissions, submission)
+
+			if err := h.services.CreateSubmissionAFile(&submission); err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"message": "Failed to save submission",
+					"error":   err.Error(),
+				})
+			}
 
 			// Under line here for cropping the submission file based on bounding boxes
 			submissionFirstPage := 1
@@ -1543,25 +1547,22 @@ func (h *HttpInstructorHandler) CreateSubmissionAFile(c *fiber.Ctx) error {
 						"error":   err.Error(),
 					})
 				}
+
+				submissionBox := models.SubmissionBox{
+					SubmissionID:          submission.SubmissionID,
+					SubmissionBoxFileName: filepath.Base(croppedFilePath),
+				}
+
+				if err := h.services.CreateCroppedSubmissionBox(submissionBox); err != nil {
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+						"message": "Failed to create submission box",
+						"error":   err.Error(),
+					})
+				}
 				os.Remove(croppedFilePath)
 			}
 		}
 	}
-
-	// if err := h.services.CreateSubmissionAFile(submissions); err != nil {
-	// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-	// 		"message": "Failed to create submission files",
-	// 		"error":   err.Error(),
-	// 	})
-	// }
-
-	// 	if err := h.services.CreateCroppedSubmissionBox(submission.SubmissionID, submissionBox, submission.SubmissionFileName); err != nil {
-	// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-	// 			"message": "Failed to create submission box",
-	// 			"error":   err.Error(),
-	// 		})
-	// 	}
-	// }
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Submission files created successfully",
