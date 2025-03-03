@@ -4,6 +4,7 @@ import (
 	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/core/repositories"
 	"paperGrader/internal/models"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -54,6 +55,7 @@ type InstructorService interface {
 
 	//!
 	CreateCroppedSubmissionBox(submission models.SubmissionBox) error
+	GetSubmissionFilesWithMinIO(submissions []response.SubmissionListForManagementResponse, CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionListForManagementResponse, error)
 
 	CreateBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error
 	GetBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error)
@@ -365,6 +367,35 @@ func (s *InstructorServiceImpl) CreateCroppedSubmissionBox(submission models.Sub
 		return err
 	}
 	return nil
+}
+
+func (s *InstructorServiceImpl) GetSubmissionFilesWithMinIO(submissions []response.SubmissionListForManagementResponse, CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionListForManagementResponse, error) {
+	var submissionIDs []uuid.UUID
+	for _, submission := range submissions {
+		submissionIDs = append(submissionIDs, submission.SubmissionID)
+	}
+
+	submissionBoxes, err := s.repo.FindSubmissionBoxBySubmissionID(submissionIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	for i, submission := range submissions {
+		if fileNames, exists := submissionBoxes[submission.SubmissionID]; exists {
+			var fileURLs []string
+
+			for _, fileName := range fileNames {
+				fileURL, err := s.minioRepo.FindFileURLSubmissionBoxes(CourseID.String(), AssignmentID.String(), fileName)
+				if err != nil {
+					continue
+				}
+				fileURLs = append(fileURLs, fileURL)
+			}
+			submissions[i].SubmissionBoxFiles = strings.Join(fileNames, ",")
+			submissions[i].SubmissionBoxURLs = fileURLs
+		}
+	}
+	return submissions, nil
 }
 
 func (s *InstructorServiceImpl) CreateBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error {
