@@ -43,7 +43,7 @@ type InstructorRepository interface {
 
 	// CRUD operations for Submissions
 	AddSubmissionFiles(submission []models.Submission) error
-	AddSubmissionAFile(submissionFile []models.Submission) error
+	AddSubmissionAFile(submissionFile *models.Submission) error
 	ModifySubmissionList(SubmissionID uuid.UUID, AssignmentID uuid.UUID, PersonalDataID uuid.UUID) error
 	FindSubmissionFiles(AssignmentID uuid.UUID) ([]response.SubmissionFilesResponse, error)
 	FindSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
@@ -53,7 +53,7 @@ type InstructorRepository interface {
 	FindAssignmentTemplateName(AssignmentID uuid.UUID) (string, error)
 
 	//! CRUD SubmissionBox
-	ADDCroppedSubmissionBox(submissionID uuid.UUID, bbox models.SubmissionBox, fileName string) error
+	ADDCroppedSubmissionBox(submission models.SubmissionBox) error
 
 	// CRUD BoundingBox
 	AddBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error
