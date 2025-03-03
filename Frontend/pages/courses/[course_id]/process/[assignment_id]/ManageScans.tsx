@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import LeftProcess from '../../../../../components/LeftINS/LeftProcess';
-import INSManageScans from '../../../../../components/INS/INSProcess/INSManageScans';
+import INSManageScans from '../../../../../components/INS/INSProcess/ManageScans/INSManageScans';
 import { Loader, Tabs } from '@mantine/core';
 import { useMounted } from '@mantine/hooks';
-import { ManageSplits } from '../../../../../components/INS/INSProcess/ManageSplits';
+import { ManageSplits } from '../../../../../components/INS/INSProcess/ManageScans/ManageSplits';
 
 export default function INSManageScansPage() {
   const mounted = useMounted();
