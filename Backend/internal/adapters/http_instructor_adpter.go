@@ -1288,7 +1288,7 @@ func (h *HttpInstructorHandler) GetSubmissionsListForManagement(c *fiber.Ctx) er
 		})
 	}
 
-	submissionsList, err := h.services.GetSubmissionsListForManagement(courseID, assignmentID)
+	submissions, err := h.services.GetSubmissionsListForManagement(courseID, assignmentID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to get submissions list",
@@ -1296,9 +1296,14 @@ func (h *HttpInstructorHandler) GetSubmissionsListForManagement(c *fiber.Ctx) er
 		})
 	}
 
+	submissions, err = h.services.GetSubmissionFilesWithMinIO(submissions, courseID, assignmentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Failed to fetch submission files", "error": err.Error()})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":     "Submissions list is retrieved",
-		"submissions": submissionsList,
+		"submissions": submissions,
 	})
 }
 
