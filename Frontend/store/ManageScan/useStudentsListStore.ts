@@ -15,6 +15,8 @@ interface SubmissionsList {
     student_code: string;
     has_assigned: boolean;
     submitted_at: string;
+    submission_box_files?: string;
+    submission_box_urls?: string[];
 }
 
 interface StudentsListStore {
