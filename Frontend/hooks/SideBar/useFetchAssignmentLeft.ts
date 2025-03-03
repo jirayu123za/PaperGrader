@@ -26,5 +26,6 @@ export const useFetchAssignmentLeft = (course_id: string, assignment_id: string)
             setAssignmentLeftProcess(data);
             return data;
         },
+        enabled: !!course_id && !!assignment_id,
     });
 };
