@@ -9,6 +9,8 @@ interface SubmissionsList {
     student_code: string | null;
     has_assigned: boolean;
     submitted_at: string;
+    submission_box_files?: string;
+    submission_box_urls?: string[];
 }
 
 export const useFetchSubmissionsList = (course_id: string, assignment_id: string) => {
