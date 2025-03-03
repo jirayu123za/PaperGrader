@@ -148,6 +148,19 @@ func (r *MinIORepository) FindFilesAndNames(CourseID, AssignmentID, fileNames []
 	return fileURLs, fileNamesResult, nil
 }
 
+func (r *MinIORepository) FindFileURLSubmissionBoxes(CourseID, AssignmentID, fileName string) (string, error) {
+	reqParams := make(url.Values)
+	ctx := context.Background()
+	objectName := filepath.Join(CourseID, AssignmentID, fileName)
+	objectName = strings.ReplaceAll(objectName, "\\", "/")
+
+	presignedURL, err := r.client.PresignedGetObject(ctx, r.bucketName, objectName, time.Minute*15, reqParams)
+	if err != nil {
+		return "", err
+	}
+	return presignedURL.String(), nil
+}
+
 func (r *MinIORepository) FindTemplatePageCountFromMinIO(CourseID, AssignmentID, fileName string) (int, error) {
 	ctx := context.Background()
 	objectName := filepath.Join(CourseID, AssignmentID, fileName)
