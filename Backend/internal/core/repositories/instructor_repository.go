@@ -54,6 +54,7 @@ type InstructorRepository interface {
 
 	//! CRUD SubmissionBox
 	ADDCroppedSubmissionBox(submission models.SubmissionBox) error
+	FindSubmissionBoxBySubmissionID(submissionIDs []uuid.UUID) (map[uuid.UUID][]string, error)
 
 	// CRUD BoundingBox
 	AddBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error
