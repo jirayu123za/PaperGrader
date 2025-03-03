@@ -43,7 +43,7 @@ type InstructorService interface {
 	GetInstructorsNameByCourseID(courseID uuid.UUID) ([]response.InstructorListResponse, error)
 
 	CreateSubmissionFiles(submission []models.Submission) error
-	CreateSubmissionAFile(submissionFile []models.Submission) error
+	CreateSubmissionAFile(submissionFile *models.Submission) error
 	UpdateSubmissionList(SubmissionID uuid.UUID, AssignmentID uuid.UUID, PersonalDataID uuid.UUID) error
 	GetSubmissionFiles(AssignmentID uuid.UUID) ([]response.SubmissionFilesResponse, error)
 	GetSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
@@ -53,7 +53,7 @@ type InstructorService interface {
 	GetAssignmentTemplateCount(CourseID uuid.UUID, AssignmentID uuid.UUID) (int, error)
 
 	//!
-	CreateCroppedSubmissionBox(submissionID uuid.UUID, bbox models.SubmissionBox, fileName string) error
+	CreateCroppedSubmissionBox(submission models.SubmissionBox) error
 
 	CreateBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error
 	GetBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error)
@@ -286,7 +286,7 @@ func (s *InstructorServiceImpl) CreateSubmissionFiles(submission []models.Submis
 	return nil
 }
 
-func (s *InstructorServiceImpl) CreateSubmissionAFile(submissionFile []models.Submission) error {
+func (s *InstructorServiceImpl) CreateSubmissionAFile(submissionFile *models.Submission) error {
 	if err := s.repo.AddSubmissionAFile(submissionFile); err != nil {
 		return err
 	}
@@ -360,8 +360,8 @@ func (s *InstructorServiceImpl) GetAssignmentTemplateCount(CourseID uuid.UUID, A
 }
 
 // !
-func (s *InstructorServiceImpl) CreateCroppedSubmissionBox(submissionID uuid.UUID, bbox models.SubmissionBox, fileName string) error {
-	if err := s.repo.ADDCroppedSubmissionBox(submissionID, bbox, fileName); err != nil {
+func (s *InstructorServiceImpl) CreateCroppedSubmissionBox(submission models.SubmissionBox) error {
+	if err := s.repo.ADDCroppedSubmissionBox(submission); err != nil {
 		return err
 	}
 	return nil
