@@ -687,7 +687,7 @@ func (r *GormInstructorRepository) AddSubmissionFiles(submissionFiles []models.S
 	return nil
 }
 
-func (r *GormInstructorRepository) AddSubmissionAFile(submissionFile []models.Submission) error {
+func (r *GormInstructorRepository) AddSubmissionAFile(submissionFile *models.Submission) error {
 	if err := r.db.Create(submissionFile).Error; err != nil {
 		return err
 	}
@@ -749,13 +749,13 @@ func (r *GormInstructorRepository) FindAssignmentTemplateName(AssignmentID uuid.
 }
 
 // For submission box
-func (r *GormInstructorRepository) ADDCroppedSubmissionBox(submissionID uuid.UUID, bbox models.SubmissionBox, fileName string) error {
+func (r *GormInstructorRepository) ADDCroppedSubmissionBox(submission models.SubmissionBox) error {
 	submissionBox := models.SubmissionBox{
-		SubmissionID:          submissionID,
-		SubmissionBoxFileName: fileName,
+		SubmissionID:          submission.SubmissionID,
+		SubmissionBoxFileName: submission.SubmissionBoxFileName,
 	}
 
-	if err := r.db.Table("submission_boxes").Create(&submissionBox).Error; err != nil {
+	if err := r.db.Create(&submissionBox).Error; err != nil {
 		return err
 	}
 	return nil
