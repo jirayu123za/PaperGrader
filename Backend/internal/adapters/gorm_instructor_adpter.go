@@ -761,6 +761,29 @@ func (r *GormInstructorRepository) ADDCroppedSubmissionBox(submission models.Sub
 	return nil
 }
 
+func (r *GormInstructorRepository) FindSubmissionBoxBySubmissionID(submissionIDs []uuid.UUID) (map[uuid.UUID][]string, error) {
+	var submissionBoxes []struct {
+		SubmissionID          uuid.UUID
+		SubmissionBoxFileName string
+	}
+
+	err := r.db.
+		Table("submission_boxes").
+		Select("submission_id, submission_box_file_name").
+		Where("submission_id IN ?", submissionIDs).
+		Find(&submissionBoxes).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[uuid.UUID][]string)
+	for _, sb := range submissionBoxes {
+		result[sb.SubmissionID] = append(result[sb.SubmissionID], sb.SubmissionBoxFileName)
+	}
+	return result, nil
+}
+
 func (r *GormInstructorRepository) AddBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		var rubric *models.Rubric
