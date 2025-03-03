@@ -9,7 +9,7 @@ import (
 
 type SubmissionBox struct {
 	SubmissionBoxID       uuid.UUID `gorm:"primaryKey"`
-	SubmissionID          uuid.UUID `gorm:"not null"`
+	SubmissionID          uuid.UUID `gorm:"not null" json:"submission_id"`
 	SubmissionBoxFileName string    `gorm:"not null" json:"submission_box_file_name"`
 	CreatedAt             time.Time
 	UpdatedAt             time.Time
