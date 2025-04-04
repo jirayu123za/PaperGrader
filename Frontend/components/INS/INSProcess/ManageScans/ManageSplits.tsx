@@ -124,11 +124,11 @@ export const ManageSplits = () => {
                         <Table highlightOnHover w="100%" miw='900px'>
                             <Table.Thead>
                                 <Table.Tr>
-                                    <Table.Th w='30%'>Name & ID Region</Table.Th>
+                                    <Table.Th w='25%'>Name & ID Region</Table.Th>
                                     <Table.Th w="20%">Student</Table.Th>
                                     <Table.Th w="15%">Sections Submitted</Table.Th>
                                     <Table.Th w="15%">Submission Time</Table.Th>
-                                    <Table.Th w="10%" ta='center'>Graded</Table.Th>
+                                    {/* <Table.Th w="10%" ta='center'>Graded</Table.Th> */}
                                     <Table.Th w="10%" ta='center'>Delete Submission</Table.Th>
                                 </Table.Tr>
                             </Table.Thead>
@@ -190,11 +190,11 @@ export const ManageSplits = () => {
                                         <Table.Td>
                                             <Text>{formatDate(submission.submitted_at)}</Text>
                                         </Table.Td>
-                                        <Table.Td ta='center'>
+                                        {/* <Table.Td ta='center'>
                                             <Badge w={52} color={submission.graded > 0 ? 'orange' : 'red'}>
                                                 {submission.graded}%
                                             </Badge>
-                                        </Table.Td>
+                                        </Table.Td> */}
                                         <Table.Td ta='center'>
                                             <ActionIcon variant="transparent" aria-label="Delete Submission">
                                                 <RiDeleteBinLine size={20} />
