@@ -177,6 +177,13 @@ func main() {
 	apiGroup.Get("/instructor/submission/studentList", instructorHandler.GetStudentListForSubmission)
 	apiGroup.Get("/instructor/submission/test", instructorHandler.GetAssignmentTemplateCount)
 
+	// OCR
+	// Mock data for OCR
+	// apiGroup.Get("/instructor/ocr/studentsList", instructorHandler.MockHandler2)
+	// apiGroup.Get("/instructor/ocr/submissionBoxes", instructorHandler.MockHandler)
+	// apiGroup.Get("/instructor/ocr/submissionBoxes/v2", instructorHandler.MockHandler3)
+	apiGroup.Get("/instructor/ocr/submissionBoxes/v3", instructorHandler.MockHandler4)
+
 	// Bounding Box
 	apiGroup.Post("/instructor/boundingBoxes", instructorHandler.CreateBoundingBoxesAndQuestions)
 	apiGroup.Get("/instructor/boundingBoxes", instructorHandler.GetBoundingBoxesByAssignmentTemplate)
