@@ -2,8 +2,10 @@ package utils
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"math"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -197,4 +199,30 @@ func CropPDFWithBoundingBox(inputPath, submissionFileName, bboxType string, posi
 
 	log.Printf("Final cropped single-page PDF saved: %s", finalPDFPath)
 	return finalPDFPath, nil
+}
+
+// OCR process
+func DownloadFileFromURL(url, filename string) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		return fmt.Errorf("failed to download file: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("received non-200 response code: %d", resp.StatusCode)
+	}
+
+	out, err := os.Create(filename)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %w", err)
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to save file: %w", err)
+	}
+
+	return nil
 }
