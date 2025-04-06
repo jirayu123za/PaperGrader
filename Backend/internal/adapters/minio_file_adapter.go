@@ -185,3 +185,25 @@ func (r *MinIORepository) FindTemplatePageCountFromMinIO(CourseID, AssignmentID,
 
 	return pageCount, nil
 }
+
+func (r *MinIORepository) FindFilesBoundingBoxesNameAndID(CourseID, AssignmentID string, fileNames []string) (string, string, error) {
+	var nameURL, idURL string
+
+	for _, fileName := range fileNames {
+		if strings.Contains(fileName, "_name") {
+			url, err := r.FindFileURLSubmissionBoxes(CourseID, AssignmentID, fileName)
+			if err != nil {
+				return "", "", fmt.Errorf("failed to get name file URL: %v", err)
+			}
+			nameURL = url
+		} else if strings.Contains(fileName, "_id") {
+			url, err := r.FindFileURLSubmissionBoxes(CourseID, AssignmentID, fileName)
+			if err != nil {
+				return "", "", fmt.Errorf("failed to get id file URL: %v", err)
+			}
+			idURL = url
+		}
+	}
+
+	return nameURL, idURL, nil
+}
