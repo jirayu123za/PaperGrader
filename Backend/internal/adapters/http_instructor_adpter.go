@@ -1783,3 +1783,127 @@ func (h *HttpInstructorHandler) GetQuestionsByAssignmentTemplate(c *fiber.Ctx) e
 		"questions": questionsResp,
 	})
 }
+
+// ! mock handler
+// func (h *HttpInstructorHandler) MockHandler(c *fiber.Ctx) error {
+// 	assignmentIDParam := c.Query("assignment_id")
+// 	assignmentID, err := uuid.Parse(assignmentIDParam)
+// 	if err != nil {
+// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+// 			"message": "Invalid assignment_id",
+// 			"error":   err.Error(),
+// 		})
+// 	}
+
+// 	questionsResp, err := h.services.MockGetSubmissionBoxesForOCR(assignmentID)
+// 	if err != nil {
+// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+// 			"message": "Failed to get questions",
+// 			"error":   err.Error(),
+// 		})
+// 	}
+
+// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+// 		"message": "Mock handler GetSubmissionBoxesForOCR services",
+// 		"result":  questionsResp,
+// 	})
+// }
+
+// func (h *HttpInstructorHandler) MockHandler2(c *fiber.Ctx) error {
+// 	courseIDParam := c.Query("course_id")
+// 	courseID, err := uuid.Parse(courseIDParam)
+// 	if err != nil {
+// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+// 			"message": "Invalid course_id",
+// 			"error":   err.Error(),
+// 		})
+// 	}
+
+// 	assignmentIDParam := c.Query("assignment_id")
+// 	assignmentID, err := uuid.Parse(assignmentIDParam)
+// 	if err != nil {
+// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+// 			"message": "Invalid assignment_id",
+// 			"error":   err.Error(),
+// 		})
+// 	}
+
+// 	studentsList, err := h.services.MockGetStudentsListForOCR(courseID, assignmentID)
+// 	if err != nil {
+// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+// 			"message": "Failed to get questions",
+// 			"error":   err.Error(),
+// 		})
+// 	}
+
+// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+// 		"message": "Mock handler GetSubmissionBoxesForOCR services",
+// 		"result":  studentsList,
+// 	})
+// }
+
+// func (h *HttpInstructorHandler) MockHandler3(c *fiber.Ctx) error {
+// 	courseIDParam := c.Query("course_id")
+// 	courseID, err := uuid.Parse(courseIDParam)
+// 	if err != nil {
+// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+// 			"message": "Invalid course_id",
+// 			"error":   err.Error(),
+// 		})
+// 	}
+
+// 	assignmentIDParam := c.Query("assignment_id")
+// 	assignmentID, err := uuid.Parse(assignmentIDParam)
+// 	if err != nil {
+// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+// 			"message": "Invalid assignment_id",
+// 			"error":   err.Error(),
+// 		})
+// 	}
+
+// 	response, err := h.services.MockGetSubmissionBoxesFromMinIO(courseID, assignmentID)
+// 	if err != nil {
+// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+// 			"message": "Failed to get questions",
+// 			"error":   err.Error(),
+// 		})
+// 	}
+
+// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+// 		"message": "Mock handler GetSubmissionBoxesForOCR services",
+// 		"result":  response,
+// 	})
+// }
+
+func (h *HttpInstructorHandler) MockHandler4(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	response, err := h.services.MockMatchAllSubmissionOCR(courseID, assignmentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get questions",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Mock handler GetSubmissionBoxesForOCR services",
+		"result":  response,
+	})
+}
