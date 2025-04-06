@@ -761,6 +761,56 @@ func (r *GormInstructorRepository) ADDCroppedSubmissionBox(submission models.Sub
 	return nil
 }
 
+// For OCR
+func (r *GormInstructorRepository) FindStudentsListForOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForOCRResponse, error) {
+	var studentList []response.StudentListForOCRResponse
+
+	if err := r.db.
+		Table("personal_data AS pd").
+		Select("pd.personal_data_id, pd.student_code, CONCAT(pd.first_name, ' ', pd.last_name) AS full_name").
+		Joins("JOIN enrollment_lists AS el ON pd.personal_data_id = el.personal_data_id").
+		Where("el.course_id = ?", CourseID).
+		Where("pd.role_type = ?", "STUDENT").
+		Where(` NOT EXISTS (
+				SELECT 1 FROM submissions s
+				WHERE s.belongs_to = pd.personal_data_id
+				AND s.assignment_id = ?
+			)`, AssignmentID).
+		Find(&studentList).Error; err != nil {
+		return nil, err
+	}
+	return studentList, nil
+}
+
+func (r *GormInstructorRepository) FindSubmissionBoxesForOCR(AssignmentID uuid.UUID) ([]response.GroupSubmissionBoxesForOCR, error) {
+	var rawData []response.SubmissionBoxesForOCR
+
+	err := r.db.
+		Table("submission_boxes AS sb").
+		Select("sb.submission_id, sb.submission_box_file_name").
+		Joins("JOIN submissions AS s ON sb.submission_id = s.submission_id").
+		Where("s.assignment_id = ? AND s.belongs_to IS NULL AND sb.deleted_at IS NULL AND s.deleted_at IS NULL", AssignmentID).
+		Find(&rawData).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	groupMap := make(map[uuid.UUID][]string)
+	for _, item := range rawData {
+		groupMap[item.SubmissionID] = append(groupMap[item.SubmissionID], item.SubmissionBoxFileName)
+	}
+
+	var grouped []response.GroupSubmissionBoxesForOCR
+	for submissionID, fileNames := range groupMap {
+		grouped = append(grouped, response.GroupSubmissionBoxesForOCR{
+			SubmissionID:          submissionID,
+			SubmissionBoxFileName: fileNames,
+		})
+	}
+	return grouped, nil
+}
+
 func (r *GormInstructorRepository) FindSubmissionBoxBySubmissionID(submissionIDs []uuid.UUID) (map[uuid.UUID][]string, error) {
 	var submissionBoxes []struct {
 		SubmissionID          uuid.UUID
