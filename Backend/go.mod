@@ -6,6 +6,7 @@ require github.com/minio/minio-go v6.0.14+incompatible
 
 require (
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
+	github.com/agnivade/levenshtein v1.2.1 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
