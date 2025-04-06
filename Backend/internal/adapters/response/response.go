@@ -172,3 +172,39 @@ type SubmissionBoxPositionResponse struct {
 	BoundingBoxType     string `json:"bounding_box_type"`
 	BoundingBoxPosition string `json:"bounding_box_position"`
 }
+
+type StudentListForOCRResponse struct {
+	PersonalDataID uuid.UUID `json:"personal_data_id"`
+	FullName       string    `json:"full_name"`
+	StudentCode    string    `json:"student_code"`
+}
+
+type SubmissionBoxesForOCR struct {
+	SubmissionID          uuid.UUID `json:"submission_id"`
+	SubmissionBoxFileName string    `json:"submission_box_file_name"`
+}
+
+type GroupSubmissionBoxesForOCR struct {
+	SubmissionID          uuid.UUID `json:"submission_id"`
+	SubmissionBoxFileName []string  `json:"submission_box_file_name"`
+}
+
+// type SubmissionBoxesFromMinIO struct {
+// 	SubmissionID          uuid.UUID `json:"submission_id"`
+// 	SubmissionBoxFileName []string  `json:"submission_box_file_name"`
+// 	SubmissionBoxURL      []string  `json:"submission_box_url"`
+// }
+
+type SubmissionBoxesURLFromMinIO struct {
+	SubmissionID          uuid.UUID `json:"submission_id"`
+	SubmissionBoxFilesURL []string  `json:"submission_box_file_name"`
+}
+
+type MatchLog struct {
+	SubmissionID          uuid.UUID
+	MatchedPersonalDataID *uuid.UUID
+	OCRFullName           string
+	OCRStudentCode        string
+	Similarity            float64
+	MatchType             string
+}
