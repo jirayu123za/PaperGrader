@@ -11,4 +11,7 @@ type MinIORepository interface {
 	FindFileURLSubmissionBoxes(CourseID, AssignmentID, fileName string) (string, error)
 
 	FindTemplatePageCountFromMinIO(CourseID, AssignmentID, fileName string) (int, error)
+
+	// OCR
+	FindFilesBoundingBoxesNameAndID(CourseID, AssignmentID string, fileNames []string) (string, string, error)
 }
