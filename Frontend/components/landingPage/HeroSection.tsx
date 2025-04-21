@@ -1,3 +1,5 @@
+"use client";
+
 import { Button, Card, Container, Divider, Flex, SimpleGrid, Text } from '@mantine/core'
 import { useDisclosure, useViewportSize } from '@mantine/hooks';
 import React from 'react'

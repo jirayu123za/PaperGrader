@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import CreateAssignmentModal from '../../Create/CreateAssignment';
 import ActiveAssignments from './ActiveAssignment';
@@ -5,12 +7,13 @@ import { useInsCourseStore } from '../../../store/useCourseStore';
 import { useFetchActiveAssignments } from '../../../hooks/useFetchActiveAssignment';
 import { Divider, Flex, Title, Highlight, List } from '@mantine/core';
 import { BsFillInfoCircleFill } from "react-icons/bs";
-import { useRouter } from 'next/router';
+import { useRouter , useParams } from 'next/navigation';
 import { useFetchCourse } from '../../../hooks/useFetchCourse';
 
 const INSDashBoard = () => {
   const router = useRouter();
-  const { course_id } = router.query;
+  const params = useParams();
+  const course_id = params?.course_id as string;
   const { isLoading, error } = useFetchCourse(course_id as string);
   const { course } = useInsCourseStore();
   const { refetch } = useFetchActiveAssignments(course_id as string);

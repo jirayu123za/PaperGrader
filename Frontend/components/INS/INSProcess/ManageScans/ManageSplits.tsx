@@ -1,10 +1,12 @@
+"use client";
+
 import React from 'react';
 import dayjs from 'dayjs';
 import { Badge, Box, Flex, Select, Table, TextInput, Image, Text, Pagination, Autocomplete, ActionIcon, Stack, ScrollArea, useCombobox, Combobox } from '@mantine/core';
 import { usePagination } from '@mantine/hooks';
 import { IconSearch, IconEdit } from '@tabler/icons-react';
 import { RiDeleteBinLine } from "react-icons/ri";
-import { useRouter } from 'next/router';
+import { useRouter, useParams } from 'next/navigation';
 import { useFetchStudentsList } from '../../../../hooks/ManageScan/useFetchStudentsList';
 import { useStudentsListStore } from '../../../../store/ManageScan/useStudentsListStore';
 import { useFetchSubmissionsList } from '../../../../hooks/ManageScan/useFetchSubmissionsList';
@@ -13,7 +15,9 @@ import SubmissionBoxes from './SubmissionBoxes';
 
 export const ManageSplits = () => {
     const router = useRouter();
-    const { assignment_id, course_id } = router.query;
+    const params = useParams();
+    const course_id = params.course_id as string;
+    const assignment_id = params.assignment_id as string;
     const { isLoading: isLoadingStudents, error: errorStudents } = useFetchStudentsList(course_id as string, assignment_id as string);
     const { isLoading: isLoadingSubmissions, error: errorSubmissions } = useFetchSubmissionsList(course_id as string, assignment_id as string);
     const { studentsList, submissionsList, searchQuery, setSearchQuery, filterStatus, setFilterStatus, pageSize, setPageSize } = useStudentsListStore();

@@ -1,6 +1,8 @@
+"use client";
+
 import React from 'react';
 import { Table, Text, Button, Paper, Pagination, Skeleton, Flex } from '@mantine/core';
-import { useRouter } from 'next/router';
+import { useRouter , useParams } from 'next/navigation';
 import { useFetchSections } from '../../hooks/Roster/useFetchSections';
 import { useSectionDetailsStore } from '../../store/useRosterStore';
 import { useModalStore } from '../../store/modal/useRosterModalStore';
@@ -10,7 +12,8 @@ import CreateSection from '../Create/CreateSection';
 
 const ManageSection: React.FC = () => {
   const router = useRouter();
-  const { course_id } = router.query;
+  const params = useParams();
+  const course_id = params?.course_id as string;
   const { isLoading, error } = useFetchSections(course_id as string);
   const { sectionDetails } = useSectionDetailsStore();
   const openModal = useModalStore((state) => state.openModal);

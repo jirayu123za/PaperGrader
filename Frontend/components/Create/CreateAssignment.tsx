@@ -1,9 +1,11 @@
+"use client";
+
 import React from 'react';
 import SectionSelector from '../Create/Sections/SectionSelector';
 import UploadFile from '../UploadFile';
 import { Modal, Button, TextInput, RadioGroup, Radio, Text } from '@mantine/core';
 import { useCreateAssignment } from '../../hooks/useCreate/useCreateAssignment';
-import { useRouter } from 'next/router';
+import { useRouter , useParams } from 'next/navigation';
 import { useFileStore } from '../../store/useFileStore';
 import { useForm } from '@mantine/form';
 import { Editor } from './Editor.tsx/Editor';
@@ -16,7 +18,8 @@ interface CreateAssignmentModalProps {
 
 const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
-  const { course_id } = router.query;
+  const params = useParams();
+  const course_id = params?.course_id as string;
   const { files, templateFile, clearFiles } = useFileStore();
   const { mutate } = useCreateAssignment();
   const { selectedSections, resetSelectedSections} = useSelectSectionStore();

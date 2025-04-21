@@ -1,15 +1,18 @@
+"use client";
+
 import React from 'react';
 import { Modal, Button, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { TagsInput } from '@mantine/core';
 import { useCreateSections } from '../../hooks/useCreate/useCreateSection';
-import { useRouter } from 'next/router';
+import { useRouter , useParams } from 'next/navigation';
 import { useDisclosure } from '@mantine/hooks';
 import { RiAddLargeLine } from 'react-icons/ri';
 
 const CreateSection: React.FC = () => {
   const router = useRouter();
-  const { course_id } = router.query;
+  const params = useParams();
+  const course_id = params?.course_id as string;
   const [opened, { open, close }] = useDisclosure(false);
   const { mutate } = useCreateSections();
   const addSectionIcon = <RiAddLargeLine strokeWidth={4} size={10}/>

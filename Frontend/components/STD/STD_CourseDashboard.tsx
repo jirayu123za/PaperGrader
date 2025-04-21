@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { useFetchAssignments } from '../../hooks/useFetchAssignments';
 import { useAssignmentStore } from '../../store/useAssignmentStore';

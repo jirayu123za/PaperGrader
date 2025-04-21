@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import {FaBars,FaUser,FaCog,FaFileAlt,FaUsers,FaHome,FaRegArrowAltCircleRight} from 'react-icons/fa';
 import { IoStatsChart } from 'react-icons/io5';
@@ -6,14 +8,15 @@ import { Button, Divider, Flex, Skeleton, Image, Stack, Title, Text, Anchor } fr
 import { useInsCourseStore } from '../../store/useCourseStore';
 import { useFetchInstructorList } from '../../hooks/useFetchInstructorList';
 import { useInstructorListStore } from '../../store/useInstructorListStore';
-import { useRouter } from 'next/router';
+import { useRouter , useParams } from 'next/navigation';
 import { useFetchCourse } from '../../hooks/useFetchCourse';
 import { useDisclosure } from '@mantine/hooks';
 import AccountMenu from '../Account';
 
 export default function LeftMain() {
   const router = useRouter();
-  const { course_id } = router.query;
+  const params = useParams();
+  const course_id = params?.course_id as string;
   const [isCollapsed, { toggle: toggleCollapse }] = useDisclosure(false);
   const [expandedName, { toggle: toggleExpandName }] = useDisclosure(false);
   const [expandedDesc, { toggle: toggleExpandCourseDesc }] = useDisclosure(false);
@@ -147,7 +150,7 @@ export default function LeftMain() {
           })}
           onClick={() => {
             if (course) {
-              router.push(`/courses/${course.course_id}`);
+              router.push(`/instructor/course/${course.course_id}/dashboard`)
             }
           }}
         >
@@ -165,7 +168,7 @@ export default function LeftMain() {
           }}
           onClick={() => {
             if (course) {
-              router.push(`/courses/${course.course_id}/Assignment`);
+              router.push(`/instructor/course/${course.course_id}/assignment`)
             }
           }}
         >
@@ -183,7 +186,7 @@ export default function LeftMain() {
           }}
           onClick={() => {
             if (course) {
-              router.push(`/courses/${course.course_id}/ManageRoster`);
+              router.push(`/instructor/course/${course.course_id}/manageroster`)
             }
           }}
         >

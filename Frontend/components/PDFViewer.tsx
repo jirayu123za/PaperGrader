@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useRef } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import 'pdfjs-dist/web/pdf_viewer.css';

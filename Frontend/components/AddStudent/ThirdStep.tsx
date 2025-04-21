@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect } from "react";
 import useCSVdataStore from "../../store/add member/useCSVdataStore";
 import { useForm } from "@mantine/form";

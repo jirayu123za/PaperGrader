@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect } from 'react';
 import SectionSelector from '../Create/Sections/SectionSelector';
 import { Modal, Button, TextInput, Select, Skeleton } from '@mantine/core';
@@ -5,12 +7,13 @@ import { useEditCourseMemberStore } from '../../store/useEditCourseMemberStore';
 import { useSelectSectionStore } from '../../store/useSectionStore';  
 import { useFetchEditCourseMember } from '../../hooks/Roster/useFetchEditCourseMember';
 import { useModalEditRosterMemberStore } from '../../store/modal/useRosterModalStore';
-import { useRouter } from 'next/router';
+import { useRouter , useParams } from 'next/navigation';
 import { useForm } from '@mantine/form';
 
 const EditCourseMember: React.FC = () => {
   const router = useRouter();
-  const { course_id } = router.query;
+  const params = useParams();
+  const course_id = params?.course_id as string;
   const { editMember } = useEditCourseMemberStore();
   const { selectedSections, setSelectedSections, resetSelectedSections } = useSelectSectionStore();  
   const { personal_data_id, opened, closeModal } = useModalEditRosterMemberStore();

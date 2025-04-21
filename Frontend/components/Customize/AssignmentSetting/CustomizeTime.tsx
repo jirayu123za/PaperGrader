@@ -1,7 +1,9 @@
+"use client";
+
 import React, { useEffect } from 'react';
 import { DateTimePicker } from '@mantine/dates';
 import { useForm } from '@mantine/form';
-import { useRouter } from 'next/router';
+import { useRouter , useParams } from 'next/navigation';
 import { useFetchAssignmentSetting } from '../../../hooks/AssignmentSetting/useFetchAssignmentSetting'; 
 import { useAssignmentSettingStore } from '../../../store/useAssignmentSettingStore';
 import { useCustomizeTimeStore, useModalAssignmentSettingStore } from '../../../store/modal/useAssignmentSettingModal';
@@ -11,7 +13,8 @@ import '@mantine/dates/styles.css';
 
 const CustomizeTime: React.FC = () => {
   const router = useRouter();
-  const { course_id } = router.query;
+  const params = useParams();
+  const course_id = params?.course_id as string;
   const { assignment_id } = useModalAssignmentSettingStore(state => state);
   const { assignmentSetting } = useAssignmentSettingStore();
   const { selectedSections } = useSelectSectionStore();

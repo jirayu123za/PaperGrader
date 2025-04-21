@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Container, Flex } from '@mantine/core';
 import { Stage, Layer, Rect, Text } from 'react-konva';
@@ -5,7 +7,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 // import 'pdfjs-dist/web/pdf_viewer.css';
 import { useFetchSubmissionFile } from '../../hooks/useFetchFile';
 import { useSubmissionFileStore } from '../../store/useINS_SubmissionStore';
-import { useRouter } from 'next/router';
+import { useRouter , useParams } from 'next/navigation';
 
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
 

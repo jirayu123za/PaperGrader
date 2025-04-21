@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter, useParams } from 'next/navigation';
 import { Container, Title, Text, Button, Table, Flex, Divider, Box, Tabs, TextInput, NumberInput } from '@mantine/core';
 import { FaRegArrowAltCircleLeft } from "react-icons/fa";
 import { useDisclosure } from '@mantine/hooks';
@@ -38,7 +40,9 @@ interface CreateProps {
 const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
   const { addBoundingBox, addQuestion, removeQuestion, updateQuestion, removeBoundingBox, setRubricData, setBoundingBoxes } = useBoundingBoxStore();
   const router = useRouter();
-  const { assignment_id, course_id } = router.query;
+  const params = useParams();
+  const course_id = params.course_id as string;
+  const assignment_id = params.assignment_id as string;
   const [isCollapsed, { toggle }] = useDisclosure(false);
   const { boundingBoxes, rubricData } = useBoundingBoxStore();
   const { mutate: addBoundingBoxAndQuestion } = useAddBoundingBoxAndQuestion(assignment_id as string);

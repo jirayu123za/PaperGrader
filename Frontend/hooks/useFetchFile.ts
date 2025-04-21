@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect } from 'react';
 import { useForm, UseFormReturnType } from '@mantine/form';
 import { useQuery } from '@tanstack/react-query';

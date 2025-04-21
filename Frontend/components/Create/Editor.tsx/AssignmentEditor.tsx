@@ -1,3 +1,5 @@
+"use client";
+
 import { Link, RichTextEditor } from '@mantine/tiptap'
 import Superscript from '@tiptap/extension-superscript';
 import TextAlign from '@tiptap/extension-text-align';

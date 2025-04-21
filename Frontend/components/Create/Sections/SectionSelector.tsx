@@ -1,5 +1,7 @@
+"use client";
+
 import React from 'react';
-import { useRouter } from 'next/router';
+import { useRouter , useParams } from 'next/navigation';
 import { TagsInput, Text, Loader } from '@mantine/core';
 import { useFetchSections } from '../../../hooks/useFetchSelectSection';
 import { useSectionsListStore, useSelectSectionStore } from '../../../store/useSectionStore';
@@ -15,7 +17,8 @@ interface SectionSelectorProps {
 
 const SectionSelector: React.FC<SectionSelectorProps> = () => {
   const router = useRouter();
-  const { course_id } = router.query;
+  const params = useParams();
+  const course_id = params?.course_id as string;
   const { data, isLoading, error } = useFetchSections(course_id as string);
   const { sectionsList } = useSectionsListStore();
   const { selectedSections, setSelectedSections } = useSelectSectionStore();

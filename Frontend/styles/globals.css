@@ -39,3 +39,8 @@ body {
   padding: 0 !important;
   margin: 0 !important;
 }
+
+.remove-border {
+  border: none !important;
+  background-color: transparent !important;
+}

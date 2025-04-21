@@ -1,6 +1,8 @@
+"use client";
+
 import React, { useRef } from 'react';
 import dayjs from 'dayjs';
-import { useRouter } from 'next/router';
+import { useRouter, useParams } from 'next/navigation';
 import { Text, Alert, Anchor, FileInput, Box, Flex, Progress, List, ScrollArea, Loader, Button } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
 import { useUploadSubmissionFile } from '../../../../hooks/ManageScan/useUploadSubmissionFile';
@@ -11,7 +13,9 @@ import { useSubmissionFilesStore } from '../../../../store/ManageScan/useSubmiss
 const INSManageScans: React.FC = () => {
   const fileInputRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
-  const { assignment_id, course_id } = router.query;
+  const params = useParams();
+  const course_id = params.course_id as string;
+  const assignment_id = params.assignment_id as string;
   const { data: submissionFiles, isLoading } = useFetchSubmissionFiles(assignment_id as string);
   const { submissions, visibleCount, setVisibleCount } = useSubmissionFilesStore();
   const { mutate: uploadSubmissionFile, isPending } = useUploadSubmissionFile();

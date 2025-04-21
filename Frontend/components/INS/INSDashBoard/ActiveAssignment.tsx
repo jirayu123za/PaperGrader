@@ -1,7 +1,9 @@
+"use client";
+
 import React from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { useRouter } from 'next/router';
+import { useRouter , useParams } from 'next/navigation';
 import { Progress, Table, Paper, Grid, Button, Pagination, Skeleton } from '@mantine/core';
 import { MdOutlineAssignmentTurnedIn } from "react-icons/md";
 import { useActiveAssignmentStore } from '../../../store/useActiveAssignmentStore';
@@ -14,7 +16,8 @@ interface ActiveAssignmentsProps {
 
 const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
   const router = useRouter();
-  const { course_id } = router.query;
+  const params = useParams();
+  const course_id = params?.course_id as string;
   const { isLoading, error } = useFetchActiveAssignments(course_id as string);
   const { activeAssignments } = useActiveAssignmentStore();
   const iconAssignmentTurnedIn = <MdOutlineAssignmentTurnedIn size={24} />;

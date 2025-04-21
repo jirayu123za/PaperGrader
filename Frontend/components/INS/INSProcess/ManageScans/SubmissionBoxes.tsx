@@ -1,3 +1,5 @@
+"use client";
+
 import * as pdfjsLib from 'pdfjs-dist';
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Container, Flex, Loader, Box } from "@mantine/core";

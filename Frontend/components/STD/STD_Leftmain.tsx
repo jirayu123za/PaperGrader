@@ -1,3 +1,5 @@
+"use client";
+
 import react from 'react';
 import { FaBars, FaHome, FaBook, FaCog } from 'react-icons/fa';
 import AccountMenu from '../Account';

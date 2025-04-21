@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect } from 'react';
 import CustomizeTime from './AssignmentSetting/CustomizeTime';
 import BasicSettings from './AssignmentSetting/BasicSettings';
@@ -8,7 +10,7 @@ import { LuPenLine, LuClock } from 'react-icons/lu';
 import { GrShareOption } from 'react-icons/gr';
 import { FiEye } from 'react-icons/fi';
 import { useForm } from '@mantine/form';
-import { useRouter } from 'next/router';
+import { useRouter , useParams } from 'next/navigation';
 import { useCustomizeTimeStore, useModalAssignmentSettingStore } from '../../store/modal/useAssignmentSettingModal';
 import { useFetchAssignmentSetting } from '../../hooks/AssignmentSetting/useFetchAssignmentSetting';
 import { useAssignmentSettingStore } from '../../store/useAssignmentSettingStore';
@@ -16,7 +18,8 @@ import { useUpdateAssignment } from '../../hooks/AssignmentSetting/useUpdateAssi
 
 const AssignmentSetting: React.FC = () => {
   const router = useRouter();
-  const { course_id } = router.query;
+  const params = useParams();
+  const course_id = params?.course_id as string;
   const { assignmentSetting } = useAssignmentSettingStore();
   const { assignment_id, opened, closeModal } = useModalAssignmentSettingStore();
   const { isLoading, isSuccess } = useFetchAssignmentSetting(course_id as string, assignment_id as string);

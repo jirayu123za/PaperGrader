@@ -1,14 +1,17 @@
+"use client";
+
 import React from 'react';
 import { Modal, Pagination, Skeleton, Table, Text } from '@mantine/core';
 import { useFetchSectionUsersRoster } from '../../hooks/Roster/useFetchUsersRoster';
 import { useRosterStore } from '../../store/useRosterStore';
 import { useModalStore } from '../../store/modal/useRosterModalStore';
-import { useRouter } from 'next/router';
+import { useRouter , useParams } from 'next/navigation';
 import { usePagination } from '@mantine/hooks';
 
 const ViewStudentLists: React.FC = () => {
     const router = useRouter();
-    const course_id = Array.isArray(router.query.course_id) ? router.query.course_id[0] : router.query.course_id;
+    const params = useParams();
+    const course_id = params?.course_id as string;
     const { isOpen, selectedSection, closeModal } = useModalStore();
     const { sectionUsersList } = useRosterStore();
     const { isLoading, error } = useFetchSectionUsersRoster(course_id ?? '', selectedSection?.section_id ?? '');

@@ -1,3 +1,5 @@
+"use client";
+
 import { FaRegArrowAltCircleRight } from "react-icons/fa";
 import { Button, Divider, Flex, Image, Stack, Text, Title } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';

@@ -1,9 +1,11 @@
+"use client";
+
 import React from 'react';
 import AssignmentSetting from '../../Customize/AssignmentSetting';
 import SecAssignment from './SecAssignment';
 import { useInsAssignmentStore } from '../../../store/useAssignmentStore';
 import { useFetchInsAssignments } from '../../../hooks/useFetchAssignments';
-import { useRouter } from 'next/router';
+import { useRouter , useParams } from 'next/navigation';
 import { Menu, Button, Paper, Table, Skeleton, Pagination, Collapse, Checkbox, Title, ScrollArea ,Text, Anchor} from '@mantine/core';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { useModalAssignmentSettingStore } from '../../../store/modal/useAssignmentSettingModal';
@@ -13,7 +15,8 @@ import { useAssignmentExpandStore, useSelectedAssignmentStore } from '../../../s
 
 const INTAssignment: React.FC = () => {
   const router = useRouter();
-  const { course_id } = router.query;
+  const params = useParams();
+  const course_id = params?.course_id as string;
   const { openModal } = useModalAssignmentSettingStore();
   const { setSelectedSections } = useSelectSectionStore();
   const { expandedAssignments, toggleAssignment } = useAssignmentExpandStore();
@@ -128,7 +131,7 @@ const INTAssignment: React.FC = () => {
                       title={assignment.assignment_name}
                       onClick={() =>
                         router.push(
-                          `/courses/${course_id}/process/${assignment.assignment_id}/CreateOutline`
+                          `/instructor/course/${course_id}/process/${assignment.assignment_id}/create-outline`
                         )
                       }
                       style={{ cursor: 'pointer', flexGrow: 1 }}                        

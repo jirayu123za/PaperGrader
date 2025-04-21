@@ -1,5 +1,7 @@
+"use client";
+
 import React from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { useCourseStore } from '../store/useCourseStore';
 import CreateCourse from './Create/CreateCourse';
 import { ScrollArea } from '@mantine/core';
@@ -52,7 +54,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
     if (studentMode) {
       router.push(`/STDCourseOverview/${course.course_id}/CourseDashboard`);
     } else {
-      router.push(`/courses/${course.course_id}`);
+      router.push(`/instructor/course/${course.course_id}/dashboard`);
     }
   };
 

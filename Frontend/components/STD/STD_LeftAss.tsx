@@ -1,3 +1,5 @@
+"use client";
+
 import react from 'react';
 import AccountMenu from '../../components/Account';
 import Link from 'next/link';

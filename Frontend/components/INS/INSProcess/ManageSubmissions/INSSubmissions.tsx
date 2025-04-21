@@ -1,6 +1,8 @@
+"use client";
+
 import React from 'react';
 import { Table, TextInput, Flex, Text, Paper, Pagination, Select, ActionIcon } from '@mantine/core';
-import { useRouter } from 'next/router';
+import { useRouter, useParams } from 'next/navigation';
 import { useFetchSubmissions } from '../../../../hooks/useFetchINS_Submission';
 import { useINS_SubmissionStore } from '../../../../store/useINS_SubmissionStore';
 import { usePagination } from '@mantine/hooks';
@@ -9,7 +11,9 @@ import { FaRegFilePdf } from 'react-icons/fa';
 
 const INSSubmissions: React.FC = () => {
   const router = useRouter();
-  const { course_id, assignment_id } = router.query;
+  const params = useParams();
+  const course_id = params.course_id as string;
+  const assignment_id = params.assignment_id as string;
   const icons = {
     submissionsList: <IoListOutline />,
     searchIcon: <IoSearch />,

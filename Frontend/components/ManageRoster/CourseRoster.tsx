@@ -1,9 +1,11 @@
+"use client";
+
 import React from 'react';
 import AddMember from '../AddStudent/AddMember';
 import EditCourseMember from '../Customize/EditCourseMember';
 import { Button, Table, Menu, Paper, Text, TextInput, Select, Skeleton, Pagination, Flex } from '@mantine/core';
 import { useFetchUsersRoster } from '../../hooks/Roster/useFetchUsersRoster';
-import { useRouter } from 'next/router';
+import { useRouter , useParams } from 'next/navigation';
 import { useRosterStore } from '../../store/useRosterStore';
 import { useModalEditRosterMemberStore } from '../../store/modal/useRosterModalStore';
 import { usePagination } from '@mantine/hooks';
@@ -11,7 +13,8 @@ import { IoSearch } from 'react-icons/io5';
 
 const CourseRoster: React.FC = () => {
   const router = useRouter();
-  const { course_id } = router.query;
+  const params = useParams();
+  const course_id = params?.course_id as string;
   const { isLoading, error } = useFetchUsersRoster(course_id as string);
   const { usersList, searchTerm, setSearchTerm, roleFilter, setRoleFilter } = useRosterStore();
   const { openModal } = useModalEditRosterMemberStore();

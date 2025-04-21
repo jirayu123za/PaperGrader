@@ -1,3 +1,5 @@
+"use client";
+
 import { Button, Flex, Group, Text, Image } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import React from "react";

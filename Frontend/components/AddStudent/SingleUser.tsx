@@ -1,8 +1,10 @@
+"use client";
+
 import React from 'react';
 import { Modal, Button, TextInput, RadioGroup, Radio } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useCreateSingleUser } from '../../hooks/useCreate/useCreateSingleUser';
-import { useRouter } from 'next/router';
+import { useRouter , useParams } from 'next/navigation';
 import { useSelectSectionStore } from '../../store/useSectionStore';
 import { useInstructorListStore } from '../../store/useInstructorListStore'; 
 import SectionSelector from '../Create/Sections/SectionSelector';
@@ -14,7 +16,8 @@ interface SingleUserModalProps {
 
 const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
-  const { course_id } = router.query;
+  const params = useParams();
+  const course_id = params?.course_id as string;
   const { mutate } = useCreateSingleUser();
   const { resetSelectedSections, selectedSections } = useSelectSectionStore();
   const { addInstructor } = useInstructorListStore();

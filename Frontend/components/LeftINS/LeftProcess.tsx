@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from 'react';
 import AccountMenu from '../Account';
 import { FaBars, FaArrowLeft, FaRegArrowAltCircleRight } from 'react-icons/fa';
@@ -6,7 +8,7 @@ import { IoStatsChart } from 'react-icons/io5';
 import { IoMdSettings } from 'react-icons/io';
 import { Button, Container, Divider, Flex, Stack, Title, Transition, Text, Image } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { useRouter } from 'next/router';
+import { useRouter, usePathname, useParams } from 'next/navigation';
 import { useFetchAssignmentLeft } from '../../hooks/SideBar/useFetchAssignmentLeft';
 import { useAssignmentLeftProcessStore, useLeftProcessStore } from '../../store/useLeftProcessStore';
 
@@ -18,24 +20,26 @@ export default function LeftProcess() {
   const giClockwiseRotation = <GiClockwiseRotation size={18} />;
   const ioStatsChart = <IoStatsChart size={18} />;
   const ioMdSettings = <IoMdSettings size={18} />;
-  const { course_id, assignment_id } = router.query;
+  const params = useParams();
+  const course_id = params.course_id as string;
+  const assignment_id = params.assignment_id as string;
   const { isLoading, isSuccess } = useFetchAssignmentLeft(course_id as string, assignment_id as string);
   const { assignmentLeftProcess } = useAssignmentLeftProcessStore();
   const { activeOption, setActiveOption } = useLeftProcessStore();
-
+  const pathname = usePathname();
+  
   useEffect(() => {
-    const currentPath = router.asPath; 
-    const activeKey = options.find((opt) => currentPath.startsWith(opt.href))?.key || '';
+    const activeKey = options.find((opt) => pathname.startsWith(opt.href))?.key || '';
     setActiveOption(activeKey);
-  }, [router.asPath]); 
+  }, [pathname])
   
 
 
   const options = [
-    { key: 'editOutline', label: 'Edit Outline', href: `/courses/${course_id}/process/${assignment_id}/CreateOutline` },
-    { key: 'manageScans', label: 'Manage Scans', href: `/courses/${course_id}/process/${assignment_id}/ManageScans` },
-    { key: 'manageSubmissions', label: 'Manage Submissions', href: `/courses/${course_id}/process/${assignment_id}/Submissions` },
-    { key: 'gradeSubmissions', label: 'Grade Submissions', href: `/courses/${course_id}/process/${assignment_id}/Grading` },
+    { key: 'editOutline', label: 'Edit Outline and Rubric', href: `/instructor/course/${course_id}/process/${assignment_id}/create-outline` },
+    { key: 'manageScans', label: 'Manage Scans', href: `/instructor/course/${course_id}/process/${assignment_id}/manage-scans` },
+    { key: 'manageSubmissions', label: 'Manage Submissions', href: `/instructor/course/${course_id}/process/${assignment_id}/submissions` },
+    { key: 'gradeSubmissions', label: 'Grade Submissions', href: `/instructor/course/${course_id}/process/${assignment_id}/grading` },
     { key: 'ReviewGrade', label: 'Review Grade', href: '#' },
   ];
 

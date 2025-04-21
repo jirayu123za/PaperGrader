@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react'
 import useCSVdataStore from '../../store/add member/useCSVdataStore';
 import useTemplateStore from '../../store/BoundingBox/useTemplateStore';
@@ -12,7 +14,7 @@ import { ThirdStep } from './ThirdStep';
 import { useSetState } from '@mantine/hooks';
 import { useUploadFile } from '../../hooks/useFetchDataFormFile';
 import { useCreateMultipleUser } from '../../hooks/useCreate/useCreateMultipleUser';
-import { useRouter } from 'next/router';
+import { useRouter , useParams } from 'next/navigation';
 
 interface SelectMethodsProps {  
     isOpen: boolean;
@@ -21,12 +23,14 @@ interface SelectMethodsProps {
 
 export const SelectMethods = ({ isOpen, onClose }: SelectMethodsProps) => {
     const router = useRouter();
+    const params = useParams();
+    const course_id = params?.course_id as string;
     const uploadFileMutation = useUploadFile();
     const createMultipleUserMutation = useCreateMultipleUser();
     const [state, setState] = useSetState({ active: 0 });
     const { selectedTemplate } = useTemplateStore();    
     const { selectedFile, clearCsvData, setSelectedFile, setCsvData, formValues } = useCSVdataStore();
-    const { course_id } = router.query;
+    
 
     const handleNext = () => {
         if (state.active === 1) {

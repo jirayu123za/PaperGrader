@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { useRouter } from 'next/router';
 import { Container, Title, Text, Divider, Button, Table, Center, Box } from '@mantine/core';

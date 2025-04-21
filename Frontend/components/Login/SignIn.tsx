@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect } from 'react';
 import { useUserStore } from '../../store/useUserStore';
 import { useUniversityStore } from '../../store/useUniversityStore';
@@ -5,7 +7,7 @@ import { Modal, Button, TextInput, Select } from '@mantine/core';
 import { useFetchUniversity } from '../../hooks/useFetchUniversities';
 import { useCreateUser } from '../../hooks/useCreate/useCreateUser';
 import { jwtDecode } from 'jwt-decode';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { useForm } from '@mantine/form';
 import { DatePickerInput } from '@mantine/dates';
 import dayjs from 'dayjs';

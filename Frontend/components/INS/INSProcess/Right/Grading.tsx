@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from 'react';
 import { Box, Text, Title, Divider, NumberInput, Button, Flex, ActionIcon, Select, Textarea, Checkbox } from '@mantine/core';
 import { IconX, IconPlus } from '@tabler/icons-react';

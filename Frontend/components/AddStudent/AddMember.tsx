@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import SingleUser from './SingleUser';
 import { Menu, Button } from '@mantine/core';
