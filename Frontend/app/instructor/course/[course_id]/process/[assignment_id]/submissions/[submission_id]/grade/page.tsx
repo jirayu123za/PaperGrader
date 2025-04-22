@@ -134,9 +134,6 @@ export default function GradePage() {
 
   return (
     <Container fluid className="flex min-h-screen overflow-hidden">
-      {/* Left sidebar */}
-      <LeftProcess />
-
       {/* Main Content */}
       <Flex
         style={{

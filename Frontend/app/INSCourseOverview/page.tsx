@@ -1,6 +1,5 @@
 "use client";
 
-
 import React, { useEffect } from 'react';
 import { useFetchInsCourses } from '@/hooks/useFetchCourse';
 import { useCourseStore } from '@/store/useCourseStore';
@@ -20,7 +19,6 @@ const INSCourseOverview = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50 overflow-hidden">
-      <LeftOverview />
       <div className="grow p-8">
         <h1 className="text-3xl font-bold mb-8">Courses Overview</h1>
 

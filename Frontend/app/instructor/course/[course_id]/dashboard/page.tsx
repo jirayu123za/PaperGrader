@@ -1,14 +1,14 @@
-'use client';
-
-import React from 'react';
+// app/dashboard/page.tsx
 import INTDashBoard from '@/components/INS/INSDashBoard/INSDashBoard';
+import { Loader } from '@mantine/core';
+import { Suspense } from 'react';
 
-const Dashboard = () => {
+export default async function Dashboard() {
   return (
     <div className="p-6 w-full">
-      <INTDashBoard />
+      <Suspense fallback={<Loader size="sm" />}>
+        <INTDashBoard />
+      </Suspense>
     </div>
   );
-};
-
-export default Dashboard;
+}
