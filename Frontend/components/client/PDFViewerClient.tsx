@@ -1,17 +1,13 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { Loader } from '@mantine/core';
 
-export default function PDFViewerClient({ courseId, assignmentId }: { courseId: string, assignmentId: string }) {
-  const [PDFViewer, setPDFViewer] = useState<any>(null);
+const PDFViewer = dynamic(() => import('../PDFViewer'), {
+  ssr: false,
+  loading: () => <Loader />,
+});
 
-  useEffect(() => {
-    import('../PDFViewer').then((mod) => {
-      setPDFViewer(() => mod.default);
-    });
-  }, []);
-
-  if (!PDFViewer) return null; // หรือ <Loader />
-
-  return <PDFViewer courseId={courseId} assignmentId={assignmentId} />;
+export default function PDFViewerClient() {
+  return <PDFViewer/>;
 }
