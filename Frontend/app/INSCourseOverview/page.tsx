@@ -5,7 +5,6 @@ import { useFetchInsCourses } from '@/hooks/useFetchCourse';
 import { useCourseStore } from '@/store/useCourseStore';
 import { Card, Flex, Grid, Skeleton } from '@mantine/core';
 import CourseCard from '@/components/CourseCard';
-import LeftOverview from '@/components/LeftINS/LeftOverview';
 
 const INSCourseOverview = () => {
   const { data: courses, isLoading, error } = useFetchInsCourses();
