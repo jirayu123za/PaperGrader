@@ -21,6 +21,22 @@
   ::file-selector-button {
     border-color: var(--color-gray-200, currentcolor);
   }
+
+  [data-mantine-color-scheme='light'] {
+    --background: #ffffff;
+    --foreground: #171717;
+  }
+
+  [data-mantine-color-scheme='dark'] {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: Arial, Helvetica, sans-serif;
+  }
 }
 
 @utility text-balance {
@@ -33,7 +49,7 @@
     --foreground: #171717;
   }
 
-  @media (prefers-color-scheme: dark) {
+  @media (prefers-color-scheme: light) {
     :root {
       --background: #0a0a0a;
       --foreground: #ededed;
@@ -47,21 +63,7 @@
   }
 }
 
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-.no-scrollbar {
-  -ms-overflow-style: none;  /* สำหรับ IE และ Edge */
-  scrollbar-width: none;  /* สำหรับ Firefox */
-}
-
 .mantine-Container-root {
   padding: 0 !important;
   margin: 0 !important;
-}
-
-.remove-border {
-  border: none !important;
-  background-color: transparent !important;
 }

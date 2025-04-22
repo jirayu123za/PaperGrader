@@ -1,17 +1,23 @@
 "use client";
 
 import { ReactNode } from "react";
-import { MantineProvider } from "@mantine/core";
+import { MantineProvider, localStorageColorSchemeManager } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
+const colorSchemeManager = localStorageColorSchemeManager({
+  key: "mantine-color-scheme"
+});
 
 const queryClient = new QueryClient();
 
 export default function ClientProviders({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <MantineProvider>
+      <MantineProvider
+        colorSchemeManager={colorSchemeManager}
+      >
         <ModalsProvider>
           {children}
           <ReactQueryDevtools initialIsOpen={false} />
