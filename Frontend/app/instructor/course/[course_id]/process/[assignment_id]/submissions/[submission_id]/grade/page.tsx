@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Container, Flex, Loader, Button } from '@mantine/core';
 import { FaBars } from 'react-icons/fa';
 import { useRouter } from 'next/router';
-import LeftProcess from '../../../../../../../components/LeftINS/LeftProcess';
-import Grading from '../../../../../../../components/INS/INSProcess/Right/Grading';
-import GradePdfViewer from '../../../../../../../components/INS/GradePdfViewer';
+import LeftProcess from '@/components/LeftINS/LeftProcess';
+import Grading from '@/components/INS/INSProcess/Right/Grading';
+import GradePdfViewer from '@/components/INS/GradePdfViewer';
 
 // interface BoundingBox {
 //   id: number;

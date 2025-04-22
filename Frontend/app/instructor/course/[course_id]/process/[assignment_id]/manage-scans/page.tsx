@@ -19,7 +19,7 @@ export default function INSManageScansPage() {
 
   return (
     <div className="flex min-h-screen">
-      <div className="flex-grow p-4">
+      <div className="grow p-4">
       {loading ? (
         <div className="flex justify-center items-center min-h-[200px]">
           <Loader size="lg" />

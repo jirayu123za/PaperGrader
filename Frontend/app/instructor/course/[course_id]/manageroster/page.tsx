@@ -7,7 +7,7 @@ import { Tabs } from '@mantine/core';
 
 const ManageRoster: React.FC = () => {
   return (
-    <div className="flex-grow p-6">
+    <div className="grow p-6">
       <Tabs defaultValue="roster">
         <Tabs.List>
           <Tabs.Tab value="roster">Manage roster</Tabs.Tab>

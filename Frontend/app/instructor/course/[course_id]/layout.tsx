@@ -14,7 +14,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen overflow-hidden">
       {isInProcess ? <LeftProcess /> : <LeftMain />}
-        <div className="flex-grow">{children}</div>
+        <div className="grow">{children}</div>
       {isInCreateOutline && (
         <Create/>
       )}

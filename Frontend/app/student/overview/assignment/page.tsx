@@ -1,12 +1,11 @@
+'use client';
 import React, { useEffect, useState } from 'react';
-import STD_LeftMain from '../../components/STD/STD_LeftAss';
-import PDFViewer from '../../components/PDFViewer'; // นำเข้า PDFViewer
+import STD_LeftMain from '@/components/STD/STD_LeftAss';
+import PDFViewer from '@/components/PDFViewer';
 
 const STDAssignment = () => {
-  const [data, setData] = useState<any>(null); // สถานะที่จะเก็บข้อมูลจาก JSON
+  const [data, setData] = useState<any>(null);
 
-
-  // ถ้ายังโหลดข้อมูลอยู่จะแสดงข้อความนี้
   if (!data) {
     return <div>Loading...</div>;
   }
@@ -23,7 +22,7 @@ const STDAssignment = () => {
       </div>
 
       {/* Right Content */}
-      <div className="flex-grow p-4">
+      <div className="grow p-4">
         <PDFViewer /> {/* แสดง PDF Viewer */}
       </div>
     </div>

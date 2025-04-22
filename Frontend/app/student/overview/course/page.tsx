@@ -1,8 +1,9 @@
+'use client';
 import React, { useEffect } from 'react';
-import STD_LeftMain from '../../components/STD/STD_Leftmain';
-import CourseCard from '../../components/CourseCard';
-import { useFetchStdCourses } from '../../hooks/useFetchCourse';
-import { useCourseStore } from '../../store/useCourseStore';
+import STD_LeftMain from '@/components/STD/STD_Leftmain';
+import CourseCard from '@/components/CourseCard';
+import { useFetchStdCourses } from '@/hooks/useFetchCourse';
+import { useCourseStore } from '@/store/useCourseStore';
 
 const STDCourse = () => {
   const { data: courses, isLoading, error } = useFetchStdCourses();
@@ -21,7 +22,7 @@ const STDCourse = () => {
     <div className="flex min-h-screen bg-gray-50">
       <STD_LeftMain/>
 
-      <div className="flex-grow p-8">
+      <div className="grow p-8">
         {courses && Array.isArray(courses) && courses.length > 0 ? (
           <CourseCard courses={courses} studentMode={true} />
         ) : (

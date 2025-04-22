@@ -18,7 +18,7 @@ export default function Submissions() {
     <div className="flex min-h-screen">
 
       {/* Main Content */}
-      <div className="flex-grow p-6">
+      <div className="grow p-6">
         {/* Loading Spinner */}
         {loading ? (
           <div className="flex justify-center items-center min-h-[200px]">

@@ -69,7 +69,7 @@ const INTAssignment: React.FC = () => {
 
   if (error) return <div>Error loading assignments: {error.message}</div>;
   if (!insAssignments || insAssignments.length === 0) {
-    return <div className="p-6 bg-white shadow rounded-lg">No assignments available.</div>;
+    return <div className="p-6 bg-white shadow-sm rounded-lg">No assignments available.</div>;
   }
 
   return (

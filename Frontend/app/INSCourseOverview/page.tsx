@@ -21,7 +21,7 @@ const INSCourseOverview = () => {
   return (
     <div className="flex min-h-screen bg-gray-50 overflow-hidden">
       <LeftOverview />
-      <div className="flex-grow p-8">
+      <div className="grow p-8">
         <h1 className="text-3xl font-bold mb-8">Courses Overview</h1>
 
         {isLoading ? (

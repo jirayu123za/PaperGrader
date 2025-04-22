@@ -64,7 +64,7 @@ export const HeroSection = () => {
                 style={{ textShadow: "2px 2px 4px rgba(0, 0, 0, 0.1)", wordWrap: "break-word", lineHeight: "1.25" }}
               >
               Transform the way you grade easier than ever with{" "}
-              <span className="bg-gradient-to-r from-[#B7410E] to-[#F0A369] bg-clip-text text-transparent font-semibold"
+              <span className="bg-linear-to-r from-[#B7410E] to-[#F0A369] bg-clip-text text-transparent font-semibold"
               >
                 PaperGrader
               </span>

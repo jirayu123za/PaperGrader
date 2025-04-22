@@ -66,7 +66,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
     <ScrollArea h={600} type="auto">
       {courses.length === 0 && !studentMode ? (
         <div
-          className="p-6 bg-white border-dashed border-2 border-teal-600 shadow-sm rounded-lg cursor-pointer flex items-center justify-center"
+          className="p-6 bg-white border-dashed border-2 border-teal-600 shadow-xs rounded-lg cursor-pointer flex items-center justify-center"
           onClick={handleCreateCourseClick}
           style={{ height: 180, width: 380 }}
         >
@@ -85,7 +85,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
                 {groupedCourses[key].map((course) => (
                   <div
                     key={course.course_id}
-                    className="p-4 bg-gray-100 shadow rounded-lg cursor-pointer relative"
+                    className="p-4 bg-gray-100 shadow-sm rounded-lg cursor-pointer relative"
                     style={{
                       width: 380,
                       height: 180,
@@ -102,7 +102,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
                 ))}
                 {key === latestKeys[0] && !studentMode && (
                   <div
-                    className="p-6 bg-white border-dashed border-2 border-teal-600 shadow-sm rounded-lg cursor-pointer flex items-center justify-center"
+                    className="p-6 bg-white border-dashed border-2 border-teal-600 shadow-xs rounded-lg cursor-pointer flex items-center justify-center"
                     onClick={handleCreateCourseClick}
                     style={{
                       width: 380,
@@ -140,7 +140,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
                   {groupedCourses[key].map((course) => (
                     <div
                       key={course.course_id}
-                      className="p-4 bg-gray-100 shadow rounded-lg cursor-pointer relative"
+                      className="p-4 bg-gray-100 shadow-sm rounded-lg cursor-pointer relative"
                       style={{
                         width: 380,
                         height: 180,

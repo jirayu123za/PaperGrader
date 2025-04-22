@@ -114,7 +114,7 @@ const GradePdfViewer: React.FC = () => {
     >
       <canvas 
         ref={canvasRef}
-        className='border-2 border-gray-400 shadow-xs'
+        className='border-2 border-gray-400 shadow-2xs'
       />
 
       <Stage

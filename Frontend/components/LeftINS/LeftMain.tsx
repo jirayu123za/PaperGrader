@@ -125,7 +125,7 @@ export default function LeftMain() {
       {/* Main Menu */}
       <Stack
         p={16} gap="xs"
-        className='flex-grow'
+        className='grow'
         style={() => ({
           backgroundColor: '#6665AC',
         })}

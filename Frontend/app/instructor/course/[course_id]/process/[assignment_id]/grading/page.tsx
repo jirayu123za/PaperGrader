@@ -6,7 +6,7 @@ export default function INSGradingPage() {
   return (
     <div className="flex min-h-screen">
       <LeftProcess />
-      <div className="flex-grow p-4">
+      <div className="grow p-4">
         <INSGrading />
       </div>
     </div>

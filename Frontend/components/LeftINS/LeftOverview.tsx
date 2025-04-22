@@ -44,7 +44,7 @@ export default function LeftOverview() {
       <Divider />
 
       <Stack
-        className={`flex-grow p-4 ${isCollapsed ? 'items-center' : ''}`}
+        className={`grow p-4 ${isCollapsed ? 'items-center' : ''}`}
         style={{
           backgroundColor: '#6665AC',
         }}
