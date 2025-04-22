@@ -2,11 +2,11 @@
 
 import React from 'react';
 import dayjs from 'dayjs';
-import { Badge, Box, Flex, Select, Table, TextInput, Image, Text, Pagination, Autocomplete, ActionIcon, Stack, ScrollArea, useCombobox, Combobox } from '@mantine/core';
+import { Box, Flex, Select, Table, TextInput, Text, Pagination, Autocomplete, ActionIcon, Stack, ScrollArea, useCombobox, Combobox } from '@mantine/core';
 import { usePagination } from '@mantine/hooks';
 import { IconSearch, IconEdit } from '@tabler/icons-react';
 import { RiDeleteBinLine } from "react-icons/ri";
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useFetchStudentsList } from '../../../../hooks/ManageScan/useFetchStudentsList';
 import { useStudentsListStore } from '../../../../store/ManageScan/useStudentsListStore';
 import { useFetchSubmissionsList } from '../../../../hooks/ManageScan/useFetchSubmissionsList';
@@ -14,7 +14,6 @@ import { useUpdateSubmission } from '../../../../hooks/ManageScan/useUpdateSubmi
 import SubmissionBoxes from './SubmissionBoxes';
 
 export const ManageSplits = () => {
-    const router = useRouter();
     const params = useParams();
     const course_id = params.course_id as string;
     const assignment_id = params.assignment_id as string;
