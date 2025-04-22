@@ -116,7 +116,7 @@ export default function LeftProcess() {
           }}
           onClick={() => {
             if (course_id) {
-              router.push(`/courses/${course_id}/Assignment`);
+              router.push(`/instructor/course/${course_id}/assignment`);
             }
           }}
         >
