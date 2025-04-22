@@ -32,22 +32,22 @@ interface SubQuestion {
   subquestion_title: string;
 }
 
-interface CreateProps {
-  currentPage: number;
-  onToggleCollapse: (isCollapsed: boolean) => void;
-}
+// interface CreateProps {
+//   currentPage: number;
+//   onToggleCollapse: (isCollapsed: boolean) => void;
+// }
 
-const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
-  const { addBoundingBox, addQuestion, removeQuestion, updateQuestion, removeBoundingBox, setRubricData, setBoundingBoxes } = useBoundingBoxStore();
+// const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
+const Create: React.FC = () => {
   const router = useRouter();
   const params = useParams();
   const course_id = params.course_id as string;
   const assignment_id = params.assignment_id as string;
-  const [isCollapsed, { toggle }] = useDisclosure(false);
+  const { addBoundingBox, addQuestion, removeQuestion, updateQuestion, removeBoundingBox, setRubricData, setBoundingBoxes } = useBoundingBoxStore();
+  const [ isCollapsed, { toggle }] = useDisclosure(false);
   const { boundingBoxes, rubricData } = useBoundingBoxStore();
   const { mutate: addBoundingBoxAndQuestion } = useAddBoundingBoxAndQuestion(assignment_id as string);
-
-  useFetchBoundingBoxesAndQuestions(assignment_id as string);
+  const { isLoading, isError } = useFetchBoundingBoxesAndQuestions(assignment_id as string);
 
   const form = useForm({
     initialValues: {
@@ -59,10 +59,10 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
     router.push(`/courses/${course_id}/assignments/${assignment_id}`);
   };
 
-  const handleToggle = () => {
-    toggle();
-    onToggleCollapse(!isCollapsed);
-  };
+  // const handleToggle = () => {
+  //   toggle();
+  //   onToggleCollapse(!isCollapsed);
+  // };
 
   const handleNewQuestion = () => {
     if (!rubricData || !rubricData.questions) {
@@ -74,7 +74,8 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
       bounding_box_id: `temp-${Date.now()}`,
       bounding_box_position: `(100,100),(300,300)`,
       bounding_box_type: 'question',
-      bounding_box_page: currentPage,
+      // bounding_box_page: currentPage,
+      bounding_box_page: 1,
     };
 
     const newQuestion: Question = {
@@ -92,13 +93,13 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
     console.log('✅ Added Bounding Box and Question:', { newBoundingBox, newQuestion });
   };
 
-  useEffect(() => {
-    console.log("📌 Bounding Boxes ใน Store:", boundingBoxes);
-  }, [boundingBoxes]);
+  // useEffect(() => {
+  //   console.log("📌 Bounding Boxes ใน Store:", boundingBoxes);
+  // }, [boundingBoxes]);
 
-  useEffect(() => {
-    console.log("🟢 rubricData อัปเดต:", rubricData);
-  }, [rubricData]);
+  // useEffect(() => {
+  //   console.log("🟢 rubricData อัปเดต:", rubricData);
+  // }, [rubricData]);
 
   const handleSave = () => {
     if (!assignment_id) return;
@@ -119,50 +120,50 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
     console.log("📌 Bounding Boxes ที่จะส่งไป:", newBoundingBoxes);
     console.log("📌 Questions ที่จะส่งไป:", newQuestions);
 
-    newBoundingBoxes.forEach((box, index) => {
-      addBoundingBoxAndQuestion({
-        boundingBoxes: newBoundingBoxes.map((box) => ({
-          bounding_box_position: box.bounding_box_position,
-          bounding_box_type: box.bounding_box_type,
-          bounding_box_page: box.bounding_box_page,
-        })),
-        questionsData: newQuestions.length > 0
-          ? {
-            questions: newQuestions.map((question) => ({
-              question_id: question.question_id || `temp-${Date.now()}`,
-              question_point: question.question_point || 0,
-              question_title: question.question_title || `Question ${question.question_id}`,
-              subquestions: question.subquestions || [],
-            })),
-          }
-          : undefined, // ถ้าไม่มี questions ให้ส่ง undefined
-      });
-    });
+    // newBoundingBoxes.forEach((box, index) => {
+    //   addBoundingBoxAndQuestion({
+    //     boundingBoxes: newBoundingBoxes.map((box) => ({
+    //       bounding_box_position: box.bounding_box_position,
+    //       bounding_box_type: box.bounding_box_type,
+    //       bounding_box_page: box.bounding_box_page,
+    //     })),
+    //     questionsData: newQuestions.length > 0
+    //       ? {
+    //         questions: newQuestions.map((question) => ({
+    //           question_id: question.question_id || `temp-${Date.now()}`,
+    //           question_point: question.question_point || 0,
+    //           question_title: question.question_title || `Question ${question.question_id}`,
+    //           subquestions: question.subquestions || [],
+    //         })),
+    //       }
+    //       : undefined, // ถ้าไม่มี questions ให้ส่ง undefined
+    //   });
+    // });
   };
 
-  const handleRemoveQuestion = (questionId: string) => {
-    const questionToRemove = rubricData.questions.find((q) => q.question_id === questionId);
+  // const handleRemoveQuestion = (questionId: string) => {
+  //   const questionToRemove = rubricData.questions.find((q) => q.question_id === questionId);
 
-    if (questionToRemove) {
-      questionToRemove.subquestions?.forEach((sub) => {
-        removeBoundingBox(sub.bounding_box_id);
-      });
+  //   if (questionToRemove) {
+  //     questionToRemove.subquestions?.forEach((sub) => {
+  //       removeBoundingBox(sub.bounding_box_id);
+  //     });
 
-      if (questionToRemove.bounding_box_id) {
-        removeBoundingBox(questionToRemove.bounding_box_id);
-      }
+  //     if (questionToRemove.bounding_box_id) {
+  //       removeBoundingBox(questionToRemove.bounding_box_id);
+  //     }
 
-      removeQuestion(questionId);
-    }
-  };
+  //     removeQuestion(questionId);
+  //   }
+  // };
 
   const handleChangeQuestion = (questionId: string, value: string) => {
     updateQuestion(questionId, { question_title: value });
   };
 
-  const handleChangePoint = (questionId: string, value: number) => {
-    updateQuestion(questionId, { question_point: value });
-  };
+  // const handleChangePoint = (questionId: string, value: number) => {
+  //   updateQuestion(questionId, { question_point: value });
+  // };
 
 
   const createBoundingBox = (type: "NAME" | "STUDENTID") => {
@@ -171,24 +172,25 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
       bounding_box_id: `temp-${Date.now()}`,
       bounding_box_position: `(100,100),(300,300)`,
       bounding_box_type: type,
-      bounding_box_page: currentPage,
-
+      // bounding_box_page: currentPage,
+      bounding_box_page: 1,
     };
+    
     console.log('สร้าง BoundingBox:', newBoundingBox);
     addBoundingBox(newBoundingBox);
   };
 
-  useEffect(() => {
-    if (!rubricData || !Array.isArray(rubricData.questions)) {
-      setRubricData({ rubric_id: assignment_id as string, questions: [] });
-    }
-  }, [rubricData, setRubricData, assignment_id]);
+  // useEffect(() => {
+  //   if (!rubricData || !Array.isArray(rubricData.questions)) {
+  //     setRubricData({ rubric_id: assignment_id as string, questions: [] });
+  //   }
+  // }, [rubricData, setRubricData, assignment_id]);
 
-  useEffect(() => {
-    if (!boundingBoxes || !Array.isArray(boundingBoxes)) {
-      setBoundingBoxes([]);
-    }
-  }, [boundingBoxes, setBoundingBoxes]);
+  // useEffect(() => {
+  //   if (!boundingBoxes || !Array.isArray(boundingBoxes)) {
+  //     setBoundingBoxes([]);
+  //   }
+  // }, [boundingBoxes, setBoundingBoxes]);
 
 
   const handleNewSubQuestion = (questionId: string) => {
@@ -209,13 +211,13 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
     console.log('✅ Added Subquestion:', newSubQuestion);
   };
 
-
   return (
-    <Container className={`fixed top-0 right-0 h-full transition-all duration-300 bg-white shadow-lg ${isCollapsed ? 'w-25' : 'w-[450px]'}`}
-      style={{ overflow: 'hidden', backgroundColor: '#f8f9fa' }}>
+    <Container className={`related top-0 right-0 h-full transition-all duration-300 bg-white shadow-lg ${isCollapsed ? 'w-25' : 'w-[450px]'}`}
+      style={{ borderLeft: '1px solid #ddd', overflowY: 'auto', backgroundColor: '#f8f9fa' }}>
       <Flex justify="space-between" align="center" p="md" style={{ backgroundColor: '#6665AC', color: '#F9F9F9' }}>
         <Title order={4} className={`${isCollapsed ? 'hidden' : 'block'}`}>Assignment Processing</Title>
-        <Button onClick={handleToggle} variant="subtle" radius="md"
+        
+        <Button onClick={toggle} variant="subtle" radius="md"
           styles={() => ({
             root: {
               backgroundColor: '#6665AC',
@@ -249,7 +251,7 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
                 </Button>
               </Flex>
               <Box pt={16} pl={16} pr={16}>
-                <Text size="sm" color="dimmed">Total Questions: {rubricData?.questions?.length || 0}</Text>
+                <Text size="sm" c="dimmed">Total Questions: {rubricData?.questions?.length || 0}</Text>
               </Box>
 
               <Text size="sm" c="dimmed" pt={16} pl={16} pr={16}>
@@ -282,7 +284,7 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
                           <NumberInput
                             hideControls
                             value={question?.question_point || 0}
-                            onChange={(value) => handleChangePoint(question?.question_id, value as number)}
+                            // onChange={(value) => handleChangePoint(question?.question_id, value as number)}
                             min={0}
                           />
                         </Table.Td>
@@ -291,7 +293,7 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
                             size="xs"
                             color="blue"
                             variant="outline"
-                            onClick={() => handleNewSubQuestion(question?.question_id)}
+                            // onClick={() => handleNewSubQuestion(question?.question_id)}
                           >
                             +
                           </Button>
@@ -301,7 +303,7 @@ const Create: React.FC<CreateProps> = ({ currentPage, onToggleCollapse }) => {
                             size="xs"
                             color="red"
                             variant="outline"
-                            onClick={() => handleRemoveQuestion(question?.question_id)}
+                            // onClick={() => handleRemoveQuestion(question?.question_id)}
                           >
                             X
                           </Button>
