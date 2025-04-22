@@ -12,7 +12,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   const isInCreateOutline = pathname.includes('/create-outline');
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen overflow-hidden">
       {isInProcess ? <LeftProcess /> : <LeftMain />}
         <div className="flex-grow">{children}</div>
       {isInCreateOutline && (

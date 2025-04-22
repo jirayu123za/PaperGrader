@@ -212,8 +212,8 @@ const Create: React.FC = () => {
   };
 
   return (
-    <Container className={`related top-0 right-0 h-full transition-all duration-300 bg-white shadow-lg ${isCollapsed ? 'w-25' : 'w-[450px]'}`}
-      style={{ borderLeft: '1px solid #ddd', overflowY: 'auto', backgroundColor: '#f8f9fa' }}>
+    <Container className={` overflow-hidden related top-0 right-0  transition-all duration-300 bg-white shadow-lg ${isCollapsed ? 'w-25' : 'w-[450px]'} h-screen`}
+      style={{ borderLeft: '1px solid #ddd', overflowY: 'auto', backgroundColor: '#f8f9fa', height: '100vh' }}>
       <Flex justify="space-between" align="center" p="md" style={{ backgroundColor: '#6665AC', color: '#F9F9F9' }}>
         <Title order={4} className={`${isCollapsed ? 'hidden' : 'block'}`}>Assignment Processing</Title>
         

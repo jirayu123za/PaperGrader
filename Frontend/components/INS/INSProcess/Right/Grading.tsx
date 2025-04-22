@@ -3,8 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Text, Title, Divider, NumberInput, Button, Flex, ActionIcon, Select, Textarea, Checkbox } from '@mantine/core';
 import { IconX, IconPlus } from '@tabler/icons-react';
-import { useRouter } from 'next/router';
-
+import { useParams } from 'next/navigation';
 interface Rubric {
     points: number;
     description: string;
@@ -25,8 +24,8 @@ const Grading: React.FC = () => {
     const [comments, setComments] = useState<string>('');
     const [selectedComment, setSelectedComment] = useState<string | null>(null);
     const [selectedBoxId, setSelectedBoxId] = useState<number | null>(null);
-    const router = useRouter();
-    const { assignment_id } = router.query;
+    const params = useParams();
+    const assignment_id = params.assignment_id as string;
 
     // ดึงข้อมูล boundingBoxes จาก localStorage
     useEffect(() => {
@@ -102,7 +101,7 @@ const Grading: React.FC = () => {
     const selectedBox = boundingBoxes.find((box) => box.id === selectedBoxId);
 
     return (
-        <Box className='shadow-md bg-[#f1f3f8]' p="lg">
+        <Box className='h-screen shadow-md bg-[#f1f3f8] overflow-hidden' p="lg">
             <Title order={3}>Grading</Title>
             <Divider my="sm" />
 
