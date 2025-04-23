@@ -4,7 +4,7 @@ import React from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useRouter , useParams } from 'next/navigation';
-import { Progress, Table, Paper, Grid, Button, Pagination, Skeleton } from '@mantine/core';
+import { Progress, Table, Paper, Button, Pagination, Flex } from '@mantine/core';
 import { MdOutlineAssignmentTurnedIn } from "react-icons/md";
 import { useActiveAssignmentStore } from '../../../store/useActiveAssignmentStore';
 import { useFetchActiveAssignments } from '../../../hooks/useFetchActiveAssignment';
@@ -18,10 +18,12 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
   const router = useRouter();
   const params = useParams();
   const course_id = params?.course_id as string;
-  const { isLoading, error } = useFetchActiveAssignments(course_id as string);
+  const { error } = useFetchActiveAssignments(course_id as string);
   const { activeAssignments } = useActiveAssignmentStore();
   const iconAssignmentTurnedIn = <MdOutlineAssignmentTurnedIn size={24} />;
   dayjs.extend(utc);
+
+  const isLoading = true;
 
   const pageSize = 10;
   const totalPages = Math.ceil(activeAssignments.length / pageSize);
@@ -76,23 +78,25 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
 
   return (
     <Paper shadow="sm" radius="md" withBorder p="xl">
-      <Grid mb="md" justify="space-between" align="center">
-        <Grid.Col span={3}>
-          <h2 className="text-2xl font-semibold">Active Assignments</h2>
-        </Grid.Col>
-        <Grid.Col span={3} pt={8} pl={45}>
-          <Button
-            variant="filled"
-            size="md"
-            radius="sm"
-            className="shadow-md"
-            leftSection={iconAssignmentTurnedIn}
-            onClick={openModal}
-          >
-            Create Assignment
-          </Button>
-        </Grid.Col>
-      </Grid>
+      <Flex
+        direction={{ base: 'column', sm: 'row' }}
+        justify="space-between"
+        align={{ base: 'stretch', sm: 'center' }}
+        gap="sm"
+        mb="md"
+      >
+        <h2 className="text-2xl font-semibold">Active Assignments</h2>
+        <Button
+          variant="filled"
+          size="md"
+          radius="sm"
+          className="shadow-md"
+          leftSection={iconAssignmentTurnedIn}
+          onClick={openModal}
+        >
+          Create Assignment
+        </Button>
+      </Flex>
 
       {activeAssignments.length > 0 ? (
         <Table striped highlightOnHover verticalSpacing="sm">
