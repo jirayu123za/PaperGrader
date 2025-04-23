@@ -1,78 +1,34 @@
 "use client";
+import React from "react";
+import { Container, Box, Image, Flex } from "@mantine/core";
 
-import * as pdfjsLib from "pdfjs-dist";
-import React, { useEffect, useRef } from "react";
-import { Container, Box } from "@mantine/core";
-
-(pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
-
-interface PdfPreviewProps {
+interface SubmissionBoxesProps {
   submissionBoxesURL: string[];
 }
 
-const SubmissionBoxes: React.FC<PdfPreviewProps> = ({ submissionBoxesURL }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const renderTasks: any[] = [];
-
-    const renderAll = async () => {
-      if (!containerRef.current) return;
-
-      containerRef.current.innerHTML = "";
-
-      for (let index = 0; index < submissionBoxesURL.length; index++) {
-        const url = submissionBoxesURL[index];
-        if (!url) continue;
-
-        try {
-          const response = await fetch(url);
-          const arrayBuffer = await response.arrayBuffer();
-          const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-          const pdf = await loadingTask.promise;
-          const page = await pdf.getPage(1);
-
-          const scale = 1;
-          const viewport = page.getViewport({ scale });
-
-          const canvas = document.createElement("canvas");
-          const context = canvas.getContext("2d");
-          if (!context) continue;
-
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
-          containerRef.current.appendChild(canvas);
-
-          const renderTask = page.render({
-            canvasContext: context,
-            viewport,
-          });
-
-          renderTasks.push(renderTask);
-          await renderTask.promise;
-        } catch (err) {
-          console.error(`❌ PDF Render Error at index ${index}:`, err);
-        }
-      }
-    };
-
-    renderAll();
-
-    return () => {
-      renderTasks.forEach((task) => task?.cancel?.());
-    };
-  }, [submissionBoxesURL]);
-
+const SubmissionBoxes: React.FC<SubmissionBoxesProps> = ({ submissionBoxesURL }) => {
   return (
     <Container>
-      <Box
-        ref={containerRef}
-        style={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "flex-start"
-          }}
-      />
+      <Flex className="border-1 border-dashed border-gray-300 p-0">
+        {submissionBoxesURL.map((url, index) => (
+          <Box
+            key={index}
+            w={200}
+            h={100}
+            style={{
+              overflow: 'hidden',
+            }}
+          >
+            <Image
+              src={url}
+              alt={`submission-box-${index + 1}`}
+              width="100%"
+              height="100%"
+              fallbackSrc="https://placehold.co/200x100?text=No+Image"
+            />
+          </Box>
+        ))}
+      </Flex>
     </Container>
   );
 };
