@@ -179,10 +179,8 @@ func main() {
 
 	// OCR
 	// Mock data for OCR
-	// apiGroup.Get("/instructor/ocr/studentsList", instructorHandler.MockHandler2)
-	// apiGroup.Get("/instructor/ocr/submissionBoxes", instructorHandler.MockHandler)
-	// apiGroup.Get("/instructor/ocr/submissionBoxes/v2", instructorHandler.MockHandler3)
-	apiGroup.Get("/instructor/ocr/submissionBoxes/v3", instructorHandler.MockHandler4)
+	apiGroup.Get("/instructor/ocr/studentsList", instructorHandler.GetStudentsListForOCR)
+	apiGroup.Get("/instructor/ocr/submissionBoxes", instructorHandler.GetMatchAllSubmissionOCR)
 
 	// Bounding Box
 	apiGroup.Post("/instructor/boundingBoxes", instructorHandler.CreateBoundingBoxesAndQuestions)
@@ -193,6 +191,9 @@ func main() {
 
 	// Questions
 	apiGroup.Get("/instructor/questions", instructorHandler.GetQuestionsByAssignmentTemplate)
+
+	// Rubric
+	// apiGroup.Post("/instructor/rubric", instructorHandler.CreateRubric)
 
 	apiGroup.Get("/student/dashboard", studentHandler.GetCoursesAndAssignments)
 	// test api get pdf files name
