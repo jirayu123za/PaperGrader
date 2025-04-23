@@ -6,17 +6,18 @@ import { Box, Flex, Select, Table, TextInput, Text, Pagination, Autocomplete, Ac
 import { usePagination } from '@mantine/hooks';
 import { IconSearch, IconEdit } from '@tabler/icons-react';
 import { RiDeleteBinLine } from "react-icons/ri";
-import { useParams } from 'next/navigation';
 import { useFetchStudentsList } from '../../../../hooks/ManageScan/useFetchStudentsList';
 import { useStudentsListStore } from '../../../../store/ManageScan/useStudentsListStore';
 import { useFetchSubmissionsList } from '../../../../hooks/ManageScan/useFetchSubmissionsList';
 import { useUpdateSubmission } from '../../../../hooks/ManageScan/useUpdateSubmission';
 import SubmissionBoxes from './SubmissionBoxes';
 
-export const ManageSplits = () => {
-    const params = useParams();
-    const course_id = params.course_id as string;
-    const assignment_id = params.assignment_id as string;
+type Props = {
+    course_id: string;
+    assignment_id: string;
+};
+
+export const ManageSplits: React.FC<Props> = ({ course_id, assignment_id }) => {
     const { isLoading: isLoadingStudents, error: errorStudents } = useFetchStudentsList(course_id as string, assignment_id as string);
     const { isLoading: isLoadingSubmissions, error: errorSubmissions } = useFetchSubmissionsList(course_id as string, assignment_id as string);
     const { studentsList, submissionsList, searchQuery, setSearchQuery, filterStatus, setFilterStatus, pageSize, setPageSize } = useStudentsListStore();
@@ -127,11 +128,10 @@ export const ManageSplits = () => {
                         <Table highlightOnHover w="100%" miw='900px'>
                             <Table.Thead>
                                 <Table.Tr>
-                                    <Table.Th w='25%'>Name & ID Region</Table.Th>
-                                    <Table.Th w="20%">Student</Table.Th>
-                                    <Table.Th w="15%">Sections Submitted</Table.Th>
+                                    <Table.Th w='0%'>Name & ID Region</Table.Th>
+                                    <Table.Th w="20%" pl={48}>Student</Table.Th>
+                                    <Table.Th w="15%" pl={48}>Sections Submitted</Table.Th>
                                     <Table.Th w="15%">Submission Time</Table.Th>
-                                    {/* <Table.Th w="10%" ta='center'>Graded</Table.Th> */}
                                     <Table.Th w="10%" ta='center'>Delete Submission</Table.Th>
                                 </Table.Tr>
                             </Table.Thead>
@@ -160,6 +160,7 @@ export const ManageSplits = () => {
                                                 </Stack>
                                             ) : (
                                                 <Autocomplete
+                                                    pl={35}
                                                     placeholder="Select student or enter name"
                                                     styles={{
                                                         option: {
@@ -193,11 +194,6 @@ export const ManageSplits = () => {
                                         <Table.Td>
                                             <Text>{formatDate(submission.submitted_at)}</Text>
                                         </Table.Td>
-                                        {/* <Table.Td ta='center'>
-                                            <Badge w={52} color={submission.graded > 0 ? 'orange' : 'red'}>
-                                                {submission.graded}%
-                                            </Badge>
-                                        </Table.Td> */}
                                         <Table.Td ta='center'>
                                             <ActionIcon variant="transparent" aria-label="Delete Submission">
                                                 <RiDeleteBinLine size={20} />
@@ -207,51 +203,52 @@ export const ManageSplits = () => {
                                 ))}
                             </Table.Tbody>
                         </Table>
-                    </ScrollArea>
-                )}
 
-                {submissions.length > 0 && (       
-                    <Flex justify="space-between" mt="xs" align="center">
-                        <Flex flex={1} justify="center">
-                            <Pagination 
-                                total={totalPages} 
-                                siblings={1}
-                                boundaries={1}
-                                value={pagination.active} 
-                                onChange={pagination.setPage} 
-                            />
-                        </Flex>
-                        <Flex align="center" justify="flex-end" gap="sm" w="auto">
-                            <Text size="sm" c="dimmed">
-                                {message}
-                            </Text>
-                            <Combobox
-                                size='sm'
-                                store={combobox}
-                                withinPortal={false}
-                                onOptionSubmit={(value) => setPageSize(Number(value))}
-                                >
-                                <Combobox.Target>
-                                    <TextInput
-                                    value={pageSize}
-                                    onChange={(event) => setPageSize(Number(event.currentTarget.value))}
-                                    rightSection={<Combobox.Chevron />}
-                                    onClick={() => combobox.openDropdown()}
+                        {submissions.length > 0 && (       
+                            <Flex justify="space-between" mt="xs" align="center">
+                                <Flex flex={1} justify="center">
+                                    <Pagination 
+                                        total={totalPages} 
+                                        siblings={1}
+                                        boundaries={1}
+                                        value={pagination.active} 
+                                        onChange={pagination.setPage} 
                                     />
-                                </Combobox.Target>
+                                </Flex>
+                                <Flex align="center" justify="flex-end" gap="sm" w="auto">
+                                    <Text size="sm" c="dimmed">
+                                        {message}
+                                    </Text>
+                                    <Combobox
+                                        size='sm'
+                                        store={combobox}
+                                        withinPortal={false}
+                                        onOptionSubmit={(value) => setPageSize(Number(value))}
+                                        >
+                                        <Combobox.Target>
+                                            <TextInput
+                                            value={pageSize}
+                                            onChange={(event) => setPageSize(Number(event.currentTarget.value))}
+                                            rightSection={<Combobox.Chevron />}
+                                            onClick={() => combobox.openDropdown()}
+                                            />
+                                        </Combobox.Target>
 
-                                <Combobox.Dropdown>
-                                    <Combobox.Options>
-                                    {['5', '10', '15'].map((size) => (
-                                        <Combobox.Option key={size} value={size}>
-                                        {size}
-                                        </Combobox.Option>
-                                    ))}
-                                    </Combobox.Options>
-                                </Combobox.Dropdown>
-                            </Combobox>
-                        </Flex>
-                    </Flex>
+                                        <Combobox.Dropdown>
+                                            <Combobox.Options>
+                                            {['5', '10', '15'].map((size) => (
+                                                <Combobox.Option key={size} value={size}>
+                                                {size}
+                                                </Combobox.Option>
+                                            ))}
+                                            </Combobox.Options>
+                                        </Combobox.Dropdown>
+                                    </Combobox>
+                                </Flex>
+                            </Flex>
+                        )}
+
+                    </ScrollArea>
                 )}
             </Box>
         </Box>
