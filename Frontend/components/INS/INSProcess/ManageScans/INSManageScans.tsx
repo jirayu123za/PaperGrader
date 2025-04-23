@@ -2,7 +2,6 @@
 
 import React, { useRef } from 'react';
 import dayjs from 'dayjs';
-import { useRouter, useParams } from 'next/navigation';
 import { Text, Alert, Anchor, FileInput, Box, Flex, Progress, List, ScrollArea, Loader, Button } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
 import { useUploadSubmissionFile } from '../../../../hooks/ManageScan/useUploadSubmissionFile';
@@ -10,12 +9,13 @@ import { FaRegFilePdf } from "react-icons/fa";
 import { useFetchSubmissionFiles } from '../../../../hooks/ManageScan/useFetchSubmissionFiles';
 import { useSubmissionFilesStore } from '../../../../store/ManageScan/useSubmissionFiles';
 
-const INSManageScans: React.FC = () => {
+type Props = {
+  course_id: string;
+  assignment_id: string;
+};
+
+const INSManageScans: React.FC<Props> = ({ course_id, assignment_id }) => {
   const fileInputRef = useRef<HTMLButtonElement>(null);
-  const router = useRouter();
-  const params = useParams();
-  const course_id = params.course_id as string;
-  const assignment_id = params.assignment_id as string;
   const { data: submissionFiles, isLoading } = useFetchSubmissionFiles(assignment_id as string);
   const { submissions, visibleCount, setVisibleCount } = useSubmissionFilesStore();
   const { mutate: uploadSubmissionFile, isPending } = useUploadSubmissionFile();
