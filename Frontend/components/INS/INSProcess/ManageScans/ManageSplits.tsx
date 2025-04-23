@@ -141,7 +141,7 @@ export const ManageSplits: React.FC<Props> = ({ course_id, assignment_id }) => {
                                         <Table.Td>
                                             <SubmissionBoxes submissionBoxesURL={submission.submission_box_urls || []} />
                                         </Table.Td>
-                                        <Table.Td>
+                                        <Table.Td pl={48}>
                                             {submission.full_name? (
                                                 <Stack gap={1}>
                                                     <Flex align="center">
@@ -160,7 +160,6 @@ export const ManageSplits: React.FC<Props> = ({ course_id, assignment_id }) => {
                                                 </Stack>
                                             ) : (
                                                 <Autocomplete
-                                                    pl={35}
                                                     placeholder="Select student or enter name"
                                                     styles={{
                                                         option: {
@@ -184,7 +183,7 @@ export const ManageSplits: React.FC<Props> = ({ course_id, assignment_id }) => {
                                                 />                                        
                                             )}
                                         </Table.Td>
-                                        <Table.Td>
+                                        <Table.Td pl={48}>
                                             {submission.section_name !== '-' ? (
                                                 <Text>{submission.section_name}</Text>
                                             ) : (
