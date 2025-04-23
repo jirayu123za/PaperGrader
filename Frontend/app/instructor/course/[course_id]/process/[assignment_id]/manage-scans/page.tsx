@@ -1,45 +1,26 @@
-"use client";
+import INSManageScansClient from '@/components/client/INSManageScansClient';
+import { Loader } from '@mantine/core';
+import { Suspense } from 'react';
 
-import React, { useEffect, useState } from 'react';
+export const metadata = {
+  title: 'Manage Scans',
+  description: 'Manage Scans for the assignment in the course process page.',
+};
 
-import INSManageScans from '@/components/INS/INSProcess/ManageScans/INSManageScans';
-import { Loader, Tabs } from '@mantine/core';
-import { useMounted } from '@mantine/hooks';
-import { ManageSplits } from '@/components/INS/INSProcess/ManageScans/ManageSplits';
-
-export default function INSManageScansPage() {
-  const mounted = useMounted();
-  const [loading, setLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    if (mounted) {
-      setTimeout(() => setLoading(false), 1000);
-    }
-  }, [mounted]);
+export default async function Page({ params }: { 
+  params: Promise<{ course_id: string; assignment_id: string }>
+}) {
+  const { course_id, assignment_id } = await params;
 
   return (
     <div className="flex min-h-screen">
       <div className="grow p-4">
-      {loading ? (
-        <div className="flex justify-center items-center min-h-[200px]">
-          <Loader size="lg" />
-        </div>
-      ) : (
-        <Tabs defaultValue="manage-scans">
-          <Tabs.List>
-            <Tabs.Tab value="manage-scans">Manage Scans</Tabs.Tab>
-            <Tabs.Tab value="manage-splits">Manage Splits</Tabs.Tab>
-          </Tabs.List>
-
-          <Tabs.Panel value="manage-scans" pt="md">
-            <INSManageScans />
-          </Tabs.Panel>
-
-          <Tabs.Panel value="manage-splits" pt="md">
-            <ManageSplits />
-          </Tabs.Panel>
-        </Tabs>
-      )}
+        <Suspense fallback={<Loader size="sm" />}>
+          <INSManageScansClient
+            course_id={course_id}
+            assignment_id={assignment_id}
+          />
+        </Suspense>
       </div>
     </div>
   );
