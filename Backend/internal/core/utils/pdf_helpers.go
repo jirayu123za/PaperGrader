@@ -7,6 +7,7 @@ import (
 	"math"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -173,32 +174,36 @@ func CropPDFWithBoundingBox(inputPath, submissionFileName, bboxType string, posi
 		return "", fmt.Errorf("cropped PDF file does not exist")
 	}
 
-	err = api.SplitFile(croppedPDFPath, os.TempDir(), 1, nil)
+	outputPrefix := filepath.Join(os.TempDir(), fmt.Sprintf("%s_%s_tmp", strings.TrimSuffix(submissionFileName, ".pdf"), bboxType))
+	cmd := exec.Command("pdftoppm", "-cropbox", "-png", croppedPDFPath, outputPrefix)
+	err = cmd.Run()
 	if err != nil {
-		log.Printf("Failed to split cropped PDF: %v", err)
-		return "", fmt.Errorf("failed to split cropped PDF: %v", err)
-	}
-	log.Printf("Successfully split cropped PDF into separate pages")
-
-	finalPDFPath := filepath.Join(os.TempDir(), fmt.Sprintf("%s_%s_cropped_1.pdf", strings.TrimSuffix(submissionFileName, ".pdf"), bboxType))
-	log.Printf("Extracted first page to: %s", finalPDFPath)
-
-	if _, err := os.Stat(finalPDFPath); os.IsNotExist(err) {
-		log.Printf("Extracted first page PDF file does not exist: %s", finalPDFPath)
-		return "", fmt.Errorf("extracted first page PDF file does not exist")
+		return "", fmt.Errorf("failed to convert PDF to image using pdftoppm: %v", err)
 	}
 
-	files, err := filepath.Glob(filepath.Join(os.TempDir(), fmt.Sprintf("%s_%s_cropped_*.pdf", strings.TrimSuffix(submissionFileName, ".pdf"), bboxType)))
+	originalOutputPath := fmt.Sprintf("%s-1.png", outputPrefix)
+	desiredImagePath := filepath.Join(os.TempDir(), fmt.Sprintf("%s_%s_cropped_%d.png", strings.TrimSuffix(submissionFileName, ".pdf"), bboxType, pageNumber))
+
+	if _, err := os.Stat(originalOutputPath); os.IsNotExist(err) {
+		return "", fmt.Errorf("converted image not found: %s", originalOutputPath)
+	}
+
+	err = os.Rename(originalOutputPath, desiredImagePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to rename image file: %v", err)
+	}
+
+	extraImages, err := filepath.Glob(fmt.Sprintf("%s-*.png", outputPrefix))
 	if err == nil {
-		for _, f := range files {
-			if f != finalPDFPath {
-				os.Remove(f)
+		for _, f := range extraImages {
+			if f != desiredImagePath {
+				_ = os.Remove(f)
 			}
 		}
 	}
 
-	log.Printf("Final cropped single-page PDF saved: %s", finalPDFPath)
-	return finalPDFPath, nil
+	log.Printf("Final cropped image saved: %s", desiredImagePath)
+	return desiredImagePath, nil
 }
 
 // OCR process
