@@ -6,11 +6,17 @@ import (
 	"math"
 	"os/exec"
 	"paperGrader/internal/adapters/response"
+	"regexp"
 	"strings"
 
 	"github.com/agnivade/levenshtein"
 	"github.com/google/uuid"
 )
+
+func FilterThaiCharacters(input string) string {
+	re := regexp.MustCompile(`[\x{0E01}-\x{0E5B}]`)
+	return strings.Join(re.FindAllString(input, -1), "")
+}
 
 func PerformOCRThaiText(imagePath string) (string, error) {
 	cmd := exec.Command("tesseract", imagePath, "stdout", "-l", "tha", "--oem", "1", "--psm", "6")
@@ -23,7 +29,8 @@ func PerformOCRThaiText(imagePath string) (string, error) {
 		return "", fmt.Errorf("tesseract error (thai text): %v, details: %s", err, stderr.String())
 	}
 
-	return strings.TrimSpace(string(output)), nil
+	text := strings.TrimSpace(string(output))
+	return FilterThaiCharacters(text), nil
 }
 
 func PerformOCRDigitsOnly(imagePath string) (string, error) {
