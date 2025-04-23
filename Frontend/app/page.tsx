@@ -42,7 +42,6 @@ export default function LandingPage() {
           alignItems: "center",
           justifyContent: "center",
           minHeight: "100vh",
-          width: "100vw",
         }}>
         <HeroSection />
       </AppShell.Main>
