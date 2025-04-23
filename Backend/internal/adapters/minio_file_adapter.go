@@ -151,7 +151,7 @@ func (r *MinIORepository) FindFilesAndNames(CourseID, AssignmentID, fileNames []
 func (r *MinIORepository) FindFileURLSubmissionBoxes(CourseID, AssignmentID, fileName string) (string, error) {
 	reqParams := make(url.Values)
 	ctx := context.Background()
-	objectName := filepath.Join(CourseID, AssignmentID, fileName)
+	objectName := filepath.Join(CourseID, AssignmentID, "bounding-box", fileName)
 	objectName = strings.ReplaceAll(objectName, "\\", "/")
 
 	presignedURL, err := r.client.PresignedGetObject(ctx, r.bucketName, objectName, time.Minute*15, reqParams)
