@@ -3,7 +3,6 @@ package services
 import (
 	"log"
 	"os"
-	"os/exec"
 	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/core/repositories"
 	"paperGrader/internal/core/utils"
@@ -63,10 +62,10 @@ type InstructorService interface {
 	GetSubmissionFilesWithMinIO(submissions []response.SubmissionListForManagementResponse, CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionListForManagementResponse, error)
 
 	//! OCR Services
-	// MockGetStudentsListForOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForOCRResponse, error)
+	GetStudentsListForOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForOCRResponse, error)
 	// MockGetSubmissionBoxesForOCR(AssignmentID uuid.UUID) ([]response.GroupSubmissionBoxesForOCR, error)
 	// MockGetSubmissionBoxesFromMinIO(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionBoxesURLFromMinIO, error)
-	MockMatchAllSubmissionOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.MatchLog, error)
+	GetMatchAllSubmissionOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.MatchLog, error)
 
 	CreateBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error
 	GetBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error)
@@ -78,6 +77,9 @@ type InstructorService interface {
 
 	// CRUD Questions
 	GetQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (*response.QuestionsTemplateResponse, error)
+
+	// CRUD Rubric
+	// CreateRubric(AssignmentID uuid.UUID, rubric *models.Rubric) error
 }
 
 type InstructorServiceImpl struct {
@@ -410,88 +412,15 @@ func (s *InstructorServiceImpl) GetSubmissionFilesWithMinIO(submissions []respon
 }
 
 // ! OCR Services implementation
-// func (s *InstructorServiceImpl) MockGetStudentsListForOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForOCRResponse, error) {
-// 	students, err := s.repo.FindStudentsListForOCR(CourseID, AssignmentID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return students, nil
-// }
+func (s *InstructorServiceImpl) GetStudentsListForOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForOCRResponse, error) {
+	students, err := s.repo.FindStudentsListForOCR(CourseID, AssignmentID)
+	if err != nil {
+		return nil, err
+	}
+	return students, nil
+}
 
-// func (s *InstructorServiceImpl) MockGetSubmissionBoxesForOCR(AssignmentID uuid.UUID) ([]response.GroupSubmissionBoxesForOCR, error) {
-// 	submissionBoxes, err := s.repo.FindSubmissionBoxesForOCR(AssignmentID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return submissionBoxes, nil
-// }
-
-// func (s *InstructorServiceImpl) MockGetSubmissionBoxesFromMinIO(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionBoxesURLFromMinIO, error) {
-// 	var result []response.SubmissionBoxesURLFromMinIO
-
-// 	submissionBoxes, err := s.repo.FindSubmissionBoxesForOCR(AssignmentID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	tempBaseDir := filepath.Join(os.TempDir(), "PDFstore")
-// 	if err := os.MkdirAll(tempBaseDir, os.ModePerm); err != nil {
-// 		return nil, err
-// 	}
-
-// 	for _, submission := range submissionBoxes {
-// 		var localPaths []string
-
-// 		submissionDir := filepath.Join(tempBaseDir, submission.SubmissionID.String())
-// 		if err := os.MkdirAll(submissionDir, os.ModePerm); err != nil {
-// 			return nil, err
-// 		}
-
-// 		for _, fileName := range submission.SubmissionBoxFileName {
-// 			url, err := s.minioRepo.FindFileURLSubmissionBoxes(CourseID.String(), AssignmentID.String(), fileName)
-// 			if err != nil {
-// 				continue
-// 			}
-
-// 			baseName := filepath.Base(fileName)
-// 			tempFilePath := filepath.Join(submissionDir, baseName)
-
-// 			if err := utils.DownloadFileFromURL(url, tempFilePath); err != nil {
-// 				continue
-// 			}
-
-// 			imagePrefix := strings.TrimSuffix(tempFilePath, filepath.Ext(tempFilePath))
-
-// 			cmd := exec.Command("pdftoppm", "-cropbox", "-png", tempFilePath, imagePrefix)
-// 			cmd.Stdout = os.Stdout
-// 			cmd.Stderr = os.Stderr
-// 			if err := cmd.Run(); err != nil {
-// 				// log.Printf("pdftoppm failed on %s: %v", tempFilePath, err)
-// 				continue
-// 			}
-
-// 			pngFiles, err := filepath.Glob(imagePrefix + "-*.png")
-// 			if err != nil {
-// 				// log.Printf("failed to find generated PNGs: %v", err)
-// 				continue
-// 			}
-// 			// if len(pngFiles) == 0 {
-// 			// 	log.Printf("No PNG files found for: %s", tempFilePath)
-// 			// } else {
-// 			// 	log.Printf("Found PNGs: %v", pngFiles)
-// 			// }
-// 			localPaths = append(localPaths, pngFiles...)
-// 		}
-
-// 		result = append(result, response.SubmissionBoxesURLFromMinIO{
-// 			SubmissionID:          submission.SubmissionID,
-// 			SubmissionBoxFilesURL: localPaths,
-// 		})
-// 	}
-// 	return result, nil
-// }
-
-func (s *InstructorServiceImpl) MockMatchAllSubmissionOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.MatchLog, error) {
+func (s *InstructorServiceImpl) GetMatchAllSubmissionOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.MatchLog, error) {
 	var matchLogs []response.MatchLog
 	threshold := 0.80
 
@@ -537,33 +466,20 @@ func (s *InstructorServiceImpl) MockMatchAllSubmissionOCR(CourseID uuid.UUID, As
 				continue
 			}
 
-			imagePrefix := strings.TrimSuffix(tempFilePath, filepath.Ext(tempFilePath))
-			cmd := exec.Command("pdftoppm", "-cropbox", "-png", tempFilePath, imagePrefix)
-			if err := cmd.Run(); err != nil {
-				continue
-			}
+			lower := strings.ToLower(tempFilePath)
 
-			pngFiles, err := filepath.Glob(imagePrefix + "-*.png")
-			if err != nil {
-				continue
-			}
-
-			for _, imgPath := range pngFiles {
-				lower := strings.ToLower(imgPath)
-
-				if strings.Contains(lower, "name") {
-					text, err := utils.PerformOCRThaiText(imgPath)
-					if err != nil {
-						continue
-					}
-					ocrName = text
-				} else if strings.Contains(lower, "id") {
-					text, err := utils.PerformOCRDigitsOnly(imgPath)
-					if err != nil {
-						continue
-					}
-					ocrCode = text
+			if strings.Contains(lower, "name") {
+				text, err := utils.PerformOCRThaiText(tempFilePath)
+				if err != nil {
+					continue
 				}
+				ocrName = text
+			} else if strings.Contains(lower, "id") {
+				text, err := utils.PerformOCRDigitsOnly(tempFilePath)
+				if err != nil {
+					continue
+				}
+				ocrCode = text
 			}
 		}
 
@@ -637,3 +553,10 @@ func (s *InstructorServiceImpl) GetQuestionsByAssignmentTemplate(AssignmentID uu
 	}
 	return questions, nil
 }
+
+// func (s *InstructorServiceImpl) CreateRubric(AssignmentID uuid.UUID, rubric *models.Rubric) error {
+// 	if err := s.repo.AddRubric(AssignmentID, rubric); err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
