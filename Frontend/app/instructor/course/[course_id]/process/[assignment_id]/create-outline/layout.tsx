@@ -1,4 +1,4 @@
-// app/instructor/course/[course_id]/process/create-outline/layout.tsx
+// app/instructor/course/[course_id]/process/[assignment_id]/create-outline/layout.tsx
 import Create from '@/components/INS/INSProcess/Right/Create';
 
 export default function CreateOutlineLayout({ children }: { children: React.ReactNode }) {
