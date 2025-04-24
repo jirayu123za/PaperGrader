@@ -7,52 +7,48 @@ import { useSubmissionFileStore } from '../store/useINS_SubmissionStore';
 import axios from 'axios';
 
 interface FetchFileParams {
-  courseId: string | undefined;
-  assignmentId: string | undefined;
+  course_id: string | undefined;
+  assignment_id: string | undefined;
 }
 
 interface UseFetchFileReturn {
-  form: UseFormReturnType<{ pdfUrl: string; loading: boolean }>; // ชนิดข้อมูลของ form
-  refetch: () => Promise<void>; // ฟังก์ชันสำหรับดึงข้อมูลใหม่
+  form: UseFormReturnType<{ pdfUrl: string; loading: boolean }>;
+  refetch: () => Promise<void>;
 }
 
-export const useFetchFile = ({ courseId, assignmentId }: FetchFileParams): UseFetchFileReturn => {
-  // สร้าง useForm เพื่อจัดการ state พร้อมกับกำหนด Generic Type
+export const useFetchFile = ({ course_id, assignment_id }: FetchFileParams): UseFetchFileReturn => {
   const form = useForm<{ pdfUrl: string; loading: boolean }>({
     initialValues: {
-      pdfUrl: '', // URL ของไฟล์ PDF
-      loading: true, // สถานะการโหลด
+      pdfUrl: '',
+      loading: true,
     },
   });
 
-  // ฟังก์ชันดึง URL จาก backend
   const fetchFileUrl = async () => {
-    if (!courseId || !assignmentId) return;
+    if (!course_id || !assignment_id) return;
 
     try {
-      form.setFieldValue('loading', true); // เริ่มโหลด
+      form.setFieldValue('loading', true);
       const response = await axios.get('/api/api/instructor/template/url', {
-        params: { course_id: courseId, assignment_id: assignmentId },
+        params: { course_id: course_id, assignment_id: assignment_id },
       });
 
-      form.setFieldValue('pdfUrl', response.data.url || ''); // เก็บ URL ไว้ใน form
+      form.setFieldValue('pdfUrl', response.data.url || '');
     } catch (error) {
       console.error('Error fetching PDF URL:', error);
       alert('Failed to load PDF. Please try again.');
     } finally {
-      form.setFieldValue('loading', false); // โหลดเสร็จ
+      form.setFieldValue('loading', false);
     }
   };
 
-  // ดึงข้อมูลเมื่อ component mount
   useEffect(() => {
     fetchFileUrl();
-  }, [courseId, assignmentId]);
+  }, [course_id, assignment_id]);
 
-  // ส่งค่าออกไป
   return {
     form,
-    refetch: fetchFileUrl, // ฟังก์ชัน refetch เพื่อดึงข้อมูลใหม่
+    refetch: fetchFileUrl,
   };
 };
 
