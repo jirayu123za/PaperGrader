@@ -103,7 +103,7 @@ const PDFViewer: React.FC = () => {
     >
       <Paper
         ref={innerContainerRef}
-        style={{ flexGrow: 1, overflow: 'auto', backgroundColor: '#b0c4de'}}
+        style={{ flexGrow: 1, overflow: 'auto'}}
       >
       </Paper>
       <KonvaCanvas />
