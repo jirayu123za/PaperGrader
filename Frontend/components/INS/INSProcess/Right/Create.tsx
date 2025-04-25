@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { useParams } from 'next/navigation';
-import { Container, Title, Text, Button, Table, Flex, Divider, Box, Tabs, TextInput, NumberInput } from '@mantine/core';
+import { Container, Title, Button, Flex, Tabs } from '@mantine/core';
 import { FaRegArrowAltCircleLeft } from "react-icons/fa";
 import { useDisclosure } from '@mantine/hooks';
-import Grading from './Grading';
+import { Rubric } from './Rubric';
 
 const Create: React.FC = () => {
   const params = useParams();
@@ -23,7 +23,7 @@ const Create: React.FC = () => {
       </Flex>
 
       {!isCollapsed && (
-        <Tabs defaultValue="outline" mb="lg" className="flex-grow flex flex-col">
+        <Tabs defaultValue="outline" mb="lg" className="flex-grow flex flex-col min-h-screen overflow-hidden">
           <Tabs.List>
             <Tabs.Tab value="outline">Create Outline</Tabs.Tab>
             <Tabs.Tab value="grading">Create Rubrics</Tabs.Tab>
@@ -31,8 +31,8 @@ const Create: React.FC = () => {
           <Tabs.Panel value="outline" className="flex-grow h-full p-0">
             <div className=' bg-amber-400 h-full'> test outline </div> {/** replace with component */}
           </Tabs.Panel>
-          <Tabs.Panel value="grading" className="flex-grow h-full p-0">
-            <div className=' bg-amber-700 h-full'> test grading </div> {/** replace with component */}
+          <Tabs.Panel value="grading" className="flex-grow flex flex-col overflow-auto">
+            {/* <Rubric /> */}
           </Tabs.Panel>
         </Tabs>
       )}
