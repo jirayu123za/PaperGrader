@@ -23,7 +23,7 @@ const Create: React.FC = () => {
       </Flex>
 
       {!isCollapsed && (
-        <Tabs defaultValue="outline" mb="lg" className="flex-grow flex flex-col min-h-screen overflow-hidden">
+        <Tabs defaultValue="outline" mb="lg" className="flex-grow flex flex-col overflow-hidden">
           <Tabs.List>
             <Tabs.Tab value="outline">Create Outline</Tabs.Tab>
             <Tabs.Tab value="grading">Create Rubrics</Tabs.Tab>
@@ -32,7 +32,7 @@ const Create: React.FC = () => {
             <div className=' bg-amber-400 h-full'> test outline </div> {/** replace with component */}
           </Tabs.Panel>
           <Tabs.Panel value="grading" className="flex-grow flex flex-col overflow-auto">
-            {/* <Rubric /> */}
+            <Rubric />
           </Tabs.Panel>
         </Tabs>
       )}
