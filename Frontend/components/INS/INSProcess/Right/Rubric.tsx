@@ -4,6 +4,8 @@ import React, { useState } from 'react'
 import { MdExpandMore } from "react-icons/md";
 import { IoIosSettings } from "react-icons/io";
 import { FaPlus } from "react-icons/fa";
+import { AiTwotoneDelete } from "react-icons/ai"
+import { log } from 'console';
 
 interface Rubric {
     rubric_setting: string;
@@ -30,12 +32,21 @@ interface Graded {
 
 export const Rubric = () => {
     const [rubrics, setRubrics] = useState<RubricItem[]>([
-        { rubric_id: 1, rubric_point: 1.5, rubric_description: 'rubric description one', rubric_selected: false },
-        { rubric_id: 2, rubric_point: 1.0, rubric_description: 'rubric description two', rubric_selected: false },
+        { rubric_id: 1, rubric_point: 1.5, rubric_description: 'rubric description one', rubric_selected: true },
+        { rubric_id: 2, rubric_point: 1.0, rubric_description: 'rubric description two rubric description two rubric description two rubric description two rubric description two  rubric description two', rubric_selected: false },
         { rubric_id: 3, rubric_point: 0.0, rubric_description: 'rubric description three', rubric_selected: false },
         { rubric_id: 4, rubric_point: 0.0, rubric_description: 'rubric description three', rubric_selected: false },
-        { rubric_id: 5, rubric_point: 0.0, rubric_description: 'rubric description three', rubric_selected: false },
-        { rubric_id: 6, rubric_point: 0.0, rubric_description: 'rubric description three', rubric_selected: false },
+        { rubric_id: 5, rubric_point: 0.0, rubric_description: 'rubric description three', rubric_selected: true },
+        { rubric_id: 6, rubric_point: 0.0, rubric_description: 'rubric description three', rubric_selected: true },
+        { rubric_id: 7, rubric_point: 1.0, rubric_description: 'rubric description two', rubric_selected: false },
+        { rubric_id: 8, rubric_point: 0.0, rubric_description: 'rubric description three', rubric_selected: false },
+        { rubric_id: 9, rubric_point: 0.0, rubric_description: 'rubric description three', rubric_selected: false },
+        { rubric_id: 10, rubric_point: 0.0, rubric_description: 'rubric description three', rubric_selected: false },
+        { rubric_id: 11, rubric_point: 0.0, rubric_description: 'rubric description three', rubric_selected: false },
+        { rubric_id: 12, rubric_point: 0.0, rubric_description: 'rubric description three', rubric_selected: false },
+        { rubric_id: 13, rubric_point: 0.0, rubric_description: 'rubric description three', rubric_selected: false },
+        { rubric_id: 14, rubric_point: 0.0, rubric_description: 'rubric description three', rubric_selected: false },
+        { rubric_id: 15, rubric_point: 0.0, rubric_description: 'rubric description three', rubric_selected: false },
     ]);
     const [question, setQuestion] = useState<Question>({
         question_id: 1,
@@ -49,6 +60,7 @@ export const Rubric = () => {
     });
     
     const totalScore = rubrics.reduce((sum, r) => sum + r.rubric_point, 0);
+    const [editingRubricId, setEditingRubricId] = useState<number | null>(null);
 
     return (
         <Box className="flex flex-col flex-1 min-h-0 p-4">
@@ -90,22 +102,61 @@ export const Rubric = () => {
 
             <ScrollArea type="auto" scrollbars="y" h={800} scrollbarSize={4} pb="sm">
                 {rubrics.map((rubric, index) => (
-                    <Box key={rubric.rubric_id} mb="xs" p="sm" w="456px" style={{ border: '1px solid #ddd' }}>
-                        <Group align="center" mb="xs">
-                        <Text w={500}>#{index + 1}</Text>
-                        <NumberInput
-                            hideControls
-                            step={0.5}
-                            min={0}
-                            max={5}
-                            styles={{ input: { width: 80 } }}
-                        />
+                    <Checkbox.Card
+                        key={rubric.rubric_id}
+                        checked={rubric.rubric_selected}
+                        mb="xs"
+                        p="sm"
+                        w="456px"
+                        className="hover:shadow-sm group"
+                        styles={{
+                            card: {
+                              backgroundColor: rubric.rubric_selected ? '#edf2ff' : undefined,
+                              borderColor: rubric.rubric_selected ? '#3b5bdb' : undefined,
+                              transition: 'all 150ms ease',
+                            },
+                          }}
+                    >
+                        <Group wrap="nowrap" align="flex-start">
+                            <Checkbox.Indicator icon={() => <Text size='sm' fw={500}>{rubric.rubric_id}</Text>} />
+                            <div>
+                            {editingRubricId === rubric.rubric_id ? (
+                                <NumberInput
+                                    hideControls
+                                    w={100}
+                                    suffix=' pts'
+                                    value={rubric.rubric_point}
+                                    min={0}
+                                    max={question.question_points}
+                                    onChange={(val) => {
+                                    setRubrics((prev) =>
+                                        prev.map((r) =>
+                                        r.rubric_id === rubric.rubric_id
+                                            ? { ...r, rubric_point: typeof val === 'number' ? val : 0 }
+                                            : r
+                                        )
+                                    );
+                                    }}
+                                    onBlur={() => setEditingRubricId(null)}
+                                    autoFocus
+                                />
+                                ) : (
+                                <Text fw={600} onClick={() => setEditingRubricId(rubric.rubric_id)} className="cursor-pointer">
+                                    {rubric.rubric_point.toFixed(1)} pts
+                                </Text>
+                                )}
+                                <Text size="sm" c="dimmed">{rubric.rubric_description}</Text>
+                            </div>
+                            <Box
+                                onClick={() =>
+                                    console.log("Delete rubric", rubric.rubric_id)
+                                }
+                                className="ml-auto cursor-pointer text-gray-500 hover:text-red-600 hover:scale-105 transition-transform duration-200 opacity-0 group-hover:opacity-100"
+                            >
+                                <AiTwotoneDelete size={20} />
+                            </Box>
                         </Group>
-                        <TextInput
-                        placeholder="Click here to replace this description."
-                        value={rubric.rubric_description}
-                        />
-                    </Box>
+                    </Checkbox.Card>
                 ))}
                 <Button leftSection={<FaPlus size={12}/>} w={456} variant="outline" color="violet">Add Rubric Item</Button>
             </ScrollArea>
