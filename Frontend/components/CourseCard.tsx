@@ -1,10 +1,10 @@
 "use client";
 
 import React from 'react';
+import CreateCourse from './Create/CreateCourse';
 import { useRouter } from 'next/navigation';
 import { useCourseStore } from '../store/useCourseStore';
-import CreateCourse from './Create/CreateCourse';
-import { ScrollArea } from '@mantine/core';
+import { Anchor, ScrollArea } from '@mantine/core';
 import { useForm } from '@mantine/form';
 
 interface Course {
@@ -26,7 +26,6 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
   const router = useRouter();
   const { setSelectedCourseId } = useCourseStore();
 
-  // ใช้ useForm สำหรับจัดการสถานะ
   const form = useForm({
     initialValues: {
       isModalOpen: false,
@@ -68,7 +67,6 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
         <div
           className="p-6 bg-white border-dashed border-2 border-teal-600 shadow-xs rounded-lg cursor-pointer flex items-center justify-center"
           onClick={handleCreateCourseClick}
-          style={{ height: 180, width: 380 }}
         >
           <div className="text-teal-600 text-center">
             <div className="text-3xl mb-2">+</div>
@@ -85,11 +83,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
                 {groupedCourses[key].map((course) => (
                   <div
                     key={course.course_id}
-                    className="p-4 bg-gray-100 shadow-sm rounded-lg cursor-pointer relative"
-                    style={{
-                      width: 380,
-                      height: 180,
-                    }}
+                    className="p-4 w-[380px] h-[180px] bg-gray-100 shadow-sm rounded-lg cursor-pointer relative transition-all duration-300 ease-in-out hover:shadow-md hover:scale-[1.02]"
                     onClick={() => handleSelectCourse(course)}
                   >
                     <h2 className="text-base text-gray-600 mb-2">{course.course_code}</h2>
@@ -102,12 +96,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
                 ))}
                 {key === latestKeys[0] && !studentMode && (
                   <div
-                    className="p-6 bg-white border-dashed border-2 border-teal-600 shadow-xs rounded-lg cursor-pointer flex items-center justify-center"
+                    className="p-6 w-[380px] h-[180px] bg-white border-dashed border-2 border-teal-600 shadow-xs rounded-lg cursor-pointer flex items-center justify-center"
                     onClick={handleCreateCourseClick}
-                    style={{
-                      width: 380,
-                      height: 180,
-                    }}
                   >
                     <div className="text-teal-600 text-center">
                       <div className="text-3xl mb-2">+</div>
@@ -122,12 +112,13 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
           {/* ปุ่มแสดง/ซ่อนเทอมเก่ากว่า */}
           {olderKeys.length > 0 && (
             <div className="text-left mt-4">
-              <button
-                className="text-blue-600 underline"
+              <Anchor
+                component="button"
                 onClick={() => form.setFieldValue('showOlderCourses', !form.values.showOlderCourses)}
+                underline="always"
               >
                 {form.values.showOlderCourses ? 'Hide older courses' : 'See older courses'}
-              </button>
+              </Anchor>
             </div>
           )}
 
@@ -140,11 +131,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
                   {groupedCourses[key].map((course) => (
                     <div
                       key={course.course_id}
-                      className="p-4 bg-gray-100 shadow-sm rounded-lg cursor-pointer relative"
-                      style={{
-                        width: 380,
-                        height: 180,
-                      }}
+                      className="p-4 w-[380px] h-[180px] bg-gray-100 shadow-sm rounded-lg cursor-pointer relative transition-all duration-300 ease-in-out hover:shadow-md hover:scale-[1.02]"
                       onClick={() => handleSelectCourse(course)}
                     >
                       <h2 className="text-base text-gray-600 mb-2">{course.course_code}</h2>
