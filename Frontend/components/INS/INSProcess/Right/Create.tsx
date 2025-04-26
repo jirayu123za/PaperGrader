@@ -6,12 +6,15 @@ import { Container, Title, Button, Flex, Tabs } from '@mantine/core';
 import { FaRegArrowAltCircleLeft } from "react-icons/fa";
 import { useDisclosure } from '@mantine/hooks';
 import { Rubric } from './Rubric';
+import { useCreateSidebarStore } from '@/store/process-outline/createSidebarStore';
 
 const Create: React.FC = () => {
   const params = useParams();
   const course_id = params.course_id as string;
   const assignment_id = params.assignment_id as string;
-  const [ isCollapsed, { toggle }] = useDisclosure(false);
+  // const [ isCollapsed, { toggle }] = useDisclosure(false);
+  const isCollapsed: boolean = useCreateSidebarStore((state: { isCollapsed: boolean }) => state.isCollapsed);
+  const toggle: () => void = useCreateSidebarStore((state: { toggle: () => void }) => state.toggle);
 
   return (
     <Container className={`overflow-hidden transition-all duration-400 bg-white border-1 ${isCollapsed ? 'w-25' : 'w-[500px]'} h-screen flex flex-col`}>
