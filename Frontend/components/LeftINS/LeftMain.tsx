@@ -1,14 +1,15 @@
 "use client";
 
-import React from 'react';
-import {FaBars,FaUser,FaCog,FaFileAlt,FaUsers,FaHome,FaRegArrowAltCircleRight} from 'react-icons/fa';
+import React, { useEffect } from 'react';
+import { FaUser, FaCog, FaFileAlt, FaUsers, FaHome, FaRegArrowAltCircleRight} from 'react-icons/fa';
 import { IoStatsChart } from 'react-icons/io5';
 import { PiExportDuotone } from "react-icons/pi";
-import { Button, Divider, Flex, Skeleton, Image, Stack, Title, Text, Anchor } from '@mantine/core';
+import { Button, Divider, Flex, Skeleton, Image, Stack, Title, Text } from '@mantine/core';
 import { useInsCourseStore } from '../../store/useCourseStore';
 import { useFetchInstructorList } from '../../hooks/useFetchInstructorList';
 import { useInstructorListStore } from '../../store/useInstructorListStore';
-import { useRouter , useParams } from 'next/navigation';
+import { useLeftMainStore } from '@/store/useLeftMainStore';
+import { useRouter , useParams, usePathname } from 'next/navigation';
 import { useFetchCourse } from '../../hooks/useFetchCourse';
 import { useDisclosure } from '@mantine/hooks';
 import AccountMenu from '../Account';
@@ -16,10 +17,12 @@ import AccountMenu from '../Account';
 export default function LeftMain() {
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname();
   const course_id = params?.course_id as string;
   const [isCollapsed, { toggle: toggleCollapse }] = useDisclosure(false);
   const [expandedName, { toggle: toggleExpandName }] = useDisclosure(false);
   const [expandedDesc, { toggle: toggleExpandCourseDesc }] = useDisclosure(false);
+  const { activeOption, setActiveOption } = useLeftMainStore();
   const { course } = useInsCourseStore();
   const { } = useFetchCourse(course_id as string);
   const { isLoading, error } = useFetchInstructorList(course_id as string);
@@ -34,6 +37,24 @@ export default function LeftMain() {
     cog: <FaCog />,
   };
 
+  const menuItems = [
+    { key: 'dashboard', label: 'Dashboard', icon: icons.home, href: `/instructor/course/${course?.course_id}/dashboard` },
+    { key: 'assignment', label: 'Assignments', icon: icons.fileAlt, href: `/instructor/course/${course?.course_id}/assignment` },
+    { key: 'manageroster', label: 'Roster', icon: icons.users, href: `/instructor/course/${course?.course_id}/manageroster` },
+    { key: 'statistics', label: 'Statistics', icon: icons.stats, href: '#' },
+    { key: 'dataexports', label: 'Data Exports', icon: icons.export, href: '#' },
+    { key: 'coursesettings', label: 'Course Settings', icon: icons.cog, href: '#' },
+  ];
+
+  useEffect(() => {
+    if (pathname.includes('dashboard')) setActiveOption('dashboard');
+    else if (pathname.includes('assignment')) setActiveOption('assignment');
+    else if (pathname.includes('manageroster')) setActiveOption('manageroster');
+    else if (pathname.includes('statistics')) setActiveOption('statistics');
+    else if (pathname.includes('dataexports')) setActiveOption('dataexports');
+    else if (pathname.includes('coursesettings')) setActiveOption('coursesettings');
+  }, [pathname]);
+  
   return (
     <div className={`relative flex flex-col justify-between border-r transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} h-screen`}>
       <Flex justify="space-between" align="center" p={12}
@@ -139,116 +160,45 @@ export default function LeftMain() {
           pl={16} pr={16}
         />
 
-        <Button
-          disabled={!course}
-          leftSection={icons.home}
-          variant='subtle'
-          style={() => ({
-            color: '#F9F9F9',
-            display: "flex",
-            justifyContent: isCollapsed ? "center" : "flex-start",
-          })}
-          onClick={() => {
-            if (course) {
-              router.push(`/instructor/course/${course.course_id}/dashboard`)
-            }
-          }}
-        >
-          {!isCollapsed && <span>Dashboard</span>}
-        </Button>
-
-        <Button
-          disabled={!course}
-          leftSection={icons.fileAlt}
-          variant='subtle'
-          style={{
-            color: '#F9F9F9',
-            display: "flex",
-            justifyContent: isCollapsed ? "center" : "flex-start",
-          }}
-          onClick={() => {
-            if (course) {
-              router.push(`/instructor/course/${course.course_id}/assignment`)
-            }
-          }}
-        >
-          {!isCollapsed && <span>Assignments</span>}
-        </Button>
-
-        <Button
-          disabled={!course}
-          leftSection={icons.users}
-          variant='subtle'
-          style={{
-            color: '#F9F9F9',
-            display: "flex",
-            justifyContent: isCollapsed ? "center" : "flex-start",
-          }}
-          onClick={() => {
-            if (course) {
-              router.push(`/instructor/course/${course.course_id}/manageroster`)
-            }
-          }}
-        >
-          {!isCollapsed && <span>Roster</span>}
-        </Button>
-
-        <Button
-          disabled={!course}
-          leftSection={icons.stats}
-          variant='subtle'
-          style={{
-            color: '#F9F9F9',
-            display: "flex",
-            justifyContent: isCollapsed ? "center" : "flex-start",
-          }}
-          onClick={() => {
-            if (course) {
-              // router.push(`/courses/${course.course_id}/Statistics`);
-              console.log('Statistics');
-            }
-          }}
-        >
-          {!isCollapsed && <span>Statistics</span>}
-        </Button>
-
-        <Button
-          disabled={!course}
-          leftSection={icons.export}
-          variant='subtle'
-          style={{
-            color: '#F9F9F9',
-            display: "flex",
-            justifyContent: isCollapsed ? "center" : "flex-start",
-          }}
-          onClick={() => {
-            if (course) {
-              // router.push(`/courses/${course.course_id}/DataExports`);
-              console.log('Data Exports');
-            }
-          }}
-        >
-          {!isCollapsed && <span>Data Exports</span>}
-        </Button>
-
-        <Button
-          disabled={!course}
-          leftSection={icons.cog}
-          variant='subtle'
-          style={{
-            color: '#F9F9F9',
-            display: "flex",
-            justifyContent: isCollapsed ? "center" : "flex-start",
-          }}
-          onClick={() => {
-            if (course) {
-              // router.push(`/courses/${course.course_id}/CourseSettings`);
-              console.log('Course Settings');
-            }
-          }}
-        >
-          {!isCollapsed && <span>Course Settings</span>}
-        </Button>
+        {menuItems.map((item) => (
+          <Button
+            key={item.key}
+            disabled={!course}
+            leftSection={item.icon}
+            variant="subtle"
+            fullWidth
+            styles={{
+              root: {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: isCollapsed ? 'center' : 'flex-start',
+                color: activeOption === item.key ? '#424242' : '#FFFFFF',
+                backgroundColor: activeOption === item.key ? '#f8f9fa' : 'transparent',
+                borderRadius: '8px',
+                transition: 'background-color 0.3s, color 0.3s',
+                paddingLeft: isCollapsed ? 0 : 16,
+                paddingRight: isCollapsed ? 0 : 16,
+              },
+              section: {
+                marginRight: isCollapsed ? 0 : 8,
+              },
+            }}
+            onClick={() => {
+              setActiveOption(item.key);
+              if (item.href !== '#') {
+                router.push(item.href);
+              } else {
+                console.log(item.label);
+              }
+            }}
+          >
+            {!isCollapsed && (
+              <Text size="sm" fw={500}>
+                {item.label}
+              </Text>
+            )}
+          </Button>
+        ))}
 
         <Divider
           style={{
