@@ -1,11 +1,11 @@
 "use client";
-import { ActionIcon, Box, Button, Checkbox, Divider, Flex, Group, NumberInput, Progress, ScrollArea, Text, TextInput, Title,  } from '@mantine/core';
+import { ActionIcon, Box, Button, Checkbox, Divider, Flex, Group, NumberInput, Progress, ScrollArea, Text, Title } from '@mantine/core';
 import React, { useState } from 'react'
 import { MdExpandMore } from "react-icons/md";
 import { IoIosSettings } from "react-icons/io";
 import { FaPlus } from "react-icons/fa";
 import { AiTwotoneDelete } from "react-icons/ai"
-import { log } from 'console';
+import { RubricDescEdition } from '@/components/Create/Editor.tsx/RubricDescEdition';
 
 interface Rubric {
     rubric_setting: string;
@@ -61,6 +61,7 @@ export const Rubric = () => {
     
     const totalScore = rubrics.reduce((sum, r) => sum + r.rubric_point, 0);
     const [editingRubricId, setEditingRubricId] = useState<number | null>(null);
+    const [editingDescriptionId, setEditingDescriptionId] = useState<number | null>(null);
 
     return (
         <Box className="flex flex-col flex-1 min-h-0 p-4">
@@ -109,13 +110,14 @@ export const Rubric = () => {
                         p="sm"
                         w="456px"
                         className="hover:shadow-sm group"
+                        component={'div'}
                         styles={{
                             card: {
                               backgroundColor: rubric.rubric_selected ? '#edf2ff' : undefined,
                               borderColor: rubric.rubric_selected ? '#3b5bdb' : undefined,
                               transition: 'all 150ms ease',
                             },
-                          }}
+                        }}
                     >
                         <Group wrap="nowrap" align="flex-start">
                             <Checkbox.Indicator icon={() => <Text size='sm' fw={500}>{rubric.rubric_id}</Text>} />
@@ -141,11 +143,33 @@ export const Rubric = () => {
                                     autoFocus
                                 />
                                 ) : (
-                                <Text fw={600} onClick={() => setEditingRubricId(rubric.rubric_id)} className="cursor-pointer">
+                                <Text fw={600} onClick={() => setEditingRubricId(rubric.rubric_id)}>
                                     {rubric.rubric_point.toFixed(1)} pts
                                 </Text>
                                 )}
-                                <Text size="sm" c="dimmed">{rubric.rubric_description}</Text>
+                                {editingDescriptionId === rubric.rubric_id ? (
+                                    <RubricDescEdition
+                                        value={rubric.rubric_description}
+                                        onUpdate={(updatedVal) => {
+                                        setRubrics((prev) =>
+                                            prev.map((r) =>
+                                            r.rubric_id === rubric.rubric_id
+                                                ? { ...r, rubric_description: updatedVal }
+                                                : r
+                                            )
+                                        );
+                                        }}
+                                        onBlurEditor={() => setEditingDescriptionId(null)}
+                                    />
+                                ) : (
+                                    <Text
+                                        size="sm"
+                                        c="dimmed"
+                                        onClick={() => setEditingDescriptionId(rubric.rubric_id)}
+                                    >
+                                        {rubric.rubric_description}
+                                    </Text>
+                                )}
                             </div>
                             <Box
                                 onClick={() =>
