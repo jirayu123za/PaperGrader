@@ -1,40 +1,46 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import AccountMenu from '../Account';
-import { FaBars, FaArrowLeft, FaRegArrowAltCircleRight } from 'react-icons/fa';
+import { FaArrowLeft, FaRegArrowAltCircleRight } from 'react-icons/fa';
 import { GiClockwiseRotation } from 'react-icons/gi';
 import { IoStatsChart } from 'react-icons/io5';
-import { IoMdSettings } from 'react-icons/io';
+import { IoMdSettings, IoIosListBox } from 'react-icons/io';
+import { RiFolderUploadFill } from "react-icons/ri";
+import { MdRateReview, MdEditSquare } from "react-icons/md";
+import { BsGraphUp } from "react-icons/bs";
 import { Button, Container, Divider, Flex, Stack, Title, Transition, Text, Image } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
 import { useRouter, usePathname, useParams } from 'next/navigation';
 import { useFetchAssignmentLeft } from '../../hooks/SideBar/useFetchAssignmentLeft';
 import { useAssignmentLeftProcessStore, useLeftProcessStore } from '../../store/useLeftProcessStore';
-
+import { useLeftProcessSidebarStore } from '@/store/process-outline/leftProcessSidebarStore';
 
 export default function LeftProcess() {
-  const [isCollapsed, { toggle }] = useDisclosure(false);
+  const pathname = usePathname();
   const router = useRouter();
   const faArrowLeft = <FaArrowLeft size={18} />;
   const giClockwiseRotation = <GiClockwiseRotation size={18} />;
   const ioStatsChart = <IoStatsChart size={18} />;
   const ioMdSettings = <IoMdSettings size={18} />;
+  const iconEditOutline = <MdEditSquare size={18} />;
+  const iconManageScan = <RiFolderUploadFill size={18} />;
+  const iconManageSubmission = <IoIosListBox size={18} />;
+  const iconGradeSubmission = <BsGraphUp size={18} />;
+  const iconReviewGrade = <MdRateReview size={18} />;
   const params = useParams();
   const course_id = params.course_id as string;
   const assignment_id = params.assignment_id as string;
+  const isCollapsed: boolean = useLeftProcessSidebarStore((state: { isCollapsed: boolean }) => state.isCollapsed);
+  const toggle: () => void = useLeftProcessSidebarStore((state: { toggle: () => void }) => state.toggle);
   const { isLoading, isSuccess } = useFetchAssignmentLeft(course_id as string, assignment_id as string);
   const { assignmentLeftProcess } = useAssignmentLeftProcessStore();
   const { activeOption, setActiveOption } = useLeftProcessStore();
-  const pathname = usePathname();
   
   useEffect(() => {
     const activeKey = options.find((opt) => pathname.startsWith(opt.href))?.key || '';
     setActiveOption(activeKey);
   }, [pathname])
   
-
-
   const options = [
     { key: 'editOutline', label: 'Edit Outline and Rubric', href: `/instructor/course/${course_id}/process/${assignment_id}/create-outline` },
     { key: 'manageScans', label: 'Manage Scans', href: `/instructor/course/${course_id}/process/${assignment_id}/manage-scans` },
@@ -43,15 +49,17 @@ export default function LeftProcess() {
     { key: 'ReviewGrade', label: 'Review Grade', href: '#' },
   ];
 
+  const icons: Record<string, JSX.Element> = {
+    editOutline: iconEditOutline,
+    manageScans: iconManageScan,
+    manageSubmissions: iconManageSubmission,
+    gradeSubmissions: iconGradeSubmission,
+    ReviewGrade: iconReviewGrade,
+  };
+
   const handleOptionClick = (key: string) => {
     setActiveOption(key);
   };
-
-  const [clientStyles, setClientStyles] = useState({});
-
-  useEffect(() => {
-    setClientStyles({ padding: "8px 20px" });
-  }, []);
 
   return (
     <Container className={`relative flex flex-col justify-between border-r transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} h-screen`}>
@@ -101,7 +109,7 @@ export default function LeftProcess() {
           backgroundColor: '#6665AC',
         })}
       >
-        {/* ปุ่ม Back to Course */}
+        {/* button Back to Course */}
         <Button
           variant="transparent"
           leftSection={faArrowLeft}
@@ -110,9 +118,13 @@ export default function LeftProcess() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: isCollapsed ? 'center' : 'flex-start',
-              ...clientStyles,
               color: '#F9F9F9',
+              paddingLeft: isCollapsed ? 0 : 16,
+              paddingRight: isCollapsed ? 0 : 16,
             },
+            section: {
+              marginRight: isCollapsed ? 0 : 8,
+            }
           }}
           onClick={() => {
             if (course_id) {
@@ -120,61 +132,75 @@ export default function LeftProcess() {
             }
           }}
         >
-          <Transition mounted={!isCollapsed} transition="fade" duration={300} timingFunction="ease">
-            {(styles) => (
-              <Title size="md" style={{ ...styles, color: '#F9F9F9' }}>
-                Back to this course
-              </Title>
-            )}
-          </Transition>
+          {!isCollapsed && (
+            <Title
+              size="md"
+              style={{
+                color: '#F9F9F9',
+              }}
+            >
+              Back to this course
+            </Title>
+          )}
         </Button>
 
         {/* Assignment Name */}
-        <Transition mounted={!isCollapsed} transition="fade" duration={300} timingFunction="ease">
-          {(styles) => (
-            <Title
-              size="h4"
-              className="pl-2 mb-4"
-              lineClamp={1}
-              style={{ ...styles, color: '#F9F9F9' }}
-            >
-              {assignmentLeftProcess.assignment_name}
-            </Title>
-          )}
-        </Transition>
+        <Title
+          size="h4"
+          className="pl-2 mb-4"
+          lineClamp={1}
+          style={{
+            paddingLeft: 16,
+            opacity: isCollapsed ? 0 : 1,
+            visibility: isCollapsed ? 'hidden' : 'visible',
+            transition: 'opacity 0.3s ease, visibility 0.3s ease',
+            color: '#F9F9F9',
+          }}
+        >
+          {assignmentLeftProcess.assignment_name}
+        </Title>
 
-        {/* เมนูตัวเลือก */}
+        <Divider
+          style={{
+            backgroundColor: '#E9E9E9',
+            display: isCollapsed ? 'block' : 'block'
+          }}
+          size="xs" mt={16} mb={16}
+        />
+
+        {/* button options */}
         {options.map((option) => (
-  <Button
-    key={option.key}
-    variant="subtle"
-    fullWidth
-    onClick={() => {
-      setActiveOption(option.key);
-      router.push(option.href);
-    }}
-    styles={{
-      root: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: isCollapsed ? "center" : "flex-start",
-        color: activeOption === option.key ? '#424242' : '#FFFFFF',
-        backgroundColor: activeOption === option.key ? '#f8f9fa' : 'transparent',
-        borderRadius: '8px',
-        transition: 'background-color 0.3s, color 0.3s',
-        padding: '10px 16px',
-        '&:hover': {
-          backgroundColor: '#4e4d9f',
-          color: '#ffffff',
-        },
-      },
-    }}
-  >
-    <Transition mounted={!isCollapsed} transition="fade" duration={300} timingFunction="ease">
-      {(styles) => <Text size="sm" fw={500} style={{ ...styles }}>{option.label}</Text>}
-    </Transition>
-  </Button>
-))}
+          <Button
+            key={option.key}
+            leftSection={icons[option.key]}
+            variant="subtle"
+            fullWidth
+            onClick={() => {
+              setActiveOption(option.key);
+              router.push(option.href);
+            }}
+            styles={{
+              root: {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: isCollapsed ? "center" : "flex-start",
+                color: activeOption === option.key ? '#424242' : '#FFFFFF',
+                backgroundColor: activeOption === option.key ? '#f8f9fa' : 'transparent',
+                borderRadius: '8px',
+                transition: 'background-color 0.3s, color 0.3s',
+                paddingLeft: isCollapsed ? 0 : 16,
+                paddingRight: isCollapsed ? 0 : 16,
+              },
+              section: {
+                marginRight: isCollapsed ? 0 : 8,
+              },
+            }}
+          >
+            <Transition mounted={!isCollapsed} transition="fade" duration={300} timingFunction="ease">
+              {(styles) => <Text size="sm" fw={500} style={{ ...styles }}>{option.label}</Text>}
+            </Transition>
+          </Button>
+        ))}
 
         <Divider
           style={{
@@ -185,27 +211,33 @@ export default function LeftProcess() {
         />
 
         {/* Footer */}
-        <Button variant="subtle" leftSection={<GiClockwiseRotation size={18} />} fullWidth
+        <Button 
+          variant="subtle" 
+          leftSection={giClockwiseRotation} 
+          fullWidth
           styles={{
             root: {
               display: 'flex',
               alignItems: 'center',
               justifyContent: isCollapsed ? 'center' : 'flex-start',
               color: '#F9F9F9',
-              padding: '10px 16px',
-              '&:hover': {
-                backgroundColor: '#e0e0e0',
-                color: '#000000',
-              },
+              paddingLeft: isCollapsed ? 0 : 16,
+              paddingRight: isCollapsed ? 0 : 16,
             },
-          }}>
-          <Transition mounted={!isCollapsed} transition="fade" duration={300} timingFunction="ease">
-            {(styles) => (
-              <Text size="sm" fw={500} style={{ ...styles }}>
-                Regrade Requests
-              </Text>
-            )}
-          </Transition>
+            section: {
+              marginRight: isCollapsed ? 0 : 8, 
+            }
+          }}
+        >
+          {!isCollapsed && (
+            <Transition mounted transition="fade" duration={300} timingFunction="ease">
+              {(styles) => (
+                <Text size="sm" fw={500} style={{ ...styles }}>
+                  Regrade Requests
+                </Text>
+              )}
+            </Transition>
+          )}
         </Button>
 
         <Button
@@ -217,18 +249,24 @@ export default function LeftProcess() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: isCollapsed ? 'center' : 'flex-start',
-              ...clientStyles,
               color: '#F9F9F9',
+              paddingLeft: isCollapsed ? 0 : 16,
+              paddingRight: isCollapsed ? 0 : 16,
             },
+            section: {
+              marginRight: isCollapsed ? 0 : 8,
+            }
           }}
         >
-          <Transition mounted={!isCollapsed} transition="fade" duration={300} timingFunction="ease">
-            {(styles) => (
-              <Text size="sm" fw={500} style={{ ...styles, color: '#F9F9F9' }}>
-                Statistics
-              </Text>
-            )}
-          </Transition>
+          {!isCollapsed && (
+            <Transition mounted transition="fade" duration={300} timingFunction="ease">
+              {(styles) => (
+                <Text size="sm" fw={500} style={{ ...styles }}>
+                  Statistics
+                </Text>
+              )}
+            </Transition>
+          )}
         </Button>
 
         <Button
@@ -240,24 +278,24 @@ export default function LeftProcess() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: isCollapsed ? 'center' : 'flex-start',
-              // padding: isCollapsed ? '8px 20px' : '',
-              ...clientStyles,
               color: '#F9F9F9',
+              paddingLeft: isCollapsed ? 0 : 16,
+              paddingRight: isCollapsed ? 0 : 16,
             },
+            section: {
+              marginRight: isCollapsed ? 0 : 8,
+            }
           }}
         >
-          <Transition
-            mounted={!isCollapsed}
-            transition="fade"
-            duration={300}
-            timingFunction="ease"
-          >
-            {(styles) => (
-              <Text size="sm" fw={500} style={{ ...styles, color: '#F9F9F9' }}>
-                Settings
-              </Text>
-            )}
-          </Transition>
+          {!isCollapsed && (
+            <Transition mounted transition="fade" duration={300} timingFunction="ease">
+              {(styles) => (
+                <Text size="sm" fw={500} style={{ ...styles }}>
+                  Settings
+                </Text>
+              )}
+            </Transition>
+          )}
         </Button>
       </Stack>
 
