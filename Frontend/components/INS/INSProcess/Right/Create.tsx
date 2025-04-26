@@ -24,7 +24,7 @@ const Create: React.FC = () => {
 
       {!isCollapsed && (
         <Tabs defaultValue="outline" mb="lg" className="flex-grow flex flex-col overflow-hidden">
-          <Tabs.List>
+          <Tabs.List grow>
             <Tabs.Tab value="outline">Create Outline</Tabs.Tab>
             <Tabs.Tab value="grading">Create Rubrics</Tabs.Tab>
           </Tabs.List>
