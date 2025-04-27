@@ -168,6 +168,16 @@ type SubmissionListForManagementResponse struct {
 	SubmissionBoxURLs  []string  `json:"submission_box_urls"`
 }
 
+type SubmissionListForManagementDB struct {
+	SubmissionID       uuid.UUID `json:"submission_id"`
+	SectionName        string    `json:"section_name"`
+	FullName           string    `json:"full_name"`
+	StudentCode        string    `json:"student_code"`
+	HasAssigned        bool      `json:"has_assigned"`
+	SubmittedAt        time.Time `json:"submitted_at"`
+	SubmissionBoxFiles string    `json:"submission_box_files"`
+}
+
 type SubmissionBoxPositionResponse struct {
 	BoundingBoxType     string `json:"bounding_box_type"`
 	BoundingBoxPosition string `json:"bounding_box_position"`
