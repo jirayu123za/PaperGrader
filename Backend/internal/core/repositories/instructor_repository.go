@@ -59,6 +59,7 @@ type InstructorRepository interface {
 	//! CRUD OCR
 	FindStudentsListForOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForOCRResponse, error)
 	FindSubmissionBoxesForOCR(AssignmentID uuid.UUID) ([]response.GroupSubmissionBoxesForOCR, error)
+	FindSubmissionByIDs(submissionIDs []uuid.UUID) (map[uuid.UUID]response.SubmissionIDResp, error)
 
 	// CRUD BoundingBox
 	AddBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error
