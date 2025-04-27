@@ -345,11 +345,25 @@ func (s *InstructorServiceImpl) GetSubmissionFileURL(CourseID uuid.UUID, Assignm
 }
 
 func (s *InstructorServiceImpl) GetSubmissionsListForManagement(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionListForManagementResponse, error) {
-	submissionList, err := s.repo.FindSubmissionsListForManagement(CourseID, AssignmentID)
+	dbSubmissions, err := s.repo.FindSubmissionsListForManagement(CourseID, AssignmentID)
 	if err != nil {
 		return nil, err
 	}
-	return submissionList, nil
+
+	var result []response.SubmissionListForManagementResponse
+	for _, sub := range dbSubmissions {
+		result = append(result, response.SubmissionListForManagementResponse{
+			SubmissionID:       sub.SubmissionID,
+			SectionName:        sub.SectionName,
+			FullName:           sub.FullName,
+			StudentCode:        sub.StudentCode,
+			HasAssigned:        sub.HasAssigned,
+			SubmittedAt:        sub.SubmittedAt,
+			SubmissionBoxFiles: sub.SubmissionBoxFiles,
+			SubmissionBoxURLs:  []string{},
+		})
+	}
+	return result, nil
 }
 
 func (s *InstructorServiceImpl) GetStudentListForSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForSubmissionResponse, error) {

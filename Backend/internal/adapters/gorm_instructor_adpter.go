@@ -151,8 +151,8 @@ func (r *GormInstructorRepository) FindSubmissionFileName(AssignmentID uuid.UUID
 	return submissionFile.SubmissionFileName, nil
 }
 
-func (r *GormInstructorRepository) FindSubmissionsListForManagement(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionListForManagementResponse, error) {
-	var submissions []response.SubmissionListForManagementResponse
+func (r *GormInstructorRepository) FindSubmissionsListForManagement(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionListForManagementDB, error) {
+	var submissions []response.SubmissionListForManagementDB
 	err := r.db.
 		Table("submissions AS s").
 		Select(`
@@ -167,7 +167,7 @@ func (r *GormInstructorRepository) FindSubmissionsListForManagement(CourseID uui
 		Joins("LEFT JOIN enrollment_lists AS el ON pd.personal_data_id = el.personal_data_id AND el.course_id = ?", CourseID).
 		Joins("LEFT JOIN sections AS sec ON el.section_id = sec.section_id AND sec.course_id = ?", CourseID).
 		Where("s.assignment_id = ? AND s.deleted_at IS NULL", AssignmentID).
-		Find(&submissions).Error
+		Scan(&submissions).Error
 	if err != nil {
 		return nil, err
 	}
@@ -1031,3 +1031,11 @@ func (r *GormInstructorRepository) FindQuestionsByAssignmentTemplate(AssignmentI
 		RubricData: rubricData,
 	}, nil
 }
+
+// For rubric
+// func (r *GormInstructorRepository) AddRubric(AssignmentID uuid.UUID, rubric *models.Rubric) error {
+// 	if err := r.db.Create(rubric).Error; err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
