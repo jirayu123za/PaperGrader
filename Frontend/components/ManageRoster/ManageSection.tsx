@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Table, Text, Button, Paper, Pagination, Skeleton, Flex } from '@mantine/core';
-import { useRouter , useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useFetchSections } from '../../hooks/Roster/useFetchSections';
 import { useSectionDetailsStore } from '../../store/useRosterStore';
 import { useModalStore } from '../../store/modal/useRosterModalStore';
@@ -11,7 +11,6 @@ import ViewStudentLists from './ViewStudentList';
 import CreateSection from '../Create/CreateSection';
 
 const ManageSection: React.FC = () => {
-  const router = useRouter();
   const params = useParams();
   const course_id = params?.course_id as string;
   const { isLoading, error } = useFetchSections(course_id as string);
