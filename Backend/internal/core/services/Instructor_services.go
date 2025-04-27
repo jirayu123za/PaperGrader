@@ -65,7 +65,7 @@ type InstructorService interface {
 	GetStudentsListForOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForOCRResponse, error)
 	// MockGetSubmissionBoxesForOCR(AssignmentID uuid.UUID) ([]response.GroupSubmissionBoxesForOCR, error)
 	// MockGetSubmissionBoxesFromMinIO(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionBoxesURLFromMinIO, error)
-	GetMatchAllSubmissionOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.MatchLog, error)
+	GetMatchAllSubmissionOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.MatchAllSubmissionOCRResponse, error)
 
 	CreateBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error
 	GetBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error)
@@ -434,8 +434,8 @@ func (s *InstructorServiceImpl) GetStudentsListForOCR(CourseID uuid.UUID, Assign
 	return students, nil
 }
 
-func (s *InstructorServiceImpl) GetMatchAllSubmissionOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.MatchLog, error) {
-	var matchLogs []response.MatchLog
+func (s *InstructorServiceImpl) GetMatchAllSubmissionOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.MatchAllSubmissionOCRResponse, error) {
+	var matchLogs []response.MatchAllSubmissionOCRResponse
 	threshold := 0.80
 
 	students, err := s.repo.FindStudentsListForOCR(CourseID, AssignmentID)
@@ -453,6 +453,16 @@ func (s *InstructorServiceImpl) GetMatchAllSubmissionOCR(CourseID uuid.UUID, Ass
 		return nil, err
 	}
 
+	var submissionIDs []uuid.UUID
+	for _, sb := range submissionBoxes {
+		submissionIDs = append(submissionIDs, sb.SubmissionID)
+	}
+
+	submissionDetailMap, err := s.repo.FindSubmissionByIDs(submissionIDs)
+	if err != nil {
+		return nil, err
+	}
+
 	for _, submission := range submissionBoxes {
 		var ocrName, ocrCode string
 
@@ -461,12 +471,9 @@ func (s *InstructorServiceImpl) GetMatchAllSubmissionOCR(CourseID uuid.UUID, Ass
 			return nil, err
 		}
 
-		defer func(path string) {
-			err := os.RemoveAll(path)
-			if err != nil {
-				log.Printf("Error removing directory %s: %v", path, err)
-			}
-		}(submissionDir)
+		if err := os.MkdirAll(tempBaseDir, os.ModePerm); err != nil {
+			return nil, err
+		}
 
 		for _, fileName := range submission.SubmissionBoxFileName {
 			url, err := s.minioRepo.FindFileURLSubmissionBoxes(CourseID.String(), AssignmentID.String(), fileName)
@@ -510,13 +517,22 @@ func (s *InstructorServiceImpl) GetMatchAllSubmissionOCR(CourseID uuid.UUID, Ass
 			students = utils.RemoveMatchedStudent(students, *match.MatchedPersonalDataID)
 		}
 
-		matchLogs = append(matchLogs, response.MatchLog{
-			SubmissionID:          match.SubmissionID,
-			MatchedPersonalDataID: match.MatchedPersonalDataID,
-			OCRFullName:           match.OCRFullName,
-			OCRStudentCode:        match.OCRStudentCode,
-			Similarity:            match.Similarity,
-			MatchType:             match.MatchType,
+		submissionDetail, ok := submissionDetailMap[submission.SubmissionID]
+		if !ok {
+			continue
+		}
+
+		isMatch := match.Similarity >= threshold
+
+		matchLogs = append(matchLogs, response.MatchAllSubmissionOCRResponse{
+			SubmissionID:   match.SubmissionID,
+			IsMatch:        isMatch,
+			HasAssigned:    submissionDetail.HasAssigned,
+			PersonalDataID: match.MatchedPersonalDataID,
+			BestMatchName:  match.BestMatchName,
+			BestMatchID:    match.BestMatchStudentCode,
+			Similarity:     match.Similarity,
+			SubmittedAt:    submissionDetail.SubmittedAt.Format("2006-01-02 15:04:05"),
 		})
 	}
 	return matchLogs, nil
