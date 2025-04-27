@@ -811,6 +811,26 @@ func (r *GormInstructorRepository) FindSubmissionBoxesForOCR(AssignmentID uuid.U
 	return grouped, nil
 }
 
+func (r *GormInstructorRepository) FindSubmissionByIDs(submissionIDs []uuid.UUID) (map[uuid.UUID]response.SubmissionIDResp, error) {
+	var submissions []response.SubmissionIDResp
+
+	if err := r.db.
+		Table("submissions").
+		Select("submission_id, (belongs_to IS NOT NULL) AS has_assigned, submitted_at").
+		Where("submission_id IN ?", submissionIDs).
+		Where("deleted_at IS NULL").
+		Find(&submissions).Error; err != nil {
+		return nil, err
+	}
+
+	subMap := make(map[uuid.UUID]response.SubmissionIDResp)
+	for _, sub := range submissions {
+		subMap[sub.SubmissionID] = sub
+	}
+
+	return subMap, nil
+}
+
 func (r *GormInstructorRepository) FindSubmissionBoxBySubmissionID(submissionIDs []uuid.UUID) (map[uuid.UUID][]string, error) {
 	var submissionBoxes []struct {
 		SubmissionID          uuid.UUID
