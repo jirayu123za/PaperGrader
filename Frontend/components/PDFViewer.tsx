@@ -68,11 +68,12 @@ const PDFViewer: React.FC = () => {
           const transform = dpiRatio !== 1 ? [dpiRatio, 0, 0, dpiRatio, 0, 0] : undefined;
           const canvas = document.createElement('canvas');
           const context = canvas.getContext('2d');
-    
+          const aspectRatio = layoutViewport.height / layoutViewport.width;
+
           canvas.width = Math.floor(scaledViewport.width);
           canvas.height = Math.floor(scaledViewport.height);
           canvas.style.width = '100%';
-          canvas.style.height = `${Math.floor(layoutViewport.height)}px`;
+          canvas.style.height = `${containerWidth * aspectRatio}px`;
           canvas.style.display = 'block';
       
           innerContainerRef.current?.appendChild(canvas);
