@@ -59,23 +59,14 @@ func CalculateSimilarity(a, b string) float64 {
 	maxLen := math.Max(float64(len(lowerA)), float64(len(lowerB)))
 
 	if maxLen == 0 {
-		// log
-		log.Printf("[SIM] Compare '%s' with '%s' → maxLen = 0 → return 1.0", a, b)
 		return 1.0
 	}
 
 	similarity := 1.0 - float64(distance)/maxLen
-	// log
-	log.Printf("[SIM] Compare '%s' with '%s' → distance: %d, similarity: %.2f", a, b, distance, similarity)
 	return similarity
 }
 
-func MatchOCRWithStudentList(
-	ocrName string,
-	ocrStudentCode string,
-	students []response.StudentListForOCRResponse,
-	threshold float64,
-) response.MatchLog {
+func MatchOCRWithStudentList(ocrName string, ocrStudentCode string, students []response.StudentListForOCRResponse, threshold float64) response.MatchLog {
 	// log
 	log.Printf("\n Matching OCR result:\n  Name:  %s\n  Code:  %s\n", ocrName, ocrStudentCode)
 
@@ -88,32 +79,26 @@ func MatchOCRWithStudentList(
 		simCode := CalculateSimilarity(ocrStudentCode, s.StudentCode)
 		avgSim := (simName + simCode) / 2
 
-		// log
-		log.Printf("Comparing with student:\n  → %s (%s)\n  → simName: %.2f, simCode: %.2f, avg: %.2f\n", s.FullName, s.StudentCode, simName, simCode, avgSim)
-
 		if avgSim > bestSim {
 			bestSim = avgSim
 			bestMatch = s
 		}
 	}
 
-	matchType := "none"
 	if bestSim >= threshold {
-		matchType = "auto"
 		matchedID = &bestMatch.PersonalDataID
-	} else if bestSim >= 0.5 {
-		matchType = "manual"
 	}
 
 	// log
-	log.Printf("Best Match → %s (%s) with similarity %.2f → MatchType: %s\n", bestMatch.FullName, bestMatch.StudentCode, bestSim, matchType)
+	log.Printf("Best Match → %s (%s) with similarity %.2f\n", bestMatch.FullName, bestMatch.StudentCode, bestSim)
 
 	return response.MatchLog{
 		OCRFullName:           ocrName,
 		OCRStudentCode:        ocrStudentCode,
+		BestMatchName:         bestMatch.FullName,
+		BestMatchStudentCode:  bestMatch.StudentCode,
 		MatchedPersonalDataID: matchedID,
 		Similarity:            bestSim,
-		MatchType:             matchType,
 	}
 }
 
