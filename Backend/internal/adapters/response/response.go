@@ -206,9 +206,27 @@ type SubmissionBoxesURLFromMinIO struct {
 
 type MatchLog struct {
 	SubmissionID          uuid.UUID
-	MatchedPersonalDataID *uuid.UUID
-	OCRFullName           string
-	OCRStudentCode        string
-	Similarity            float64
-	MatchType             string
+	OCRFullName           string     `json:"ocr_full_name"`
+	OCRStudentCode        string     `json:"ocr_student_code"`
+	BestMatchName         string     `json:"best_match_name"`
+	BestMatchStudentCode  string     `json:"best_match_id"`
+	MatchedPersonalDataID *uuid.UUID `json:"matched_personal_data_id"`
+	Similarity            float64    `json:"similarity"`
+}
+
+type MatchAllSubmissionOCRResponse struct {
+	SubmissionID   uuid.UUID  `json:"submission_id"`
+	IsMatch        bool       `json:"is_match"`
+	HasAssigned    bool       `json:"has_assigned"`
+	PersonalDataID *uuid.UUID `json:"personal_data_id"`
+	BestMatchName  string     `json:"best_match_name"`
+	BestMatchID    string     `json:"best_match_id"`
+	Similarity     float64    `json:"similarity"`
+	SubmittedAt    string     `json:"submitted_at"`
+}
+
+type SubmissionIDResp struct {
+	SubmissionID uuid.UUID `json:"submission_id"`
+	HasAssigned  bool      `json:"has_assigned"`
+	SubmittedAt  time.Time `json:"submitted_at"`
 }
