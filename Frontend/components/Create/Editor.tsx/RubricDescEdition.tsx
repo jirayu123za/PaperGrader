@@ -36,7 +36,8 @@ export const RubricDescEdition: React.FC<RubricDescEditionProps> = ({ value, onU
       onBlur: () => {
         onUpdate?.(editor?.getHTML() ?? '');
         onBlurEditor?.();
-      }
+      },
+      immediatelyRender: false,
   });
 
   return (
