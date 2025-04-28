@@ -463,6 +463,8 @@ func (s *InstructorServiceImpl) GetMatchAllSubmissionOCR(CourseID uuid.UUID, Ass
 		return nil, err
 	}
 
+	var urlNameFile, urlIDFile string
+
 	for _, submission := range submissionBoxes {
 		var ocrName, ocrCode string
 
@@ -495,12 +497,14 @@ func (s *InstructorServiceImpl) GetMatchAllSubmissionOCR(CourseID uuid.UUID, Ass
 					continue
 				}
 				ocrName = text
+				urlNameFile = url
 			} else if strings.Contains(lower, "id") {
 				text, err := utils.PerformOCRDigitsOnly(tempFilePath)
 				if err != nil {
 					continue
 				}
 				ocrCode = text
+				urlIDFile = url
 			}
 		}
 
@@ -533,6 +537,8 @@ func (s *InstructorServiceImpl) GetMatchAllSubmissionOCR(CourseID uuid.UUID, Ass
 			BestMatchID:    match.BestMatchStudentCode,
 			Similarity:     match.Similarity,
 			SubmittedAt:    submissionDetail.SubmittedAt.Format("2006-01-02 15:04:05"),
+			URLNameFile:    urlNameFile,
+			URLIDFile:      urlIDFile,
 		})
 	}
 	return matchLogs, nil
