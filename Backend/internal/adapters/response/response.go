@@ -223,6 +223,8 @@ type MatchAllSubmissionOCRResponse struct {
 	BestMatchID    string     `json:"best_match_id"`
 	Similarity     float64    `json:"similarity"`
 	SubmittedAt    string     `json:"submitted_at"`
+	URLNameFile    string     `json:"url_name_file"`
+	URLIDFile      string     `json:"url_id_file"`
 }
 
 type SubmissionIDResp struct {
