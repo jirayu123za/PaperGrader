@@ -17,7 +17,7 @@ const Create: React.FC = () => {
   const toggle: () => void = useCreateSidebarStore((state: { toggle: () => void }) => state.toggle);
 
   return (
-    <Container className={`overflow-hidden transition-all duration-400 bg-white border-1 ${isCollapsed ? 'w-25' : 'w-[500px]'} h-screen flex flex-col`}>
+    <Container className={`transition-all duration-300 ease-in-out bg-white border-1 ${isCollapsed ? 'w-[100px] min-w-[100px]' : 'w-[500px] min-w-[500px]'} flex-shrink-0 h-screen flex flex-col`}>
       <Flex justify="space-between" align="center" p="md" c={"white"} className='bg-[#6665AC]'>
         <Title order={4} className={`${isCollapsed ? 'hidden' : 'block'}`}>Create bounding box & Rubric</Title>
         <Button onClick={toggle} variant="transparent" color="white" className={`transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}>
@@ -26,7 +26,7 @@ const Create: React.FC = () => {
       </Flex>
 
       {!isCollapsed && (
-        <Tabs defaultValue="outline" mb="lg" className="flex-grow flex flex-col overflow-hidden">
+        <Tabs defaultValue="outline" mb="lg">
           <Tabs.List grow>
             <Tabs.Tab value="outline">Create Outline</Tabs.Tab>
             <Tabs.Tab value="grading">Create Rubrics</Tabs.Tab>
@@ -34,7 +34,7 @@ const Create: React.FC = () => {
           <Tabs.Panel value="outline" className="flex-grow h-full p-0">
             <div className=' bg-amber-400 h-full'> test outline </div> {/** replace with component */}
           </Tabs.Panel>
-          <Tabs.Panel value="grading" className="flex-grow flex flex-col overflow-auto">
+          <Tabs.Panel value="grading" className="flex-1 flex flex-col min-h-0 overflow-hidden">
             <Rubric />
           </Tabs.Panel>
         </Tabs>
