@@ -6,6 +6,7 @@ import { FaPlus } from "react-icons/fa";
 import { AiTwotoneDelete } from "react-icons/ai"
 import { RubricDescEdition } from '@/components/Create/Editor.tsx/RubricDescEdition';
 import { RubricSettings } from './RubricSettings';
+import { QuestionSelector } from './QuestionSelector';
 
 interface Rubric {
     rubric_setting: string;
@@ -67,16 +68,8 @@ export const Rubric = () => {
         <Flex direction="column" className="flex-1 min-h-0 p-4">
             {/* Header */}
             <Box className="flex-shrink-0">
-                <Flex className="group items-center pb-2">
-                    <Title
-                        order={5}
-                        className="text-[#495057] group-hover:text-[#3B5BDB] group-hover:underline transition-colors duration-200 cursor-pointer"
-                    >
-                        {question.question_number}: {question.question_title}
-                    </Title>
-                    <ActionIcon c="#495057" variant="transparent" aria-label="Questions">
-                        <MdExpandMore size={20} />
-                    </ActionIcon>
+                <Flex className="group items-center pb-1 gap-1">
+                    <QuestionSelector/>
                 </Flex>
 
                 <Progress color="violet" value={(totalScore / question.question_points) * 100} />
