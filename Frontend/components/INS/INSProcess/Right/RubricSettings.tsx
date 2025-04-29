@@ -4,10 +4,8 @@ import { useState } from 'react';
 import { Popover, Button, Radio, Text, Alert } from '@mantine/core';
 import { IconInfoCircle } from '@tabler/icons-react';
 import { IoIosSettings } from "react-icons/io";
-import { useDisclosure } from '@mantine/hooks';
 
 export function RubricSettings() {
-  const [opened, { close, toggle }] = useDisclosure(false);
   const [scoringMethod, setScoringMethod] = useState<string | null>(null);
 
   return (
@@ -18,8 +16,6 @@ export function RubricSettings() {
       arrowSize={14}
       shadow="xs"
       offset={-2}
-      opened={opened}
-      onClose={close}
     >
       <Popover.Target>
         <Button
@@ -27,7 +23,6 @@ export function RubricSettings() {
           variant="transparent"
           color="#495057"
           p={0}
-          onClick={toggle}
         >
           Rubric Settings
         </Button>
