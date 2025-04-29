@@ -1,5 +1,6 @@
-import { Box, Checkbox, Flex, Select, Table, Text, TextInput, Image, ActionIcon, Autocomplete, ScrollArea, Button } from '@mantine/core';
+import { Box, Checkbox, Flex, Select, Table, Text, TextInput, Image, ActionIcon, Autocomplete, ScrollArea, Button, Transition } from '@mantine/core';
 import { IconSearch, IconTrash } from '@tabler/icons-react';
+import { IoMdCheckmark } from "react-icons/io";
 import { TfiReload } from "react-icons/tfi";
 import React, { useState } from 'react'
 
@@ -82,9 +83,9 @@ export const ManageOCR: React.FC<Props> = ({ course_id, assignment_id })  => {
                                 </Flex>
                             </Table.Th>
                             <Table.Th>Student's name & id</Table.Th>
+                            <Table.Th>Example</Table.Th>
                             <Table.Th>Match with</Table.Th>
                             <Table.Th>Submission time</Table.Th>
-                            <Table.Th>Action</Table.Th>
                         </Table.Tr>
                     </Table.Thead>
                     
@@ -106,18 +107,23 @@ export const ManageOCR: React.FC<Props> = ({ course_id, assignment_id })  => {
                                 </Table.Td>
 
                                 {/* Image x2 */}
-                                <Table.Td>
+                                <Table.Td maw="260px">
                                     <Flex>
                                         <Image src={item.img1} alt="Image1" maw='210px' mah='100px'/>
                                         <Image src={item.img2} alt="Image2" maw='210px' mah='100px'/>
                                     </Flex>
                                 </Table.Td>
 
+                                <Table.Td>
+                                    <Text size="sm">{item.name}</Text>
+                                    <Text size="sm" c="dimmed">{item.student_code}</Text>
+                                </Table.Td>
+
                                 {/* Autocomplete Match with Student Name */}
                                 <Table.Td>
                                     <Autocomplete
                                         placeholder="Match student"
-                                        data={['John Doe', 'Jane Smith', 'Alice Johnson', 'Bob Brown']} // mock ตัวอย่าง
+                                        data={['John Doe', 'Jane Smith', 'Alice Johnson', 'Bob Brown']}
                                         defaultValue={item.name}
                                         w={200}
                                     />
@@ -128,24 +134,25 @@ export const ManageOCR: React.FC<Props> = ({ course_id, assignment_id })  => {
                                 <Table.Td>
                                     <Text size="sm">{item.submissionTime}</Text>
                                 </Table.Td>
-
-                                {/* Delete */}
-                                <Table.Td>
-                                    <ActionIcon color="red" variant="subtle">
-                                        <IconTrash size={20} />
-                                    </ActionIcon>
-                                </Table.Td>
                             </Table.Tr>
                         ))}
                     </Table.Tbody>
                 </Table>
             </ScrollArea>
 
-            <Button variant="outline" color="#4644ab" mt="sm">
-                Confirm Selected
-            </Button>
+            <Transition mounted={selectedRows.length > 0} transition="fade" duration={200} timingFunction="ease">
+                {(styles) => (
+                    <Flex mt="sm" gap="sm" style={styles}>
+                    <Button variant="outline" color="#4644ab" leftSection={<IoMdCheckmark size={18}/>}>
+                        Confirm Selected
+                    </Button>
+                    <Button variant="outline" color="red" leftSection={<IconTrash size={18}/>}>
+                        Delete Selected
+                    </Button>
+                    </Flex>
+                )}
+            </Transition>
         </Box>
-
     </Box>
   )
 }

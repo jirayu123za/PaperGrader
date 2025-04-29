@@ -64,126 +64,136 @@ export const Rubric = () => {
     const [editingDescriptionId, setEditingDescriptionId] = useState<number | null>(null);
 
     return (
-        <Box className="flex flex-col flex-1 min-h-0 p-4">
+        <Flex direction="column" className="flex-1 min-h-0 p-4">
+        {/* Header */}
+        <Box className="flex-shrink-0">
+            <Flex className="group items-center pb-2">
+            <Title
+                order={5}
+                className="text-[#495057] group-hover:text-[#3B5BDB] group-hover:underline transition-colors duration-200 cursor-pointer"
+            >
+                {question.question_number}: {question.question_title}
+            </Title>
+            <ActionIcon c="#495057" variant="transparent" aria-label="Questions">
+                <MdExpandMore size={20} />
+            </ActionIcon>
+            </Flex>
+
+            <Progress color="violet" value={(totalScore / question.question_points) * 100} />
+            <Text size="xs" c="#495057">
+            {graded.has_graded} of {graded.total_grade} questions graded
+            </Text>
+
+            <Flex justify="space-between" align="flex-end" pt="md">
             <Box>
-                <Flex className="group items-center pb-2">
-                <Title
-                    order={5}
-                    className="text-[#495057] group-hover:text-[#3B5BDB] group-hover:underline transition-colors duration-200 cursor-pointer"
-                >
-                    {question.question_number}: {question.question_title}
-                </Title>
-                <ActionIcon c="#495057" variant="transparent" aria-label="Questions">
-                    <MdExpandMore size={20}/>
-                </ActionIcon>
-                </Flex>
-
-                <Progress color="violet" value={(totalScore / question.question_points) * 100} />
-                <Text size="xs" c="#495057">
-                {graded.has_graded} of {graded.total_grade} questions graded
+                <Text span fw={500} c="#495057">Total Points</Text>
+                <Text fw={500} size="xl" c="#495057" style={{ fontSize: '28px', lineHeight: '1.2' }}>
+                {totalScore.toFixed(1)}
+                <Text span fw={500} c="#495057" style={{ fontSize: '28px', lineHeight: '1.2' }}>
+                    / {question.question_points} pts
                 </Text>
-
-                <Flex justify="space-between" align="flex-end" pt="md">
-                <Box>
-                    <Text span fw={500} c="#495057">Total Points</Text>
-                    <Text fw={500} size="xl" c="#495057" style={{ fontSize: '28px', lineHeight: '1.2' }}>
-                    {totalScore.toFixed(1)}{' '}
-                    <Text span fw={500} c="#495057" style={{ fontSize: '28px', lineHeight: '1.2' }}>
-                        / {question.question_points} pts
-                    </Text>
-                    </Text>
-                </Box>
-                <Button leftSection={<IoIosSettings size={20}/>} variant="transparent" color="#495057" p={0}>
-                    Rubric Settings
-                </Button>  
-                </Flex>
-
-                <Divider label="Collapse View" labelPosition="right" mb="xs"/>
+                </Text>
             </Box>
+            <Button leftSection={<IoIosSettings size={20} />} variant="transparent" color="#495057" p={0}>
+                Rubric Settings
+            </Button>
+            </Flex>
 
-            <ScrollArea type="auto" scrollbars="y" h={800} scrollbarSize={4} pb="sm">
-                {rubrics.map((rubric, index) => (
-                    <Checkbox.Card
-                        key={rubric.rubric_id}
-                        checked={rubric.rubric_selected}
-                        mb="xs"
-                        p="sm"
-                        w="456px"
-                        className="hover:shadow-sm group"
-                        component={'div'}
-                        styles={{
-                            card: {
-                              backgroundColor: rubric.rubric_selected ? '#edf2ff' : undefined,
-                              borderColor: rubric.rubric_selected ? '#3b5bdb' : undefined,
-                              transition: 'all 150ms ease',
-                            },
-                        }}
-                    >
-                        <Group wrap="nowrap" align="flex-start">
-                            <Checkbox.Indicator icon={() => <Text size='sm' fw={500}>{rubric.rubric_id}</Text>} />
-                            <div>
-                            {editingRubricId === rubric.rubric_id ? (
-                                <NumberInput
-                                    hideControls
-                                    w={100}
-                                    suffix=' pts'
-                                    value={rubric.rubric_point}
-                                    min={0}
-                                    max={question.question_points}
-                                    onChange={(val) => {
-                                    setRubrics((prev) =>
-                                        prev.map((r) =>
-                                        r.rubric_id === rubric.rubric_id
-                                            ? { ...r, rubric_point: typeof val === 'number' ? val : 0 }
-                                            : r
-                                        )
-                                    );
-                                    }}
-                                    onBlur={() => setEditingRubricId(null)}
-                                    autoFocus
-                                />
-                                ) : (
-                                <Text fw={600} onClick={() => setEditingRubricId(rubric.rubric_id)}>
-                                    {rubric.rubric_point.toFixed(1)} pts
-                                </Text>
-                                )}
-                                {editingDescriptionId === rubric.rubric_id ? (
-                                    <RubricDescEdition
-                                        value={rubric.rubric_description}
-                                        onUpdate={(updatedVal) => {
-                                        setRubrics((prev) =>
-                                            prev.map((r) =>
-                                            r.rubric_id === rubric.rubric_id
-                                                ? { ...r, rubric_description: updatedVal }
-                                                : r
-                                            )
-                                        );
-                                        }}
-                                        onBlurEditor={() => setEditingDescriptionId(null)}
-                                    />
-                                ) : (
-                                    <Text
-                                        size="sm"
-                                        c="dimmed"
-                                        onClick={() => setEditingDescriptionId(rubric.rubric_id)}
-                                    >
-                                        {rubric.rubric_description}
-                                    </Text>
-                                )}
-                            </div>
-                            <Box
-                                onClick={() =>
-                                    console.log("Delete rubric", rubric.rubric_id)
-                                }
-                                className="ml-auto cursor-pointer text-gray-500 hover:text-red-600 hover:scale-105 transition-transform duration-200 opacity-0 group-hover:opacity-100"
-                            >
-                                <AiTwotoneDelete size={20} />
-                            </Box>
-                        </Group>
-                    </Checkbox.Card>
-                ))}
-                <Button leftSection={<FaPlus size={12}/>} w={456} variant="outline" color="violet">Add Rubric Item</Button>
-            </ScrollArea>
+            <Divider label="Collapse View" labelPosition="right" pb='xs' />
         </Box>
+
+        {/* Scroll Area */}
+        <ScrollArea type="auto" scrollbarSize={4} scrollbars="y" h="calc(100vh - 340px)">
+            <Flex direction="column" gap="xs">
+            {rubrics.map((rubric) => (
+                <Checkbox.Card
+                key={rubric.rubric_id}
+                checked={rubric.rubric_selected}
+                p="sm"
+                w="456px"
+                className="hover:shadow-sm group"
+                component="div"
+                styles={{
+                    card: {
+                    backgroundColor: rubric.rubric_selected ? '#edf2ff' : undefined,
+                    borderColor: rubric.rubric_selected ? '#3b5bdb' : undefined,
+                    transition: 'all 150ms ease',
+                    },
+                }}
+                >
+                <Group wrap="nowrap" align="flex-start">
+                    <Checkbox.Indicator icon={() => <Text size="sm" fw={500}>{rubric.rubric_id}</Text>} />
+                    <div>
+                    {editingRubricId === rubric.rubric_id ? (
+                        <NumberInput
+                        hideControls
+                        w={100}
+                        suffix=" pts"
+                        value={rubric.rubric_point}
+                        min={0}
+                        max={question.question_points}
+                        onChange={(val) => {
+                            setRubrics((prev) =>
+                            prev.map((r) =>
+                                r.rubric_id === rubric.rubric_id
+                                ? { ...r, rubric_point: typeof val === 'number' ? val : 0 }
+                                : r
+                            )
+                            );
+                        }}
+                        onBlur={() => setEditingRubricId(null)}
+                        autoFocus
+                        />
+                    ) : (
+                        <Text fw={600} onClick={() => setEditingRubricId(rubric.rubric_id)}>
+                        {rubric.rubric_point.toFixed(1)} pts
+                        </Text>
+                    )}
+                    {editingDescriptionId === rubric.rubric_id ? (
+                        <RubricDescEdition
+                        value={rubric.rubric_description}
+                        onUpdate={(updatedVal) => {
+                            setRubrics((prev) =>
+                            prev.map((r) =>
+                                r.rubric_id === rubric.rubric_id
+                                ? { ...r, rubric_description: updatedVal }
+                                : r
+                            )
+                            );
+                        }}
+                        onBlurEditor={() => setEditingDescriptionId(null)}
+                        />
+                    ) : (
+                        <Text
+                        size="sm"
+                        c="dimmed"
+                        onClick={() => setEditingDescriptionId(rubric.rubric_id)}
+                        >
+                        {rubric.rubric_description}
+                        </Text>
+                    )}
+                    </div>
+                    <Box
+                    onClick={() => console.log("Delete rubric", rubric.rubric_id)}
+                    className="ml-auto cursor-pointer text-gray-500 hover:text-red-600 hover:scale-105 transition-transform duration-200 opacity-0 group-hover:opacity-100"
+                    >
+                    <AiTwotoneDelete size={20} />
+                    </Box>
+                </Group>
+                </Checkbox.Card>
+            ))}
+            </Flex>
+
+            <Button
+                leftSection={<FaPlus size={12} />}
+                w={456}
+                variant="outline"
+                color="violet"
+                className="mt-2 flex-shrink-0"
+            >
+                Add Rubric Item
+            </Button>
+        </ScrollArea>
+        </Flex>
     );
 }

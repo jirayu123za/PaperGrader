@@ -62,7 +62,7 @@ export default function LeftProcess() {
   };
 
   return (
-    <Container className={`relative flex flex-col justify-between border-r transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} h-screen`}>
+    <Container className={`relative flex flex-col justify-between border-r transition-all duration-300 ease-in-out ${isCollapsed ? 'w-[64px] min-w-[64px]' : 'w-[256px] min-w-[256px]'} flex-shrink-0 h-screen p-0`}> 
       {/* Top: Logo and Collapse Button */}
       <Flex justify="space-between" align="center" p={12}
         style={{
