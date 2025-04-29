@@ -10,8 +10,7 @@ export default function QuestionOutline() {
     const { rubricData, addQuestion, updateQuestion, removeQuestion } = useBoundingBoxStore();
     const { addBoundingBox } = useBoundingBoxStore();
     return (
-        <div className="p-6 space-y-6 bg-gray-50 rounded-md"
-        style={{height: '100vh', overflowY: 'auto',}}>
+        <div className="p-6 space-y-6 bg-gray-50 rounded-md max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="space-y-2">
                 <h1 className="text-2xl font-bold">Outline for Test</h1>
