@@ -41,8 +41,8 @@ interface BoundingBoxStore {
 }
 
 const useBoundingBoxStore = create<BoundingBoxStore>((set) => ({
-  boundingBoxes: [], 
-  rubricData: { rubric_id: '', questions: [] }, 
+  boundingBoxes: [],
+  rubricData: { rubric_id: '', questions: [] },
 
   setBoundingBoxes: (boxes) => set({ boundingBoxes: boxes }),
   setRubricData: (rubricData) => set({ rubricData }),
@@ -50,46 +50,49 @@ const useBoundingBoxStore = create<BoundingBoxStore>((set) => ({
 
   addBoundingBox: (box) =>
     set((state) => ({
-      boundingBoxes: [...state.boundingBoxes, { 
+      boundingBoxes: [...state.boundingBoxes, {
         bounding_box_id: box.bounding_box_id,
         bounding_box_position: box.bounding_box_position,
         bounding_box_type: box.bounding_box_type,
         bounding_box_page: box.bounding_box_page
       }],
     })),
-    
+
   addQuestion: (question) =>
     set((state) => ({
       rubricData: {
         ...state.rubricData,
-        questions: [...state.rubricData.questions, question], 
+        questions: [...state.rubricData.questions, question],
       },
     })),
 
-    updateBoundingBox: (id, updatedBox) =>
-      set((state) => ({
-        boundingBoxes: state.boundingBoxes.map((box) =>
-          box.bounding_box_id === id
-            ? {
-                ...box,
-                ...updatedBox,
-                bounding_box_position: updatedBox.bounding_box_position || box.bounding_box_position,
-              }
-            : box
-        ),
-      })),
-    
-    
+  updateBoundingBox: (id, updatedBox) =>
+    set((state) => ({
+      boundingBoxes: state.boundingBoxes.map((box) =>
+        box.bounding_box_id === id
+          ? {
+            ...box,
+            ...updatedBox,
+            bounding_box_position: updatedBox.bounding_box_position || box.bounding_box_position,
+          }
+          : box
+      ),
+    })),
+
+
 
   updateQuestion: (id, updatedQuestion) =>
-    set((state) => ({
-      rubricData: {
-        ...state.rubricData,
-        questions: state.rubricData.questions.map((q) =>
-          q.question_id === id ? { ...q, ...updatedQuestion } : q
-        ),
-      },
-    })),
+    set((state) => {
+      const newQuestions = state.rubricData.questions.map((q) =>
+        q.question_id === id ? { ...q, ...updatedQuestion } : { ...q }
+      );
+      return {
+        rubricData: {
+          ...state.rubricData,
+          questions: newQuestions,
+        },
+      };
+    }),
 
   removeBoundingBox: (boxId) =>
     set((state) => ({
@@ -97,12 +100,17 @@ const useBoundingBoxStore = create<BoundingBoxStore>((set) => ({
     })),
 
   removeQuestion: (id) =>
-    set((state) => ({
-      rubricData: {
-        ...state.rubricData,
-        questions: state.rubricData.questions.filter((q) => q.question_id !== id),
-      },
-    })),
+    set((state) => {
+      const newQuestions = state.rubricData.questions
+        .filter((q) => q.question_id !== id)
+        .map((q) => ({ ...q }));
+      return {
+        rubricData: {
+          ...state.rubricData,
+          questions: newQuestions,
+        },
+      };
+    }),
 }));
 
 export default useBoundingBoxStore;
