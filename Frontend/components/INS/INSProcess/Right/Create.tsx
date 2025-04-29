@@ -32,7 +32,7 @@ const Create: React.FC = () => {
             <Tabs.Tab value="outline">Create Outline</Tabs.Tab>
             <Tabs.Tab value="grading">Create Rubrics</Tabs.Tab>
           </Tabs.List>
-          <Tabs.Panel value="outline" className="flex-grow h-full p-0">
+          <Tabs.Panel value="outline" className="flex-1 flex flex-col min-h-0 overflow-hidden">
             <Question />
           </Tabs.Panel>
           <Tabs.Panel value="grading" className="flex-1 flex flex-col min-h-0 overflow-hidden">
