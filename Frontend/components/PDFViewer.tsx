@@ -108,7 +108,7 @@ const PDFViewer: React.FC = () => {
   return (
     
     <Container
-      style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', flexGrow: 1 }}
+      style={{ height: '100vh',position: 'relative', display: 'flex', flexDirection: 'column', overflow: 'hidden', flexGrow: 1 }}
       ref={pdfContainerRef}
       fluid
     >
