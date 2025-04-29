@@ -6,6 +6,7 @@ import { Container, Title, Button, Flex, Tabs } from '@mantine/core';
 import { FaRegArrowAltCircleLeft } from "react-icons/fa";
 import { useDisclosure } from '@mantine/hooks';
 import { Rubric } from './Rubric';
+import Question from './Question'
 import { useCreateSidebarStore } from '@/store/process-outline/createSidebarStore';
 
 const Create: React.FC = () => {
@@ -32,7 +33,7 @@ const Create: React.FC = () => {
             <Tabs.Tab value="grading">Create Rubrics</Tabs.Tab>
           </Tabs.List>
           <Tabs.Panel value="outline" className="flex-grow h-full p-0">
-            <div className=' bg-amber-400 h-full'> test outline </div> {/** replace with component */}
+            <Question />
           </Tabs.Panel>
           <Tabs.Panel value="grading" className="flex-1 flex flex-col min-h-0 overflow-hidden">
             <Rubric />
