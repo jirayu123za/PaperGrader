@@ -10,7 +10,7 @@ export default function QuestionOutline() {
     const { rubricData, addQuestion, updateQuestion, removeQuestion } = useBoundingBoxStore();
     const { addBoundingBox } = useBoundingBoxStore();
     return (
-        <div className="p-6 space-y-6 bg-gray-50 rounded-md max-h-[90vh] overflow-y-auto">
+        <div className="p-6 space-y-6 rounded-md max-h-[86vh] overflow-y-auto">
             {/* Header */}
             <div className="space-y-2">
                 <h1 className="text-2xl font-bold">Outline for Test</h1>
@@ -44,7 +44,7 @@ export default function QuestionOutline() {
             </div>
 
             {/* Buttons */}
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-1">
                 <Button variant="outline" color="gray">Cancel</Button>
                 <Button color="teal">Save </Button>
             </div>
