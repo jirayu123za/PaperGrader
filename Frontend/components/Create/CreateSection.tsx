@@ -1,16 +1,15 @@
 "use client";
 
 import React from 'react';
-import { Modal, Button, Text } from '@mantine/core';
+import { Modal, Button, Text, Alert, Flex } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { TagsInput } from '@mantine/core';
 import { useCreateSections } from '../../hooks/useCreate/useCreateSection';
-import { useRouter , useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useDisclosure } from '@mantine/hooks';
 import { RiAddLargeLine } from 'react-icons/ri';
 
 const CreateSection: React.FC = () => {
-  const router = useRouter();
   const params = useParams();
   const course_id = params?.course_id as string;
   const [opened, { open, close }] = useDisclosure(false);
@@ -60,32 +59,38 @@ const CreateSection: React.FC = () => {
           blur: 3,
         }}
         styles={{
-          header: {
-            backgroundColor: '#7E60BF',
-            padding: '16px',
-            color: '#fff',
-            textAlign: 'center',
-            fontWeight: 700,
-          },
           title: {
-            color: '#fff',
+            fontSize: '1.15rem',
+            fontWeight: 400,
           },
-          content: {
-            backgroundColor: '#f5f5dc',
+          body: {
+            padding: '0px',
           },
         }}
       >
-      <form onSubmit={form.onSubmit(handleSubmit)}>
-        <Text fw={500} mb={4}>Section Tags</Text>
+      
+      <Alert>
+        <Text size="sm" c="dimmed" mb={5}>
+          Create a new section by entering the tags below. You can add multiple tags separated by commas or spaces.
+        </Text>
+      </Alert>
+
+      <form onSubmit={form.onSubmit(handleSubmit)} className='p-4 pt-6'>
         <TagsInput
           placeholder="Enter tags and press enter, comma, or space"
           {...form.getInputProps('section_name')}
           splitChars={[' ', ',', '\n']}
           className="mb-4"
         />
-        <Button type="submit" className="w-full bg-[#b7410e]">
-          Create Section
-        </Button>
+
+        <Flex justify="end" align="center" mt={24} gap={6}>
+          <Button variant="outline" color="red" onClick={close}>
+            Cancel
+          </Button>        
+          <Button type="submit">
+            Create
+          </Button>          
+        </Flex>
       </form>
     </Modal>
     </>
