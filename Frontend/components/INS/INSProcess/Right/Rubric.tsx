@@ -161,6 +161,12 @@ export const Rubric = () => {
                                                 );
                                               }}
                                             onBlur={() => setEditingRubricId(null)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' || e.key === 'Escape') {
+                                                  e.preventDefault();
+                                                  setEditingRubricId(null);
+                                                }
+                                            }}
                                         />
                                         ) : (
                                         <Text fw={600} c={rubric.rubric_setting === 'positive' ? 'green' : 'red'} onClick={() => setEditingRubricId(rubric.rubric_id)}>
