@@ -13,12 +13,50 @@ interface OCRData {
     url_id_file: string;
 }
 
+interface MatchedStudent {
+    name: string;
+    student_code: string;
+}
+
 interface ManageOCRStore {
     ocrData: OCRData[];
     setOCRData: (ocrData: OCRData[]) => void;
+
+    matchedStudents: Record<string, MatchedStudent>;
+    setMatchedStudent: (submission_id: string, student: MatchedStudent) => void;
+    resetMatchedStudents: () => void;
+
+    selectedRows: string[];
+    toggleSelectedRow: (submissionId: string) => void;
+    toggleSelectAll: (allIds: string[]) => void;
+    clearSelectedRows: () => void;
 }
 
 export const useManageOCRStore = create<ManageOCRStore>((set) => ({
     ocrData: [],
     setOCRData: (ocrData) => set({ ocrData }),
+
+    matchedStudents: {},
+    setMatchedStudent: (submission_id, student) =>
+        set((state) => ({
+            matchedStudents: {
+                ...state.matchedStudents,
+                [submission_id]: student,
+            },
+        })),
+    resetMatchedStudents: () => set({ matchedStudents: {} }),
+
+    selectedRows: [],
+    toggleSelectedRow: (id) =>
+        set((state) => ({
+            selectedRows: state.selectedRows.includes(id)
+                ? state.selectedRows.filter((i) => i !== id)
+                : [...state.selectedRows, id],
+        })),
+    toggleSelectAll: (allIds) =>
+        set((state) => ({
+            selectedRows:
+                state.selectedRows.length === allIds.length ? [] : [...allIds],
+        })),
+    clearSelectedRows: () => set({ selectedRows: [] }),
 }));
