@@ -1,8 +1,13 @@
-import { Box, Checkbox, Flex, Select, Table, Text, TextInput, Image, ActionIcon, Autocomplete, ScrollArea, Button, Transition, Alert } from '@mantine/core';
+'use client'
+import { Box, Checkbox, Flex, Select, Table, Text, TextInput, ActionIcon, Autocomplete, ScrollArea, Button, Transition, Alert, Skeleton, Tooltip } from '@mantine/core';
 import { IconSearch, IconTrash } from '@tabler/icons-react';
 import { IoMdCheckmark } from "react-icons/io";
 import { TfiReload } from "react-icons/tfi";
 import React, { useState } from 'react'
+import { useStudentsListStore } from '@/store/ManageScan/useStudentsListStore';
+import { useFetchManageOCR } from '@/hooks/ManageScan/useFetchManageOCR';
+import { useManageOCRStore } from '@/store/ManageScan/useManageOCRStore';
+import SubmissionBoxes from './SubmissionBoxes';
 
 type Props = {
     course_id: string;
@@ -10,33 +15,16 @@ type Props = {
 };
 
 export const ManageOCR: React.FC<Props> = ({ course_id, assignment_id })  => {
-interface OCRDataItem {
-    id: number;
-    name: string;
-    student_code: number;
-    status: string;
-    submissionTime: string;
-    img1: string;
-    img2: string;
-}
-
-const ocrData: OCRDataItem[] = [
-    { id: 1, name: 'John Doe', student_code: 123456789, status: 'Completed', submissionTime: '2024-04-27 10:30', img1: 'https://placehold.co/210x100', img2: 'https://placehold.co/210x100' },
-    { id: 2, name: 'Jane Smith', student_code: 123456789, status: 'Pending', submissionTime: '2024-04-27 11:00', img1: 'https://placehold.co/210x100', img2: 'https://placehold.co/210x100' },
-    { id: 3, name: 'Alice Johnson', student_code: 123456789, status: 'In Progress', submissionTime: '2024-04-27 11:30', img1: 'https://placehold.co/210x100', img2: 'https://placehold.co/210x100' },
-    { id: 4, name: 'John Doe', student_code: 123456789, status: 'Completed', submissionTime: '2024-04-27 10:30', img1: 'https://placehold.co/210x100', img2: 'https://placehold.co/210x100' },
-    { id: 5, name: 'Jane Smith', student_code: 123456789, status: 'Pending', submissionTime: '2024-04-27 11:00', img1: 'https://placehold.co/210x100', img2: 'https://placehold.co/210x100' },
-    { id: 6, name: 'Alice Johnson', student_code: 123456789, status: 'In Progress', submissionTime: '2024-04-27 11:30', img1: 'https://placehold.co/210x100', img2: 'https://placehold.co/210x100' },
-    { id: 7, name: 'John Doe', student_code: 123456789, status: 'Completed', submissionTime: '2024-04-27 10:30', img1: 'https://placehold.co/210x100', img2: 'https://placehold.co/210x100' },
-    { id: 8, name: 'Jane Smith', student_code: 123456789, status: 'Pending', submissionTime: '2024-04-27 11:00', img1: 'https://placehold.co/210x100', img2: 'https://placehold.co/210x100' },
-    { id: 9, name: 'Alice Johnson', student_code: 123456789, status: 'In Progress', submissionTime: '2024-04-27 11:30', img1: 'https://placehold.co/210x100', img2: 'https://placehold.co/210x100' },
-];
-
-  const [selectedRows, setSelectedRows] = useState<number[]>([]);
+  const { isFetching: isFetchingOCRData, refetch: refetchOCRData, isLoading: isLoadingOCRData, error: errorOCRData } = useFetchManageOCR(course_id, assignment_id, { queryKey: ['ocr_data', course_id, assignment_id], enabled: false });
+  const { ocrData, matchedStudents, setMatchedStudent } = useManageOCRStore();
+  const { studentsList } = useStudentsListStore();
+  // TODO: Change to use store
+//   const [matchedStudents, setMatchedStudents] = useState<Record<string, { name: string; student_code: string }>>({});
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const isAllSelected = selectedRows.length === ocrData.length;
   const isSomeSelected = selectedRows.length > 0 && selectedRows.length < ocrData.length;
 
-  const toggleRow = (id: number) => {
+  const toggleRow = (id: string) => {
     setSelectedRows((current) =>
       current.includes(id) ? current.filter((i) => i !== id) : [...current, id]
     );
@@ -46,10 +34,34 @@ const ocrData: OCRDataItem[] = [
     if (selectedRows.length === ocrData.length) {
       setSelectedRows([]);
     } else {
-      setSelectedRows(ocrData.map((item) => item.id));
+      setSelectedRows(ocrData.map((item) => item.submission_id));
     }
   };
   
+  const autocompleteData = [
+    {
+      group: 'Unassigned to submission',
+      items: studentsList
+        .filter((student) => !student.has_submission)
+        .map((student) => ({
+          value: student.personal_data_id,
+          label: student.full_name,
+          student,
+        })),
+    },
+    {
+      group: 'Already assigned to submission',
+      items: studentsList
+        .filter((student) => student.has_submission)
+        .map((student) => ({
+          value: student.personal_data_id,
+          label: student.full_name,
+          student,
+          disabled: true,
+        })),
+    },
+  ];
+
   return (
     <Box maw='100%'>
         <Flex align="center" mb="sm" justify="space-between">
@@ -57,9 +69,18 @@ const ocrData: OCRDataItem[] = [
                 <Text pl="xs">
                     <Text span fw={700}>{`${ocrData.length}`}</Text> Submissions need confirmation
                 </Text>
-                <ActionIcon color="blue" variant="subtle">
-                    <TfiReload size={20} />
-                </ActionIcon>
+                <Tooltip label="Use OCR" position="right" withArrow>
+                    <ActionIcon color="blue" variant="subtle" 
+                        onClick={() => {
+                            console.log('Use OCR clicked');
+                            refetchOCRData();
+                        }}
+                        disabled={isFetchingOCRData}
+                        loading={isFetchingOCRData}
+                    >
+                        <TfiReload size={20} />
+                    </ActionIcon>
+                </Tooltip>
             </Flex>
 
             {/* Condition to show*/}
@@ -93,90 +114,158 @@ const ocrData: OCRDataItem[] = [
               </Flex>
             ) : (
                 <>
-            <ScrollArea h={500}>
-                <Table highlightOnHover>
-                    <Table.Thead>
-                        <Table.Tr>
-                            <Table.Th>
-                                <Flex align="center" gap="sm">
-                                    <Checkbox
-                                        checked={isAllSelected}
-                                        indeterminate={isSomeSelected}
-                                        onChange={toggleSelectAll}
-                                    />
-                                    Select                                    
-                                </Flex>
-                            </Table.Th>
-                            <Table.Th>Student's name & id</Table.Th>
-                            <Table.Th>Example</Table.Th>
-                            <Table.Th>Match with</Table.Th>
-                            <Table.Th>Submission time</Table.Th>
-                        </Table.Tr>
-                    </Table.Thead>
-                    
-                    <Table.Tbody>
-                        {ocrData.map((item) => (
-                            <Table.Tr key={item.id}
-                                style={{
-                                    backgroundColor: selectedRows.includes(item.id)
-                                    ? 'var(--mantine-color-blue-light)'
-                                    : undefined,
-                                }}
-                            >
-                                {/* Checkbox */}
-                                <Table.Td>
-                                    <Checkbox 
-                                        checked={selectedRows.includes(item.id)}
-                                        onChange={() => toggleRow(item.id)}
-                                    />
-                                </Table.Td>
-
-                                {/* Image x2 */}
-                                <Table.Td maw="260px">
-                                    <Flex>
-                                        <Image src={item.img1} alt="Image1" maw='210px' mah='100px'/>
-                                        <Image src={item.img2} alt="Image2" maw='210px' mah='100px'/>
+                <ScrollArea h={500}>
+                    <Table highlightOnHover>
+                        <Table.Thead>
+                            <Table.Tr>
+                                <Table.Th>
+                                    <Flex align="center" gap="sm">
+                                        <Checkbox
+                                            checked={isAllSelected}
+                                            indeterminate={isSomeSelected}
+                                            onChange={toggleSelectAll}
+                                        />
+                                        Select                                    
                                     </Flex>
-                                </Table.Td>
-
-                                <Table.Td>
-                                    <Text size="sm">{item.name}</Text>
-                                    <Text size="sm" c="dimmed">{item.student_code}</Text>
-                                </Table.Td>
-
-                                {/* Autocomplete Match with Student Name */}
-                                <Table.Td>
-                                    <Autocomplete
-                                        placeholder="Match student"
-                                        data={['John Doe', 'Jane Smith', 'Alice Johnson', 'Bob Brown']}
-                                        defaultValue={item.name}
-                                        w={200}
-                                    />
-                                    <Text size='sm' c="dimmed" pt={2}>{item.student_code}</Text>
-                                </Table.Td>
-
-                                {/* Submission Time */}
-                                <Table.Td>
-                                    <Text size="sm">{item.submissionTime}</Text>
-                                </Table.Td>
+                                </Table.Th>
+                                <Table.Th w={420}>Student's name & id</Table.Th>
+                                <Table.Th pl={80} w={380}>Example</Table.Th>
+                                <Table.Th>Match with</Table.Th>
+                                <Table.Th>Submission time</Table.Th>
                             </Table.Tr>
-                        ))}
-                    </Table.Tbody>
-                </Table>
-            </ScrollArea>
+                        </Table.Thead>
+                        
+                        <Table.Tbody>
+                            {isLoadingOCRData ? (
+                                Array.from({ length: 3 }).map((_, index) => (
+                                <Table.Tr key={index}>
+                                    <Table.Td>
+                                        <Skeleton height={20} width={20} />
+                                    </Table.Td>
+                                    <Table.Td>
+                                        <Flex>
+                                            <Skeleton height={100} width={210} />
+                                            <Skeleton height={100} width={210} />
+                                        </Flex>
+                                    </Table.Td>
+                                    <Table.Td>
+                                        <Flex direction="column" gap={4}>
+                                            <Skeleton height={16} width={100} />
+                                            <Skeleton height={14} width={120} />
+                                        </Flex>
+                                    </Table.Td>
+                                    <Table.Td>
+                                        <Flex direction="column" gap={4}>
+                                            <Skeleton height={36} width={200} />
+                                            <Skeleton height={14} width={100} ml={12} />
+                                        </Flex>
+                                    </Table.Td>
+                                    <Table.Td>
+                                        <Skeleton height={16} width="60%" />
+                                    </Table.Td>
+                                </Table.Tr>
+                                ))
+                            ) : (
+                                ocrData.map((item) => (
+                                    <Table.Tr key={item.submission_id}
+                                        style={{
+                                            backgroundColor: selectedRows.includes(item.submission_id)
+                                            ? 'var(--mantine-color-blue-light)'
+                                            : undefined,
+                                        }}
+                                    >
+                                        {/* Checkbox */}
+                                        <Table.Td>
+                                            <Checkbox 
+                                                checked={selectedRows.includes(item.submission_id)}
+                                                onChange={() => toggleRow(item.submission_id)}
+                                            />
+                                        </Table.Td>
 
-            <Transition mounted={selectedRows.length > 0} transition="fade" duration={200} timingFunction="ease">
-                {(styles) => (
-                    <Flex mt="sm" gap="sm" style={styles}>
-                    <Button variant="outline" color="#4644ab" leftSection={<IoMdCheckmark size={18}/>}>
-                        Confirm Selected
-                    </Button>
-                    <Button variant="outline" color="red" leftSection={<IconTrash size={18}/>}>
-                        Delete Selected
-                    </Button>
-                    </Flex>
-                )}
-            </Transition>
+                                        {/* Image x2 */}
+                                        <Table.Td maw="260px">
+                                            <SubmissionBoxes submissionBoxesURL={[item.url_name_file, item.url_id_file]} />
+                                        </Table.Td>
+
+                                        <Table.Td pl={80}>
+                                            <Tooltip.Floating label={`Similarity: ${(item.similarity * 100).toFixed(2)}%`}>                                           
+                                                <Flex direction="column" gap="xs">
+                                                    <Text size="sm" fw={500}>{item.best_match_name}</Text>
+                                                    <Text size="sm" c="dimmed">Student ID: {item.best_match_id}</Text>
+                                                </Flex>
+                                            </Tooltip.Floating>
+                                        </Table.Td>
+
+                                        {/* Autocomplete Match with Student Name */}
+                                        <Table.Td>
+                                            <Autocomplete
+                                                placeholder="Match student"
+                                                w={200}
+                                                styles={{
+                                                    option: {
+                                                        minHeight: '40px',
+                                                    },
+                                                }}
+                                                data={autocompleteData}
+                                                defaultValue={
+                                                    (() => {
+                                                      const matchedStudent = studentsList.find(
+                                                        (student) => student.personal_data_id === item.personal_data_id
+                                                      );
+                                                      return matchedStudent?.full_name ?? '';
+                                                    })()
+                                                }
+                                                limit={10}
+                                                maxDropdownHeight={200}
+                                                comboboxProps={{ transitionProps: { transition: 'pop', duration: 200 } }}
+                                                onOptionSubmit={(value) => {
+                                                    const selectedStudent = studentsList.find(student => student.personal_data_id === value);
+                                                    if (selectedStudent) {
+                                                        // updateSubmission({
+                                                        //     submission_id: submission.submission_id,
+                                                        //     assignment_id: assignment_id as string,
+                                                        //     personal_data_id: selectedStudent.personal_data_id,
+                                                        // });
+                                                        setMatchedStudent(item.submission_id, {
+                                                            name: selectedStudent.full_name,
+                                                            student_code: selectedStudent.student_code,
+                                                        });
+                                                        console.log(`Selected student: ${selectedStudent.full_name}`);
+                                                    }
+                                                }}
+                                            />
+                                            <Text size='sm' c="dimmed" pt={2} pl={12}>
+                                                Student ID:{' '}
+                                                {
+                                                    matchedStudents[item.submission_id]?.student_code ??
+                                                    (item.is_match ? item.best_match_id : '-')
+                                                }
+                                            </Text>
+                                        </Table.Td>
+                                        
+                                        {/* Submission Time */}
+                                        <Table.Td>
+                                            <Text size="sm">{item.submitted_at}</Text>
+                                        </Table.Td>
+                                    </Table.Tr>
+                                ))
+                            )}
+                        </Table.Tbody>
+                    </Table>
+                </ScrollArea>
+
+                <Transition mounted={selectedRows.length > 0} transition="fade" duration={200} timingFunction="ease">
+                    {(styles) => (
+                        <Flex mt="sm" gap="sm" style={styles}>
+                        <Button variant="outline" color="#4644ab" leftSection={<IoMdCheckmark size={18}/>}>
+                            Confirm Selected
+                        </Button>
+                        <Button variant="outline" color="red" leftSection={<IconTrash size={18}/>}>
+                            Delete Selected
+                        </Button>
+                        </Flex>
+                    )}
+                </Transition>
             </>
             )}
         </Box>
