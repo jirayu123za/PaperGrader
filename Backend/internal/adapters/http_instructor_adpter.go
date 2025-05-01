@@ -1846,8 +1846,8 @@ func (h *HttpInstructorHandler) GetMatchAllSubmissionOCR(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Mock handler GetSubmissionBoxesForOCR services",
-		"result":  response,
+		"message":  "Success get ocr data from GetSubmissionBoxesForOCR services",
+		"ocr_data": response,
 	})
 }
 
