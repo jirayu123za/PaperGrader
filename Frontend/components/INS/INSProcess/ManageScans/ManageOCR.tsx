@@ -16,27 +16,10 @@ type Props = {
 
 export const ManageOCR: React.FC<Props> = ({ course_id, assignment_id })  => {
   const { isFetching: isFetchingOCRData, refetch: refetchOCRData, isLoading: isLoadingOCRData, error: errorOCRData } = useFetchManageOCR(course_id, assignment_id, { queryKey: ['ocr_data', course_id, assignment_id], enabled: false });
-  const { ocrData, matchedStudents, setMatchedStudent } = useManageOCRStore();
+  const { ocrData, matchedStudents, setMatchedStudent, selectedRows, toggleSelectedRow, toggleSelectAll } = useManageOCRStore();
   const { studentsList } = useStudentsListStore();
-  // TODO: Change to use store
-//   const [matchedStudents, setMatchedStudents] = useState<Record<string, { name: string; student_code: string }>>({});
-  const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const isAllSelected = selectedRows.length === ocrData.length;
   const isSomeSelected = selectedRows.length > 0 && selectedRows.length < ocrData.length;
-
-  const toggleRow = (id: string) => {
-    setSelectedRows((current) =>
-      current.includes(id) ? current.filter((i) => i !== id) : [...current, id]
-    );
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedRows.length === ocrData.length) {
-      setSelectedRows([]);
-    } else {
-      setSelectedRows(ocrData.map((item) => item.submission_id));
-    }
-  };
   
   const autocompleteData = [
     {
@@ -123,7 +106,7 @@ export const ManageOCR: React.FC<Props> = ({ course_id, assignment_id })  => {
                                         <Checkbox
                                             checked={isAllSelected}
                                             indeterminate={isSomeSelected}
-                                            onChange={toggleSelectAll}
+                                            onChange={() => toggleSelectAll(ocrData.map((item) => item.submission_id))}
                                         />
                                         Select                                    
                                     </Flex>
@@ -178,7 +161,7 @@ export const ManageOCR: React.FC<Props> = ({ course_id, assignment_id })  => {
                                         <Table.Td>
                                             <Checkbox 
                                                 checked={selectedRows.includes(item.submission_id)}
-                                                onChange={() => toggleRow(item.submission_id)}
+                                                onChange={() => toggleSelectedRow(item.submission_id)}
                                             />
                                         </Table.Td>
 
