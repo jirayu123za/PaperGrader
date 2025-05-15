@@ -14,7 +14,7 @@ type Props = {
   assignment_id: string;
 };
 
-const INSManageScans: React.FC<Props> = ({ course_id, assignment_id }) => {
+const UploadFiles: React.FC<Props> = ({ course_id, assignment_id }) => {
   const fileInputRef = useRef<HTMLButtonElement>(null);
   const { data: submissionFiles, isLoading } = useFetchSubmissionFiles(assignment_id as string);
   const { submissions, visibleCount, setVisibleCount } = useSubmissionFilesStore();
@@ -176,4 +176,4 @@ const INSManageScans: React.FC<Props> = ({ course_id, assignment_id }) => {
   );
 };
 
-export default INSManageScans;
+export default UploadFiles;
