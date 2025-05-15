@@ -17,7 +17,7 @@ type Props = {
     assignment_id: string;
 };
 
-export const ManageSplits: React.FC<Props> = ({ course_id, assignment_id }) => {
+export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id }) => {
     const { isLoading: isLoadingStudents, error: errorStudents } = useFetchStudentsList(course_id as string, assignment_id as string);
     const { isLoading: isLoadingSubmissions, error: errorSubmissions } = useFetchSubmissionsList(course_id as string, assignment_id as string);
     const { studentsList, submissionsList, searchQuery, setSearchQuery, filterStatus, setFilterStatus, pageSize, setPageSize } = useStudentsListStore();
