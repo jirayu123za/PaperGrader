@@ -1,7 +1,7 @@
 "use client";
-
 import React from 'react';
 import dayjs from 'dayjs';
+import SubmissionBoxes from './SubmissionBoxes';
 import { Box, Flex, Select, Table, TextInput, Text, Pagination, Autocomplete, ActionIcon, Stack, ScrollArea, useCombobox, Combobox } from '@mantine/core';
 import { usePagination } from '@mantine/hooks';
 import { IconSearch, IconEdit } from '@tabler/icons-react';
@@ -10,7 +10,7 @@ import { useFetchStudentsList } from '../../../../hooks/ManageScan/useFetchStude
 import { useStudentsListStore } from '../../../../store/ManageScan/useStudentsListStore';
 import { useFetchSubmissionsList } from '../../../../hooks/ManageScan/useFetchSubmissionsList';
 import { useUpdateSubmission } from '../../../../hooks/ManageScan/useUpdateSubmission';
-import SubmissionBoxes from './SubmissionBoxes';
+import { useManageSubmissionStore } from '@/store/ManageScan/useManageSubmissionStore ';
 
 type Props = {
     course_id: string;
@@ -21,6 +21,7 @@ export const ManageSplits: React.FC<Props> = ({ course_id, assignment_id }) => {
     const { isLoading: isLoadingStudents, error: errorStudents } = useFetchStudentsList(course_id as string, assignment_id as string);
     const { isLoading: isLoadingSubmissions, error: errorSubmissions } = useFetchSubmissionsList(course_id as string, assignment_id as string);
     const { studentsList, submissionsList, searchQuery, setSearchQuery, filterStatus, setFilterStatus, pageSize, setPageSize } = useStudentsListStore();
+    const { editableSubmissionID, setEditableSubmissionID } = useManageSubmissionStore();
     const { mutate: updateSubmission, isPending } = useUpdateSubmission();
 
     const submissions = submissionsList.map(sub => ({
@@ -78,17 +79,22 @@ export const ManageSplits: React.FC<Props> = ({ course_id, assignment_id }) => {
         },
     ];
 
-    const handleEditStudentName = (submission_id: string, full_name: string | null) => {
-        // if (!full_name) return;
-        // const selectedStudent = studentsList.find(student => student.full_name === full_name);
-        // if (selectedStudent) {
-        //     updateSubmission({
-        //         submission_id,
-        //         assignment_id: assignment_id as string,
-        //         personal_data_id: selectedStudent.personal_data_id,
-        //     });
-        // }
-        console.log('Edit student name:', submission_id, full_name);
+    const handleEditClick = (submission_id: string) => {
+        setEditableSubmissionID(submission_id);
+    };
+
+    const handleEditStudentName = (submission_id: string, personal_data_id: string) => {
+        const selectedStudent = studentsList.find(student => student.personal_data_id === personal_data_id);
+        if (selectedStudent) {
+            updateSubmission({
+                submission_id,
+                assignment_id: assignment_id as string,
+                personal_data_id,
+            });
+            console.log('Edit student name:', submission_id, personal_data_id);
+            setEditableSubmissionID(null);
+        }
+        console.log('After edit student name:', submission_id, personal_data_id);
     };
 
     return (
@@ -142,7 +148,23 @@ export const ManageSplits: React.FC<Props> = ({ course_id, assignment_id }) => {
                                             <SubmissionBoxes submissionBoxesURL={submission.submission_box_urls || []} />
                                         </Table.Td>
                                         <Table.Td pl={48}>
-                                            {submission.full_name? (
+                                            {editableSubmissionID === submission.submission_id || !submission.full_name ? (
+                                                <Autocomplete
+                                                    placeholder="Select student or enter name"
+                                                    styles={{
+                                                        option: {
+                                                            minHeight: '40px',
+                                                        },
+                                                    }}
+                                                    maw={300}
+                                                    data={autocompleteData}
+                                                    limit={10}
+                                                    maxDropdownHeight={200}
+                                                    comboboxProps={{ transitionProps: { transition: 'pop', duration: 200 } }}
+                                                    onOptionSubmit={(value) => handleEditStudentName(submission.submission_id, value)}
+                                                    onBlur={() => setEditableSubmissionID(null)}
+                                                />
+                                            ) : (
                                                 <Stack gap={1}>
                                                     <Flex align="center">
                                                         <Text>{submission.full_name}</Text>
@@ -151,37 +173,13 @@ export const ManageSplits: React.FC<Props> = ({ course_id, assignment_id }) => {
                                                             ml={8} 
                                                             aria-label="Edit Student Name"
                                                             className='cursor-pointer'
-                                                            onClick={() => handleEditStudentName(submission.submission_id, submission.full_name)}
+                                                            onClick={() => handleEditClick(submission.submission_id)}
                                                         >
                                                             <IconEdit size={16}/>
                                                         </ActionIcon>
                                                     </Flex>
                                                     <Text size='sm' c="dimmed">{submission.student_code}</Text>
                                                 </Stack>
-                                            ) : (
-                                                <Autocomplete
-                                                    placeholder="Select student or enter name"
-                                                    styles={{
-                                                        option: {
-                                                        minHeight: '40px',
-                                                        },
-                                                    }}
-                                                    maw={300}
-                                                    data={autocompleteData}
-                                                    limit={10}
-                                                    maxDropdownHeight={200}
-                                                    comboboxProps={{ transitionProps: { transition: 'pop', duration: 200 } }}
-                                                    onOptionSubmit={(value) => {
-                                                        const selectedStudent = studentsList.find(student => student.personal_data_id === value);
-                                                        if (selectedStudent) {
-                                                            updateSubmission({
-                                                                submission_id: submission.submission_id,
-                                                                assignment_id: assignment_id as string,
-                                                                personal_data_id: selectedStudent.personal_data_id,
-                                                            });
-                                                        }
-                                                    }}
-                                                />                                        
                                             )}
                                         </Table.Td>
                                         <Table.Td pl={48}>
