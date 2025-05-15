@@ -1,7 +1,7 @@
 "use client";
 import UploadFiles from '@/components/INS/INSProcess/ManageScans/UploadFiles';
 import { Tabs } from '@mantine/core';
-import { ManageSplits } from '@/components/INS/INSProcess/ManageScans/ManageSplits';
+import { StudentMatching } from '@/components/INS/INSProcess/ManageScans/StudentMatching';
 import { ManageOCR } from '@/components/INS/INSProcess/ManageScans/ManageOCR';
 
 export default function INSManageScansClient({ course_id, assignment_id }: { course_id: string; assignment_id: string;}) {
@@ -9,7 +9,7 @@ export default function INSManageScansClient({ course_id, assignment_id }: { cou
     <Tabs defaultValue="upload-files">
       <Tabs.List>
         <Tabs.Tab value="upload-files">Upload Files</Tabs.Tab>
-        <Tabs.Tab value="manage-splits">Manage Splits</Tabs.Tab>
+        <Tabs.Tab value="student-matching">Student Matching</Tabs.Tab>
         <Tabs.Tab value="manage-ocr">Manage OCR</Tabs.Tab>
       </Tabs.List>
 
@@ -17,8 +17,8 @@ export default function INSManageScansClient({ course_id, assignment_id }: { cou
         <UploadFiles course_id={course_id} assignment_id={assignment_id} />
       </Tabs.Panel>
 
-      <Tabs.Panel value="manage-splits" pt="md">
-        <ManageSplits course_id={course_id} assignment_id={assignment_id} />
+      <Tabs.Panel value="student-matching" pt="md">
+        <StudentMatching course_id={course_id} assignment_id={assignment_id} />
       </Tabs.Panel>
 
       <Tabs.Panel value="manage-ocr" pt="md">
