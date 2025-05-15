@@ -26,8 +26,6 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id }) =
 
     const submissions = submissionsList.map(sub => ({
         ...sub,
-        imageUrl: 'https://placehold.co/400x150',
-        graded: sub.has_assigned ? 75 : 0, 
     }));
 
     const filteredSubmissions = submissions.filter((sub) => {
@@ -138,7 +136,6 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id }) =
                                     <Table.Th w="20%" pl={48}>Student</Table.Th>
                                     <Table.Th w="15%" pl={48}>Sections Submitted</Table.Th>
                                     <Table.Th w="15%">Submission Time</Table.Th>
-                                    <Table.Th w="10%" ta='center'>Delete Submission</Table.Th>
                                 </Table.Tr>
                             </Table.Thead>
                             <Table.Tbody>
@@ -191,11 +188,6 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id }) =
                                         </Table.Td>
                                         <Table.Td>
                                             <Text>{formatDate(submission.submitted_at)}</Text>
-                                        </Table.Td>
-                                        <Table.Td ta='center'>
-                                            <ActionIcon variant="transparent" aria-label="Delete Submission">
-                                                <RiDeleteBinLine size={20} />
-                                            </ActionIcon>
                                         </Table.Td>
                                     </Table.Tr>
                                 ))}
