@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import LeftProcess from '../../../../../components/LeftINS/LeftProcess';
-import INSManageScans from '../../../../../components/INS/INSProcess/ManageScans/INSManageScans';
+import UploadFiles from '@/components/INS/INSProcess/ManageScans/UploadFiles';
 import { Loader, Tabs } from '@mantine/core';
 import { useMounted } from '@mantine/hooks';
-import { ManageSplits } from '../../../../../components/INS/INSProcess/ManageScans/ManageSplits';
+import { StudentMatching } from '@/components/INS/INSProcess/ManageScans/StudentMatching';
 
-export default function INSManageScansPage() {
+type Props = {
+    course_id: string;
+    assignment_id: string;
+};
+
+export const INSManageScansPage: React.FC<Props> = ({ course_id, assignment_id }) => {
   const mounted = useMounted();
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -31,11 +36,11 @@ export default function INSManageScansPage() {
           </Tabs.List>
 
           <Tabs.Panel value="manage-scans" pt="md">
-            <INSManageScans />
+            <UploadFiles course_id={course_id} assignment_id={assignment_id}/>
           </Tabs.Panel>
 
           <Tabs.Panel value="manage-splits" pt="md">
-            <ManageSplits />
+            <StudentMatching course_id={course_id} assignment_id={assignment_id}/>
           </Tabs.Panel>
         </Tabs>
       )}
