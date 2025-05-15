@@ -1,5 +1,5 @@
 "use client";
-import INSManageScans from '@/components/INS/INSProcess/ManageScans/INSManageScans';
+import UploadFiles from '@/components/INS/INSProcess/ManageScans/UploadFiles';
 import { Tabs } from '@mantine/core';
 import { ManageSplits } from '@/components/INS/INSProcess/ManageScans/ManageSplits';
 import { ManageOCR } from '@/components/INS/INSProcess/ManageScans/ManageOCR';
@@ -14,7 +14,7 @@ export default function INSManageScansClient({ course_id, assignment_id }: { cou
       </Tabs.List>
 
       <Tabs.Panel value="upload-files" pt="md">
-        <INSManageScans course_id={course_id} assignment_id={assignment_id} />
+        <UploadFiles course_id={course_id} assignment_id={assignment_id} />
       </Tabs.Panel>
 
       <Tabs.Panel value="manage-splits" pt="md">
