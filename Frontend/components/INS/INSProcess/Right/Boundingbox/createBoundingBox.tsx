@@ -1,14 +1,39 @@
 import Konva from 'konva';
 
 export function createBoundingBoxGroup(box: any, selectShape: (group: Konva.Group) => void): Konva.Group {
+  const x = parseFloat(box.bounding_box_position.split(',')[0]);
+  const y = parseFloat(box.bounding_box_position.split(',')[1]);
+  const width = parseFloat(box.bounding_box_position.split(',')[2]);
+  const height = parseFloat(box.bounding_box_position.split(',')[3]);
+
   const group = new Konva.Group({
-    x: parseFloat(box.bounding_box_position.split(',')[0]),
-    y: parseFloat(box.bounding_box_position.split(',')[1]),
+    x,
+    y,
     draggable: true,
   });
 
-  const width = parseFloat(box.bounding_box_position.split(',')[2]);
-  const height = parseFloat(box.bounding_box_position.split(',')[3]);
+  // Create title bar (above the bounding box)
+  const titleBarHeight = 20;
+  const titleBar = new Konva.Rect({
+    x: 0,
+    y: -titleBarHeight, // move above the box
+    width: width,
+    height: titleBarHeight,
+    fill: 'rgba(0,0,0,0.7)',
+    listening: false,
+  });
+
+  // Create title text (fixed font size, not stretchable)
+  const titleText = new Konva.Text({
+    text: box.bounding_box_type === 'question'
+      ? `Question ${box.question_number ?? ''} (${box.question_point ?? ''} pts)`
+      : box.bounding_box_type === 'name' ? 'Student Name ' : 'Student ID',
+    fontSize: 12,
+    fill: 'white',
+    x: 5,
+    y: -titleBarHeight + 2,
+    listening: false,
+  });
 
   const background = new Konva.Rect({
     width,
@@ -20,25 +45,6 @@ export function createBoundingBoxGroup(box: any, selectShape: (group: Konva.Grou
       box.bounding_box_type === 'id' ? 'green' : 'black',
     strokeWidth: 2,
     listening: true,
-  });
-
-  const titleText = new Konva.Text({
-    text: box.bounding_box_type === 'question'
-      ? `Question ${box.question_number ?? ''} (${box.question_point ?? ''} pts)`
-      : box.bounding_box_type === 'name' ? 'Name Region' : 'ID Region',
-    fontSize: 12,
-    fill: 'white',
-    padding: 2,
-    align: 'left',
-    x: 5,
-    y: 4,
-  });
-
-  const titleBar = new Konva.Rect({
-    width,
-    height: 20,
-    fill: 'rgba(0,0,0,0.7)',
-    listening: false,
   });
 
   group.add(background);
