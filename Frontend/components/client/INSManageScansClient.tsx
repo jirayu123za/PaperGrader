@@ -6,14 +6,14 @@ import { ManageOCR } from '@/components/INS/INSProcess/ManageScans/ManageOCR';
 
 export default function INSManageScansClient({ course_id, assignment_id }: { course_id: string; assignment_id: string;}) {
   return (
-    <Tabs defaultValue="manage-scans">
+    <Tabs defaultValue="upload-files">
       <Tabs.List>
-        <Tabs.Tab value="manage-scans">Manage Scans</Tabs.Tab>
+        <Tabs.Tab value="upload-files">Upload Files</Tabs.Tab>
         <Tabs.Tab value="manage-splits">Manage Splits</Tabs.Tab>
         <Tabs.Tab value="manage-ocr">Manage OCR</Tabs.Tab>
       </Tabs.List>
 
-      <Tabs.Panel value="manage-scans" pt="md">
+      <Tabs.Panel value="upload-files" pt="md">
         <INSManageScans course_id={course_id} assignment_id={assignment_id} />
       </Tabs.Panel>
 
