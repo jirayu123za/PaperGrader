@@ -1,13 +1,13 @@
 'use client'
+import React from 'react'
+import SubmissionBoxes from './SubmissionBoxes';
 import { Box, Checkbox, Flex, Select, Table, Text, TextInput, ActionIcon, Autocomplete, ScrollArea, Button, Transition, Alert, Skeleton, Tooltip } from '@mantine/core';
 import { IconSearch, IconTrash } from '@tabler/icons-react';
 import { IoMdCheckmark } from "react-icons/io";
 import { TfiReload } from "react-icons/tfi";
-import React, { useState } from 'react'
 import { useStudentsListStore } from '@/store/ManageScan/useStudentsListStore';
 import { useFetchManageOCR } from '@/hooks/ManageScan/useFetchManageOCR';
 import { useManageOCRStore } from '@/store/ManageScan/useManageOCRStore';
-import SubmissionBoxes from './SubmissionBoxes';
 
 type Props = {
     course_id: string;
