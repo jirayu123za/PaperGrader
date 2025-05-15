@@ -5,6 +5,7 @@ interface BoundingBox {
   bounding_box_position: string;
   bounding_box_type: string;
   bounding_box_page: number;
+
 }
 
 interface SubQuestion {
@@ -38,6 +39,8 @@ interface BoundingBoxStore {
   updateQuestion: (id: string, updatedQuestion: Partial<Question>) => void;
   removeBoundingBox: (id: string) => void;
   removeQuestion: (id: string) => void;
+  setBoundingBoxesFromAPI: (data: BoundingBox[]) => void;
+  setRubricDataFromAPI: (questions: Question[]) => void;
 }
 
 const useBoundingBoxStore = create<BoundingBoxStore>((set) => ({
@@ -116,6 +119,20 @@ const useBoundingBoxStore = create<BoundingBoxStore>((set) => ({
       };
     }),
 
+    setBoundingBoxesFromAPI: (data) => set({ boundingBoxes: data }),
+
+    setRubricDataFromAPI: (questions) =>
+      set({
+        rubricData: {
+          rubric_id: '', // หรือจาก API จริง
+          questions: questions.map((q) => ({
+            ...q,
+            subquestions: q.subquestions ?? [],
+          })),
+        },
+      }),
+    
 }));
+
 
 export default useBoundingBoxStore;
