@@ -45,7 +45,15 @@ export default function KonvaCanvas({ innerContainerRef }: KonvaCanvasProps) {
     const layer = layerRef.current;
     const groupMap = groupMapRef.current;
     if (!layer) return;
-
+    
+    const currentIds = new Set(boundingBoxes.map(b => b.bounding_box_id));
+    for (const [id, group] of groupMap.entries()) {
+      if (!currentIds.has(id)) {
+        group.destroy();
+        groupMap.delete(id);
+        layer.batchDraw();
+      }
+    }
     boundingBoxes.forEach((box: any) => {
       const groupId = box.bounding_box_id;
       const existingGroup = groupMap.get(groupId);

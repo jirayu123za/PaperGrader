@@ -94,23 +94,28 @@ const useBoundingBoxStore = create<BoundingBoxStore>((set) => ({
       };
     }),
 
-  removeBoundingBox: (boxId) =>
+  removeBoundingBox: (bounding_box_id: string) =>
     set((state) => ({
-      boundingBoxes: state.boundingBoxes.filter((box) => box.bounding_box_id !== boxId),
+      boundingBoxes: state.boundingBoxes.filter(
+        (b) => b.bounding_box_id !== bounding_box_id
+      ),
     })),
-
-  removeQuestion: (id) =>
+  removeQuestion: (question_id: string) =>
     set((state) => {
-      const newQuestions = state.rubricData.questions
-        .filter((q) => q.question_id !== id)
-        .map((q) => ({ ...q }));
+      const questionToRemove = state.rubricData.questions.find(q => q.question_id === question_id);
+      const bounding_box_id = questionToRemove?.bounding_box_id;
+
       return {
         rubricData: {
           ...state.rubricData,
-          questions: newQuestions,
+          questions: state.rubricData.questions.filter((q) => q.question_id !== question_id),
         },
+        boundingBoxes: bounding_box_id
+          ? state.boundingBoxes.filter((b) => b.bounding_box_id !== bounding_box_id)
+          : state.boundingBoxes,
       };
     }),
+
 }));
 
 export default useBoundingBoxStore;
