@@ -110,8 +110,8 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id }) =
                             onChange={(value) => setFilterStatus(value as 'All' | 'true' | 'false')}
                             data={[
                                 { value: 'All', label: 'All' },
-                                { value: 'true', label: 'Already-assigned' },
-                                { value: 'false', label: 'Unassigned' },
+                                { value: 'true', label: 'Matched' },
+                                { value: 'false', label: 'NotMatched' },
                             ]}
                             w="200px"
                         />
