@@ -166,6 +166,7 @@ export const ManageSplits: React.FC<Props> = ({ course_id, assignment_id }) => {
                                                         minHeight: '40px',
                                                         },
                                                     }}
+                                                    maw={300}
                                                     data={autocompleteData}
                                                     limit={10}
                                                     maxDropdownHeight={200}
