@@ -167,7 +167,7 @@ export const ManageOCR: React.FC<Props> = ({ course_id, assignment_id })  => {
 
                                         {/* Image x2 */}
                                         <Table.Td maw="260px">
-                                            <SubmissionBoxes submissionBoxesURL={[item.url_name_file, item.url_id_file]} />
+                                            <SubmissionBoxes submissionBoxesURL={[item.url_id_file, item.url_name_file]} />
                                         </Table.Td>
 
                                         <Table.Td pl={80}>
@@ -183,7 +183,7 @@ export const ManageOCR: React.FC<Props> = ({ course_id, assignment_id })  => {
                                         <Table.Td>
                                             <Autocomplete
                                                 placeholder="Match student"
-                                                w={200}
+                                                w={240}
                                                 styles={{
                                                     option: {
                                                         minHeight: '40px',
