@@ -14,11 +14,15 @@ export default function KonvaCanvas({ innerContainerRef }: KonvaCanvasProps) {
   const stageRef = useRef<Konva.Stage | null>(null);
   const layerRef = useRef<Konva.Layer | null>(null);
 
+  // เก็บ id ที่เคยถูกวาดแล้ว
+  const drawnBoxIds = useRef<Set<string>>(new Set());
+
+  // สร้าง Stage และ Layer ครั้งเดียว
   useEffect(() => {
-    if (!innerContainerRef.current) return;
+    if (!innerContainerRef.current || stageRef.current) return;
 
     const width = innerContainerRef.current.offsetWidth;
-    const height = innerContainerRef.current.scrollHeight;
+    const height = innerContainerRef.current.offsetHeight;
 
     const stage = new Konva.Stage({
       container: innerContainerRef.current,
@@ -32,26 +36,35 @@ export default function KonvaCanvas({ innerContainerRef }: KonvaCanvasProps) {
     stageRef.current = stage;
     layerRef.current = layer;
 
-
+    // ล้าง transformer เมื่อ click พื้นหลัง
     stage.on('click', (e) => {
       if (e.target === stage) {
         layer.find('Transformer').forEach((tr) => (tr as Konva.Transformer).nodes([]));
       }
     });
+  }, [innerContainerRef]);
+
+  // เพิ่ม box ใหม่เฉพาะอันที่ยังไม่ถูกวาด
+  useEffect(() => {
+    const layer = layerRef.current;
+    if (!layer) return;
 
     boundingBoxes.forEach((box) => {
-      const group = createBoundingBoxGroup(box, (shape) => {
-        const tr = new Konva.Transformer();
-        layer.add(tr);
-        tr.nodes([shape]);
-        layer.batchDraw();
-      });
-      layer.add(group);
+      if (!drawnBoxIds.current.has(box.bounding_box_id)) {
+        const group = createBoundingBoxGroup(box, (shape) => {
+          const tr = new Konva.Transformer();
+          layer.add(tr);
+          tr.nodes([shape]);
+          layer.batchDraw();
+        });
+
+        layer.add(group);
+        drawnBoxIds.current.add(box.bounding_box_id);
+      }
     });
 
     layer.batchDraw();
   }, [boundingBoxes]);
 
-
-  return null; 
+  return null;
 }

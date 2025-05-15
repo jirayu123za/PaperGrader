@@ -143,7 +143,7 @@ const PDFViewer: React.FC = () => {
           zIndex: 2,
           width: '100%',
           height: '100%',
-          pointerEvents: 'auto', // ป้องกันไม่ให้ Konva จับ event ถ้าไม่จำเป็น
+          pointerEvents: 'auto', 
         }} />
 
         <KonvaCanvas innerContainerRef={konvaOverlayRef} />
