@@ -3,22 +3,25 @@
 import { useEffect, useRef } from 'react';
 import Konva from 'konva';
 import useBoundingBoxStore from '@/store/BoundingBox/useBoundingBoxStore';
-import { createBoundingBoxGroup } from '@/components/INS/INSProcess/Right/Boundingbox/createBoundingBox'; 
+import { createBoundingBoxGroup } from '@/components/INS/INSProcess/Right/Boundingbox/createBoundingBox';
 
-export default function KonvaCanvas() {
-  const containerRef = useRef<HTMLDivElement>(null);
+interface KonvaCanvasProps {
+  innerContainerRef: React.RefObject<HTMLDivElement>;
+}
+
+export default function KonvaCanvas({ innerContainerRef }: KonvaCanvasProps) {
   const boundingBoxes = useBoundingBoxStore((state) => state.boundingBoxes);
-  const stageRef = useRef<Konva.Stage>();
-  const transformerRef = useRef<Konva.Transformer | null>(null!);
+  const stageRef = useRef<Konva.Stage | null>(null);
+  const layerRef = useRef<Konva.Layer | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!innerContainerRef.current) return;
 
-    const width = containerRef.current.offsetWidth;
-    const height = containerRef.current.offsetHeight;
+    const width = innerContainerRef.current.offsetWidth;
+    const height = innerContainerRef.current.scrollHeight;
 
     const stage = new Konva.Stage({
-      container: containerRef.current,
+      container: innerContainerRef.current,
       width,
       height,
     });
@@ -26,40 +29,29 @@ export default function KonvaCanvas() {
     const layer = new Konva.Layer();
     stage.add(layer);
 
-    const transformer = new Konva.Transformer();
-    layer.add(transformer);
-    transformerRef.current = transformer;
+    stageRef.current = stage;
+    layerRef.current = layer;
 
-    const selectShape = (shape: Konva.Rect | Konva.Group) => {
-      transformer.nodes([shape]);
-      layer.batchDraw();
-    };
+
+    stage.on('click', (e) => {
+      if (e.target === stage) {
+        layer.find('Transformer').forEach((tr) => (tr as Konva.Transformer).nodes([]));
+      }
+    });
 
     boundingBoxes.forEach((box) => {
-      const group = createBoundingBoxGroup(box, selectShape);
+      const group = createBoundingBoxGroup(box, (shape) => {
+        const tr = new Konva.Transformer();
+        layer.add(tr);
+        tr.nodes([shape]);
+        layer.batchDraw();
+      });
       layer.add(group);
     });
 
     layer.batchDraw();
-    stageRef.current = stage;
-
-    return () => {
-      stage.destroy();
-    };
   }, [boundingBoxes]);
 
-  return (
-    <div
-      ref={containerRef}
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none',
-        zIndex: 2,
-      }}
-    />
-  );
+
+  return null; 
 }

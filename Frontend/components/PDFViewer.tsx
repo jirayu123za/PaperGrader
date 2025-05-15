@@ -15,6 +15,7 @@ import { useLeftProcessSidebarStore } from '@/store/process-outline/leftProcessS
 const KonvaCanvas = dynamic(() => import('./client/KonvaCanvas'), { ssr: false });
 
 const PDFViewer: React.FC = () => {
+  const konvaOverlayRef = useRef<HTMLDivElement>(null);
   const params = useParams();
   const course_id = params.course_id as string;
   const assignment_id = params.assignment_id as string;
@@ -37,7 +38,7 @@ const PDFViewer: React.FC = () => {
         setContainerHeight(rect.height);
       }
     };
-  
+
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -46,23 +47,23 @@ const PDFViewer: React.FC = () => {
   useEffect(() => {
     const renderPDF = async () => {
       if (!fileForm.values.pdfUrl || containerWidth === 0 || !innerContainerRef.current) return;
-      setIsLoading(true); 
+      setIsLoading(true);
 
-      try{
+      try {
         const loadingTask = pdfjsLib.getDocument(fileForm.values.pdfUrl);
         const pdf = await loadingTask.promise;
         const numPages = pdf.numPages;
-    
+
         innerContainerRef.current.innerHTML = '';
         pdfPagesRef.current = {};
-    
+
         for (let pageNum = 1; pageNum <= numPages; pageNum++) {
           const page = await pdf.getPage(pageNum);
           const unscaledViewport = page.getViewport({ scale: 1.0 });
           const dpiRatio = window.devicePixelRatio || 1;
           const baseScaleW = containerWidth / unscaledViewport.width;
           const baseScaleH = containerHeight / unscaledViewport.height;
-          const baseScale = Math.max(baseScaleW, baseScaleH); 
+          const baseScale = Math.max(baseScaleW, baseScaleH);
           const layoutViewport = page.getViewport({ scale: baseScale });
           const scaledViewport = page.getViewport({ scale: baseScale * dpiRatio });
           const transform = dpiRatio !== 1 ? [dpiRatio, 0, 0, dpiRatio, 0, 0] : undefined;
@@ -75,21 +76,21 @@ const PDFViewer: React.FC = () => {
           canvas.style.width = '100%';
           canvas.style.height = `${containerWidth * aspectRatio}px`;
           canvas.style.display = 'block';
-      
+
           innerContainerRef.current?.appendChild(canvas);
-  
+
           renderTaskRef.current = page.render({
             canvasContext: context!,
             viewport: layoutViewport,
             transform: transform,
           });
-  
+
           try {
             await renderTaskRef.current.promise;
           } catch (error) {
             console.warn('Render task cancelled or failed:', error);
           }
-    
+
           if (pageNum < numPages) {
             const divider = document.createElement('div');
             divider.style.height = '1px';
@@ -106,36 +107,48 @@ const PDFViewer: React.FC = () => {
   }, [fileForm.values.pdfUrl, containerWidth]);
 
   return (
-    
+
     <Container
-      style={{ height: '100vh',position: 'relative', display: 'flex', flexDirection: 'column', overflow: 'hidden', flexGrow: 1 }}
+      style={{ height: '100vh', position: 'relative', display: 'flex', flexDirection: 'column', overflow: 'hidden', flexGrow: 1 }}
       ref={pdfContainerRef}
       fluid
     >
-    {isLoading && (
-      <Box
-        style={{
+      {isLoading && (
+        <Box
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10,
+          }}
+        >
+          <Loader size="lg" />
+        </Box>
+      )}
+      <Paper style={{ flexGrow: 1, overflow: 'auto', position: 'relative' }}>
+        {/* PDF Layer */}
+        <div ref={innerContainerRef} style={{ position: 'relative', zIndex: 1 }} />
+
+        {/* Konva Overlay Layer */}
+        <div ref={konvaOverlayRef} style={{
           position: 'absolute',
           top: 0,
           left: 0,
+          zIndex: 2,
           width: '100%',
           height: '100%',
-          backgroundColor: 'rgba(255, 255, 255, 0.7)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 10,
-        }}
-      >
-        <Loader size="lg" />
-      </Box>
-    )}
-      <Paper
-        ref={innerContainerRef}
-        style={{ flexGrow: 1, overflow: 'auto'}}
-      >
+          pointerEvents: 'auto', // ป้องกันไม่ให้ Konva จับ event ถ้าไม่จำเป็น
+        }} />
+
+        <KonvaCanvas innerContainerRef={konvaOverlayRef} />
       </Paper>
-      <KonvaCanvas />
+
     </Container>
   );
 };
