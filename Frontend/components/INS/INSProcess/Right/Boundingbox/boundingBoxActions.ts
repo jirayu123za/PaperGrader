@@ -39,7 +39,7 @@ export function handleAddQuestionAndBoundingBox() {
   addBoundingBox({
     bounding_box_id: boundingBoxId,
     bounding_box_type: 'question',
-    bounding_box_position: '100,100,150,100',
+    bounding_box_position: '100,200,200,50',
     bounding_box_page: 0
   });
 
