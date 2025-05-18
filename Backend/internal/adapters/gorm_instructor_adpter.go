@@ -696,7 +696,8 @@ func (r *GormInstructorRepository) AddSubmissionAFile(submissionFile *models.Sub
 
 func (r *GormInstructorRepository) ModifySubmissionList(SubmissionID uuid.UUID, AssignmentID uuid.UUID, PersonalDataID uuid.UUID) error {
 	if err := r.db.Table("submissions").
-		Where("submission_id = ? AND assignment_id = ? AND belongs_to IS NULL", SubmissionID, AssignmentID).
+		// Where("submission_id = ? AND assignment_id = ? AND belongs_to IS NULL", SubmissionID, AssignmentID).
+		Where("submission_id = ? AND assignment_id = ?", SubmissionID, AssignmentID).
 		Update("belongs_to", PersonalDataID).Error; err != nil {
 		return err
 	}
