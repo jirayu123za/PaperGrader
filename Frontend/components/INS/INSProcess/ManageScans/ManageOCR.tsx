@@ -191,11 +191,21 @@ export const ManageOCR: React.FC<Props> = ({ course_id, assignment_id })  => {
                                                 }}
                                                 data={autocompleteData}
                                                 defaultValue={
-                                                    (() => {
-                                                      const matchedStudent = studentsList.find(
+                                                    // (() => {
+                                                    //   const matchedStudent = studentsList.find(
+                                                    //     (student) => student.personal_data_id === item.personal_data_id
+                                                    //   );
+                                                    //   return matchedStudent?.full_name ?? '';
+                                                    // })()
+                                                      (() => {
+                                                        const matchedStudent = matchedStudents[item.submission_id];
+                                                        if (matchedStudent) {
+                                                        return matchedStudent.name;
+                                                        }
+                                                        const studentFromList = studentsList.find(
                                                         (student) => student.personal_data_id === item.personal_data_id
-                                                      );
-                                                      return matchedStudent?.full_name ?? '';
+                                                        );
+                                                        return studentFromList?.full_name ?? '';
                                                     })()
                                                 }
                                                 limit={10}
