@@ -200,10 +200,10 @@ export const ManageOCR: React.FC<Props> = ({ course_id, assignment_id })  => {
                                                       (() => {
                                                         const matchedStudent = matchedStudents[item.submission_id];
                                                         if (matchedStudent) {
-                                                        return matchedStudent.name;
+                                                            return matchedStudent.name;
                                                         }
-                                                        const studentFromList = studentsList.find(
-                                                        (student) => student.personal_data_id === item.personal_data_id
+                                                        const studentFromList = studentsList.find((student) => 
+                                                            student.personal_data_id === item.personal_data_id
                                                         );
                                                         return studentFromList?.full_name ?? '';
                                                     })()
