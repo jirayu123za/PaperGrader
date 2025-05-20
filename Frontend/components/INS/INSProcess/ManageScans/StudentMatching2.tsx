@@ -1,5 +1,6 @@
 'use client'
 import React from 'react'
+import dayjs from 'dayjs';
 import SubmissionBoxes from './SubmissionBoxes';
 import { Box, Flex, Select, Table, Text, TextInput, ActionIcon, Autocomplete, ScrollArea, Alert, Skeleton, Tooltip } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
@@ -60,6 +61,10 @@ export const StudentMatching2: React.FC<Props> = ({ course_id, assignment_id }) 
         });
         console.log(`Confirmed student: ${selectedStudent.full_name}`);
     }
+  };
+
+  const formatDate = (dateString: string) => {
+    return dayjs(dateString).format('MMM DD, YYYY [at] hh:mm A');
   };
 
   const autocompleteData = [
@@ -253,7 +258,7 @@ export const StudentMatching2: React.FC<Props> = ({ course_id, assignment_id }) 
                        
                                         {/* Submission Time */}
                                         <Table.Td>
-                                            <Text size="sm">{item.submitted_at}</Text>
+                                            <Text size="sm">{formatDate(item.submitted_at)}</Text>
                                         </Table.Td>
 
                                        {/* Trash Icon */}
