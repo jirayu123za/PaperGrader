@@ -3,6 +3,7 @@ import UploadFiles from '@/components/INS/INSProcess/ManageScans/UploadFiles';
 import { Tabs } from '@mantine/core';
 import { StudentMatching } from '@/components/INS/INSProcess/ManageScans/StudentMatching';
 import { ManageOCR } from '@/components/INS/INSProcess/ManageScans/ManageOCR';
+import { StudentMatching2 } from '../INS/INSProcess/ManageScans/StudentMatching2';
 
 export default function INSManageScansClient({ course_id, assignment_id }: { course_id: string; assignment_id: string;}) {
   return (
@@ -11,6 +12,7 @@ export default function INSManageScansClient({ course_id, assignment_id }: { cou
         <Tabs.Tab value="upload-files">Upload Files</Tabs.Tab>
         <Tabs.Tab value="student-matching">Student Matching</Tabs.Tab>
         <Tabs.Tab value="manage-ocr">Manage OCR</Tabs.Tab>
+        <Tabs.Tab value="student-matching2">Student Matching 2</Tabs.Tab>
       </Tabs.List>
 
       <Tabs.Panel value="upload-files" pt="md">
@@ -23,6 +25,10 @@ export default function INSManageScansClient({ course_id, assignment_id }: { cou
 
       <Tabs.Panel value="manage-ocr" pt="md">
         <ManageOCR course_id={course_id} assignment_id={assignment_id} />
+      </Tabs.Panel>
+
+      <Tabs.Panel value="student-matching2" pt="md">
+        <StudentMatching2 course_id={course_id} assignment_id={assignment_id} />
       </Tabs.Panel>
     </Tabs>
   );
