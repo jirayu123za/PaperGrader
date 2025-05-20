@@ -149,8 +149,7 @@ export const StudentMatching2: React.FC<Props> = ({ course_id, assignment_id }) 
                             <Table.Tr>
                                 <Table.Th w={420}>Name & ID Region</Table.Th>
                                 <Table.Th pl={80} w={380}>OCR data</Table.Th>
-                                <Table.Th w={380}>Match with</Table.Th>
-                                <Table.Th>Section submitted</Table.Th>
+                                <Table.Th>Match with</Table.Th>
                                 <Table.Th>Submission time</Table.Th>
                             </Table.Tr>
                         </Table.Thead>
@@ -247,13 +246,6 @@ export const StudentMatching2: React.FC<Props> = ({ course_id, assignment_id }) 
                                                     (item.is_match ? item.best_match_id : '-')
                                                 }
                                             </Text>
-                                        </Table.Td>
-
-                                        {/* Section submitted */}
-                                        <Table.Td>
-                                            <Flex>
-                                              <Text size='sm' c="dimmed">-</Text>  
-                                            </Flex>
                                         </Table.Td>
                        
                                         {/* Submission Time */}
