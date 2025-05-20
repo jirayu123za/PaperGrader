@@ -25,11 +25,6 @@ interface ManageOCRStore {
     matchedStudents: Record<string, MatchedStudent>;
     setMatchedStudent: (submission_id: string, student: MatchedStudent) => void;
     resetMatchedStudents: () => void;
-
-    selectedRows: string[];
-    toggleSelectedRow: (submissionId: string) => void;
-    toggleSelectAll: (allIds: string[]) => void;
-    clearSelectedRows: () => void;
 }
 
 export const useManageOCRStore = create<ManageOCRStore>((set) => ({
@@ -45,18 +40,4 @@ export const useManageOCRStore = create<ManageOCRStore>((set) => ({
             },
         })),
     resetMatchedStudents: () => set({ matchedStudents: {} }),
-
-    selectedRows: [],
-    toggleSelectedRow: (id) =>
-        set((state) => ({
-            selectedRows: state.selectedRows.includes(id)
-                ? state.selectedRows.filter((i) => i !== id)
-                : [...state.selectedRows, id],
-        })),
-    toggleSelectAll: (allIds) =>
-        set((state) => ({
-            selectedRows:
-                state.selectedRows.length === allIds.length ? [] : [...allIds],
-        })),
-    clearSelectedRows: () => set({ selectedRows: [] }),
 }));
