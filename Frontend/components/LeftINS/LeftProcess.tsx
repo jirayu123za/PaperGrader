@@ -22,8 +22,8 @@ export default function LeftProcess() {
   const ioStatsChart = <IoStatsChart size={18} />;
   const ioMdSettings = <IoMdSettings size={18} />;
   const iconEditOutline = <MdEditSquare size={18} />;
-  const iconManageScan = <RiFolderUploadFill size={18} />;
-  const iconManageSubmission = <IoIosListBox size={18} />;
+  const iconManageSubmissions= <RiFolderUploadFill size={18} />;
+  const iconGradeSubmissions = <IoIosListBox size={18} />;
   const iconReviewGrade = <MdRateReview size={18} />;
   const params = useParams();
   const course_id = params.course_id as string;
@@ -41,15 +41,15 @@ export default function LeftProcess() {
   
   const options = [
     { key: 'editOutline', label: 'Edit Outline and Rubric', href: `/instructor/course/${course_id}/process/${assignment_id}/create-outline` },
-    { key: 'manageScans', label: 'Manage Scans', href: `/instructor/course/${course_id}/process/${assignment_id}/manage-scans` },
-    { key: 'manageSubmissions', label: 'Manage Submissions', href: `/instructor/course/${course_id}/process/${assignment_id}/submissions` },
+    { key: 'manageSubmissions', label: 'Manage Submissions', href: `/instructor/course/${course_id}/process/${assignment_id}/manage-submissions` },
+    { key: 'gradeSubmissions', label: 'Grade Submissions', href: `/instructor/course/${course_id}/process/${assignment_id}/grade-submissions` },
     { key: 'ReviewGrade', label: 'Review Grade', href: '#' },
   ];
 
   const icons: Record<string, JSX.Element> = {
     editOutline: iconEditOutline,
-    manageScans: iconManageScan,
-    manageSubmissions: iconManageSubmission,
+    manageSubmissions: iconManageSubmissions,
+    gradeSubmissions: iconGradeSubmissions,
     ReviewGrade: iconReviewGrade,
   };
 
