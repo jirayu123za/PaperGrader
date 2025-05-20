@@ -30,12 +30,12 @@ export function RubricSettings() {
 
       <Popover.Dropdown p={0}>
         <Alert
-          icon={<IconInfoCircle size={16} />}
+          icon={<IconInfoCircle size={20} />}
           title="Set rubric settings for this question."
           color="blue"
         />
 
-        <Text size="sm" fw={500} p="8px">Select Scoring Method:</Text>
+        <Text size="sm" fw={500} pl={16} pr={16} pt={8} pb={8}>Select Scoring Method:</Text>
 
         <Radio.Group
           name="scoring-method"
@@ -47,14 +47,14 @@ export function RubricSettings() {
             value="negative"
             label="Negative scoring (points are subtracted from 5.0)"
             classNames={{
-              root: 'mb-2 hover:text-blue-600 transition-colors',
+              root: 'mb-2 ml-2 hover:text-blue-600 transition-colors',
             }}
           />
           <Radio
             value="positive"
             label="Positive scoring (points are added to 0)"
             classNames={{
-              root: 'mb-2 hover:text-blue-600 transition-colors',
+              root: 'mb-2 ml-2 hover:text-blue-600 transition-colors',
             }}
           />
         </Radio.Group>
