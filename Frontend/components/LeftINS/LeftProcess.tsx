@@ -8,7 +8,6 @@ import { IoStatsChart } from 'react-icons/io5';
 import { IoMdSettings, IoIosListBox } from 'react-icons/io';
 import { RiFolderUploadFill } from "react-icons/ri";
 import { MdRateReview, MdEditSquare } from "react-icons/md";
-import { BsGraphUp } from "react-icons/bs";
 import { Button, Container, Divider, Flex, Stack, Title, Transition, Text, Image } from '@mantine/core';
 import { useRouter, usePathname, useParams } from 'next/navigation';
 import { useFetchAssignmentLeft } from '../../hooks/SideBar/useFetchAssignmentLeft';
@@ -25,7 +24,6 @@ export default function LeftProcess() {
   const iconEditOutline = <MdEditSquare size={18} />;
   const iconManageScan = <RiFolderUploadFill size={18} />;
   const iconManageSubmission = <IoIosListBox size={18} />;
-  const iconGradeSubmission = <BsGraphUp size={18} />;
   const iconReviewGrade = <MdRateReview size={18} />;
   const params = useParams();
   const course_id = params.course_id as string;
@@ -45,7 +43,6 @@ export default function LeftProcess() {
     { key: 'editOutline', label: 'Edit Outline and Rubric', href: `/instructor/course/${course_id}/process/${assignment_id}/create-outline` },
     { key: 'manageScans', label: 'Manage Scans', href: `/instructor/course/${course_id}/process/${assignment_id}/manage-scans` },
     { key: 'manageSubmissions', label: 'Manage Submissions', href: `/instructor/course/${course_id}/process/${assignment_id}/submissions` },
-    { key: 'gradeSubmissions', label: 'Grade Submissions', href: `/instructor/course/${course_id}/process/${assignment_id}/grading` },
     { key: 'ReviewGrade', label: 'Review Grade', href: '#' },
   ];
 
@@ -53,7 +50,6 @@ export default function LeftProcess() {
     editOutline: iconEditOutline,
     manageScans: iconManageScan,
     manageSubmissions: iconManageSubmission,
-    gradeSubmissions: iconGradeSubmission,
     ReviewGrade: iconReviewGrade,
   };
 
