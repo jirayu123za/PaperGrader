@@ -288,7 +288,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                                                             onChange={(value) => handleSelectStudent(item.submission_id, value)}
                                                             onOptionSubmit={(value) => handleOptionSubmit(item.submission_id, value)}
                                                             onBlur={() => handleAutocompleteBlur(item.submission_id)}
-                                                            // autoFocus={editableSubmissionID === item.submission_id}
+                                                            autoFocus={editableSubmissionID === item.submission_id}
                                                         />
 
                                                         {item.is_match ? (
