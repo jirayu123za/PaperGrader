@@ -174,6 +174,30 @@ func (r *GormInstructorRepository) FindSubmissionsListForManagement(CourseID uui
 	return submissions, nil
 }
 
+// Part:1
+func (r *GormInstructorRepository) FindSubmissionsList(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionsList, error) {
+	var submissions []response.SubmissionsList
+	err := r.db.
+		Table("submissions AS s").
+		Select(`
+			s.submission_id,
+			sec.section_name,
+			COALESCE(pd.first_name || ' ' || pd.last_name, NULL) AS full_name,
+			COALESCE(pd.student_code, NULL) AS student_code,
+			(s.belongs_to IS NOT NULL) AS has_assigned,
+			s.submitted_at
+		`).
+		Joins("LEFT JOIN personal_data AS pd ON s.belongs_to = pd.personal_data_id").
+		Joins("LEFT JOIN enrollment_lists AS el ON pd.personal_data_id = el.personal_data_id AND el.course_id = ?", CourseID).
+		Joins("LEFT JOIN sections AS sec ON el.section_id = sec.section_id AND sec.course_id = ?", CourseID).
+		Where("s.assignment_id = ? AND s.deleted_at IS NULL", AssignmentID).
+		Scan(&submissions).Error
+	if err != nil {
+		return nil, err
+	}
+	return submissions, nil
+}
+
 func (r *GormInstructorRepository) FindStudentListForSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForSubmissionResponse, error) {
 	var studentList []response.StudentListForSubmissionResponse
 	if err := r.db.Table("personal_data").
