@@ -29,6 +29,14 @@ interface StudentMatchingStore {
     matchedStudents: Record<string, MatchedStudent>;
     setMatchedStudent: (submission_id: string, student: MatchedStudent) => void;
     resetMatchedStudents: () => void;
+
+    // search, filter and pagination
+    searchQuery: string;
+    setSearchQuery: (query: string) => void;
+    filterStatus: 'All' | 'true' | 'false';
+    setFilterStatus: (status: 'All' | 'true' | 'false') => void;
+    pageSize: number;
+    setPageSize: (size: number) => void;
 }
 
 export const useStudentMatchingStore = create<StudentMatchingStore>((set) => ({
@@ -45,4 +53,12 @@ export const useStudentMatchingStore = create<StudentMatchingStore>((set) => ({
             },
         })),
     resetMatchedStudents: () => set({ matchedStudents: {} }),
+
+    // search, filter and pagination
+    searchQuery: "",
+    setSearchQuery: (query) => set({ searchQuery: query }),
+    filterStatus: "All",
+    setFilterStatus: (status) => set({ filterStatus: status }),
+    pageSize: 5,
+    setPageSize: (size) => set({ pageSize: size }),
 }));
