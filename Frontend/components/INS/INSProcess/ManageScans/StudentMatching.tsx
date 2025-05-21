@@ -12,6 +12,7 @@ import { useStudentMatchingStore } from '@/store/ManageScan/useStudentMatchingSt
 import { useFetchStudentMatching } from '@/hooks/ManageScan/ีuseFetchStudentMatching';
 import { useManageSubmissionStore } from '@/store/ManageScan/useManageSubmissionStore ';
 import { useUpdateSubmission } from '@/hooks/ManageScan/useUpdateSubmission';
+import { useFetchStudentsList } from '@/hooks/ManageScan/useFetchStudentsList';
 
 type Props = {
     course_id: string;
@@ -19,6 +20,7 @@ type Props = {
 };
 
 export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  => {
+  const { isLoading: isLoadingStudents, error: errorStudents } = useFetchStudentsList(course_id as string, assignment_id as string);
   const { studentsList } = useStudentsListStore();
   const { isFetching: isFetchingStudentMatchingData, refetch: refetchStudentMatchingData, isLoading: isLoadingStudentMatchingData, error: errorStudentMatchingData } = useFetchStudentMatching(course_id, assignment_id, { queryKey: ['submissions', course_id, assignment_id], enabled: false });
   const { studentMatchingData, matchedStudents, setMatchedStudent } = useStudentMatchingStore();
@@ -286,7 +288,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                                                             onChange={(value) => handleSelectStudent(item.submission_id, value)}
                                                             onOptionSubmit={(value) => handleOptionSubmit(item.submission_id, value)}
                                                             onBlur={() => handleAutocompleteBlur(item.submission_id)}
-                                                            autoFocus={editableSubmissionID === item.submission_id}
+                                                            // autoFocus={editableSubmissionID === item.submission_id}
                                                         />
 
                                                         {item.is_match ? (
