@@ -8,22 +8,9 @@ interface StudentsList {
     has_submission: boolean;
 }
 
-interface SubmissionsList {
-    submission_id: string;
-    section_name: string;
-    full_name: string;
-    student_code: string;
-    has_assigned: boolean;
-    submitted_at: string;
-    submission_box_files?: string;
-    submission_box_urls?: string[];
-}
-
 interface StudentsListStore {
     studentsList: StudentsList[];
     setStudentsList: (studentsList: StudentsList[]) => void;
-    submissionsList: SubmissionsList[];
-    setSubmissionsList: (submissionsList: SubmissionsList[]) => void;
     searchQuery: string;
     setSearchQuery: (query: string) => void;
     filterStatus: 'All' | 'true' | 'false';
@@ -35,8 +22,6 @@ interface StudentsListStore {
 export const useStudentsListStore = create<StudentsListStore>((set) => ({
     studentsList: [],
     setStudentsList: (studentsList) => set({ studentsList }),
-    submissionsList: [],
-    setSubmissionsList: (submissionsList) => set({ submissionsList }),
     searchQuery: "",
     setSearchQuery: (query) => set({ searchQuery: query }),
     filterStatus: "All",
