@@ -48,7 +48,6 @@ type InstructorRepository interface {
 	FindSubmissionFiles(AssignmentID uuid.UUID) ([]response.SubmissionFilesResponse, error)
 	FindSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
 	FindSubmissionFileName(AssignmentID uuid.UUID, SubmissionID uuid.UUID) (fileName string, err error)
-	FindSubmissionsListForManagement(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionListForManagementDB, error)
 	// Part:1
 	FindSubmissionsList(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionsList, error)
 
@@ -62,7 +61,6 @@ type InstructorRepository interface {
 	//! CRUD OCR
 	FindStudentsListForOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForOCRResponse, error)
 	FindSubmissionBoxesForOCR(AssignmentID uuid.UUID) ([]response.GroupSubmissionBoxesForOCR, error)
-	FindSubmissionByIDs(submissionIDs []uuid.UUID) (map[uuid.UUID]response.SubmissionIDResp, error)
 
 	// CRUD BoundingBox
 	AddBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error

@@ -1270,43 +1270,6 @@ func (h *HttpInstructorHandler) GetSubmissionFileURL(c *fiber.Ctx) error {
 	})
 }
 
-func (h *HttpInstructorHandler) GetSubmissionsListForManagement(c *fiber.Ctx) error {
-	courseIDParam := c.Query("course_id")
-	courseID, err := uuid.Parse(courseIDParam)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid course_id",
-			"error":   err.Error(),
-		})
-	}
-	assignmentIDParam := c.Query("assignment_id")
-	assignmentID, err := uuid.Parse(assignmentIDParam)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid assignment_id",
-			"error":   err.Error(),
-		})
-	}
-
-	submissions, err := h.services.GetSubmissionsListForManagement(courseID, assignmentID)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to get submissions list",
-			"error":   err.Error(),
-		})
-	}
-
-	submissions, err = h.services.GetSubmissionFilesWithMinIO(submissions, courseID, assignmentID)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Failed to fetch submission files", "error": err.Error()})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message":     "Submissions list is retrieved",
-		"submissions": submissions,
-	})
-}
-
 func (h *HttpInstructorHandler) GetStudentListForSubmission(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
@@ -1814,39 +1777,6 @@ func (h *HttpInstructorHandler) GetStudentsListForOCR(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Mock handler GetSubmissionBoxesForOCR services",
 		"result":  studentsList,
-	})
-}
-
-func (h *HttpInstructorHandler) GetMatchAllSubmissionOCR(c *fiber.Ctx) error {
-	courseIDParam := c.Query("course_id")
-	courseID, err := uuid.Parse(courseIDParam)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid course_id",
-			"error":   err.Error(),
-		})
-	}
-
-	assignmentIDParam := c.Query("assignment_id")
-	assignmentID, err := uuid.Parse(assignmentIDParam)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid assignment_id",
-			"error":   err.Error(),
-		})
-	}
-
-	response, err := h.services.GetMatchAllSubmissionOCR(courseID, assignmentID)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to get questions",
-			"error":   err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message":  "Success get ocr data from GetSubmissionBoxesForOCR services",
-		"ocr_data": response,
 	})
 }
 

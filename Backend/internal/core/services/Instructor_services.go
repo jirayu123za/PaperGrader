@@ -53,23 +53,16 @@ type InstructorService interface {
 	GetSubmissionFiles(AssignmentID uuid.UUID) ([]response.SubmissionFilesResponse, error)
 	GetSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
 	GetSubmissionFileURL(CourseID uuid.UUID, AssignmentID uuid.UUID, SubmissionID uuid.UUID) (submissionFileURL string, err error)
-	GetSubmissionsListForManagement(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionListForManagementResponse, error)
 	// Part: 1
 	GetSubmissionsList(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionWithOCRResponse, error)
-
 	GetStudentListForSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForSubmissionResponse, error)
 	GetAssignmentTemplateCount(CourseID uuid.UUID, AssignmentID uuid.UUID) (int, error)
 
 	//!
 	CreateCroppedSubmissionBox(submission models.SubmissionBox) error
-	GetSubmissionFilesWithMinIO(submissions []response.SubmissionListForManagementResponse, CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionListForManagementResponse, error)
 
 	//! OCR Services
 	GetStudentsListForOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForOCRResponse, error)
-	// MockGetSubmissionBoxesForOCR(AssignmentID uuid.UUID) ([]response.GroupSubmissionBoxesForOCR, error)
-	// MockGetSubmissionBoxesFromMinIO(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionBoxesURLFromMinIO, error)
-	GetMatchAllSubmissionOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.MatchAllSubmissionOCRResponse, error)
-
 	CreateBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error
 	GetBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error)
 	//!
@@ -348,28 +341,6 @@ func (s *InstructorServiceImpl) GetSubmissionFileURL(CourseID uuid.UUID, Assignm
 }
 
 // Part: 1
-func (s *InstructorServiceImpl) GetSubmissionsListForManagement(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionListForManagementResponse, error) {
-	dbSubmissions, err := s.repo.FindSubmissionsListForManagement(CourseID, AssignmentID)
-	if err != nil {
-		return nil, err
-	}
-
-	var result []response.SubmissionListForManagementResponse
-	for _, sub := range dbSubmissions {
-		result = append(result, response.SubmissionListForManagementResponse{
-			SubmissionID:       sub.SubmissionID,
-			SectionName:        sub.SectionName,
-			FullName:           sub.FullName,
-			StudentCode:        sub.StudentCode,
-			HasAssigned:        sub.HasAssigned,
-			SubmittedAt:        sub.SubmittedAt,
-			SubmissionBoxFiles: sub.SubmissionBoxFiles,
-			SubmissionBoxURLs:  []string{},
-		})
-	}
-	return result, nil
-}
-
 func (s *InstructorServiceImpl) GetSubmissionsList(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionWithOCRResponse, error) {
 	threshold := 0.80
 	// First
@@ -551,152 +522,13 @@ func (s *InstructorServiceImpl) CreateCroppedSubmissionBox(submission models.Sub
 	return nil
 }
 
-func (s *InstructorServiceImpl) GetSubmissionFilesWithMinIO(submissions []response.SubmissionListForManagementResponse, CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionListForManagementResponse, error) {
-	var submissionIDs []uuid.UUID
-	for _, submission := range submissions {
-		submissionIDs = append(submissionIDs, submission.SubmissionID)
-	}
-
-	submissionBoxes, err := s.repo.FindSubmissionBoxBySubmissionID(submissionIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	for i, submission := range submissions {
-		if fileNames, exists := submissionBoxes[submission.SubmissionID]; exists {
-			var fileURLs []string
-
-			for _, fileName := range fileNames {
-				fileURL, err := s.minioRepo.FindFileURLSubmissionBoxes(CourseID.String(), AssignmentID.String(), fileName)
-				if err != nil {
-					continue
-				}
-				fileURLs = append(fileURLs, fileURL)
-			}
-			submissions[i].SubmissionBoxFiles = strings.Join(fileNames, ",")
-			submissions[i].SubmissionBoxURLs = fileURLs
-		}
-	}
-	return submissions, nil
-}
-
-// ! OCR Services implementation
+// OCR Services implementation
 func (s *InstructorServiceImpl) GetStudentsListForOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForOCRResponse, error) {
 	students, err := s.repo.FindStudentsListForOCR(CourseID, AssignmentID)
 	if err != nil {
 		return nil, err
 	}
 	return students, nil
-}
-
-func (s *InstructorServiceImpl) GetMatchAllSubmissionOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.MatchAllSubmissionOCRResponse, error) {
-	var matchLogs []response.MatchAllSubmissionOCRResponse
-	threshold := 0.80
-
-	students, err := s.repo.FindStudentsListForOCR(CourseID, AssignmentID)
-	if err != nil {
-		return nil, err
-	}
-
-	submissionBoxes, err := s.repo.FindSubmissionBoxesForOCR(AssignmentID)
-	if err != nil {
-		return nil, err
-	}
-
-	tempBaseDir := filepath.Join(os.TempDir(), "PDFstore")
-	if err := os.MkdirAll(tempBaseDir, os.ModePerm); err != nil {
-		return nil, err
-	}
-
-	var submissionIDs []uuid.UUID
-	for _, sb := range submissionBoxes {
-		submissionIDs = append(submissionIDs, sb.SubmissionID)
-	}
-
-	submissionDetailMap, err := s.repo.FindSubmissionByIDs(submissionIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	var urlNameFile, urlIDFile string
-
-	for _, submission := range submissionBoxes {
-		var ocrName, ocrCode string
-
-		submissionDir := filepath.Join(tempBaseDir, submission.SubmissionID.String())
-		if err := os.MkdirAll(submissionDir, os.ModePerm); err != nil {
-			return nil, err
-		}
-
-		if err := os.MkdirAll(tempBaseDir, os.ModePerm); err != nil {
-			return nil, err
-		}
-
-		for _, fileName := range submission.SubmissionBoxFileName {
-			url, err := s.minioRepo.FindFileURLSubmissionBoxes(CourseID.String(), AssignmentID.String(), fileName)
-			if err != nil {
-				continue
-			}
-
-			baseName := filepath.Base(fileName)
-			tempFilePath := filepath.Join(submissionDir, baseName)
-			if err := utils.DownloadFileFromURL(url, tempFilePath); err != nil {
-				continue
-			}
-
-			lower := strings.ToLower(tempFilePath)
-
-			if strings.Contains(lower, "name") {
-				text, err := utils.PerformOCRThaiText(tempFilePath)
-				if err != nil {
-					continue
-				}
-				ocrName = text
-				urlNameFile = url
-			} else if strings.Contains(lower, "id") {
-				text, err := utils.PerformOCRDigitsOnly(tempFilePath)
-				if err != nil {
-					continue
-				}
-				ocrCode = text
-				urlIDFile = url
-			}
-		}
-
-		match := utils.MatchOCRWithStudentList(ocrName, ocrCode, students, threshold)
-		match.SubmissionID = submission.SubmissionID
-		if match.MatchedPersonalDataID != nil {
-			// log
-			for _, s := range students {
-				if s.PersonalDataID == *match.MatchedPersonalDataID {
-					log.Printf("Removed matched student: %s (%s)", s.FullName, s.StudentCode)
-					break
-				}
-			}
-			students = utils.RemoveMatchedStudent(students, *match.MatchedPersonalDataID)
-		}
-
-		submissionDetail, ok := submissionDetailMap[submission.SubmissionID]
-		if !ok {
-			continue
-		}
-
-		isMatch := match.Similarity >= threshold
-
-		matchLogs = append(matchLogs, response.MatchAllSubmissionOCRResponse{
-			SubmissionID:   match.SubmissionID,
-			IsMatch:        isMatch,
-			HasAssigned:    submissionDetail.HasAssigned,
-			PersonalDataID: match.MatchedPersonalDataID,
-			BestMatchName:  match.BestMatchName,
-			BestMatchID:    match.BestMatchStudentCode,
-			Similarity:     match.Similarity,
-			SubmittedAt:    submissionDetail.SubmittedAt.Format("2006-01-02 15:04:05"),
-			URLNameFile:    urlNameFile,
-			URLIDFile:      urlIDFile,
-		})
-	}
-	return matchLogs, nil
 }
 
 func (s *InstructorServiceImpl) CreateBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error {

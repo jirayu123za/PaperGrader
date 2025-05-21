@@ -157,27 +157,6 @@ type SubmissionFilesResponse struct {
 	SubmittedAt        time.Time `json:"submitted_at"`
 }
 
-type SubmissionListForManagementResponse struct {
-	SubmissionID       uuid.UUID `json:"submission_id"`
-	SectionName        string    `json:"section_name"`
-	FullName           string    `json:"full_name"`
-	StudentCode        string    `json:"student_code"`
-	HasAssigned        bool      `json:"has_assigned"`
-	SubmittedAt        time.Time `json:"submitted_at"`
-	SubmissionBoxFiles string    `json:"submission_box_files"`
-	SubmissionBoxURLs  []string  `json:"submission_box_urls"`
-}
-
-type SubmissionListForManagementDB struct {
-	SubmissionID       uuid.UUID `json:"submission_id"`
-	SectionName        string    `json:"section_name"`
-	FullName           string    `json:"full_name"`
-	StudentCode        string    `json:"student_code"`
-	HasAssigned        bool      `json:"has_assigned"`
-	SubmittedAt        time.Time `json:"submitted_at"`
-	SubmissionBoxFiles string    `json:"submission_box_files"`
-}
-
 type SubmissionBoxPositionResponse struct {
 	BoundingBoxType     string `json:"bounding_box_type"`
 	BoundingBoxPosition string `json:"bounding_box_position"`
@@ -212,25 +191,6 @@ type MatchLog struct {
 	BestMatchStudentCode  string     `json:"best_match_id"`
 	MatchedPersonalDataID *uuid.UUID `json:"matched_personal_data_id"`
 	Similarity            float64    `json:"similarity"`
-}
-
-type MatchAllSubmissionOCRResponse struct {
-	SubmissionID   uuid.UUID  `json:"submission_id"`
-	IsMatch        bool       `json:"is_match"`
-	HasAssigned    bool       `json:"has_assigned"`
-	PersonalDataID *uuid.UUID `json:"personal_data_id"`
-	BestMatchName  string     `json:"best_match_name"`
-	BestMatchID    string     `json:"best_match_id"`
-	Similarity     float64    `json:"similarity"`
-	SubmittedAt    string     `json:"submitted_at"`
-	URLNameFile    string     `json:"url_name_file"`
-	URLIDFile      string     `json:"url_id_file"`
-}
-
-type SubmissionIDResp struct {
-	SubmissionID uuid.UUID `json:"submission_id"`
-	HasAssigned  bool      `json:"has_assigned"`
-	SubmittedAt  time.Time `json:"submitted_at"`
 }
 
 // Part:1
