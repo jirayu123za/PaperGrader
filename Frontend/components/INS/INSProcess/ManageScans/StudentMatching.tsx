@@ -23,7 +23,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
   const { isLoading: isLoadingStudentsList, error: errorStudentsList, refetch: refetchStudentsList } = useFetchStudentsList(course_id as string, assignment_id as string);
   const { studentsList } = useStudentsListStore();
   const { isFetching: isFetchingStudentMatchingData, refetch: refetchStudentMatchingData, isLoading: isLoadingStudentMatchingData, error: errorStudentMatchingData } = useFetchStudentMatching(course_id, assignment_id, { queryKey: ['submissions', course_id, assignment_id], enabled: false });
-  const { studentMatchingData, matchedStudents, setMatchedStudent } = useStudentMatchingStore();
+  const { studentMatchingData, matchedStudents, setMatchedStudent, searchQuery, setSearchQuery, filterStatus, setFilterStatus } = useStudentMatchingStore();
   const { editableSubmissionID, setEditableSubmissionID } = useManageSubmissionStore();
   const { mutate: updateSubmission, isPending } = useUpdateSubmission();
 
@@ -142,6 +142,15 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
     },
   ];
 
+  const filteredSubmissions = studentMatchingData.filter((item) => {
+    if (filterStatus === 'true' && !item.has_assigned) return false;
+    if (filterStatus === 'false' && item.has_assigned) return false;
+    const searchLower = searchQuery.toLowerCase();
+    const nameMatch = item.full_name.toLowerCase().includes(searchLower);
+    const codeMatch = item.student_code.toLowerCase().includes(searchLower);
+    return nameMatch || codeMatch;
+  });
+
   return (
     <Box maw='100%'>
         <Flex align="center" mb="sm" justify="space-between">
@@ -172,9 +181,18 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                 <Select
                     placeholder="Select Status"
                     w="200px"
+                    value={filterStatus}
+                    onChange={(value) => setFilterStatus(value as 'All' | 'true' | 'false')}
+                    data={[
+                        { value: 'All', label: 'All' },
+                        { value: 'true', label: 'Matched only' },
+                        { value: 'false', label: 'Unmatched only' },
+                    ]}
                 />
                 <TextInput
                     placeholder="Search student name"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.currentTarget.value)}
                     leftSection={<IconSearch size={14} />}
                     w="250px"
                 />
@@ -240,7 +258,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                                 </Table.Tr>
                                 ))
                             ) : (
-                                studentMatchingData.map((item) => (
+                                filteredSubmissions.map((item) => (
                                     
                                     <Table.Tr 
                                         key={item.submission_id}
