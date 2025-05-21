@@ -2,7 +2,7 @@
 import React from 'react'
 import dayjs from 'dayjs';
 import SubmissionBoxes from './SubmissionBoxes';
-import { Box, Flex, Select, Table, Text, TextInput, ActionIcon, Autocomplete, ScrollArea, Alert, Skeleton, Tooltip, Stack, LoadingOverlay } from '@mantine/core';
+import { Box, Flex, Select, Table, Text, TextInput, ActionIcon, Autocomplete, ScrollArea, Alert, Skeleton, Tooltip, Stack, Pagination } from '@mantine/core';
 import { IconEdit, IconSearch } from '@tabler/icons-react';
 import { FaTrash } from "react-icons/fa";
 import { IoCheckmarkDoneSharp } from "react-icons/io5";
@@ -13,6 +13,7 @@ import { useFetchStudentMatching } from '@/hooks/ManageScan/ีuseFetchStudentMa
 import { useManageSubmissionStore } from '@/store/ManageScan/useManageSubmissionStore ';
 import { useUpdateSubmission } from '@/hooks/ManageScan/useUpdateSubmission';
 import { useFetchStudentsList } from '@/hooks/ManageScan/useFetchStudentsList';
+import { usePagination } from '@mantine/hooks';
 
 type Props = {
     course_id: string;
@@ -23,7 +24,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
   const { isLoading: isLoadingStudentsList, error: errorStudentsList, refetch: refetchStudentsList } = useFetchStudentsList(course_id as string, assignment_id as string);
   const { studentsList } = useStudentsListStore();
   const { isFetching: isFetchingStudentMatchingData, refetch: refetchStudentMatchingData, isLoading: isLoadingStudentMatchingData, error: errorStudentMatchingData } = useFetchStudentMatching(course_id, assignment_id, { queryKey: ['submissions', course_id, assignment_id], enabled: false });
-  const { studentMatchingData, matchedStudents, setMatchedStudent, searchQuery, setSearchQuery, filterStatus, setFilterStatus } = useStudentMatchingStore();
+  const { studentMatchingData, matchedStudents, setMatchedStudent, searchQuery, setSearchQuery, filterStatus, setFilterStatus, pageSize, setPageSize } = useStudentMatchingStore();
   const { editableSubmissionID, setEditableSubmissionID } = useManageSubmissionStore();
   const { mutate: updateSubmission, isPending } = useUpdateSubmission();
 
@@ -151,6 +152,16 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
     return nameMatch || codeMatch;
   });
 
+  const totalPages = Math.ceil(filteredSubmissions.length / pageSize);
+  const pagination = usePagination({
+    total: totalPages,
+    initialPage: 1,
+  });
+  
+  const startIndex = (pagination.active - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedSubmissions = filteredSubmissions.slice(startIndex, endIndex);
+
   return (
     <Box maw='100%'>
         <Flex align="center" mb="sm" justify="space-between">
@@ -216,7 +227,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
               </Flex>
             ) : (
                 <>
-                <ScrollArea h={500}>
+                <ScrollArea h={620}>
                     <Table highlightOnHover>
                         <Table.Thead>
                             <Table.Tr>
@@ -258,7 +269,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                                 </Table.Tr>
                                 ))
                             ) : (
-                                filteredSubmissions.map((item) => (
+                                paginatedSubmissions.map((item) => (
                                     
                                     <Table.Tr 
                                         key={item.submission_id}
@@ -363,7 +374,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                                                 className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                                                 aria-label="Delete submission"
                                             >
-                                                    <FaTrash size={16} />
+                                                <FaTrash size={16} />
                                             </ActionIcon>
                                         </Table.Td>
                                     </Table.Tr>
@@ -372,6 +383,28 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                         </Table.Tbody>
                     </Table>
                 </ScrollArea>
+                
+                <Flex justify="end" align="center">
+                    <Text size="sm" c="dimmed" mr="xs">
+                        Rows per page
+                    </Text>
+                    <Select
+                        size='xs'
+                        w={80}
+                        value={pageSize.toString()}
+                        onChange={(val) => setPageSize(Number(val))}
+                        data={['5', '10', '50', '75', '100'].map((v) => ({ value: v, label: v }))}
+                    />
+                    <Box ml="md">
+                        <Pagination
+                            size={"sm"}
+                            withEdges
+                            total={totalPages}
+                            value={pagination.active}
+                            onChange={pagination.setPage}
+                        />
+                    </Box>
+                </Flex>
             </>
             )}
         </Box>
