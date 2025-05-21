@@ -1784,7 +1784,6 @@ func (h *HttpInstructorHandler) GetQuestionsByAssignmentTemplate(c *fiber.Ctx) e
 	})
 }
 
-// ! mock handlers
 func (h *HttpInstructorHandler) GetStudentsListForOCR(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
@@ -1848,6 +1847,40 @@ func (h *HttpInstructorHandler) GetMatchAllSubmissionOCR(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":  "Success get ocr data from GetSubmissionBoxesForOCR services",
 		"ocr_data": response,
+	})
+}
+
+// New http handler for submission with ocr
+func (h *HttpInstructorHandler) GetSubmissionWithOCR(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	submissions, err := h.services.GetSubmissionsList(courseID, assignmentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get submission with ocr",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":     "Submissions with OCR are retrieved",
+		"submissions": submissions,
 	})
 }
 
