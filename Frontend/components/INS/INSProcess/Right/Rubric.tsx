@@ -1,9 +1,8 @@
 "use client";
-import { Box, Button, Checkbox, Divider, Flex, Group, NumberInput, Progress, ScrollArea, Text } from '@mantine/core';
+import { Box, Button, Checkbox, Divider, Flex, Group, NumberInput, Progress, ScrollArea, Text, Textarea } from '@mantine/core';
 import React, { useState } from 'react'
 import { FaPlus } from "react-icons/fa";
 import { AiTwotoneDelete } from "react-icons/ai"
-import { RubricDescEdition } from '@/components/Create/Editor.tsx/RubricDescEdition';
 import { RubricSettings } from './RubricSettings';
 import { QuestionSelector } from './QuestionSelector';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
@@ -142,59 +141,80 @@ export const Rubric = () => {
                                     />
                                     <div>
                                         {editingRubricId === rubric.rubric_id ? (
-                                        <NumberInput
-                                            hideControls
-                                            decimalScale={2}
-                                            w={100}
-                                            value={rubric.rubric_point}
-                                            prefix={rubric.rubric_setting === 'positive' ? '+' : ''}
-                                            // min={0}
-                                            // max={question.question_points}
-                                            allowNegative={true}
-                                            onChange={(val) => {
-                                                setRubrics((prev) =>
-                                                  prev.map((r) =>
-                                                    r.rubric_id === rubric.rubric_id
-                                                        ? { ...r, rubric_point: typeof val === 'number' ? val : 0, rubric_setting: typeof val === 'number' && val < 0 ? 'negative' : 'positive', }
-                                                        : r
-                                                    )
-                                                );
-                                              }}
-                                            onBlur={() => setEditingRubricId(null)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' || e.key === 'Escape') {
-                                                  e.preventDefault();
-                                                  setEditingRubricId(null);
-                                                }
-                                            }}
-                                        />
+                                            <NumberInput
+                                                hideControls
+                                                autoFocus
+                                                decimalScale={2}
+                                                w={100}
+                                                value={rubric.rubric_point}
+                                                prefix={rubric.rubric_setting === 'positive' ? '+' : ''}
+                                                // min={0}
+                                                // max={question.question_points}
+                                                allowNegative={true}
+                                                onChange={(val) => {
+                                                    setRubrics((prev) =>
+                                                    prev.map((r) =>
+                                                        r.rubric_id === rubric.rubric_id
+                                                            ? { ...r, rubric_point: typeof val === 'number' ? val : 0, rubric_setting: typeof val === 'number' && val < 0 ? 'negative' : 'positive', }
+                                                            : r
+                                                        )
+                                                    );
+                                                }}
+                                                onBlur={() => setEditingRubricId(null)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' || e.key === 'Escape') {
+                                                    e.preventDefault();
+                                                    setEditingRubricId(null);
+                                                    }
+                                                }}
+                                            />
                                         ) : (
-                                        <Text fw={600} c={rubric.rubric_setting === 'positive' ? 'green' : 'red'} onClick={() => setEditingRubricId(rubric.rubric_id)}>
-                                            {rubric.rubric_setting === 'positive' ? '+' : '-'}{new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 }).format(Math.abs(rubric.rubric_point))}
-                                        </Text>
+                                            <Text fw={600} c={rubric.rubric_setting === 'positive' ? 'green' : 'red'} onClick={() => setEditingRubricId(rubric.rubric_id)}>
+                                                {rubric.rubric_setting === 'positive' ? '+' : '-'}{new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 }).format(Math.abs(rubric.rubric_point))}
+                                            </Text>
                                         )}
                                         {editingDescriptionId === rubric.rubric_id ? (
-                                        <RubricDescEdition
-                                            value={rubric.rubric_description}
-                                            onUpdate={(updatedVal) => {
-                                            setRubrics((prev) =>
-                                                prev.map((r) =>
-                                                r.rubric_id === rubric.rubric_id
-                                                    ? { ...r, rubric_description: updatedVal }
-                                                    : r
-                                                )
-                                            );
-                                            }}
-                                            onBlurEditor={() => setEditingDescriptionId(null)}
-                                        />
+                                            <Textarea
+                                                miw={360}
+                                                autoFocus
+                                                autosize
+                                                radius="none"
+                                                defaultValue={rubric.rubric_description}
+                                                onBlur={(e) => {
+                                                    setRubrics((prev) =>
+                                                        prev.map((r) =>
+                                                            r.rubric_id === rubric.rubric_id
+                                                                ? { ...r, rubric_description: e.target.value }
+                                                                : r
+                                                        )
+                                                    );
+                                                    setEditingDescriptionId(null);
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                                        e.preventDefault();
+                                                        setRubrics((prev) =>
+                                                            prev.map((r) =>
+                                                                r.rubric_id === rubric.rubric_id
+                                                                    ? { ...r, rubric_description: (e.target as HTMLTextAreaElement).value }
+                                                                    : r
+                                                            )
+                                                        );
+                                                        setEditingDescriptionId(null);
+                                                    } else if (e.key === 'Escape') {
+                                                        setEditingDescriptionId(null);
+                                                    }
+                                                }}
+                                            />
                                         ) : (
-                                        <Text
-                                            size="sm"
-                                            c="#495057"
-                                            onClick={() => setEditingDescriptionId(rubric.rubric_id)}
-                                        >
-                                            {rubric.rubric_description}
-                                        </Text>
+                                            <Text
+                                                size="sm"
+                                                c="#495057"
+                                                className="whitespace-pre-wrap"
+                                                onClick={() => setEditingDescriptionId(rubric.rubric_id)}
+                                            >
+                                                {rubric.rubric_description}
+                                            </Text>
                                         )}
                                     </div>
                                     <Box
