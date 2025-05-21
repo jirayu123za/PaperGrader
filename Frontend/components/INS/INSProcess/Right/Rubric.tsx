@@ -1,4 +1,7 @@
 "use client";
+import markedKatex from 'marked-katex-extension';
+import DOMPurify from 'dompurify';
+import 'katex/dist/katex.min.css';
 import { Box, Button, Checkbox, Divider, Flex, Group, NumberInput, Progress, ScrollArea, Text, Textarea } from '@mantine/core';
 import React, { useState } from 'react'
 import { FaPlus } from "react-icons/fa";
@@ -6,6 +9,8 @@ import { AiTwotoneDelete } from "react-icons/ai"
 import { RubricSettings } from './RubricSettings';
 import { QuestionSelector } from './QuestionSelector';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { marked } from 'marked';
+marked.use(markedKatex({ throwOnError: false }));
 
 interface Rubric {
     rubric_setting: string;
@@ -212,9 +217,8 @@ export const Rubric = () => {
                                                 c="#495057"
                                                 className="whitespace-pre-wrap"
                                                 onClick={() => setEditingDescriptionId(rubric.rubric_id)}
-                                            >
-                                                {rubric.rubric_description}
-                                            </Text>
+                                                dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(marked.parse(rubric.rubric_description) as string),
+                                            }}/>
                                         )}
                                     </div>
                                     <Box
