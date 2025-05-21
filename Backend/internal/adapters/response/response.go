@@ -232,3 +232,45 @@ type SubmissionIDResp struct {
 	HasAssigned  bool      `json:"has_assigned"`
 	SubmittedAt  time.Time `json:"submitted_at"`
 }
+
+// Part:1
+type SubmissionsList struct {
+	SubmissionID uuid.UUID `json:"submission_id"`
+	SectionName  string    `json:"section_name"`
+	FullName     string    `json:"full_name"`
+	StudentCode  string    `json:"student_code"`
+	HasAssigned  bool      `json:"has_assigned"`
+	SubmittedAt  time.Time `json:"submitted_at"`
+	URLFileName  string    `json:"url_file_name"`
+	URLFileID    string    `json:"url_file_id"`
+}
+
+// Part:2
+type SubmissionsOCRData struct {
+	SubmissionID   uuid.UUID  `json:"submission_id"`
+	IsMatch        bool       `json:"is_match"`
+	PersonalDataID *uuid.UUID `json:"personal_data_id"`
+	BestMatchName  string     `json:"best_match_name"`
+	BestMatchID    string     `json:"best_match_id"`
+	Similarity     float64    `json:"similarity"`
+	URLFileName    string     `json:"url_file_name"`
+	URLFileID      string     `json:"url_file_id"`
+}
+
+// Part:3
+type SubmissionWithOCRResponse struct {
+	SubmissionID uuid.UUID `json:"submission_id"`
+	SectionName  string    `json:"section_name"`
+	FullName     string    `json:"full_name"`
+	StudentCode  string    `json:"student_code"`
+	HasAssigned  bool      `json:"has_assigned"`
+	SubmittedAt  time.Time `json:"submitted_at"`
+	// OCR fields
+	IsMatch        bool       `json:"is_match,omitempty"`
+	PersonalDataID *uuid.UUID `json:"personal_data_id,omitempty"`
+	BestMatchName  string     `json:"best_match_name,omitempty"`
+	BestMatchID    string     `json:"best_match_id,omitempty"`
+	Similarity     float64    `json:"similarity,omitempty"`
+	URLFileName    string     `json:"url_file_name,omitempty"`
+	URLFileID      string     `json:"url_file_id,omitempty"`
+}
