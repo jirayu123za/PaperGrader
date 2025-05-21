@@ -30,6 +30,7 @@ export const useUpdateSubmission = () => {
             console.log('Update successful:', data);
             alert(`Submission updated successfully!`);
             queryClient.invalidateQueries({ queryKey: ['submissions'] });
+            queryClient.invalidateQueries({ queryKey: ['students'] });
         },
         onError: (error) => {
             console.error('Update failed:', error);
