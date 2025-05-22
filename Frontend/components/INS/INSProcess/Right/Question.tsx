@@ -1,6 +1,6 @@
 'use client';
 
-import {Button,NumberInput,TextInput,ActionIcon,Table,ScrollArea,Box,} from '@mantine/core';
+import {Button,NumberInput,TextInput,ActionIcon,Table,ScrollArea,Box} from '@mantine/core';
 import { FaTrash, FaPlus } from 'react-icons/fa';
 import useBoundingBoxStore from '@/store/BoundingBox/useBoundingBoxStore';
 import { nanoid } from 'nanoid';
@@ -8,6 +8,7 @@ import {handleAddNameBoundingBox,handleAddIdBoundingBox,handleAddQuestionAndBoun
 import { useCreateBoundingBoxes, mapRubricToQuestionsData , useFetchQuestions, useFetchBoundingBoxes } from '@/hooks/BoundingBox/useFetchBoundingBox';
 import { useParams } from 'next/navigation';
 import { useEffect } from 'react';
+import React from 'react';
 
 export default function QuestionOutline() {
   const { rubricData, boundingBoxes, updateQuestion, removeQuestion } = useBoundingBoxStore();
@@ -18,19 +19,22 @@ export default function QuestionOutline() {
   const { data: boxes } = useFetchBoundingBoxes(assignment_id);
   const { data: questions } = useFetchQuestions(assignment_id);
 
-
   useEffect(() => {
-    if (Array.isArray(boxes)) {
-      setBoundingBoxesFromAPI(boxes);
+    if (boxes?.bounding_boxes && Array.isArray(boxes.bounding_boxes)) {
+      setBoundingBoxesFromAPI(boxes.bounding_boxes);
     }
   }, [boxes]);
-  
+
   useEffect(() => {
-    if (questions?.questions && Array.isArray(questions.questions)) {
-      setRubricDataFromAPI(questions.questions);
+    const rubricQuestions = questions?.questions?.rubric_data?.questions;
+    if (Array.isArray(rubricQuestions)) {
+      const withBoxIds = rubricQuestions.map((q, i) => ({
+        ...q,
+        bounding_box_id: boxes?.bounding_boxes?.[i]?.bounding_box_id ?? '',
+      }));
+      setRubricDataFromAPI(withBoxIds);
     }
-  }, [questions]);
-  
+  }, [questions, boxes]);
 
   const calculateTotalPoints = () =>
     rubricData.questions.reduce((acc, q) => {
@@ -73,8 +77,8 @@ export default function QuestionOutline() {
           </Table.Thead>
           <Table.Tbody>
             {rubricData.questions.map((question, index) => (
-              <>
-                <Table.Tr key={question.question_id}>
+              <React.Fragment key={question.question_id}>
+                <Table.Tr>
                   <Table.Td>{index + 1}</Table.Td>
                   <Table.Td>
                     <TextInput
@@ -136,7 +140,7 @@ export default function QuestionOutline() {
                     </Table.Td>
                   </Table.Tr>
                 ))}
-              </>
+              </React.Fragment>
             ))}
           </Table.Tbody>
         </Table>

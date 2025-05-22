@@ -9,6 +9,9 @@ import { useFetchFile } from '../hooks/useFetchFile';
 import { useParams } from 'next/navigation';
 import { useCreateSidebarStore } from '@/store/process-outline/createSidebarStore';
 import { useLeftProcessSidebarStore } from '@/store/process-outline/leftProcessSidebarStore';
+import { useFetchBoundingBoxes, useFetchQuestions } from '@/hooks/BoundingBox/useFetchBoundingBox';
+import useBoundingBoxStore from '@/store/BoundingBox/useBoundingBoxStore';
+
 
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js`;
 
@@ -29,6 +32,9 @@ const PDFViewer: React.FC = () => {
   const [containerHeight, setContainerHeight] = useState<number>(0);
   const isCreateCollapsed = useCreateSidebarStore((state) => state.isCollapsed);
   const isLeftCollapsed = useLeftProcessSidebarStore((state) => state.isCollapsed);
+  const { setBoundingBoxesFromAPI, setRubricDataFromAPI } = useBoundingBoxStore();
+  const { data: boxes } = useFetchBoundingBoxes(assignment_id);
+  const { data: questions } = useFetchQuestions(assignment_id);
 
   useEffect(() => {
     const handleResize = () => {
@@ -106,6 +112,32 @@ const PDFViewer: React.FC = () => {
     renderPDF();
   }, [fileForm.values.pdfUrl, containerWidth]);
 
+useEffect(() => {
+  if (boxes?.bounding_boxes && Array.isArray(boxes.bounding_boxes)) {
+    setBoundingBoxesFromAPI(boxes.bounding_boxes);
+  }
+}, [boxes]);
+
+useEffect(() => {
+  const rubricQuestions = questions?.questions?.rubric_data?.questions;
+  const apiBoxes = boxes?.bounding_boxes;
+
+  if (Array.isArray(rubricQuestions) && Array.isArray(apiBoxes)) {
+    const questionBoxes = apiBoxes.filter(b => b.bounding_box_type === 'question');
+
+    const withBoxIds = rubricQuestions.map((q, i) => ({
+      ...q,
+      bounding_box_id: questionBoxes[i]?.bounding_box_id ?? '',
+    }));
+
+    setRubricDataFromAPI(withBoxIds);
+  } else {
+    console.warn('questions or boxes format unexpected:', questions, boxes);
+  }
+}, [questions, boxes]);
+
+
+
   return (
 
     <Container
@@ -143,7 +175,7 @@ const PDFViewer: React.FC = () => {
           zIndex: 2,
           width: '100%',
           height: '100%',
-          pointerEvents: 'auto', 
+          pointerEvents: 'auto',
         }} />
 
         <KonvaCanvas innerContainerRef={konvaOverlayRef} />
