@@ -38,21 +38,18 @@ interface Graded {
 
 export const Rubric = () => {
     const [rubrics, setRubrics] = useState<RubricItem[]>([
-        { rubric_id: 1, rubric_point: 1.5, rubric_description: 'rubric description one', rubric_selected: true, rubric_setting: 'positive' },
-        { rubric_id: 2, rubric_point: 1.0, rubric_description: 'rubric description two rubric description two rubric description two rubric description two rubric description two  rubric description two', rubric_selected: false , rubric_setting: 'positive'},
-        { rubric_id: 3, rubric_point: 2.55, rubric_description: 'rubric description three', rubric_selected: false , rubric_setting: 'negative'},
-        { rubric_id: 4, rubric_point: 1.45, rubric_description: 'rubric description three', rubric_selected: false , rubric_setting: 'positive'},
-        { rubric_id: 5, rubric_point: 2.0, rubric_description: 'rubric description three', rubric_selected: true , rubric_setting: 'positive'},
-        { rubric_id: 6, rubric_point: 0.0, rubric_description: 'rubric description three', rubric_selected: true , rubric_setting: 'negative'},
-        { rubric_id: 7, rubric_point: 1.0, rubric_description: 'rubric description two', rubric_selected: false , rubric_setting: 'negative'},
-        { rubric_id: 8, rubric_point: 10.0, rubric_description: 'rubric description three', rubric_selected: false , rubric_setting: 'negative'},
-        { rubric_id: 9, rubric_point: 10.5, rubric_description: 'rubric description three', rubric_selected: false , rubric_setting: 'positive'},
-        { rubric_id: 10, rubric_point: 5.0, rubric_description: 'rubric description three', rubric_selected: false , rubric_setting: 'negative'},
-        { rubric_id: 11, rubric_point: 5.55, rubric_description: 'rubric description three', rubric_selected: false , rubric_setting: 'negative'},
-        { rubric_id: 12, rubric_point: 0.0, rubric_description: 'rubric description three', rubric_selected: false , rubric_setting: 'positive'},
-        { rubric_id: 13, rubric_point: 3.15, rubric_description: 'rubric description three', rubric_selected: false , rubric_setting: 'positive'},
-        { rubric_id: 14, rubric_point: 2.0, rubric_description: 'rubric description three', rubric_selected: false , rubric_setting: 'negative'},
-        { rubric_id: 15, rubric_point: 1.25, rubric_description: 'rubric description three', rubric_selected: false , rubric_setting: 'negative'},
+        { rubric_id: 1, rubric_point: 1.5, rubric_description: 'Clearly explains the concept with accurate terminology', rubric_selected: true, rubric_setting: 'positive' },
+        { rubric_id: 2, rubric_point: 1.0, rubric_description: 'Demonstrates correct application of formulas or methods', rubric_selected: false , rubric_setting: 'positive'},
+        { rubric_id: 3, rubric_point: 2.55, rubric_description: '$2x + 5 = 13$', rubric_selected: false , rubric_setting: 'negative'},
+        { rubric_id: 4, rubric_point: 1.45, rubric_description: 'Includes appropriate and well-labeled diagrams or visuals', rubric_selected: false , rubric_setting: 'positive'},
+        { rubric_id: 5, rubric_point: 2.0, rubric_description: '$x^2 - 4x + 3 = 0$', rubric_selected: true , rubric_setting: 'positive'},
+        { rubric_id: 6, rubric_point: 0.0, rubric_description: 'Provides a complete and logical solution process', rubric_selected: true , rubric_setting: 'negative'},
+        { rubric_id: 7, rubric_point: 1.0, rubric_description: 'Justifies answer with clear reasoning or evidence', rubric_selected: false , rubric_setting: 'negative'},
+        { rubric_id: 8, rubric_point: 10.0, rubric_description: '$f(x) = 3x^3 - 5x^2 + 2x - 7$', rubric_selected: false , rubric_setting: 'negative'},
+        { rubric_id: 9, rubric_point: 10.5, rubric_description: "$f'(x) = 9x^2 - 10x + 2$", rubric_selected: false , rubric_setting: 'positive'},
+        { rubric_id: 10, rubric_point: 5.0, rubric_description: 'Minor calculation errors that do not affect overall logic', rubric_selected: false , rubric_setting: 'negative'},
+        { rubric_id: 11, rubric_point: 5.55, rubric_description: 'Answer is incomplete or lacks explanation', rubric_selected: false , rubric_setting: 'negative'},
+        { rubric_id: 12, rubric_point: 0.0, rubric_description: 'Incorrect method or misunderstanding of the concept', rubric_selected: false , rubric_setting: 'positive'},
     ]);
     const [question, setQuestion] = useState<Question>({
         question_id: 1,
