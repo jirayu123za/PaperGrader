@@ -90,34 +90,6 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
 
   const hasAssigned = studentMatchingData.filter(s => s.has_assigned).length;
 
-  const handleConfirmMatchedStudent = (submission_id: string, personal_data_id: string | null) => {
-    const name = getMatchedStudentName(submission_id, personal_data_id);
-
-    if (!name) {
-       alert(`No matched name for submission: ${submission_id}`); return;
-    }
-
-    const student = studentsList.find((s) => s.full_name === name);
-
-    if (!student) {
-       alert("Student not found from matched name"); return;
-    }
-
-    updateSubmission({
-        submission_id,
-        assignment_id,
-        personal_data_id: student.personal_data_id,
-    });
-
-    setMatchedStudent(submission_id, {
-        name: student.full_name,
-        student_code: student.student_code,
-    });
-
-    setEditableSubmissionID(null);
-    console.log("Updated via Checkmark for", student.full_name);
-  };
-
   const autocompleteData = [
     {
       group: 'Unassigned to submission',
@@ -289,7 +261,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                                                 </Tooltip.Floating>
                                             ) : (
                                                 <Flex direction="column" gap="xs">
-                                                    <Text size="sm" fw={500} c="cyan">Already matching</Text>
+                                                    <Text size="sm" fw={500} c="green">Matched</Text>
                                                     <Text size="sm" c="dimmed">Section submitted: {item.section_name}</Text>
                                                 </Flex>
                                             )}
@@ -318,19 +290,6 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                                                             onBlur={() => handleAutocompleteBlur(item.submission_id)}
                                                             autoFocus={editableSubmissionID === item.submission_id}
                                                         />
-
-                                                        {item.is_match ? (
-                                                            <ActionIcon
-                                                                color="green"
-                                                                variant="transparent"
-                                                                className="ml-1"
-                                                                aria-label="Click to confirm match"
-                                                                onClick={() => handleConfirmMatchedStudent(item.submission_id, item.personal_data_id)}
-                                                                loading={isPending}
-                                                            >
-                                                                <IoCheckmarkDoneSharp size={24}/>
-                                                            </ActionIcon>
-                                                        ) : null}
                                                     </Flex>
 
                                                     <Text size='sm' c="dimmed" pt={2} pl={12}>
