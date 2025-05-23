@@ -203,9 +203,9 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                         <Table.Thead>
                             <Table.Tr>
                                 <Table.Th w={420}>Name & ID Region</Table.Th>
-                                <Table.Th pl={80} w={380}>Auto matching</Table.Th>
-                                <Table.Th>Match with</Table.Th>
-                                <Table.Th>Submission time</Table.Th>
+                                <Table.Th pl={80}>Match with</Table.Th>
+                                <Table.Th pl={80}>Auto matching</Table.Th>
+                                <Table.Th pl={80}>Submission time</Table.Th>
                             </Table.Tr>
                         </Table.Thead>
                         
@@ -251,24 +251,8 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                                             <SubmissionBoxes submissionBoxesURL={[item.url_file_id, item.url_file_name]} />
                                         </Table.Td>
 
-                                        <Table.Td pl={80}>
-                                            {item.has_assigned !== true ? (
-                                                <Tooltip.Floating label={`Similarity: ${(item.similarity * 100).toFixed(2)}%`}>
-                                                    <Flex direction="column" gap="xs">
-                                                    <Text size="sm" fw={500}>{item.best_match_name}</Text>
-                                                    <Text size="sm" c="dimmed">Student ID: {item.best_match_id}</Text>
-                                                    </Flex>
-                                                </Tooltip.Floating>
-                                            ) : (
-                                                <Flex direction="column" gap="xs">
-                                                    <Text size="sm" fw={500} c="green">Matched</Text>
-                                                    <Text size="sm" c="dimmed">Section submitted: {item.section_name}</Text>
-                                                </Flex>
-                                            )}
-                                        </Table.Td>
-
                                         {/* Autocomplete Match with Student Name */}
-                                        <Table.Td>
+                                        <Table.Td pl={80}>
                                             {item.has_assigned !== true || editableSubmissionID === item.submission_id ? (
                                                 <>
                                                     <Flex align="center" gap="xs" className="relative">
@@ -318,9 +302,25 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                                                 </Stack>
                                             )}
                                         </Table.Td>
+
+                                        <Table.Td pl={80}>
+                                            {item.has_assigned !== true ? (
+                                                <Tooltip.Floating label={`Similarity: ${(item.similarity * 100).toFixed(2)}%`}>
+                                                    <Flex direction="column" gap="xs">
+                                                    <Text size="sm" fw={500}>{item.best_match_name}</Text>
+                                                    <Text size="sm" c="dimmed">Student ID: {item.best_match_id}</Text>
+                                                    </Flex>
+                                                </Tooltip.Floating>
+                                            ) : (
+                                                <Flex direction="column" gap="xs">
+                                                    <Text size="sm" fw={500} c="green">Matched</Text>
+                                                    <Text size="sm" c="dimmed">Section submitted: {item.section_name}</Text>
+                                                </Flex>
+                                            )}
+                                        </Table.Td>
                        
                                         {/* Submission Time */}
-                                        <Table.Td>
+                                        <Table.Td pl={80}>
                                             <Text size="sm">{formatDate(item.submitted_at)}</Text>
                                         </Table.Td>
 
