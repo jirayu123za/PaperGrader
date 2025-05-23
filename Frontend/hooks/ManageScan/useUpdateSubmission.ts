@@ -28,7 +28,6 @@ export const useUpdateSubmission = () => {
         mutationFn: updateSubmission,
         onSuccess: (data) => {
             console.log('Update successful:', data);
-            alert(`Submission updated successfully!`);
             queryClient.invalidateQueries({ queryKey: ['submissions'] });
             queryClient.invalidateQueries({ queryKey: ['students'] });
         },
