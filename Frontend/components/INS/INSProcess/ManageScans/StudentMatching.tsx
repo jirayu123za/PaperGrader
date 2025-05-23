@@ -203,7 +203,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                         <Table.Thead>
                             <Table.Tr>
                                 <Table.Th w={420}>Name & ID Region</Table.Th>
-                                <Table.Th pl={80} w={380}>OCR data</Table.Th>
+                                <Table.Th pl={80} w={380}>Auto matching</Table.Th>
                                 <Table.Th>Match with</Table.Th>
                                 <Table.Th>Submission time</Table.Th>
                             </Table.Tr>
