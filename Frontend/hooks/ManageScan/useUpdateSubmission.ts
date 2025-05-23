@@ -1,5 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useFetchStudentMatching } from './ีuseFetchStudentMatching';
+import { useStudentMatchingStore } from '@/store/ManageScan/useStudentMatchingStore';
 
 interface updateSubmissionParams {
     submission_id: string;
@@ -21,15 +23,21 @@ const updateSubmission = async ({ submission_id, assignment_id, personal_data_id
     return data;
 };
 
-export const useUpdateSubmission = () => {
+export const useUpdateSubmission = (course_id: string, assignment_id: string) => {
     const queryClient = useQueryClient();
+    const { setStudentMatchingData } = useStudentMatchingStore();
+    const { refetch: refetchStudentMatchingData } = useFetchStudentMatching(course_id, assignment_id, { queryKey: ['submissions', course_id, assignment_id], enabled: false });
 
     return useMutation({
         mutationFn: updateSubmission,
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
             console.log('Update successful:', data);
-            queryClient.invalidateQueries({ queryKey: ['submissions'] });
             queryClient.invalidateQueries({ queryKey: ['students'] });
+
+            const { data: updatedSubmissions } = await refetchStudentMatchingData();
+            if (updatedSubmissions) {
+                setStudentMatchingData(updatedSubmissions);
+            }
         },
         onError: (error) => {
             console.error('Update failed:', error);

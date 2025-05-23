@@ -26,7 +26,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
   const { isFetching: isFetchingStudentMatchingData, refetch: refetchStudentMatchingData, isLoading: isLoadingStudentMatchingData, error: errorStudentMatchingData } = useFetchStudentMatching(course_id, assignment_id, { queryKey: ['submissions', course_id, assignment_id], enabled: false });
   const { studentMatchingData, matchedStudents, setMatchedStudent, searchQuery, setSearchQuery, filterStatus, setFilterStatus, pageSize, setPageSize } = useStudentMatchingStore();
   const { editableSubmissionID, setEditableSubmissionID } = useManageSubmissionStore();
-  const { mutate: updateSubmission, isPending } = useUpdateSubmission();
+  const { mutate: updateSubmission, isPending } = useUpdateSubmission(course_id, assignment_id);
 
   const getMatchedStudentName = (submission_id: string, personal_data_id: string | null): string => {
     const matchedStudent = matchedStudents[submission_id];
@@ -70,7 +70,6 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
         });
         console.log(`Confirmed student: ${selectedStudent.full_name}`);
         console.log(`Submission ID: ${submission_id}, Personal Data ID: ${selectedStudent.personal_data_id}`);
-
         setEditableSubmissionID(null);
     }
   };
