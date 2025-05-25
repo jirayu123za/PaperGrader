@@ -214,7 +214,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                         </Table.Thead>
                         
                         <Table.Tbody>
-                            {isLoadingStudentMatchingData ? (
+                            {isLoadingStudentMatchingData || isFetchingStudentMatchingData ? (
                                 Array.from({ length: 4 }).map((_, index) => (
                                 <Table.Tr key={index}>
                                     <Table.Td>
