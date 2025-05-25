@@ -13,7 +13,7 @@ import { useFetchStudentMatching } from '@/hooks/ManageScan/ีuseFetchStudentMa
 import { useManageSubmissionStore } from '@/store/ManageScan/useManageSubmissionStore ';
 import { useUpdateSubmission } from '@/hooks/ManageScan/useUpdateSubmission';
 import { useFetchStudentsList } from '@/hooks/ManageScan/useFetchStudentsList';
-import { usePagination } from '@mantine/hooks';
+import { useDebouncedValue, usePagination } from '@mantine/hooks';
 
 type Props = {
     course_id: string;
@@ -27,6 +27,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
   const { studentMatchingData, matchedStudents, setMatchedStudent, searchQuery, setSearchQuery, filterStatus, setFilterStatus, pageSize, setPageSize } = useStudentMatchingStore();
   const { editableSubmissionID, setEditableSubmissionID } = useManageSubmissionStore();
   const { mutate: updateSubmission, isPending } = useUpdateSubmission(course_id, assignment_id);
+  const [debouncedSearch] = useDebouncedValue(searchQuery, 200);
 
   const getMatchedStudentName = (submission_id: string, personal_data_id: string | null): string => {
     const matchedStudent = matchedStudents[submission_id];
@@ -117,7 +118,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
   const filteredSubmissions = studentMatchingData.filter((item) => {
     if (filterStatus === 'true' && !item.has_assigned) return false;
     if (filterStatus === 'false' && item.has_assigned) return false;
-    const searchLower = searchQuery.toLowerCase();
+    const searchLower = debouncedSearch.toLowerCase();
     const nameMatch = item.full_name.toLowerCase().includes(searchLower);
     const codeMatch = item.student_code.toLowerCase().includes(searchLower);
     return nameMatch || codeMatch;
@@ -174,7 +175,10 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                 <TextInput
                     placeholder="Search student name"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.currentTarget.value)}
+                    onChange={(e) => {
+                        setSearchQuery(e.currentTarget.value);
+                        pagination.setPage(1);
+                    }}
                     leftSection={<IconSearch size={14} />}
                     w="250px"
                 />
