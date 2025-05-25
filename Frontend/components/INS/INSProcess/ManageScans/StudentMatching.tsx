@@ -198,7 +198,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
               </Flex>
             ) : (
                 <>
-                <ScrollArea h={620}>
+                <Table.ScrollContainer h={620} minWidth={800} >
                     <Table highlightOnHover>
                         <Table.Thead>
                             <Table.Tr>
@@ -340,7 +340,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                             )}
                         </Table.Tbody>
                     </Table>
-                </ScrollArea>
+                </Table.ScrollContainer>
                 
                 <Flex justify="end" align="center">
                     <Text size="sm" c="dimmed" mr="xs">
