@@ -24,6 +24,7 @@ const SubmissionBoxes: React.FC<SubmissionBoxesProps> = ({ submissionBoxesURL })
               alt={`submission-box-${index + 1}`}
               width="100%"
               height="100%"
+              loading="lazy"
               fallbackSrc="https://placehold.co/200x100?text=No+Image"
             />
           </Box>
