@@ -67,12 +67,10 @@ func CalculateSimilarity(a, b string) float64 {
 }
 
 func MatchOCRWithStudentList(ocrName string, ocrStudentCode string, students []response.StudentListForOCRResponse, threshold float64) response.MatchLog {
-	// log
 	log.Printf("\n Matching OCR result:\n  Name:  %s\n  Code:  %s\n", ocrName, ocrStudentCode)
 
 	var bestMatch response.StudentListForOCRResponse
 	var bestSim float64 = 0
-	var matchedID *uuid.UUID
 
 	for _, s := range students {
 		simName := CalculateSimilarity(ocrName, s.FullName)
@@ -85,11 +83,6 @@ func MatchOCRWithStudentList(ocrName string, ocrStudentCode string, students []r
 		}
 	}
 
-	if bestSim >= threshold {
-		matchedID = &bestMatch.PersonalDataID
-	}
-
-	// log
 	log.Printf("Best Match → %s (%s) with similarity %.2f\n", bestMatch.FullName, bestMatch.StudentCode, bestSim)
 
 	return response.MatchLog{
@@ -97,7 +90,7 @@ func MatchOCRWithStudentList(ocrName string, ocrStudentCode string, students []r
 		OCRStudentCode:        ocrStudentCode,
 		BestMatchName:         bestMatch.FullName,
 		BestMatchStudentCode:  bestMatch.StudentCode,
-		MatchedPersonalDataID: matchedID,
+		MatchedPersonalDataID: &bestMatch.PersonalDataID,
 		Similarity:            bestSim,
 	}
 }
