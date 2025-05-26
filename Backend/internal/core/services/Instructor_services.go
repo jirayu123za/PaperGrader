@@ -53,11 +53,10 @@ type InstructorService interface {
 	GetSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
 	GetSubmissionFileURL(CourseID uuid.UUID, AssignmentID uuid.UUID, SubmissionID uuid.UUID) (submissionFileURL string, err error)
 	// Part: 1
-	// GetSubmissionsList(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionWithOCRResponse, error)
 	GetSubmissionsList(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionsListResponse, error)
 	GetProcessOCRForSubmissions(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionsOCRData, error)
 	GetMapSubmissionFileURLs(submissionBoxFiles map[uuid.UUID][]string, courseID, assignmentID uuid.UUID) map[uuid.UUID][]string
-	GetStudentListForSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForSubmissionResponse, error)
+	GetStudentListForSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) (response.StudentSubmissionSplitResponse, error)
 	GetAssignmentTemplateCount(CourseID uuid.UUID, AssignmentID uuid.UUID) (int, error)
 
 	//!
@@ -342,12 +341,12 @@ func (s *InstructorServiceImpl) GetSubmissionFileURL(CourseID uuid.UUID, Assignm
 	return fileURL, nil
 }
 
-func (s *InstructorServiceImpl) GetStudentListForSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForSubmissionResponse, error) {
-	studentList, err := s.repo.FindStudentListForSubmission(CourseID, AssignmentID)
+func (s *InstructorServiceImpl) GetStudentListForSubmission(courseID uuid.UUID, assignmentID uuid.UUID) (response.StudentSubmissionSplitResponse, error) {
+	allStudents, err := s.repo.FindStudentListForSubmission(courseID, assignmentID)
 	if err != nil {
-		return nil, err
+		return response.StudentSubmissionSplitResponse{}, err
 	}
-	return studentList, nil
+	return allStudents, nil
 }
 
 func (s *InstructorServiceImpl) GetAssignmentTemplateCount(CourseID uuid.UUID, AssignmentID uuid.UUID) (int, error) {
