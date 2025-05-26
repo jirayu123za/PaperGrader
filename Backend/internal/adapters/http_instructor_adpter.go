@@ -1162,7 +1162,9 @@ func (h *HttpInstructorHandler) UpdateSubmissionList(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := h.services.UpdateSubmissionList(submissionID, assignmentID, personalDataID); err != nil {
+	matchedByParam := c.Query("matched_by")
+
+	if err := h.services.UpdateSubmissionList(submissionID, assignmentID, personalDataID, matchedByParam); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to update submission",
 			"error":   err.Error(),
@@ -1479,6 +1481,7 @@ func (h *HttpInstructorHandler) CreateSubmissionAFile(c *fiber.Ctx) error {
 				SubmittedBy:        userID,
 				AssignmentID:       assignmentID,
 				SubmissionFileName: submissionFileName,
+				MatchedBy:          nil,
 				SubmittedAt:        time.Now(),
 			}
 
@@ -1570,6 +1573,15 @@ func (h *HttpInstructorHandler) CreateBoundingBoxesAndQuestions(c *fiber.Ctx) er
 			"error":   err.Error(),
 		})
 	}
+
+	// Change the logic:
+	// First: need to check request, about the bounding box type(id, name, question)
+	// Second: if the assignment already has a bounding box type(id, name) ?
+	// Third: it has, then update position of bounding box type(name, id)
+	// Fourth: it doesn't have, then create a new bounding box type(name, id)
+	// Fifth: if the assignment already has a question type ?
+	// Sixth: check by (question id, )
+	// 1. Create a new struct in module/response.go
 
 	var request struct {
 		BoundingBoxes []struct {
@@ -1810,6 +1822,39 @@ func (h *HttpInstructorHandler) GetSubmissionWithOCR(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":     "Submissions with OCR are retrieved",
+		"submissions": submissions,
+	})
+}
+
+func (h *HttpInstructorHandler) GetProcessOCRForSubmissions(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	submissions, err := h.services.GetProcessOCRForSubmissions(courseID, assignmentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get process OCR for submissions",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":     "Process OCR for submissions is retrieved",
 		"submissions": submissions,
 	})
 }
