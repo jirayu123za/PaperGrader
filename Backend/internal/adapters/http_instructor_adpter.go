@@ -1300,8 +1300,9 @@ func (h *HttpInstructorHandler) GetStudentListForSubmission(c *fiber.Ctx) error 
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message":  "Student list is retrieved",
-		"students": students,
+		"message":            "Student list is retrieved",
+		"with_submission":    students.WithSubmission,
+		"without_submission": students.WithoutSubmission,
 	})
 }
 
@@ -1845,7 +1846,7 @@ func (h *HttpInstructorHandler) GetProcessOCRForSubmissions(c *fiber.Ctx) error 
 		})
 	}
 
-	submissions, err := h.services.GetProcessOCRForSubmissions(courseID, assignmentID)
+	ocrData, err := h.services.GetProcessOCRForSubmissions(courseID, assignmentID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to get process OCR for submissions",
@@ -1854,8 +1855,8 @@ func (h *HttpInstructorHandler) GetProcessOCRForSubmissions(c *fiber.Ctx) error 
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message":     "Process OCR for submissions is retrieved",
-		"submissions": submissions,
+		"message":  "Process OCR for submissions is retrieved",
+		"ocr_data": ocrData,
 	})
 }
 
