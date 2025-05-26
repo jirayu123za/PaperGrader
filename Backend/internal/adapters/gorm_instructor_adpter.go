@@ -177,8 +177,9 @@ func (r *GormInstructorRepository) FindSubmissionsList(CourseID uuid.UUID, Assig
 	return submissions, nil
 }
 
-func (r *GormInstructorRepository) FindStudentListForSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForSubmissionResponse, error) {
+func (r *GormInstructorRepository) FindStudentListForSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) (response.StudentSubmissionSplitResponse, error) {
 	var studentList []response.StudentListForSubmissionResponse
+
 	if err := r.db.Table("personal_data").
 		Select(`
 		personal_data.personal_data_id,
@@ -194,9 +195,23 @@ func (r *GormInstructorRepository) FindStudentListForSubmission(CourseID uuid.UU
 		Where("personal_data.deleted_at IS NULL").
 		Where("enrollment_lists.deleted_at IS NULL").
 		Scan(&studentList).Error; err != nil {
-		return nil, err
+		return response.StudentSubmissionSplitResponse{}, err
 	}
-	return studentList, nil
+
+	var withSubmission []response.StudentListForSubmissionResponse
+	var withoutSubmission []response.StudentListForSubmissionResponse
+
+	for _, s := range studentList {
+		if s.HasSubmission {
+			withSubmission = append(withSubmission, s)
+		} else {
+			withoutSubmission = append(withoutSubmission, s)
+		}
+	}
+	return response.StudentSubmissionSplitResponse{
+		WithSubmission:    withSubmission,
+		WithoutSubmission: withoutSubmission,
+	}, nil
 }
 
 func (r *GormInstructorRepository) AddAssignmentFile(file *models.AssignmentFile) error {
