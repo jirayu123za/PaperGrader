@@ -179,6 +179,7 @@ func main() {
 	// OCR data
 	apiGroup.Get("/instructor/ocr/studentsList", instructorHandler.GetStudentsListForOCR)
 	apiGroup.Get("/instructor/ocr/submissions", instructorHandler.GetSubmissionWithOCR)
+	apiGroup.Get("/instructor/ocr/process", instructorHandler.GetProcessOCRForSubmissions)
 
 	// Bounding Box
 	apiGroup.Post("/instructor/boundingBoxes", instructorHandler.CreateBoundingBoxesAndQuestions)
