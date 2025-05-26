@@ -195,14 +195,14 @@ type MatchLog struct {
 
 // Part:1
 type SubmissionsList struct {
-	SubmissionID uuid.UUID `json:"submission_id"`
-	SectionName  string    `json:"section_name"`
-	FullName     string    `json:"full_name"`
-	StudentCode  string    `json:"student_code"`
-	HasAssigned  bool      `json:"has_assigned"`
-	SubmittedAt  time.Time `json:"submitted_at"`
-	URLFileName  string    `json:"url_file_name"`
-	URLFileID    string    `json:"url_file_id"`
+	SubmissionID   uuid.UUID  `json:"submission_id"`
+	PersonalDataID *uuid.UUID `json:"personal_data_id"`
+	SectionName    string     `json:"section_name"`
+	FullName       string     `json:"full_name"`
+	StudentCode    string     `json:"student_code"`
+	HasAssigned    bool       `json:"has_assigned"`
+	MatchedBy      *string    `json:"matched_by,omitempty"`
+	SubmittedAt    time.Time  `json:"submitted_at"`
 }
 
 // Part:2
@@ -213,8 +213,6 @@ type SubmissionsOCRData struct {
 	BestMatchName  string     `json:"best_match_name"`
 	BestMatchID    string     `json:"best_match_id"`
 	Similarity     float64    `json:"similarity"`
-	URLFileName    string     `json:"url_file_name"`
-	URLFileID      string     `json:"url_file_id"`
 }
 
 // Part:3
@@ -231,6 +229,19 @@ type SubmissionWithOCRResponse struct {
 	BestMatchName  string     `json:"best_match_name,omitempty"`
 	BestMatchID    string     `json:"best_match_id,omitempty"`
 	Similarity     float64    `json:"similarity,omitempty"`
+	URLFileName    string     `json:"url_file_name,omitempty"`
+	URLFileID      string     `json:"url_file_id,omitempty"`
+}
+
+type SubmissionsListResponse struct {
+	SubmissionID   uuid.UUID  `json:"submission_id"`
+	SectionName    string     `json:"section_name"`
+	FullName       string     `json:"full_name"`
+	StudentCode    string     `json:"student_code"`
+	HasAssigned    bool       `json:"has_assigned"`
+	MatchedBy      *string    `json:"matched_by,omitempty"`
+	SubmittedAt    time.Time  `json:"submitted_at"`
+	PersonalDataID *uuid.UUID `json:"personal_data_id"`
 	URLFileName    string     `json:"url_file_name,omitempty"`
 	URLFileID      string     `json:"url_file_id,omitempty"`
 }
