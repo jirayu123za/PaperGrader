@@ -7,14 +7,16 @@ interface updateSubmissionParams {
     submission_id: string;
     assignment_id: string;
     personal_data_id: string;
+    matched_by?: string;
 }
 
-const updateSubmission = async ({ submission_id, assignment_id, personal_data_id }: updateSubmissionParams) => {
+const updateSubmission = async ({ submission_id, assignment_id, personal_data_id, matched_by }: updateSubmissionParams) => {
     const { data } = await axios.patch(`/api/api/instructor/submission/manage`, null, {
         params: {
             submission_id,
             assignment_id,
             personal_data_id,
+            matched_by,
         },
         headers: {
             "Content-Type": "application/json",
