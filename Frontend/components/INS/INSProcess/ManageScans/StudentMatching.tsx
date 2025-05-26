@@ -63,6 +63,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
             submission_id: submission_id,
             assignment_id: assignment_id,
             personal_data_id: selectedStudent.personal_data_id,
+            matched_by: 'manual',
         });
         setMatchedStudent(submission_id, {
             name: selectedStudent.full_name,
@@ -291,8 +292,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                                                     <Text size='sm' c="dimmed" pt={2} pl={12}>
                                                         Student ID:{' '}
                                                         {
-                                                            matchedStudents[item.submission_id]?.student_code ??
-                                                            (item.is_match ? item.best_match_id : '-')
+                                                            matchedStudents[item.submission_id]?.student_code 
                                                         }
                                                     </Text>
                                                 </>
@@ -317,13 +317,13 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
 
                                         <Table.Td pl={80}>
                                             {item.has_assigned !== true ? (
-                                                    <Flex direction="column" gap="xs">
-                                                        <Text size="sm" fw={500}>{item.best_match_name}</Text>
-                                                        <Text size="sm" c="dimmed">Student ID: {item.best_match_id}</Text>
-                                                    </Flex>
+                                                <Text size="sm" fw={500} c="red">Not Matched</Text>
                                             ) : (
                                                 <Flex direction="column" gap="xs">
-                                                    <Text size="sm" fw={500} c="green">Matched</Text>
+                                                      <Flex align="center" gap='2px'>
+                                                        <Text size="sm" fw={500} c="green">Matched</Text>
+                                                        <Text size="xs" c="dimmed">({item.matched_by})</Text>
+                                                    </Flex>
                                                     <Text size="sm" c="dimmed">Section submitted: {item.section_name}</Text>
                                                 </Flex>
                                             )}
