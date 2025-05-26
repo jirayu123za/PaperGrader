@@ -13,6 +13,8 @@ import { useManageSubmissionStore } from '@/store/ManageScan/useManageSubmission
 import { useUpdateSubmission } from '@/hooks/ManageScan/useUpdateSubmission';
 import { useFetchStudentsList } from '@/hooks/ManageScan/useFetchStudentsList';
 import { useDebouncedValue, usePagination } from '@mantine/hooks';
+import { useOCRDataStore } from '@/store/ManageScan/useOCRDataStore';
+import { useFetchOCRProcessing } from '@/hooks/ManageScan/useFetchOCRData';
 
 type Props = {
     course_id: string;
@@ -21,59 +23,14 @@ type Props = {
 
 export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  => {
   const { isLoading: isLoadingStudentsList, error: errorStudentsList, refetch: refetchStudentsList } = useFetchStudentsList(course_id as string, assignment_id as string);
-  const { studentsList } = useStudentsListStore();
+  const { withSubmission, withoutSubmission } = useStudentsListStore();
   const { isFetching: isFetchingStudentMatchingData, refetch: refetchStudentMatchingData, isLoading: isLoadingStudentMatchingData, error: errorStudentMatchingData } = useFetchStudentMatching(course_id, assignment_id);
-  const { studentMatchingData, matchedStudents, setMatchedStudent, searchQuery, setSearchQuery, filterStatus, setFilterStatus, pageSize, setPageSize, setIsPageChanging, isPageChanging } = useStudentMatchingStore();
+  const { studentMatchingData, searchQuery, setSearchQuery, filterStatus, setFilterStatus, pageSize, setPageSize, setIsPageChanging, isPageChanging } = useStudentMatchingStore();
+  const { isFetching: isFetchingOCRData, refetch: refetchOCRData, isLoading: isLoadingOCRData } = useFetchOCRProcessing(course_id, assignment_id, { queryKey: ['ocr_data', course_id, assignment_id], enabled: false });
+  const { ocrProcessingData } = useOCRDataStore();
   const { editableSubmissionID, setEditableSubmissionID } = useManageSubmissionStore();
   const { mutate: updateSubmission, isPending } = useUpdateSubmission(course_id, assignment_id);
   const [ debouncedSearch ] = useDebouncedValue(searchQuery, 200);
-
-  const getMatchedStudentName = (submission_id: string, personal_data_id: string | null): string => {
-    const matchedStudent = matchedStudents[submission_id];
-        if (matchedStudent) return matchedStudent.name;
-    const studentFromList = studentsList.find(
-        (student) => student.personal_data_id === personal_data_id
-    );
-    return studentFromList?.full_name ?? '';
-  };
-
-  const handleSelectStudent = (submission_id: string, value: string) => {
-    if (value === '') {
-        setMatchedStudent(submission_id, { name: '', student_code: '' });
-        console.log(`Cleared selection for submission: ${submission_id}`);
-        console.log(`Submission ID: ${submission_id}, Personal Data ID: ${value}`);
-        return;
-    }
-
-    const selectedStudent = studentsList.find(student => student.personal_data_id === value);
-    if (selectedStudent) {
-        setMatchedStudent(submission_id, {
-            name: selectedStudent.full_name,
-            student_code: selectedStudent.student_code,
-        });
-        console.log(`Selected student: ${selectedStudent.full_name}`);
-        console.log(`Submission ID: ${submission_id}, Personal Data ID: ${selectedStudent.personal_data_id}`)
-    }
-  };
-
-  const handleOptionSubmit = (submission_id: string, value: string) => {
-    const selectedStudent = studentsList.find(student => student.personal_data_id === value);
-    if (selectedStudent) {
-        updateSubmission({
-            submission_id: submission_id,
-            assignment_id: assignment_id,
-            personal_data_id: selectedStudent.personal_data_id,
-            matched_by: 'manual',
-        });
-        setMatchedStudent(submission_id, {
-            name: selectedStudent.full_name,
-            student_code: selectedStudent.student_code,
-        });
-        console.log(`Confirmed student: ${selectedStudent.full_name}`);
-        console.log(`Submission ID: ${submission_id}, Personal Data ID: ${selectedStudent.personal_data_id}`);
-        setEditableSubmissionID(null);
-    }
-  };
 
   const handleEditClick = (submission_id: string) => {
     setEditableSubmissionID(submission_id);
@@ -85,6 +42,25 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
     }
   };
 
+  const handleUpdateSubmission = (submission_id: string, personal_data_id: string) => {
+    updateSubmission({
+        submission_id: submission_id,
+        assignment_id: assignment_id,
+        personal_data_id: personal_data_id,
+        matched_by: 'manual',
+    });
+  }
+
+  const handleMatchedSubmission = (submission_id: string, personal_data_id: string) => {
+    updateSubmission({
+        submission_id: submission_id,
+        assignment_id: assignment_id,
+        personal_data_id: personal_data_id,
+        matched_by: 'manual',
+    });
+  }
+    
+
   const formatDate = (dateString: string) => {
     return dayjs(dateString).format('MMM DD, YYYY [at] hh:mm A');
   };
@@ -94,22 +70,20 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
   const autocompleteData = [
     {
       group: 'Unassigned to submission',
-      items: studentsList
-        .filter((student) => !student.has_submission)
-        .map((student) => ({
-          value: student.personal_data_id,
-          label: student.full_name,
-          student,
+      items: withoutSubmission
+        .map((withoutSubmission) => ({
+          value: withoutSubmission.personal_data_id,
+          label: withoutSubmission.full_name,
+          student: withoutSubmission,
         })),
     },
     {
       group: 'Already assigned to submission',
-      items: studentsList
-        .filter((student) => student.has_submission)
-        .map((student) => ({
-          value: student.personal_data_id,
-          label: student.full_name,
-          student,
+      items: withSubmission
+        .map((withSubmission) => ({
+          value: withSubmission.personal_data_id,
+          label: withSubmission.full_name,
+          student: withSubmission,
           disabled: true,
         })),
     },
@@ -157,11 +131,10 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                         variant="subtle" 
                         aria-label="Click to use OCR"
                         onClick={() => {
-                            console.log('Use OCR clicked');
-                            refetchStudentMatchingData();
+                            refetchOCRData();
                         }}
-                        disabled={isFetchingStudentMatchingData}
-                        loading={isFetchingStudentMatchingData}
+                        disabled={isFetchingOCRData || isLoadingOCRData}
+                        loading={isFetchingOCRData || isLoadingOCRData}
                     >
                         <TfiReload size={20} />
                     </ActionIcon>
@@ -254,7 +227,6 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                                     ))
                             ) : (
                                 paginatedSubmissions.map((item) => (
-                                    
                                     <Table.Tr 
                                         key={item.submission_id}
                                         className="group"
@@ -266,7 +238,37 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
 
                                         {/* Autocomplete Match with Student Name */}
                                         <Table.Td pl={80}>
-                                            {item.has_assigned !== true || editableSubmissionID === item.submission_id ? (
+                                            {!item.has_assigned? (() => {
+                                                const ocr = ocrProcessingData.find((ocr) => ocr.submission_id === item.submission_id);
+                                                return (
+                                                    <>
+                                                        <Flex align="center" gap="xs" className="relative">
+                                                            <Autocomplete
+                                                                placeholder="Match student"
+                                                                w={240}
+                                                                styles={{
+                                                                    option: {
+                                                                        minHeight: '40px',
+                                                                    },
+                                                                }}
+                                                                data={autocompleteData}
+                                                                defaultValue={ocr?.best_match_name}
+                                                                limit={10}
+                                                                maxDropdownHeight={200}
+                                                                comboboxProps={{ transitionProps: { transition: 'pop', duration: 200 } }}
+                                                                onOptionSubmit={(value) => handleMatchedSubmission(item.submission_id, value)}
+                                                                onBlur={() => handleAutocompleteBlur(item.submission_id)}
+                                                                autoFocus={editableSubmissionID === item.submission_id}
+                                                            />
+                                                        </Flex>
+
+                                                        <Text size='sm' c="dimmed" pt={2} pl={12}>
+                                                            Student ID:{' '}
+                                                            {ocr?.best_match_id}
+                                                        </Text>
+                                                    </>
+                                                );
+                                            })() : editableSubmissionID === item.submission_id ? (
                                                 <>
                                                     <Flex align="center" gap="xs" className="relative">
                                                         <Autocomplete
@@ -278,12 +280,11 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                                                                 },
                                                             }}
                                                             data={autocompleteData}
-                                                            defaultValue={getMatchedStudentName(item.submission_id, item.personal_data_id)}
+                                                            defaultValue={item.full_name}
                                                             limit={10}
                                                             maxDropdownHeight={200}
                                                             comboboxProps={{ transitionProps: { transition: 'pop', duration: 200 } }}
-                                                            onChange={(value) => handleSelectStudent(item.submission_id, value)}
-                                                            onOptionSubmit={(value) => handleOptionSubmit(item.submission_id, value)}
+                                                            onOptionSubmit={(value) => handleUpdateSubmission(item.submission_id, value)}
                                                             onBlur={() => handleAutocompleteBlur(item.submission_id)}
                                                             autoFocus={editableSubmissionID === item.submission_id}
                                                         />
@@ -291,9 +292,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
 
                                                     <Text size='sm' c="dimmed" pt={2} pl={12}>
                                                         Student ID:{' '}
-                                                        {
-                                                            matchedStudents[item.submission_id]?.student_code 
-                                                        }
+                                                        {item.student_code}
                                                     </Text>
                                                 </>
                                             ) : (
