@@ -37,6 +37,8 @@ interface StudentMatchingStore {
     setFilterStatus: (status: 'All' | 'true' | 'false') => void;
     pageSize: number;
     setPageSize: (size: number) => void;
+    isPageChanging: boolean;
+    setIsPageChanging: (value: boolean) => void;
 }
 
 export const useStudentMatchingStore = create<StudentMatchingStore>((set) => ({
@@ -61,4 +63,6 @@ export const useStudentMatchingStore = create<StudentMatchingStore>((set) => ({
     setFilterStatus: (status) => set({ filterStatus: status }),
     pageSize: 5,
     setPageSize: (size) => set({ pageSize: size }),
+    isPageChanging: false,
+    setIsPageChanging: (value) => set({ isPageChanging: value }),
 }));
