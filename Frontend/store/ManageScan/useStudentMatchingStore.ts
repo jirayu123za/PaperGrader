@@ -2,15 +2,12 @@ import { create } from "zustand";
 
 interface StudentMatchingData {
     submission_id: string;
-    is_match: boolean;
     has_assigned: boolean;
     personal_data_id: string | null;
     full_name: string;
     student_code: string;
     section_name: string;
-    best_match_name: string;
-    best_match_id: string;
-    similarity: number;
+    matched_by: string | null;
     submitted_at: string;
     url_file_name: string;
     url_file_id: string;
