@@ -51,7 +51,7 @@ type InstructorRepository interface {
 	// Part:1
 	FindSubmissionsList(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionsList, error)
 
-	FindStudentListForSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForSubmissionResponse, error)
+	FindStudentListForSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) (response.StudentSubmissionSplitResponse, error)
 	FindAssignmentTemplateName(AssignmentID uuid.UUID) (string, error)
 
 	//! CRUD SubmissionBox
