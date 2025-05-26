@@ -28,7 +28,7 @@ const updateSubmission = async ({ submission_id, assignment_id, personal_data_id
 export const useUpdateSubmission = (course_id: string, assignment_id: string) => {
     const queryClient = useQueryClient();
     const { setStudentMatchingData } = useStudentMatchingStore();
-    const { refetch: refetchStudentMatchingData } = useFetchStudentMatching(course_id, assignment_id, { queryKey: ['submissions', course_id, assignment_id], enabled: false });
+    const { refetch: refetchStudentMatchingData } = useFetchStudentMatching(course_id, assignment_id);
 
     return useMutation({
         mutationFn: updateSubmission,

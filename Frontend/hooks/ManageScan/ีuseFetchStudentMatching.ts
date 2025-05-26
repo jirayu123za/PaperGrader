@@ -1,4 +1,4 @@
-import { useQuery, UseQueryOptions } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useStudentMatchingStore } from "@/store/ManageScan/useStudentMatchingStore";
 import axios from "axios";
 
@@ -15,7 +15,7 @@ interface StudentMatchingData {
     url_file_id: string;
 }
 
-export const useFetchStudentMatching = (course_id: string, assignment_id: string, options?: UseQueryOptions) => {
+export const useFetchStudentMatching = (course_id: string, assignment_id: string) => {
     const setStudentMatchingData = useStudentMatchingStore((state) => state.setStudentMatchingData);
 
     return useQuery<StudentMatchingData[], Error>({
@@ -33,6 +33,7 @@ export const useFetchStudentMatching = (course_id: string, assignment_id: string
             setStudentMatchingData(data || []);
             return data || [];
         },
-        enabled: !!course_id && !!assignment_id && options?.enabled !== false,
+        enabled: !!course_id && !!assignment_id,
+        refetchOnWindowFocus: false,
     });
 }
