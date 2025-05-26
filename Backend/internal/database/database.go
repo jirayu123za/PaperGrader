@@ -28,6 +28,21 @@ func CreateEnumsBoundingBoxType(db *gorm.DB) {
 	}
 }
 
+func CreateEnumsSubmissionMatchedBy(db *gorm.DB) {
+	err := db.Exec(`
+		DO $$
+		BEGIN
+			IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'submission_matched_by') THEN
+				CREATE TYPE submission_matched_by AS ENUM ('auto', 'manual');
+			END IF;
+		END$$;
+	`).Error
+
+	if err != nil {
+		log.Fatalf("Failed to create enum: %v", err)
+	}
+}
+
 func ConnectPostgres(migrate bool) *gorm.DB {
 	config.LoadEnv()
 	dsn := os.Getenv("DATABASE_DSN")
@@ -53,6 +68,7 @@ func ConnectPostgres(migrate bool) *gorm.DB {
 	// Migration
 	if migrate {
 		CreateEnumsBoundingBoxType(db)
+		CreateEnumsSubmissionMatchedBy(db)
 
 		db.Migrator().DropTable(
 		// &models.AssignmentSection{},
