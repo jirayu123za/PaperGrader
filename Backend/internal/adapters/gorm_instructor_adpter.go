@@ -161,7 +161,9 @@ func (r *GormInstructorRepository) FindSubmissionsList(CourseID uuid.UUID, Assig
 			sec.section_name,
 			COALESCE(pd.first_name || ' ' || pd.last_name, NULL) AS full_name,
 			COALESCE(pd.student_code, NULL) AS student_code,
+			pd.personal_data_id,
 			(s.belongs_to IS NOT NULL) AS has_assigned,
+			s.matched_by,
 			s.submitted_at
 		`).
 		Joins("LEFT JOIN personal_data AS pd ON s.belongs_to = pd.personal_data_id").
@@ -695,11 +697,13 @@ func (r *GormInstructorRepository) AddSubmissionAFile(submissionFile *models.Sub
 	return nil
 }
 
-func (r *GormInstructorRepository) ModifySubmissionList(SubmissionID uuid.UUID, AssignmentID uuid.UUID, PersonalDataID uuid.UUID) error {
+func (r *GormInstructorRepository) ModifySubmissionList(SubmissionID uuid.UUID, AssignmentID uuid.UUID, PersonalDataID uuid.UUID, MatchedBy string) error {
 	if err := r.db.Table("submissions").
-		// Where("submission_id = ? AND assignment_id = ? AND belongs_to IS NULL", SubmissionID, AssignmentID).
 		Where("submission_id = ? AND assignment_id = ?", SubmissionID, AssignmentID).
-		Update("belongs_to", PersonalDataID).Error; err != nil {
+		Updates(map[string]interface{}{
+			"belongs_to": PersonalDataID,
+			"matched_by": MatchedBy,
+		}).Error; err != nil {
 		return err
 	}
 	return nil
