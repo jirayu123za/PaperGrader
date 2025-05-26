@@ -1793,7 +1793,7 @@ func (h *HttpInstructorHandler) GetStudentsListForOCR(c *fiber.Ctx) error {
 }
 
 // New http handler for submission with ocr
-func (h *HttpInstructorHandler) GetSubmissionWithOCR(c *fiber.Ctx) error {
+func (h *HttpInstructorHandler) GetSubmissionsList(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
 	if err != nil {
