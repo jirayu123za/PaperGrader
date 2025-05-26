@@ -13,19 +13,9 @@ interface StudentMatchingData {
     url_file_id: string;
 }
 
-interface MatchedStudent {
-    name: string;
-    student_code: string;
-}
-
 interface StudentMatchingStore {
     studentMatchingData: StudentMatchingData[];
     setStudentMatchingData: (studentMatchingData: StudentMatchingData[]) => void;
-
-    // Store matched students with submission_id as the key
-    matchedStudents: Record<string, MatchedStudent>;
-    setMatchedStudent: (submission_id: string, student: MatchedStudent) => void;
-    resetMatchedStudents: () => void;
 
     // search, filter and pagination
     searchQuery: string;
@@ -41,17 +31,6 @@ interface StudentMatchingStore {
 export const useStudentMatchingStore = create<StudentMatchingStore>((set) => ({
     studentMatchingData: [],
     setStudentMatchingData: (studentMatchingData) => set({ studentMatchingData }),
-
-    // Store matched students with submission_id as the key
-    matchedStudents: {},
-    setMatchedStudent: (submission_id, student) =>
-        set((state) => ({
-            matchedStudents: {
-                ...state.matchedStudents,
-                [submission_id]: student,
-            },
-        })),
-    resetMatchedStudents: () => set({ matchedStudents: {} }),
 
     // search, filter and pagination
     searchQuery: "",
