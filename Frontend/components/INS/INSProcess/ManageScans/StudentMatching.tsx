@@ -2,10 +2,9 @@
 import React from 'react'
 import dayjs from 'dayjs';
 import SubmissionBoxes from './SubmissionBoxes';
-import { Box, Flex, Select, Table, Text, TextInput, ActionIcon, Autocomplete, ScrollArea, Alert, Skeleton, Tooltip, Stack, Pagination } from '@mantine/core';
+import { Box, Flex, Select, Table, Text, TextInput, ActionIcon, Autocomplete, Alert, Skeleton, Tooltip, Stack, Pagination } from '@mantine/core';
 import { IconEdit, IconSearch } from '@tabler/icons-react';
 import { FaTrash } from "react-icons/fa";
-import { IoCheckmarkDoneSharp } from "react-icons/io5";
 import { TfiReload } from "react-icons/tfi";
 import { useStudentsListStore } from '@/store/ManageScan/useStudentsListStore';
 import { useStudentMatchingStore } from '@/store/ManageScan/useStudentMatchingStore';
@@ -24,10 +23,10 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
   const { isLoading: isLoadingStudentsList, error: errorStudentsList, refetch: refetchStudentsList } = useFetchStudentsList(course_id as string, assignment_id as string);
   const { studentsList } = useStudentsListStore();
   const { isFetching: isFetchingStudentMatchingData, refetch: refetchStudentMatchingData, isLoading: isLoadingStudentMatchingData, error: errorStudentMatchingData } = useFetchStudentMatching(course_id, assignment_id, { queryKey: ['submissions', course_id, assignment_id], enabled: false });
-  const { studentMatchingData, matchedStudents, setMatchedStudent, searchQuery, setSearchQuery, filterStatus, setFilterStatus, pageSize, setPageSize } = useStudentMatchingStore();
+  const { studentMatchingData, matchedStudents, setMatchedStudent, searchQuery, setSearchQuery, filterStatus, setFilterStatus, pageSize, setPageSize, setIsPageChanging, isPageChanging } = useStudentMatchingStore();
   const { editableSubmissionID, setEditableSubmissionID } = useManageSubmissionStore();
   const { mutate: updateSubmission, isPending } = useUpdateSubmission(course_id, assignment_id);
-  const [debouncedSearch] = useDebouncedValue(searchQuery, 200);
+  const [ debouncedSearch ] = useDebouncedValue(searchQuery, 200);
 
   const getMatchedStudentName = (submission_id: string, personal_data_id: string | null): string => {
     const matchedStudent = matchedStudents[submission_id];
@@ -134,6 +133,15 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
   const endIndex = startIndex + pageSize;
   const paginatedSubmissions = filteredSubmissions.slice(startIndex, endIndex);
 
+  const handlePageChange = (page: number) => {
+    setIsPageChanging(true);
+    pagination.setPage(page);
+
+    setTimeout(() => {
+        setIsPageChanging(false);
+    }, 300);
+  };
+
   return (
     <Box maw='100%'>
         <Flex align="center" mb="sm" justify="space-between">
@@ -214,35 +222,35 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                         </Table.Thead>
                         
                         <Table.Tbody>
-                            {isLoadingStudentMatchingData || isFetchingStudentMatchingData ? (
-                                Array.from({ length: 4 }).map((_, index) => (
-                                <Table.Tr key={index}>
-                                    <Table.Td>
-                                        <Skeleton height={20} width={20} />
-                                    </Table.Td>
-                                    <Table.Td>
-                                        <Flex>
-                                            <Skeleton height={100} width={210} />
-                                            <Skeleton height={100} width={210} />
-                                        </Flex>
-                                    </Table.Td>
-                                    <Table.Td>
-                                        <Flex direction="column" gap={4}>
-                                            <Skeleton height={16} width={100} />
-                                            <Skeleton height={14} width={120} />
-                                        </Flex>
-                                    </Table.Td>
-                                    <Table.Td>
-                                        <Flex direction="column" gap={4}>
-                                            <Skeleton height={36} width={200} />
-                                            <Skeleton height={14} width={100} ml={12} />
-                                        </Flex>
-                                    </Table.Td>
-                                    <Table.Td>
-                                        <Skeleton height={16} width="60%" />
-                                    </Table.Td>
-                                </Table.Tr>
-                                ))
+                            {isLoadingStudentMatchingData || isFetchingStudentMatchingData || isPageChanging ? (
+                                Array.from({ length: 5 }).map((_, index) => (
+                                    <Table.Tr key={index}>
+                                        <Table.Td maw="260px">
+                                            <Flex>
+                                                <Skeleton height={100} width={210} />
+                                                <Skeleton height={100} width={210} />
+                                            </Flex>
+                                        </Table.Td>
+
+                                        <Table.Td pl={80}>
+                                            <Skeleton height={36} width={240} radius="sm" />
+                                            <Skeleton height={16} width={160} mt={8} />
+                                        </Table.Td>
+
+                                        <Table.Td pl={80}>
+                                            <Skeleton height={16} width={120} mb={4} />
+                                            <Skeleton height={16} width={140} />
+                                        </Table.Td>
+
+                                        <Table.Td pl={80}>
+                                            <Skeleton height={16} width={160} />
+                                        </Table.Td>
+
+                                        <Table.Td ta="center">
+                                            <Skeleton height={16} width={16} circle />
+                                        </Table.Td>
+                                    </Table.Tr>
+                                    ))
                             ) : (
                                 paginatedSubmissions.map((item) => (
                                     
@@ -309,12 +317,10 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
 
                                         <Table.Td pl={80}>
                                             {item.has_assigned !== true ? (
-                                                <Tooltip.Floating label={`Similarity: ${(item.similarity * 100).toFixed(2)}%`}>
                                                     <Flex direction="column" gap="xs">
-                                                    <Text size="sm" fw={500}>{item.best_match_name}</Text>
-                                                    <Text size="sm" c="dimmed">Student ID: {item.best_match_id}</Text>
+                                                        <Text size="sm" fw={500}>{item.best_match_name}</Text>
+                                                        <Text size="sm" c="dimmed">Student ID: {item.best_match_id}</Text>
                                                     </Flex>
-                                                </Tooltip.Floating>
                                             ) : (
                                                 <Flex direction="column" gap="xs">
                                                     <Text size="sm" fw={500} c="green">Matched</Text>
@@ -354,7 +360,14 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                         size='xs'
                         w={80}
                         value={pageSize.toString()}
-                        onChange={(val) => setPageSize(Number(val))}
+                        onChange={(val) => {
+                            setIsPageChanging(true);
+                            setPageSize(Number(val));
+                            pagination.setPage(1);
+                            setTimeout(() => {
+                                setIsPageChanging(false);
+                            }, 300);
+                        }}
                         data={['5', '10', '50', '75', '100'].map((v) => ({ value: v, label: v }))}
                     />
                     <Box ml="md">
@@ -363,7 +376,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                             withEdges
                             total={totalPages}
                             value={pagination.active}
-                            onChange={pagination.setPage}
+                            onChange={handlePageChange}
                         />
                     </Box>
                 </Flex>
