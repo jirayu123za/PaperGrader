@@ -44,7 +44,7 @@ type InstructorRepository interface {
 	// CRUD operations for Submissions
 	AddSubmissionFiles(submission []models.Submission) error
 	AddSubmissionAFile(submissionFile *models.Submission) error
-	ModifySubmissionList(SubmissionID uuid.UUID, AssignmentID uuid.UUID, PersonalDataID uuid.UUID) error
+	ModifySubmissionList(SubmissionID uuid.UUID, AssignmentID uuid.UUID, PersonalDataID uuid.UUID, MatchedBy string) error
 	FindSubmissionFiles(AssignmentID uuid.UUID) ([]response.SubmissionFilesResponse, error)
 	FindSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
 	FindSubmissionFileName(AssignmentID uuid.UUID, SubmissionID uuid.UUID) (fileName string, err error)
