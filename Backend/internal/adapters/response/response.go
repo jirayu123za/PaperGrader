@@ -148,7 +148,12 @@ type StudentListForSubmissionResponse struct {
 	FullName       string    `json:"full_name"`
 	Email          string    `json:"email"`
 	StudentCode    string    `json:"student_code"`
-	HasSubmission  bool      `json:"has_submission"`
+	HasSubmission  bool      `json:"-"`
+}
+
+type StudentSubmissionSplitResponse struct {
+	WithSubmission    []StudentListForSubmissionResponse `json:"with_submission"`
+	WithoutSubmission []StudentListForSubmissionResponse `json:"without_submission"`
 }
 
 type SubmissionFilesResponse struct {
@@ -216,23 +221,6 @@ type SubmissionsOCRData struct {
 }
 
 // Part:3
-type SubmissionWithOCRResponse struct {
-	SubmissionID uuid.UUID `json:"submission_id"`
-	SectionName  string    `json:"section_name"`
-	FullName     string    `json:"full_name"`
-	StudentCode  string    `json:"student_code"`
-	HasAssigned  bool      `json:"has_assigned"`
-	SubmittedAt  time.Time `json:"submitted_at"`
-	// OCR fields
-	IsMatch        bool       `json:"is_match,omitempty"`
-	PersonalDataID *uuid.UUID `json:"personal_data_id,omitempty"`
-	BestMatchName  string     `json:"best_match_name,omitempty"`
-	BestMatchID    string     `json:"best_match_id,omitempty"`
-	Similarity     float64    `json:"similarity,omitempty"`
-	URLFileName    string     `json:"url_file_name,omitempty"`
-	URLFileID      string     `json:"url_file_id,omitempty"`
-}
-
 type SubmissionsListResponse struct {
 	SubmissionID   uuid.UUID  `json:"submission_id"`
 	SectionName    string     `json:"section_name"`
