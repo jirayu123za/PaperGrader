@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"paperGrader/internal/adapters/response"
+	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
 	"strings"
 	"time"
@@ -855,29 +856,27 @@ func (r *GormInstructorRepository) FindSubmissionBoxBySubmissionID(submissionIDs
 	return result, nil
 }
 
-func (r *GormInstructorRepository) AddBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error {
+func (r *GormInstructorRepository) AddBoundingBoxesNameAndID(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
-		var rubric *models.Rubric
-		questionsData, hasQuestions := rubricData["questions"].([]interface{})
-
-		if hasQuestions && len(questionsData) > 0 {
-			rubric = &models.Rubric{
-				RubricID:     uuid.New(),
-				AssignmentID: AssignmentID,
-				RubricData:   map[string]interface{}{},
-			}
-			if err := tx.Create(rubric).Error; err != nil {
-				return err
-			}
-		}
-
-		questionBoundingBoxes := []uuid.UUID{}
 		for i := range boundingBoxes {
 			boundingBoxes[i].AssignmentID = AssignmentID
 			boundingBoxes[i].BoundingBoxID = uuid.New()
-			if boundingBoxes[i].BoundingBoxType == "question" {
-				questionBoundingBoxes = append(questionBoundingBoxes, boundingBoxes[i].BoundingBoxID)
+		}
+
+		if len(boundingBoxes) > 0 {
+			if err := tx.Create(&boundingBoxes).Error; err != nil {
+				return err
 			}
+		}
+		return nil
+	})
+}
+
+func (r *GormInstructorRepository) AddBoundingBoxesQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData []response.RubricQuestion) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		for i := range boundingBoxes {
+			boundingBoxes[i].AssignmentID = AssignmentID
+			boundingBoxes[i].BoundingBoxID = uuid.New()
 		}
 
 		if len(boundingBoxes) > 0 {
@@ -886,63 +885,73 @@ func (r *GormInstructorRepository) AddBoundingBoxesAndQuestions(AssignmentID uui
 			}
 		}
 
-		if !hasQuestions || len(questionsData) == 0 {
+		if len(rubricData) == 0 {
 			return nil
+		}
+
+		rubric := models.Rubric{
+			RubricID:     uuid.New(),
+			AssignmentID: AssignmentID,
+			RubricData:   map[string]interface{}{},
+		}
+
+		if err := tx.Create(&rubric).Error; err != nil {
+			return err
+		}
+
+		var questionBoxIDs []uuid.UUID
+		for _, box := range boundingBoxes {
+			if box.BoundingBoxType == "question" {
+				questionBoxIDs = append(questionBoxIDs, box.BoundingBoxID)
+			}
+		}
+
+		if len(questionBoxIDs) < utils.CountTotalQuestions(rubricData) {
+			return fmt.Errorf("not enough question bounding boxes")
+		}
+
+		totalQuestions := utils.CountTotalQuestions(rubricData)
+		if len(questionBoxIDs) < totalQuestions {
+			return fmt.Errorf("not enough question bounding boxes")
 		}
 
 		var formattedQuestions []map[string]interface{}
 		questionBoxIndex := 0
 
-		for _, q := range questionsData {
-			qMap, ok := q.(map[string]interface{})
-			if !ok {
-				continue
-			}
-
+		for _, question := range rubricData {
 			questionID := uuid.New()
 			questionEntry := map[string]interface{}{
 				"question_id":    questionID.String(),
-				"question_point": qMap["question_point"],
-				"question_title": qMap["question_title"],
+				"question_point": question.QuestionPoint,
+				"question_title": question.QuestionTitle,
 			}
 
-			if subQuestions, ok := qMap["subquestions"].([]interface{}); ok {
+			if len(question.SubQuestions) > 0 {
 				var formattedSubQuestions []map[string]interface{}
-
-				for _, sq := range subQuestions {
-					sqMap, ok := sq.(map[string]interface{})
-					if !ok {
-						continue
+				for _, sub := range question.SubQuestions {
+					if questionBoxIndex >= len(questionBoxIDs) {
+						return fmt.Errorf("bounding box not found for sub_question: %s", sub.SubQuestionTitle)
 					}
-
-					subQuestionID := uuid.New()
-					if questionBoxIndex >= len(questionBoundingBoxes) {
-						return fmt.Errorf("bounding box not found for subquestion: %s", sqMap["subquestion_title"])
-					}
-
-					subQuestionEntry := map[string]interface{}{
-						"subquestion_id":    subQuestionID.String(),
-						"bounding_box_id":   questionBoundingBoxes[questionBoxIndex].String(),
-						"subquestion_point": sqMap["subquestion_point"],
-						"subquestion_title": sqMap["subquestion_title"],
-					}
-
-					formattedSubQuestions = append(formattedSubQuestions, subQuestionEntry)
+					formattedSubQuestions = append(formattedSubQuestions, map[string]interface{}{
+						"sub_question_id":    uuid.New().String(),
+						"bounding_box_id":    questionBoxIDs[questionBoxIndex].String(),
+						"sub_question_point": sub.SubQuestionPoint,
+						"sub_question_title": sub.SubQuestionTitle,
+					})
 					questionBoxIndex++
 				}
-				questionEntry["subquestions"] = formattedSubQuestions
+				questionEntry["sub_questions"] = formattedSubQuestions
 			} else {
-				if questionBoxIndex >= len(questionBoundingBoxes) {
-					return fmt.Errorf("bounding box not found for question: %s", qMap["question_title"])
+				if questionBoxIndex >= len(questionBoxIDs) {
+					return fmt.Errorf("bounding box not found for question: %s", question.QuestionTitle)
 				}
-				questionEntry["bounding_box_id"] = questionBoundingBoxes[questionBoxIndex].String()
+				questionEntry["bounding_box_id"] = questionBoxIDs[questionBoxIndex].String()
 				questionBoxIndex++
 			}
-
 			formattedQuestions = append(formattedQuestions, questionEntry)
 		}
 
-		rubric.RubricData["questions"] = formattedQuestions
+		rubric.RubricData["questions_data"] = formattedQuestions
 		if err := tx.Model(&models.Rubric{}).
 			Where("rubric_id = ?", rubric.RubricID).
 			Update("rubric_data", rubric.RubricData).Error; err != nil {
@@ -981,7 +990,6 @@ func (r *GormInstructorRepository) FindBoundingBoxesByAssignmentTemplate(Assignm
 	return responseBoundingBoxes, nil
 }
 
-// For submission
 func (r *GormInstructorRepository) FindBoundingBoxesType(AssignmentID uuid.UUID) ([]response.SubmissionBoxPositionResponse, error) {
 	var boundingBoxes []response.SubmissionBoxPositionResponse
 
