@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/core/services"
 	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
@@ -1575,44 +1576,44 @@ func (h *HttpInstructorHandler) CreateBoundingBoxesAndQuestions(c *fiber.Ctx) er
 		})
 	}
 
-	// Change the logic:
-	// First: need to check request, about the bounding box type(id, name, question)
-	// Second: if the assignment already has a bounding box type(id, name) ?
-	// Third: it has, then update position of bounding box type(name, id)
-	// Fourth: it doesn't have, then create a new bounding box type(name, id)
-	// Fifth: if the assignment already has a question type ?
-	// Sixth: check by (question id, )
-	// 1. Create a new struct in module/response.go
-
-	var request struct {
-		BoundingBoxes []struct {
-			BoundingBoxPosition string `json:"bounding_box_position"`
-			BoundingBoxType     string `json:"bounding_box_type"`
-			BoundingBoxPage     uint   `json:"bounding_box_page"`
-		} `json:"bounding_boxes"`
-		QuestionsData map[string]interface{} `json:"questions_data"`
-	}
-
-	if err := c.BodyParser(&request); err != nil {
+	var fullRequest response.BoundingBoxesAndQuestionsRequest
+	if err := c.BodyParser(&fullRequest); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Invalid JSON format",
 			"error":   err.Error(),
 		})
 	}
 
+	// array bounding boxes ids
+	// if has bounding boxes ids, will use service update bounding boxes
+	// if not, will create new bounding boxes
+
 	var boundingBoxes []models.BoundingBox
-	for _, reqBox := range request.BoundingBoxes {
-		boundingBox := models.BoundingBox{
+	for _, boundingBox := range fullRequest.BoundingBoxes {
+		boundingBoxes = append(boundingBoxes, models.BoundingBox{
 			AssignmentID:        assignmentID,
-			BoundingBoxPosition: reqBox.BoundingBoxPosition,
-			BoundingBoxType:     models.BoundingBoxType(reqBox.BoundingBoxType),
-			BoundingBoxPage:     reqBox.BoundingBoxPage,
-			BoundingBoxID:       uuid.New(),
-		}
-		boundingBoxes = append(boundingBoxes, boundingBox)
+			BoundingBoxPosition: boundingBox.BoundingBoxPosition,
+			BoundingBoxType:     models.BoundingBoxType(boundingBox.BoundingBoxType),
+			BoundingBoxPage:     boundingBox.BoundingBoxPage,
+		})
 	}
 
-	if err := h.services.CreateBoundingBoxesAndQuestions(assignmentID, boundingBoxes, request.QuestionsData); err != nil {
+	if len(fullRequest.QuestionsData) == 0 {
+		// Case 1: Only name and id
+		if err := h.services.CreateBoundingBoxesNameAndID(assignmentID, boundingBoxes); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to create bounding boxes with only name and id",
+				"error":   err.Error(),
+			})
+		}
+		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+			"message":        "Bounding boxes with only name and id are created",
+			"bounding_boxes": boundingBoxes,
+		})
+	}
+
+	// Case 2: Includes questions (question, or name/id + question)
+	if err := h.services.CreateBoundingBoxesQuestions(assignmentID, boundingBoxes, fullRequest.QuestionsData); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to create bounding boxes and questions",
 			"error":   err.Error(),
@@ -1622,7 +1623,6 @@ func (h *HttpInstructorHandler) CreateBoundingBoxesAndQuestions(c *fiber.Ctx) er
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message":        "Bounding boxes and questions are created",
 		"bounding_boxes": boundingBoxes,
-		"questions_data": request.QuestionsData,
 	})
 }
 
