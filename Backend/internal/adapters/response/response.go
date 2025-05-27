@@ -233,3 +233,34 @@ type SubmissionsListResponse struct {
 	URLFileName    string     `json:"url_file_name,omitempty"`
 	URLFileID      string     `json:"url_file_id,omitempty"`
 }
+
+// bounding boxes
+// Part:1
+type BoundingBoxesRequest struct {
+	BoundingBoxID       *uuid.UUID `json:"bounding_box_id,omitempty"`
+	BoundingBoxPosition string     `json:"bounding_box_position"`
+	BoundingBoxType     string     `json:"bounding_box_type"`
+	BoundingBoxPage     uint       `json:"bounding_box_page"`
+}
+
+// Case 1: Only name and id
+type BoundingBoxesNameAndIDRequest struct {
+	BoundingBoxes []BoundingBoxesRequest `json:"bounding_boxes"`
+}
+
+// Case 2: Includes questions (question, or name/id + question)
+type BoundingBoxesAndQuestionsRequest struct {
+	BoundingBoxes []BoundingBoxesRequest `json:"bounding_boxes"`
+	QuestionsData []RubricQuestion       `json:"questions_data"`
+}
+
+type RubricQuestion struct {
+	QuestionTitle string              `json:"question_title"`
+	QuestionPoint float64             `json:"question_point"`
+	SubQuestions  []RubricSubQuestion `json:"sub_questions,omitempty"`
+}
+
+type RubricSubQuestion struct {
+	SubQuestionTitle string  `json:"sub_question_title"`
+	SubQuestionPoint float64 `json:"sub_question_point"`
+}
