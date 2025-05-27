@@ -64,11 +64,11 @@ type InstructorService interface {
 
 	//! OCR Services
 	GetStudentsListForOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForOCRResponse, error)
-	CreateBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error
 	GetBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error)
-	//!
 	GetBoundingBoxesType(AssignmentID uuid.UUID) ([]response.SubmissionBoxPositionResponse, error)
 
+	CreateBoundingBoxesNameAndID(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
+	CreateBoundingBoxesQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData []response.RubricQuestion) error
 	UpdateBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
 	DeleteBoundingBoxes(AssignmentID uuid.UUID, boundingBoxIDs []uuid.UUID) error
 
@@ -523,8 +523,15 @@ func (s *InstructorServiceImpl) GetProcessOCRForSubmissions(CourseID uuid.UUID, 
 	return results, nil
 }
 
-func (s *InstructorServiceImpl) CreateBoundingBoxesAndQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData map[string]interface{}) error {
-	if err := s.repo.AddBoundingBoxesAndQuestions(AssignmentID, boundingBoxes, rubricData); err != nil {
+func (s *InstructorServiceImpl) CreateBoundingBoxesNameAndID(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error {
+	if err := s.repo.AddBoundingBoxesQuestions(AssignmentID, boundingBoxes, nil); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *InstructorServiceImpl) CreateBoundingBoxesQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricQuestion []response.RubricQuestion) error {
+	if err := s.repo.AddBoundingBoxesQuestions(AssignmentID, boundingBoxes, rubricQuestion); err != nil {
 		return err
 	}
 	return nil
