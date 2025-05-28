@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/xuri/excelize/v2"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -892,7 +893,7 @@ func (r *GormInstructorRepository) AddBoundingBoxesQuestions(AssignmentID uuid.U
 		rubric := models.Rubric{
 			RubricID:     uuid.New(),
 			AssignmentID: AssignmentID,
-			RubricData:   map[string]interface{}{},
+			RubricData:   datatypes.JSON([]byte{}),
 		}
 
 		if err := tx.Create(&rubric).Error; err != nil {
@@ -951,10 +952,16 @@ func (r *GormInstructorRepository) AddBoundingBoxesQuestions(AssignmentID uuid.U
 			formattedQuestions = append(formattedQuestions, questionEntry)
 		}
 
-		rubric.RubricData["questions_data"] = formattedQuestions
+		questionsData := map[string]interface{}{
+			"questions_data": formattedQuestions,
+		}
+		jsonBytes, err := json.Marshal(questionsData)
+		if err != nil {
+			return fmt.Errorf("failed to marshal rubric data: %w", err)
+		}
 		if err := tx.Model(&models.Rubric{}).
 			Where("rubric_id = ?", rubric.RubricID).
-			Update("rubric_data", rubric.RubricData).Error; err != nil {
+			Update("rubric_data", datatypes.JSON(jsonBytes)).Error; err != nil {
 			return err
 		}
 		return nil
@@ -1022,8 +1029,15 @@ func (r *GormInstructorRepository) ModifyBoundingBoxesQuestions(AssignmentID uui
 			formattedQuestions = append(formattedQuestions, entry)
 		}
 
-		rubric.RubricData["question_data"] = formattedQuestions
-		if err := tx.Model(&rubric).Update("rubric_data", rubric.RubricData).Error; err != nil {
+		updatedData := map[string]interface{}{
+			"question_data": formattedQuestions,
+		}
+		jsonBytes, err := json.Marshal(updatedData)
+		if err != nil {
+			return fmt.Errorf("failed to marshal rubric data: %w", err)
+		}
+
+		if err := tx.Model(&rubric).Update("rubric_data", datatypes.JSON(jsonBytes)).Error; err != nil {
 			return err
 		}
 
