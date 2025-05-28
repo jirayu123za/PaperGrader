@@ -67,8 +67,12 @@ type InstructorService interface {
 	GetBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error)
 	GetBoundingBoxesType(AssignmentID uuid.UUID) ([]response.SubmissionBoxPositionResponse, error)
 
+	// Bounding Boxes Services
 	CreateBoundingBoxesNameAndID(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
 	CreateBoundingBoxesQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData []response.RubricQuestion) error
+	UpdateBoundingBoxesNameAndID(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
+	UpdateBoundingBoxesQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData []response.RubricQuestion) error
+
 	UpdateBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
 	DeleteBoundingBoxes(AssignmentID uuid.UUID, boundingBoxIDs []uuid.UUID) error
 
@@ -523,6 +527,22 @@ func (s *InstructorServiceImpl) GetProcessOCRForSubmissions(CourseID uuid.UUID, 
 	return results, nil
 }
 
+func (s *InstructorServiceImpl) GetBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error) {
+	boundingBoxes, err := s.repo.FindBoundingBoxesByAssignmentTemplate(AssignmentID)
+	if err != nil {
+		return nil, err
+	}
+	return boundingBoxes, nil
+}
+
+func (s *InstructorServiceImpl) GetBoundingBoxesType(AssignmentID uuid.UUID) ([]response.SubmissionBoxPositionResponse, error) {
+	boundingBoxes, err := s.repo.FindBoundingBoxesType(AssignmentID)
+	if err != nil {
+		return nil, err
+	}
+	return boundingBoxes, nil
+}
+
 func (s *InstructorServiceImpl) CreateBoundingBoxesNameAndID(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error {
 	if err := s.repo.AddBoundingBoxesQuestions(AssignmentID, boundingBoxes, nil); err != nil {
 		return err
@@ -537,21 +557,18 @@ func (s *InstructorServiceImpl) CreateBoundingBoxesQuestions(AssignmentID uuid.U
 	return nil
 }
 
-func (s *InstructorServiceImpl) GetBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error) {
-	boundingBoxes, err := s.repo.FindBoundingBoxesByAssignmentTemplate(AssignmentID)
-	if err != nil {
-		return nil, err
+func (s *InstructorServiceImpl) UpdateBoundingBoxesNameAndID(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error {
+	if err := s.repo.ModifyBoundingBoxesNameAndID(AssignmentID, boundingBoxes); err != nil {
+		return err
 	}
-	return boundingBoxes, nil
+	return nil
 }
 
-// !
-func (s *InstructorServiceImpl) GetBoundingBoxesType(AssignmentID uuid.UUID) ([]response.SubmissionBoxPositionResponse, error) {
-	boundingBoxes, err := s.repo.FindBoundingBoxesType(AssignmentID)
-	if err != nil {
-		return nil, err
+func (s *InstructorServiceImpl) UpdateBoundingBoxesQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData []response.RubricQuestion) error {
+	if err := s.repo.ModifyBoundingBoxesQuestions(AssignmentID, boundingBoxes, rubricData); err != nil {
+		return err
 	}
-	return boundingBoxes, nil
+	return nil
 }
 
 func (s *InstructorServiceImpl) UpdateBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error {
