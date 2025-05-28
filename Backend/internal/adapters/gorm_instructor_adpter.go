@@ -961,6 +961,76 @@ func (r *GormInstructorRepository) AddBoundingBoxesQuestions(AssignmentID uuid.U
 	})
 }
 
+func (r *GormInstructorRepository) ModifyBoundingBoxesNameAndID(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		for _, boundingBox := range boundingBoxes {
+			if boundingBox.BoundingBoxType != "name" && boundingBox.BoundingBoxType != "id" {
+				continue
+			}
+			if err := tx.Model(&models.BoundingBox{}).
+				Where("bounding_box_id = ? AND assignment_id = ?", boundingBox.BoundingBoxID, AssignmentID).
+				Updates(map[string]interface{}{
+					"bounding_box_position": boundingBox.BoundingBoxPosition,
+					"bounding_box_page":     boundingBox.BoundingBoxPage,
+				}).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
+func (r *GormInstructorRepository) ModifyBoundingBoxesQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData []response.RubricQuestion) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		for _, boundingBox := range boundingBoxes {
+			if err := tx.Model(&models.BoundingBox{}).
+				Where("bounding_box_id = ? AND assignment_id = ?", boundingBox.BoundingBoxID, AssignmentID).
+				Updates(map[string]interface{}{
+					"bounding_box_position": boundingBox.BoundingBoxPosition,
+					"bounding_box_page":     boundingBox.BoundingBoxPage,
+				}).Error; err != nil {
+				return err
+			}
+		}
+
+		var rubric models.Rubric
+		if err := tx.Where("assignment_id = ?", AssignmentID).First(&rubric).Error; err != nil {
+			return fmt.Errorf("rubric not found: %w", err)
+		}
+
+		var formattedQuestions []map[string]interface{}
+		for _, question := range rubricData {
+			entry := map[string]interface{}{
+				"question_id":    question.QuestionID.String(),
+				"question_title": question.QuestionTitle,
+				"question_point": question.QuestionPoint,
+			}
+			if len(question.SubQuestions) > 0 {
+				var subQs []map[string]interface{}
+				for _, sq := range question.SubQuestions {
+					subQs = append(subQs, map[string]interface{}{
+						"sub_question_id":    sq.SubQuestionID.String(),
+						"sub_question_title": sq.SubQuestionTitle,
+						"sub_question_point": sq.SubQuestionPoint,
+						"bounding_box_id":    sq.BoundingBoxID.String(),
+					})
+				}
+				entry["sub_questions"] = subQs
+			} else if question.BoundingBoxID != nil {
+				entry["bounding_box_id"] = question.BoundingBoxID.String()
+			}
+			formattedQuestions = append(formattedQuestions, entry)
+		}
+
+		rubric.RubricData["question_data"] = formattedQuestions
+		if err := tx.Model(&rubric).Update("rubric_data", rubric.RubricData).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
 func (r *GormInstructorRepository) FindBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error) {
 	var boundingBoxes []struct {
 		BoundingBoxID       uuid.UUID `json:"bounding_box_id"`
