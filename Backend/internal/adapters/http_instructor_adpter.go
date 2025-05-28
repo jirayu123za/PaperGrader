@@ -1584,45 +1584,75 @@ func (h *HttpInstructorHandler) CreateBoundingBoxesAndQuestions(c *fiber.Ctx) er
 		})
 	}
 
-	// array bounding boxes ids
-	// if has bounding boxes ids, will use service update bounding boxes
-	// if not, will create new bounding boxes
+	var newBoxes []models.BoundingBox
+	var updateBoxes []models.BoundingBox
 
-	var boundingBoxes []models.BoundingBox
 	for _, boundingBox := range fullRequest.BoundingBoxes {
-		boundingBoxes = append(boundingBoxes, models.BoundingBox{
+		box := models.BoundingBox{
 			AssignmentID:        assignmentID,
 			BoundingBoxPosition: boundingBox.BoundingBoxPosition,
 			BoundingBoxType:     models.BoundingBoxType(boundingBox.BoundingBoxType),
 			BoundingBoxPage:     boundingBox.BoundingBoxPage,
-		})
+		}
+
+		if boundingBox.BoundingBoxID != nil {
+			box.BoundingBoxID = *boundingBox.BoundingBoxID
+			updateBoxes = append(updateBoxes, box)
+		} else {
+			box.BoundingBoxID = uuid.New()
+			newBoxes = append(newBoxes, box)
+		}
 	}
 
+	// Case 1: Only name and id
 	if len(fullRequest.QuestionsData) == 0 {
-		// Case 1: Only name and id
-		if err := h.services.CreateBoundingBoxesNameAndID(assignmentID, boundingBoxes); err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Failed to create bounding boxes with only name and id",
-				"error":   err.Error(),
-			})
+		// Case 1: update bounding boxes with only name and id
+		if len(updateBoxes) > 0 {
+			if err := h.services.UpdateBoundingBoxesNameAndID(assignmentID, updateBoxes); err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"message": "Failed to update bounding boxes with only name and id",
+					"error":   err.Error(),
+				})
+			}
+		}
+		// Case 2: create bounding boxes with only name and id
+		if len(newBoxes) > 0 {
+			if err := h.services.CreateBoundingBoxesNameAndID(assignmentID, newBoxes); err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"message": "Failed to create bounding boxes with only name and id",
+					"error":   err.Error(),
+				})
+			}
 		}
 		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-			"message":        "Bounding boxes with only name and id are created",
-			"bounding_boxes": boundingBoxes,
+			"message":       "Bounding boxes with only name and id are created/updated",
+			"created_boxes": newBoxes,
+			"updated_boxes": updateBoxes,
 		})
 	}
 
 	// Case 2: Includes questions (question, or name/id + question)
-	if err := h.services.CreateBoundingBoxesQuestions(assignmentID, boundingBoxes, fullRequest.QuestionsData); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to create bounding boxes and questions",
-			"error":   err.Error(),
-		})
+	if len(updateBoxes) > 0 {
+		if err := h.services.UpdateBoundingBoxesQuestions(assignmentID, updateBoxes, fullRequest.QuestionsData); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to update bounding boxes and questions",
+				"error":   err.Error(),
+			})
+		}
 	}
 
+	if len(newBoxes) > 0 {
+		if err := h.services.CreateBoundingBoxesQuestions(assignmentID, newBoxes, fullRequest.QuestionsData); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to create bounding boxes and questions",
+				"error":   err.Error(),
+			})
+		}
+	}
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"message":        "Bounding boxes and questions are created",
-		"bounding_boxes": boundingBoxes,
+		"message":       "Bounding boxes and questions are created/updated",
+		"created_boxes": newBoxes,
+		"updated_boxes": updateBoxes,
 	})
 }
 
