@@ -39,13 +39,12 @@ const INSCourseOverview = () => {
           </Grid>
         ) : error ? (
           <div>Error loading courses: {error.message}</div>
-        ) : courses && courses.length > 0 ? (
+        ) :  (
           <div className="overflow-y-auto max-h-[calc(100vh-200px)] p-4">
             {/* เพิ่ม overflow-y-auto เพื่อให้เลื่อนเฉพาะใน CourseCard */}
-            <CourseCard courses={courses} studentMode={false} />
+            <CourseCard courses={courses || []} studentMode={false} />
           </div>
-        ) : (
-          <div>No courses available</div>
+
         )}
       </div>
     </div>
