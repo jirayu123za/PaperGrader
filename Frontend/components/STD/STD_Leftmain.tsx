@@ -5,7 +5,7 @@ import { FaBars, FaHome, FaBook, FaCog } from 'react-icons/fa';
 import AccountMenu from '../Account';
 import { useDisclosure } from '@mantine/hooks';
 import { Button, Divider, Flex, Image, Stack } from '@mantine/core';
-import router from 'next/router';
+import { useRouter } from 'next/navigation';
 
 export default function STD_LeftMain() {
   const [isCollapsed, { toggle }] = useDisclosure(false);
@@ -14,6 +14,7 @@ export default function STD_LeftMain() {
     book: <FaBook />,
     cog: <FaCog />,
   }
+const router = useRouter();
 
   return (
     <div className={`relative flex flex-col justify-between border-r transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} h-screen`}>
@@ -64,7 +65,7 @@ export default function STD_LeftMain() {
             justifyContent: isCollapsed ? "center" : "flex-start",
           })}
           onClick={() => {
-            router.push(`/STDCourseOverview`);
+            router.push(`/student/overview`);
           }}
         >
           {!isCollapsed && <span>Dashboard</span>}
@@ -80,7 +81,7 @@ export default function STD_LeftMain() {
             justifyContent: isCollapsed ? "center" : "flex-start",
           })}
           onClick={() => {
-            router.push(`/STDCourseOverview/CourseOverview`);
+            router.push(`/student/overview/course`);
           }}
         >
           {!isCollapsed && <span>Course</span>}
