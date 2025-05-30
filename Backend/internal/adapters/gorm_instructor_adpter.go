@@ -3,7 +3,6 @@ package adapters
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/core/utils"
@@ -1046,12 +1045,7 @@ func (r *GormInstructorRepository) ModifyBoundingBoxesQuestions(AssignmentID uui
 }
 
 func (r *GormInstructorRepository) FindBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error) {
-	var boundingBoxes []struct {
-		BoundingBoxID       uuid.UUID `json:"bounding_box_id"`
-		BoundingBoxPosition string    `json:"bounding_box_position"`
-		BoundingBoxType     string    `json:"bounding_box_type"`
-		BoundingBoxPage     uint      `json:"bounding_box_page"`
-	}
+	var boundingBoxes []response.BoundingBoxTemplateResponse
 
 	if err := r.db.
 		Table("bounding_boxes").
@@ -1061,17 +1055,7 @@ func (r *GormInstructorRepository) FindBoundingBoxesByAssignmentTemplate(Assignm
 		Find(&boundingBoxes).Error; err != nil {
 		return nil, err
 	}
-
-	var responseBoundingBoxes []response.BoundingBoxTemplateResponse
-	for _, box := range boundingBoxes {
-		responseBoundingBoxes = append(responseBoundingBoxes, response.BoundingBoxTemplateResponse{
-			BoundingBoxID:       box.BoundingBoxID,
-			BoundingBoxPosition: box.BoundingBoxPosition,
-			BoundingBoxType:     box.BoundingBoxType,
-			BoundingBoxPage:     box.BoundingBoxPage,
-		})
-	}
-	return responseBoundingBoxes, nil
+	return boundingBoxes, nil
 }
 
 func (r *GormInstructorRepository) FindBoundingBoxesType(AssignmentID uuid.UUID) ([]response.SubmissionBoxPositionResponse, error) {
@@ -1097,34 +1081,37 @@ func (r *GormInstructorRepository) RemoveBoundingBoxes(AssignmentID uuid.UUID, b
 	})
 }
 
-func (r *GormInstructorRepository) FindQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (*response.QuestionsTemplateResponse, error) {
-	var rubric struct {
-		RubricID   uuid.UUID
-		RubricData []byte
-	}
+func (r *GormInstructorRepository) FindQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (response.QuestionsTemplateResponse, error) {
+	var rubric response.RubricData
 
-	err := r.db.
+	tx := r.db.
 		Table("rubrics").
 		Select("rubric_id, rubric_data").
 		Where("assignment_id = ?", AssignmentID).
 		Where("deleted_at IS NULL").
-		First(&rubric).Error
+		Take(&rubric)
 
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return &response.QuestionsTemplateResponse{
-			RubricID:   uuid.Nil,
-			RubricData: map[string]interface{}{},
+	if tx.RowsAffected == 0 {
+		return response.QuestionsTemplateResponse{
+			RubricID:      uuid.Nil,
+			QuestionsData: []interface{}{},
 		}, nil
+	}
+
+	if tx.Error != nil {
+		return response.QuestionsTemplateResponse{}, tx.Error
 	}
 
 	var rubricData map[string]interface{}
 	if err := json.Unmarshal(rubric.RubricData, &rubricData); err != nil {
-		return nil, fmt.Errorf("failed to parse rubric_data: %v", err)
+		return response.QuestionsTemplateResponse{}, fmt.Errorf("failed to parse rubric_data: %v", err)
 	}
 
-	return &response.QuestionsTemplateResponse{
-		RubricID:   rubric.RubricID,
-		RubricData: rubricData,
+	questionsData, _ := rubricData["questions_data"].([]interface{})
+
+	return response.QuestionsTemplateResponse{
+		RubricID:      rubric.RubricID,
+		QuestionsData: questionsData,
 	}, nil
 }
 
