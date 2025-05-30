@@ -1,8 +1,10 @@
 import { useMutation } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import Router from 'next/router';
 
 export const useFetchLogout = () => {
+  const Router = useRouter();
+
   return useMutation({
     mutationFn: async () => {
       try {
