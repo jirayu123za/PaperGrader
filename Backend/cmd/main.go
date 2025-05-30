@@ -183,12 +183,11 @@ func main() {
 
 	// Bounding Box
 	apiGroup.Post("/instructor/boundingBoxes", instructorHandler.CreateBoundingBoxesAndQuestions)
-	apiGroup.Get("/instructor/boundingBoxes", instructorHandler.GetBoundingBoxesByAssignmentTemplate)
 	apiGroup.Get("/instructor/boundingBoxes/position", instructorHandler.GetBoundingBoxesTypePosition)
 	apiGroup.Delete("/instructor/boundingBoxes", instructorHandler.DeleteBoundingBoxes)
 
-	// Questions
-	apiGroup.Get("/instructor/questions", instructorHandler.GetQuestionsByAssignmentTemplate)
+	// Template(outline)
+	apiGroup.Get("/instructor/assignment/template", instructorHandler.GetAssignmentTemplateData)
 
 	// Rubric
 	// apiGroup.Post("/instructor/rubric", instructorHandler.CreateRubric)
