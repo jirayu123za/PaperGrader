@@ -1656,30 +1656,6 @@ func (h *HttpInstructorHandler) CreateBoundingBoxesAndQuestions(c *fiber.Ctx) er
 	})
 }
 
-func (h *HttpInstructorHandler) GetBoundingBoxesByAssignmentTemplate(c *fiber.Ctx) error {
-	assignmentIDParam := c.Query("assignment_id")
-	assignmentID, err := uuid.Parse(assignmentIDParam)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid assignment_id",
-			"error":   err.Error(),
-		})
-	}
-
-	boundingBoxes, err := h.services.GetBoundingBoxesByAssignmentTemplate(assignmentID)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to get bounding boxes",
-			"error":   err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message":        "Bounding boxes are retrieved",
-		"bounding_boxes": boundingBoxes,
-	})
-}
-
 func (h *HttpInstructorHandler) DeleteBoundingBoxes(c *fiber.Ctx) error {
 	assignmentIDParam := c.Query("assignment_id")
 	assignmentID, err := uuid.Parse(assignmentIDParam)
@@ -1710,7 +1686,7 @@ func (h *HttpInstructorHandler) DeleteBoundingBoxes(c *fiber.Ctx) error {
 	})
 }
 
-func (h *HttpInstructorHandler) GetQuestionsByAssignmentTemplate(c *fiber.Ctx) error {
+func (h *HttpInstructorHandler) GetAssignmentTemplateData(c *fiber.Ctx) error {
 	assignmentIDParam := c.Query("assignment_id")
 	assignmentID, err := uuid.Parse(assignmentIDParam)
 	if err != nil {
@@ -1720,7 +1696,15 @@ func (h *HttpInstructorHandler) GetQuestionsByAssignmentTemplate(c *fiber.Ctx) e
 		})
 	}
 
-	questionsResp, err := h.services.GetQuestionsByAssignmentTemplate(assignmentID)
+	boundingBoxes, err := h.services.GetBoundingBoxesByAssignmentTemplate(assignmentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get bounding boxes",
+			"error":   err.Error(),
+		})
+	}
+
+	questions, err := h.services.GetQuestionsByAssignmentTemplate(assignmentID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to get questions",
@@ -1728,16 +1712,10 @@ func (h *HttpInstructorHandler) GetQuestionsByAssignmentTemplate(c *fiber.Ctx) e
 		})
 	}
 
-	if questionsResp.RubricID == uuid.Nil {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"message":   "No questions found",
-			"questions": []interface{}{},
-		})
-	}
-
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message":   "Questions are retrieved",
-		"questions": questionsResp,
+		"bounding_boxes": boundingBoxes,
+		"questions":      questions,
+		"message":        "Assignment template data retrieved",
 	})
 }
 
