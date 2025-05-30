@@ -133,10 +133,15 @@ type BoundingBoxTemplateResponse struct {
 	BoundingBoxPage     uint      `json:"bounding_box_page"`
 }
 
+type RubricData struct {
+	RubricID   uuid.UUID
+	RubricData []byte
+}
+
 // Struct for Get Questions By Assignment Template
 type QuestionsTemplateResponse struct {
-	RubricID   uuid.UUID              `json:"rubric_id"`
-	RubricData map[string]interface{} `json:"rubric_data"`
+	RubricID      uuid.UUID     `json:"rubric_id"`
+	QuestionsData []interface{} `json:"questions_data"`
 }
 
 type PersonalDataIDResponse struct {
