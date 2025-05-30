@@ -74,6 +74,7 @@ func (h *HttpStudentHandler) CreateSubmissionFile(c *fiber.Ctx) error {
 		BelongsTo:          uuid.NullUUID{UUID: personalDataID, Valid: true},
 		AssignmentID:       assignmentID,
 		SubmissionFileName: versionedFileName,
+		MatchedBy:          nil,
 		SubmittedAt:        time.Now(),
 	}
 
