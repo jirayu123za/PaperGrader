@@ -72,7 +72,7 @@ type InstructorRepository interface {
 	RemoveBoundingBoxes(AssignmentID uuid.UUID, boundingBoxIDs []uuid.UUID) error
 
 	// CRUD Questions
-	FindQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (*response.QuestionsTemplateResponse, error)
+	FindQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (response.QuestionsTemplateResponse, error)
 
 	// CRUD Rubric
 	// AddRubric(AssignmentID uuid.UUID, rubric *models.Rubric) error
