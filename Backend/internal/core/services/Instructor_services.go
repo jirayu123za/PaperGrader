@@ -75,7 +75,7 @@ type InstructorService interface {
 	DeleteBoundingBoxes(AssignmentID uuid.UUID, boundingBoxIDs []uuid.UUID) error
 
 	// CRUD Questions
-	GetQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (*response.QuestionsTemplateResponse, error)
+	GetQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (response.QuestionsTemplateResponse, error)
 
 	// CRUD Rubric
 	// CreateRubric(AssignmentID uuid.UUID, rubric *models.Rubric) error
@@ -576,10 +576,10 @@ func (s *InstructorServiceImpl) DeleteBoundingBoxes(AssignmentID uuid.UUID, boun
 	return nil
 }
 
-func (s *InstructorServiceImpl) GetQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (*response.QuestionsTemplateResponse, error) {
+func (s *InstructorServiceImpl) GetQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (response.QuestionsTemplateResponse, error) {
 	questions, err := s.repo.FindQuestionsByAssignmentTemplate(AssignmentID)
 	if err != nil {
-		return nil, err
+		return response.QuestionsTemplateResponse{}, err
 	}
 	return questions, nil
 }
