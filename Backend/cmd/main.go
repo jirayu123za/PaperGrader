@@ -185,7 +185,6 @@ func main() {
 	apiGroup.Post("/instructor/boundingBoxes", instructorHandler.CreateBoundingBoxesAndQuestions)
 	apiGroup.Get("/instructor/boundingBoxes", instructorHandler.GetBoundingBoxesByAssignmentTemplate)
 	apiGroup.Get("/instructor/boundingBoxes/position", instructorHandler.GetBoundingBoxesTypePosition)
-	apiGroup.Put("/instructor/boundingBoxes", instructorHandler.UpdateBoundingBoxes)
 	apiGroup.Delete("/instructor/boundingBoxes", instructorHandler.DeleteBoundingBoxes)
 
 	// Questions

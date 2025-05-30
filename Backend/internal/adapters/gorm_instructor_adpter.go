@@ -1087,23 +1087,6 @@ func (r *GormInstructorRepository) FindBoundingBoxesType(AssignmentID uuid.UUID)
 	return boundingBoxes, nil
 }
 
-func (r *GormInstructorRepository) ModifyBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error {
-	return r.db.Transaction(func(tx *gorm.DB) error {
-		for i := range boundingBoxes {
-			if err := tx.Model(&models.BoundingBox{}).
-				Where("assignment_id = ? AND bounding_box_id = ?", AssignmentID, boundingBoxes[i].BoundingBoxID).
-				Updates(map[string]interface{}{
-					"bounding_box_position": boundingBoxes[i].BoundingBoxPosition,
-					"bounding_box_type":     boundingBoxes[i].BoundingBoxType,
-					"bounding_box_page":     boundingBoxes[i].BoundingBoxPage,
-				}).Error; err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-}
-
 func (r *GormInstructorRepository) RemoveBoundingBoxes(AssignmentID uuid.UUID, boundingBoxIDs []uuid.UUID) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Where("assignment_id = ? AND bounding_box_id IN ?", AssignmentID, boundingBoxIDs).

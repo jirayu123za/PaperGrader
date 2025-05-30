@@ -72,8 +72,6 @@ type InstructorService interface {
 	CreateBoundingBoxesQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData []response.RubricQuestion) error
 	UpdateBoundingBoxesNameAndID(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
 	UpdateBoundingBoxesQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData []response.RubricQuestion) error
-
-	UpdateBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
 	DeleteBoundingBoxes(AssignmentID uuid.UUID, boundingBoxIDs []uuid.UUID) error
 
 	// CRUD Questions
@@ -566,13 +564,6 @@ func (s *InstructorServiceImpl) UpdateBoundingBoxesNameAndID(AssignmentID uuid.U
 
 func (s *InstructorServiceImpl) UpdateBoundingBoxesQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData []response.RubricQuestion) error {
 	if err := s.repo.ModifyBoundingBoxesQuestions(AssignmentID, boundingBoxes, rubricData); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *InstructorServiceImpl) UpdateBoundingBoxes(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error {
-	if err := s.repo.ModifyBoundingBoxes(AssignmentID, boundingBoxes); err != nil {
 		return err
 	}
 	return nil
