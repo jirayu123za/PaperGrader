@@ -67,3 +67,6 @@
   padding: 0 !important;
   margin: 0 !important;
 }
+.no-scroll-padding .mantine-ScrollArea-viewport {
+  padding: 0 !important;
+}
