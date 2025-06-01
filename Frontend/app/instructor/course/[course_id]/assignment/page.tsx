@@ -1,14 +1,11 @@
 
 import React from 'react';
-import INTAssignment from '@/components/INS/INSAssignment/INSAssignment';
-import { ScrollArea } from '@mantine/core';
+import AssignmentTable from '@/components/INS/INSAssignment/AssignmentTable';
 
 const Assignment = () => {
   return (
-    <div className="grow p-6 overflow-hidden">
-      <ScrollArea style={{ height: 'calc(100vh - 96px)' }} type="auto">
-        <INTAssignment />
-      </ScrollArea>
+    <div className="grow p-6">
+      <AssignmentTable />
     </div>
   );
 };
