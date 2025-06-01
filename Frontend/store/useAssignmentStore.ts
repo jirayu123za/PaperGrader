@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+// Part: 1
 interface Assignment {
   assignment_id: string;
   assignment_name: string;
@@ -21,33 +22,32 @@ export const useAssignmentStore = create<AssignmentStore>((set) => ({
   setAssignments: (assignments) => set({ assignments }),
 }));
 
-interface AssignmentSection {
-  assignment_id: string;
-  assignment_section_id: string;
-  cut_off_date: string | null;
-  due_date: string | null;
-  release_date: string | null;
-  section_id: string;
-  section_name: string;
-}
-
-interface InsAssignment {
-  assignment_due_date: string | null;
+// Part: 2
+interface AssignmentsList {
   assignment_id: string;
   assignment_name: string;
-  assignment_release_date: string | null;
-  assignment_sections: AssignmentSection[];
+  assignment_sections: AssignmentsSectionList[];
   published: boolean;
   regrades: boolean;
   submiss_by: string;
 }
 
-interface InsAssignmentStore {
-  insAssignments: InsAssignment[];
-  setInsAssignments: (insAssignments: InsAssignment[]) => void;
+interface AssignmentsSectionList {
+  assignment_id: string;
+  assignment_section_id: string;
+  release_date: string | null;
+  due_date: string | null;
+  cut_off_date: string | null;
+  section_id: string;
+  section_name: string;
 }
 
-export const useInsAssignmentStore = create<InsAssignmentStore>((set) => ({
-  insAssignments: [],
-  setInsAssignments: (insAssignments) => set({ insAssignments }),
+interface AssignmentsListTableStore {
+  assignmentList: AssignmentsList[];
+  setAssignmentList: (assignmentList: AssignmentsList[]) => void;
+}
+
+export const useAssignmentsListTableStore = create<AssignmentsListTableStore>((set) => ({
+  assignmentList: [],
+  setAssignmentList: (assignmentList) => set({ assignmentList: assignmentList }),
 }));
