@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useAssignmentStore, useInsAssignmentStore } from '../store/useAssignmentStore';
+import { useAssignmentStore, useAssignmentsListTableStore } from '../store/useAssignmentStore';
 import axios from 'axios';
 
 interface Assignment {
@@ -38,31 +38,29 @@ export const useFetchAssignments = (course_id: string) => {
   });
 };
 
-interface AssignmentSection {
-  assignment_id: string;
-  assignment_section_id: string;
-  cut_off_date: string | null;
-  due_date: string | null;
-  release_date: string | null;
-  section_id: string;
-  section_name: string;
-}
-
-interface InsAssignment {
-  assignment_due_date: string | null;
+interface AssignmentsList {
   assignment_id: string;
   assignment_name: string;
-  assignment_release_date: string | null;
-  assignment_sections: AssignmentSection[];
+  assignment_sections: AssignmentsSectionList[];
   published: boolean;
   regrades: boolean;
   submiss_by: string;
 }
 
-export const useFetchInsAssignments = (course_id: string) => {
-  const setInsAssignments = useInsAssignmentStore((state) => state.setInsAssignments);
+interface AssignmentsSectionList {
+  assignment_id: string;
+  assignment_section_id: string;
+  release_date: string | null;
+  due_date: string | null;
+  cut_off_date: string | null;
+  section_id: string;
+  section_name: string;
+}
 
-  return useQuery<InsAssignment[], Error>({
+export const useFetchAssignmentsTable = (course_id: string) => {
+  const setAssignmentList = useAssignmentsListTableStore((state) => state.setAssignmentList);
+
+  return useQuery<AssignmentsList[], Error>({
     queryKey: ['ins_assignments', course_id],
     queryFn: async () => {
       const response = await axios.get('/api/api/instructor/assignments/sections', {
@@ -73,11 +71,12 @@ export const useFetchInsAssignments = (course_id: string) => {
         throw new Error('Network response was not ok');
       }
 
-      const data: InsAssignment[] = response.data.ins_assignments;
-      setInsAssignments(data);
+      const data: AssignmentsList[] = response.data.ins_assignments;
+      setAssignmentList(data);
       return data;
     },
     enabled: !!course_id,
+    refetchOnWindowFocus: false,
   });
 }
 
