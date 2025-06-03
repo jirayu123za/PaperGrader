@@ -21,12 +21,12 @@ type Assignment struct {
 	AssignmentID          uuid.UUID `json:"assignment_id"`
 	AssignmentName        string    `json:"assignment_name"`
 	AssignmentDescription string    `json:"assignment_description"`
-	SubmissBy             string    `json:"submiss_by"`
+	SubmittedBy           string    `json:"submitted_by"`
 	GradingType           string    `json:"grading_type"`
-	LateSubmiss           bool      `json:"late_submiss"`
+	LateSubmitted         bool      `json:"late_submitted"`
 	Published             bool      `json:"published"`
 	Regrades              bool      `json:"regrades"`
-	GroupSubmiss          bool      `json:"group_submiss"`
+	GroupSubmitted        bool      `json:"group_submitted"`
 }
 
 type AssignmentSection struct {
@@ -38,7 +38,7 @@ type AssignmentSection struct {
 	SectionName         string     `json:"section_name"`
 }
 
-type AssignmentResponse struct {
+type AssignmentSettingsResponse struct {
 	Assignment         Assignment          `json:"assignment"`
 	AssignmentSections []AssignmentSection `json:"assignment_sections"`
 }
@@ -48,7 +48,7 @@ type AssignmentActiveResponse struct {
 	AssignmentID          uuid.UUID  `json:"assignment_id"`
 	AssignmentName        string     `json:"assignment_name"`
 	AssignmentDescription string     `json:"assignment_description"`
-	SubmissBy             string     `json:"submiss_by"`
+	SubmittedBy           string     `json:"submitted_by"`
 	Published             bool       `json:"published"`
 	Regrades              bool       `json:"regrades"`
 	CreatedAt             time.Time  `json:"created_at"`
@@ -61,7 +61,7 @@ type AssignmentActiveResponse struct {
 type AssignmentsResponse struct {
 	AssignmentID          uuid.UUID  `json:"assignment_id"`
 	AssignmentName        string     `json:"assignment_name"`
-	SubmissBy             string     `json:"submiss_by"`
+	SubmittedBy           string     `json:"submitted_by"`
 	Published             bool       `json:"published"`
 	Regrades              bool       `json:"regrades"`
 	AssignmentReleaseDate *time.Time `json:"assignment_release_date"`
@@ -82,7 +82,7 @@ type AssignmentSectionResponse struct {
 type InsAssignmentResponse struct {
 	AssignmentID          uuid.UUID                   `json:"assignment_id"`
 	AssignmentName        string                      `json:"assignment_name"`
-	SubmissBy             string                      `json:"submiss_by"`
+	SubmittedBy           string                      `json:"submitted_by"`
 	Published             bool                        `json:"published"`
 	Regrades              bool                        `json:"regrades"`
 	AssignmentReleaseDate *time.Time                  `json:"assignment_release_date"`
