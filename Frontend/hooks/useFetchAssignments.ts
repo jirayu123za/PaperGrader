@@ -10,7 +10,7 @@ interface Assignment {
   cut_off_date: string;
   published: boolean;
   regrades: boolean;
-  submiss_by: string;
+  submitted_by: string;
 }
 
 export const useFetchAssignments = (course_id: string) => {
@@ -44,7 +44,7 @@ interface AssignmentsList {
   assignment_sections: AssignmentsSectionList[];
   published: boolean;
   regrades: boolean;
-  submiss_by: string;
+  submitted_by: string;
 }
 
 interface AssignmentsSectionList {
