@@ -37,7 +37,7 @@ type InstructorRepository interface {
 	FindInsAssignmentByCourseID(CourseID uuid.UUID) ([]response.InsAssignmentResponse, error)
 	FindAssignmentsByCourseID(CourseID uuid.UUID) ([]response.AssignmentsResponse, error)
 	FindActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]response.AssignmentActiveResponse, error)
-	FindAssignmentByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (*response.AssignmentResponse, error)
+	FindAssignmentSettingsDetail(CourseID uuid.UUID, AssignmentID uuid.UUID) (*response.AssignmentSettingsResponse, error)
 
 	FindInstructorsNameByCourseID(courseID uuid.UUID) ([]response.InstructorListResponse, error)
 
