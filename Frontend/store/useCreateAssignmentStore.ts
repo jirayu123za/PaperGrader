@@ -3,11 +3,11 @@ import { create } from 'zustand';
 interface AssignmentStore {
   assignment_name: string;
   assignment_description: string;
-  submiss_by: string;
+  submitted_by: string;
   release_date: Date | null;
   due_date: Date | null;
-  group_submiss: boolean;
-  late_submiss: boolean;
+  group_submitted: boolean;
+  late_submitted: boolean;
   cut_off_date: Date | null;
   setAssignmentName: (name: string) => void;
   setAssignmentDescription: (description: string) => void;
@@ -23,29 +23,29 @@ interface AssignmentStore {
 export const useAssignmentStore = create<AssignmentStore>((set) => ({
   assignment_name: '',
   assignment_description: '',
-  submiss_by: 'student',
+  submitted_by: 'student',
   release_date: null,
   due_date: null,
-  group_submiss: false,
-  late_submiss: false,
+  group_submitted: false,
+  late_submitted: false,
   cut_off_date: null,
   setAssignmentName: (name) => set({ assignment_name: name }),
   setAssignmentDescription: (description) => set({ assignment_description: description }),
-  setUploadBy: (submiss_by) => set({ submiss_by }),
+  setUploadBy: (submitted_by) => set({ submitted_by }),
   setReleaseDate: (date) => set({ release_date: date }),
   setDueDate: (date) => set({ due_date: date }),
-  setGroupSubmiss: (submission: boolean) => set({ group_submiss: submission }),
-  setAllowLateSubmission: (allow) => set({ late_submiss: allow }),
+  setGroupSubmiss: (submission: boolean) => set({ group_submitted: submission }),
+  setAllowLateSubmission: (allow) => set({ late_submitted: allow }),
   setCutOffDate: (date) => set({ cut_off_date: date }),
   reset: () =>
     set({
       assignment_name: '',
       assignment_description: '',
-      submiss_by: 'student',
+      submitted_by: 'student',
       release_date: null,
       due_date: null,
-      group_submiss: false,
-      late_submiss: false,
+      group_submitted: false,
+      late_submitted: false,
       cut_off_date: null,
     }),
 }));

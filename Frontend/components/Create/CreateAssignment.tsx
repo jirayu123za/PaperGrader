@@ -28,8 +28,8 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
     initialValues: {
       assignment_name: '',
       assignment_description: '',
-      submiss_by: 'student',
-      group_submiss: false,
+      submitted_by: 'student',
+      group_submitted: false,
     },
     validate: {
       assignment_name: (value) => (value ? null : 'Assignment name is required'),
@@ -42,13 +42,13 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
 
     formData.append('assignment_name', values.assignment_name);
     formData.append('assignment_description', values.assignment_description);
-    formData.append('submiss_by', values.submiss_by);
+    formData.append('submitted_by', values.submitted_by);
     formData.append('sections', selectedSections.join(','));
 
     files.forEach((file, index) => {
       if (file instanceof File) {
         formData.append(`is_template[${index}]`, file === templateFile ? 'true' : 'false');
-        formData.append('files', file); // <-- ใช้ตัวไฟล์จริง
+        formData.append('files', file);
         console.log(`File added: ${file.name}`);
       } else {
         console.error('Invalid file in list:', file);
@@ -113,7 +113,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
         </div>
 
         <div className="mt-4">
-          <RadioGroup {...form.getInputProps('submiss_by')} label="Who will upload submissions?" required>
+          <RadioGroup {...form.getInputProps('submitted_by')} label="Who will upload submissions?" required>
             <div className="flex justify-start gap-8 mt-1">
               <Radio value="instructor" label="Instructor" />
               <Radio value="student" label="Student" />

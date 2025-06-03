@@ -103,7 +103,7 @@ const AssignmentTable: React.FC = () => {
                         </Table.Td>
                         <Table.Td>{assignment.published ? 'Yes' : 'No'}</Table.Td>
                         <Table.Td>{assignment.regrades ? 'Yes' : 'No'}</Table.Td>
-                        <Table.Td>{assignment.submiss_by}</Table.Td>
+                        <Table.Td>{assignment.submitted_by}</Table.Td>
                         <Table.Td>{assignment.assignment_sections.length}</Table.Td>                      
                         <Table.Td>
                           <Menu shadow="md">
