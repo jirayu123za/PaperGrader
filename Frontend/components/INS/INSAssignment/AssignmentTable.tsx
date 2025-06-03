@@ -130,16 +130,25 @@ const AssignmentTable: React.FC = () => {
                 }
               ))}
             </Table.Tbody>
+            <Table.Tfoot>
+              <Table.Tr>
+                <Table.Td colSpan={7} className="border-t border-gray-300">
+                  <Flex justify="end">
+                    <Pagination
+                      total={totalPages}
+                      siblings={1}
+                      boundaries={1}
+                      value={pagination.active}
+                      onChange={pagination.setPage}
+                      gap={0}
+                    />
+                  </Flex>
+                </Table.Td>
+              </Table.Tr>
+            </Table.Tfoot>
           </Table> 
         </Table.ScrollContainer>       
       </Paper>
-      <Pagination gap={0}
-        total={totalPages}
-        siblings={1}
-        boundaries={1}
-        value={pagination.active}
-        onChange={pagination.setPage}
-      />
       <AssignmentSetting />
     </Flex>
   );
