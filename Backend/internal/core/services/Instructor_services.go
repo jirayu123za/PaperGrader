@@ -42,7 +42,7 @@ type InstructorService interface {
 	GetInsAssignmentByCourseID(CourseID uuid.UUID) ([]response.InsAssignmentResponse, error)
 	GetAssignmentsByCourseID(CourseID uuid.UUID) ([]response.AssignmentsResponse, error)
 	GetActiveAssignmentsByCourseID(CourseID uuid.UUID) ([]response.AssignmentActiveResponse, error)
-	GetAssignmentByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (*response.AssignmentResponse, error)
+	GetAssignmentSettingsDetail(CourseID uuid.UUID, AssignmentID uuid.UUID) (*response.AssignmentSettingsResponse, error)
 
 	GetInstructorsNameByCourseID(courseID uuid.UUID) ([]response.InstructorListResponse, error)
 
@@ -277,8 +277,8 @@ func (s *InstructorServiceImpl) GetActiveAssignmentsByCourseID(CourseID uuid.UUI
 	return activeAssignments, nil
 }
 
-func (s *InstructorServiceImpl) GetAssignmentByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (*response.AssignmentResponse, error) {
-	assignmentSections, err := s.repo.FindAssignmentByCourseIDAndAssignmentID(CourseID, AssignmentID)
+func (s *InstructorServiceImpl) GetAssignmentSettingsDetail(CourseID uuid.UUID, AssignmentID uuid.UUID) (*response.AssignmentSettingsResponse, error) {
+	assignmentSections, err := s.repo.FindAssignmentSettingsDetail(CourseID, AssignmentID)
 	if err != nil {
 		return nil, err
 	}
