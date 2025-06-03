@@ -84,7 +84,7 @@ func RegisterRoutes(
 	apiGroup.Get("/instructor/assignments/sections", instructorHandler.GetInsAssignmentByCourseID)
 	apiGroup.Get("/instructor/assignments", instructorHandler.GetAssignmentsByCourseID)
 	apiGroup.Get("/instructor/assignments/active", instructorHandler.GetActiveAssignmentsByCourseID)
-	apiGroup.Get("/instructor/assignment", instructorHandler.GetAssignmentByCourseIDAndAssignmentID)
+	apiGroup.Get("/instructor/assignment", instructorHandler.GetAssignmentSettingsDetail)
 
 	apiGroup.Get("/instructor/assignment/process", instructorHandler.GetAssignmentDetails)
 	apiGroup.Put("/instructor/assignment", instructorHandler.UpdateAssignmentAndAssignmentSection)
