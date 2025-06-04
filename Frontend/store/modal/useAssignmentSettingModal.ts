@@ -3,6 +3,9 @@ import { create } from 'zustand';
 interface ModalState {
     isOpen: boolean;
     selectedAssignment: { assignment_id: string } | null;
+    selectedSectionIDs: string[];
+    setSectionIDs: (sectionIDs: string[]) => void;
+    clearSectionIDs: () => void;
     openModal: (assignment: { assignment_id: string }) => void;
     closeModal: () => void;
 }
@@ -10,6 +13,16 @@ interface ModalState {
 export const useAssignmentSettingStore = create<ModalState>((set) => ({
     isOpen: false,
     selectedAssignment: null,
+    selectedSectionIDs: [],
+    setSectionIDs: (sectionIDs) =>
+        set(() => ({
+            selectedSectionIDs: sectionIDs,
+        })),
+
+    clearSectionIDs: () =>
+        set(() => ({
+            selectedSectionIDs: [],
+        })),
     openModal: (assignment) =>
         set(() => ({
             isOpen: true,
@@ -41,31 +54,94 @@ export const useModalAssignmentSettingStore = create<AssignmentSetting>((set) =>
     },
 }));
 
-interface CustomizeTimeState {
-    release_date: Date | null;
-    due_date: Date | null;
-    cut_off_date: Date | null;
-    selectedSections: string[];
-    setCustomizeTime: (values: {
-        release_date: Date | null;
-        due_date: Date | null;
-        cut_off_date: Date | null;
-        selectedSections: string[];
-    }) => void;
-    resetCustomizeTime: () => void;
+// Part: 2
+type AssignmentFormValues = {
+    assignmentName: string;
+    assignmentDescription: string;
+    submittedBy: string;
+    scoringMethod: string;
+    lateSubmitted: boolean;
+    published: boolean;
+    regrades: boolean;
+    rubricVisibility: string;
+    groupSubmitted: boolean;
+    groupSizeLimit: string;
+    studentVisibility: string;
+    rubricSelectionStyle: string;
+    releaseDate: string | null;
+    dueDate: string | null;
+    cutOffDate: string | null;
+};
+
+interface AssignmentFormStore {
+    values: AssignmentFormValues;
+    setField: <K extends keyof AssignmentFormValues>(key: K, value: AssignmentFormValues[K]) => void;
+    setAll: (values: Partial<AssignmentFormValues>) => void;
+    reset: () => void;
+
+    assignmentSections: AssignmentSections[];
+    setAssignmentSections: (sections: AssignmentSections[]) => void;
 }
 
-export const useCustomizeTimeStore = create<CustomizeTimeState>((set) => ({
-    release_date: null,
-    due_date: null,
-    cut_off_date: null,
-    selectedSections: [],
-    setCustomizeTime: (values) => set(values),
-    resetCustomizeTime: () =>
-        set({
-            release_date: null,
-            due_date: null,
-            cut_off_date: null,
-            selectedSections: [],
-        }),
+interface AssignmentSections {
+    section_id: string;
+    section_name: string;
+    release_date: string | null;
+    due_date: string | null;
+    cut_off_date: string | null;
+}
+
+export const useAssignmentSettingFormStore = create<AssignmentFormStore>((set) => ({
+    values: {
+        assignmentName: '',
+        assignmentDescription: '',
+        submittedBy: '',
+        scoringMethod: '',
+        lateSubmitted: false,
+        published: false,
+        regrades: false,
+        groupSubmitted: false,
+        groupSizeLimit: '',
+        rubricVisibility: '',
+        studentVisibility: '',
+        rubricSelectionStyle: '',
+        releaseDate: null,
+        dueDate: null,
+        cutOffDate: null,
+    },
+    setField: (key, value) => set((state) => ({
+        values: {
+            ...state.values,
+            [key]: value,
+        },
+    })),
+    setAll: (newValues) => set((state) => ({
+        values: {
+            ...state.values,
+            ...newValues,
+        },
+    })),
+    reset: () =>
+        set(() => ({
+            values: {
+                assignmentName: '',
+                assignmentDescription: '',
+                submittedBy: '',
+                scoringMethod: '',
+                lateSubmitted: false,
+                published: false,
+                regrades: false,
+                groupSubmitted: false,
+                groupSizeLimit: '',
+                rubricVisibility: '',
+                studentVisibility: '',
+                rubricSelectionStyle: '',
+                releaseDate: null,
+                dueDate: null,
+                cutOffDate: null,
+            },
+        }
+        )),
+    assignmentSections: [],
+    setAssignmentSections: (sections) => set(() => ({ assignmentSections: sections })),
 }));
