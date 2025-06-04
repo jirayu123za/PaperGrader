@@ -1,86 +1,80 @@
 "use client";
 
-import React, { useEffect } from 'react';
-import { DateTimePicker } from '@mantine/dates';
-import { useForm } from '@mantine/form';
-import { useRouter , useParams } from 'next/navigation';
-import { useFetchAssignmentSetting } from '../../../hooks/AssignmentSetting/useFetchAssignmentSetting'; 
-import { useAssignmentSettingStore } from '../../../store/useAssignmentSettingStore';
-import { useCustomizeTimeStore, useModalAssignmentSettingStore } from '../../../store/modal/useAssignmentSettingModal';
-import { useSelectSectionStore } from '../../../store/useSectionStore';
-import SectionEditAssignment from '../../Create/Sections/SectionEditAssignment';
 import '@mantine/dates/styles.css';
+import React from 'react';
+import SectionEditAssignment from '../../Create/Sections/SectionEditAssignment';
+import { DateTimePicker } from '@mantine/dates';
+import { Flex, Loader } from '@mantine/core';
+import { useAssignmentSettingFormStore } from '../../../store/modal/useAssignmentSettingModal';
 
 const CustomizeTime: React.FC = () => {
-  const router = useRouter();
-  const params = useParams();
-  const course_id = params?.course_id as string;
-  const { assignment_id } = useModalAssignmentSettingStore(state => state);
-  const { assignmentSetting } = useAssignmentSettingStore();
-  const { selectedSections } = useSelectSectionStore();
-  const { setCustomizeTime } = useCustomizeTimeStore();
-  const { isLoading } = useFetchAssignmentSetting(course_id as string, assignment_id as string);
-
-  const form = useForm({
-    initialValues: {
-      release_date: assignmentSetting?.assignmentSections[0]?.releaseDate
-      ? new Date(assignmentSetting.assignmentSections[0].releaseDate)
-      : null,
-    due_date: assignmentSetting?.assignmentSections[0]?.dueDate
-      ? new Date(assignmentSetting.assignmentSections[0].dueDate)
-      : null,
-    cut_off_date: assignmentSetting?.assignmentSections[0]?.cutOffDate
-      ? new Date(assignmentSetting.assignmentSections[0].cutOffDate)
-      : null,
-  },
-  });
-
-  useEffect(() => {
-    if (assignmentSetting) {
-      const initialValues = {
-        release_date: null,
-        due_date: null,
-        cut_off_date: null,
-        sections: selectedSections || [],
-      };
-      form.setValues(initialValues);
-      setCustomizeTime({ ...initialValues, selectedSections });
-    }
-  }, [assignmentSetting, setCustomizeTime]);
-
-  useEffect(() => {
-    const updatedValues = { ...form.values, selectedSections };
-    setCustomizeTime(updatedValues);
-    form.setFieldValue('sections', selectedSections);
-  }, [form.values, selectedSections, setCustomizeTime]);
+  const { values, reset } = useAssignmentSettingFormStore();
+  const [isLoading, setIsLoading] = React.useState(true);
+    
+  React.useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 400);
+    return () => clearTimeout(timer);
+  }, []);
+  
+  if (isLoading) {
+    return (
+      <Flex justify="center" align="center" py="md">
+        <Loader color="blue" />
+      </Flex>
+    );
+  }
 
   return (
-    <>
+    <Flex direction="column" gap="xs" ml='md'>
       <SectionEditAssignment/>
       
-      <div className="grid grid-cols-2 gap-4 mb-3 mt-3">
+      <Flex gap="md">
         <DateTimePicker
-          label="Release Date"
+          style={{ flex: 1 }}
+          label="Release date"
           placeholder="Select release date"
-          {...form.getInputProps('release_date')}
-          valueFormat="DD/MM/YYYY HH:mm"
+          value={values.releaseDate || null}
+          onChange={(date) => {
+            useAssignmentSettingFormStore.getState().setField('releaseDate', date);
+          }}
+          valueFormat="DD/MM/YYYY HH:mm A"
+          timePickerProps={{
+            withDropdown: true,
+            popoverProps: { withinPortal: false },
+            format: '12h',
+          }}
         />
         <DateTimePicker
-          label="Due Date"
+          style={{ flex: 1 }}
+          label="Due date"
           placeholder="Select due date"
-          {...form.getInputProps('due_date')}
-          valueFormat="DD/MM/YYYY HH:mm"
+          value={values.dueDate || null}
+          onChange={(date) => {
+            useAssignmentSettingFormStore.getState().setField('dueDate', date);
+          }}
+          valueFormat="DD/MM/YYYY HH:mm A"
+          timePickerProps={{
+            withDropdown: true,
+            popoverProps: { withinPortal: false },
+            format: '12h',
+          }}
         />
-      </div>
-
+      </Flex>
       <DateTimePicker
-        label="Cut Off Date"
+        label="Cut off date"
         placeholder="Select cut off date"
-        {...form.getInputProps('cut_off_date')}
-        valueFormat="DD/MM/YYYY HH:mm"
-        className="mt-4"
+        value={values.cutOffDate || null}
+        onChange={(date) => {
+          useAssignmentSettingFormStore.getState().setField('cutOffDate', date);
+        }}
+        valueFormat="DD/MM/YYYY HH:mm A"
+        timePickerProps={{
+          withDropdown: true,
+          popoverProps: { withinPortal: false },
+          format: '12h',
+        }}
       />
-    </>
+    </Flex>
   );
 };
 

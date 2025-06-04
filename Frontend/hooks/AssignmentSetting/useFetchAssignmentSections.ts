@@ -21,5 +21,6 @@ export const useFetchAssignmentSections = (assignment_id: string) => {
             return response.data.sections || [];
         },
         enabled: !!assignment_id,
+        refetchOnWindowFocus: false,
     });
 };
