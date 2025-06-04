@@ -2,36 +2,36 @@ import { create } from 'zustand';
 
 // Part: 1
 interface Store {
-    selectedSectionIDs: string[];
+    selectedAssignmentSectionIDs: string[];
     selectedAssignmentIDs: string[];
-    setSectionIDs: (IDs: string[]) => void;
-    toggleSectionID: (ID: string) => void;
-    addSectionIDs: (IDs: string[]) => void;
-    removeSectionIDs: (IDs: string[]) => void;
+    setAssignmentSectionIDs: (IDs: string[]) => void;
+    toggleAssignmentSectionID: (ID: string) => void;
+    addAssignmentSectionIDs: (IDs: string[]) => void;
+    removeAssignmentSectionIDs: (IDs: string[]) => void;
     setAssignmentID: (ID: string) => void;
     removeAssignmentID: (ID: string) => void;
 }
 
 export const useAssignmentSectionStore = create<Store>((set, get) => ({
-    selectedSectionIDs: [],
+    selectedAssignmentSectionIDs: [],
     selectedAssignmentIDs: [],
-    setSectionIDs: (IDs) => set({ selectedSectionIDs: IDs }),
-    toggleSectionID: (ID) => {
-        const { selectedSectionIDs } = get();
+    setAssignmentSectionIDs: (IDs) => set({ selectedAssignmentSectionIDs: IDs }),
+    toggleAssignmentSectionID: (ID) => {
+        const { selectedAssignmentSectionIDs } = get();
         set({
-            selectedSectionIDs: selectedSectionIDs.includes(ID)
-                ? selectedSectionIDs.filter(i => i !== ID)
-                : [...selectedSectionIDs, ID]
+            selectedAssignmentSectionIDs: selectedAssignmentSectionIDs.includes(ID)
+                ? selectedAssignmentSectionIDs.filter(i => i !== ID)
+                : [...selectedAssignmentSectionIDs, ID]
         });
     },
-    addSectionIDs: (IDs) => {
-        const { selectedSectionIDs } = get();
-        const unique = Array.from(new Set([...selectedSectionIDs, ...IDs]));
-        set({ selectedSectionIDs: unique });
+    addAssignmentSectionIDs: (IDs) => {
+        const { selectedAssignmentSectionIDs } = get();
+        const unique = Array.from(new Set([...selectedAssignmentSectionIDs, ...IDs]));
+        set({ selectedAssignmentSectionIDs: unique });
     },
-    removeSectionIDs: (IDs) => {
-        const { selectedSectionIDs } = get();
-        set({ selectedSectionIDs: selectedSectionIDs.filter(ID => !IDs.includes(ID)) });
+    removeAssignmentSectionIDs: (IDs) => {
+        const { selectedAssignmentSectionIDs } = get();
+        set({ selectedAssignmentSectionIDs: selectedAssignmentSectionIDs.filter(ID => !IDs.includes(ID)) });
     },
     setAssignmentID: (ID) => {
         const { selectedAssignmentIDs } = get();
