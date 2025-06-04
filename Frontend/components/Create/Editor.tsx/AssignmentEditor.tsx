@@ -1,44 +1,46 @@
 "use client";
 
-import { Link, RichTextEditor } from '@mantine/tiptap'
+import '@mantine/tiptap/styles.css';
+import React, { useEffect } from 'react'
 import Superscript from '@tiptap/extension-superscript';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
-import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import SubScript from '@tiptap/extension-subscript';
-import React, { useEffect } from 'react'
-import '@mantine/tiptap/styles.css';
 import Highlight from '@tiptap/extension-highlight';
+import { Link, RichTextEditor } from '@mantine/tiptap'
+import { useEditor } from '@tiptap/react';
+import { useAssignmentSettingFormStore } from '@/store/modal/useAssignmentSettingModal';
 
-interface EditorProps {
-    value: string;
-    onChange: (value: string) => void;
-}
+export const Editor: React.FC = () => {
+  const { values, setField } = useAssignmentSettingFormStore();
 
-export const Editor: React.FC<EditorProps> = ({ value, onChange }) => {
-    const editor = useEditor({
-        extensions: [
-          StarterKit,
-          Underline,
-          Link,
-          Superscript,
-          SubScript,
-          Highlight,
-          TextAlign.configure({ types: ['heading', 'paragraph'] }),
-        ],
-        content: value,
-        onUpdate({ editor }) {
-            onChange(editor.getHTML());
-        },
-        immediatelyRender: false,
-    });
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Underline,
+      Link,
+      Superscript,
+      SubScript,
+      Highlight,
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+    ],
+    content: values.assignmentDescription,
+    onUpdate({ editor }) {
+      setField('assignmentDescription', editor.getHTML());
+    },
+    immediatelyRender: false,
+  });
 
-    useEffect(() => {
-        if (editor && editor.getHTML() !== value) {
-          editor.commands.setContent(value);
-        }
-    }, [value, editor]);
+  useEffect(() => {
+    if (
+      editor &&
+      !editor.isDestroyed &&
+      editor.getHTML() !== values.assignmentDescription
+    ) {
+      editor.commands.setContent(values.assignmentDescription, false);
+    }
+  }, [editor, values.assignmentDescription]);
 
   return (
     <RichTextEditor editor={editor}>
