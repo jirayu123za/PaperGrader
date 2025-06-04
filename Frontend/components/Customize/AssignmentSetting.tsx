@@ -69,19 +69,19 @@ const AssignmentSetting: React.FC = () => {
     console.log('cut_off_date:', values.cutOffDate ? new Date(values.cutOffDate).toISOString() : '');
     console.log('sections:', JSON.stringify(selectedSectionIDs));
 
-    // updateAssignment(
-    //   { formData, course_id: course_id as string, assignment_id: assignment_id as string },
-    //   {
-    //     onSuccess: () => {
-    //       console.log('Assignment updated successfully');
-    //       reset();
-    //       closeModal();
-    //     },
-    //     onError: (error) => {
-    //       console.error('Failed to update assignment:', error);
-    //     },
-    //   }
-    // );
+    updateAssignment(
+      { formData, course_id: course_id as string, assignment_id: assignment_id as string },
+      {
+        onSuccess: () => {
+          console.log('Assignment updated successfully');
+          reset();
+          closeModal();
+        },
+        onError: (error) => {
+          console.error('Failed to update assignment:', error);
+        },
+      }
+    );
     closeModal();
   };
 
