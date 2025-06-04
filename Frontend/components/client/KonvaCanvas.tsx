@@ -20,7 +20,7 @@ export default function KonvaCanvas({ innerContainerRef }: KonvaCanvasProps) {
     if (!innerContainerRef.current || stageRef.current) return;
 
     const width = innerContainerRef.current.offsetWidth;
-    const height = innerContainerRef.current.offsetHeight;
+    const height = innerContainerRef.current.scrollHeight;
 
     const stage = new Konva.Stage({
       container: innerContainerRef.current,
@@ -93,7 +93,19 @@ export default function KonvaCanvas({ innerContainerRef }: KonvaCanvasProps) {
     });
   }, [boundingBoxes, rubricData]);
 
-  
+  useEffect(() => {
+  if (innerContainerRef.current && stageRef.current) {
+    const newWidth = innerContainerRef.current.offsetWidth;
+    const newHeight = innerContainerRef.current.scrollHeight; // ความสูงรวม PDF
+
+    // Resize Stage
+    stageRef.current.size({
+      width: newWidth,
+      height: newHeight,
+    });
+  }
+}, [innerContainerRef.current?.scrollHeight]);
+
 
   return null;
 }
