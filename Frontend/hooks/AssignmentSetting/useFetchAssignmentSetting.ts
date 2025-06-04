@@ -1,27 +1,25 @@
-"use client";
-
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
-import { useAssignmentSettingStore } from '../../store/useAssignmentSettingStore';
-
-interface AssignmentSections {
-  section_id: string;
-  sectionName: string;
-  releaseDate: string | null;
-  dueDate: string | null;
-  cutOffDate: string | null;
-}
+import { useAssignmentSettingFormStore } from '@/store/modal/useAssignmentSettingModal';
 
 interface Assignment {
   assignment_id: string;
-  assignmentName: string;
-  assignmentDescription: string;
-  gradingType: string;
-  groupSubmiss: boolean;
-  lateSubmiss: boolean;
+  assignment_name: string;
+  assignment_description: string;
+  grading_type: string;
+  group_submitted: boolean;
+  late_submitted: boolean;
   published: boolean;
   regrades: boolean;
-  submissBy: string;
+  submitted_by: string;
+}
+
+interface AssignmentSections {
+  section_id: string;
+  section_name: string;
+  release_date: string | null;
+  due_date: string | null;
+  cut_off_date: string | null;
 }
 
 interface AssignmentSettingResponse {
@@ -29,9 +27,8 @@ interface AssignmentSettingResponse {
   assignmentSections: AssignmentSections[];
 }
 
-
 export const useFetchAssignmentSetting = (course_id: string, assignment_id: string) => {
-  const setAssignmentSetting = useAssignmentSettingStore((state) => state.setAssignmentSetting);
+  const { setAll, setAssignmentSections } = useAssignmentSettingFormStore.getState();
 
   return useQuery<AssignmentSettingResponse, Error>({
     queryKey: ['assignment_setting', course_id, assignment_id],
@@ -46,105 +43,54 @@ export const useFetchAssignmentSetting = (course_id: string, assignment_id: stri
 
       const { assignment, assignment_sections } = response.data.assignment_setting;
 
-      const assignmentSectionsData = assignment_sections.map((AssignmentSections: any) => ({
+      const assignmentSectionsData = assignment_sections.map((AssignmentSections: AssignmentSections) => ({
         section_id: AssignmentSections.section_id,
-        sectionName: AssignmentSections.section_name,
-        releaseDate: AssignmentSections.release_date,
-        dueDate: AssignmentSections.due_date,
-        cutOffDate: AssignmentSections.cut_off_date,
+        section_name: AssignmentSections.section_name,
+        release_date: AssignmentSections.release_date,
+        due_date: AssignmentSections.due_date,
+        cut_off_date: AssignmentSections.cut_off_date,
       }));
 
       const assignmentData: Assignment = {
         assignment_id: assignment.assignment_id,
-        assignmentName: assignment.assignment_name,
-        assignmentDescription: assignment.assignment_description,
-        gradingType: assignment.grading_type,
-        groupSubmiss: assignment.group_submiss,
-        lateSubmiss: assignment.late_submiss,
+        assignment_name: assignment.assignment_name,
+        assignment_description: assignment.assignment_description,
+        grading_type: assignment.grading_type,
+        group_submitted: assignment.group_submitted,
+        late_submitted: assignment.late_submitted,
         published: assignment.published,
         regrades: assignment.regrades,
-        submissBy: assignment.submiss_by,
+        submitted_by: assignment.submitted_by,
       };
+
+      const first = assignment_sections[0];
+      const release = first?.release_date ? new Date(first.release_date) : null;
+      const due = first?.due_date ? new Date(first.due_date) : null;
+      const cutOff = first?.cut_off_date ? new Date(first.cut_off_date) : null;
+
+      setAll({
+        assignmentName: assignment.assignment_name,
+        assignmentDescription: assignment.assignment_description,
+        submittedBy: assignment.submitted_by,
+        scoringMethod: assignment.grading_type,
+        lateSubmitted: assignment.late_submitted,
+        published: assignment.published,
+        regrades: assignment.regrades,
+        groupSubmitted: assignment.group_submitted,
+        releaseDate: release ? release.toISOString() : null,
+        dueDate: due ? due.toISOString() : null,
+        cutOffDate: cutOff ? cutOff.toISOString() : null,
+      });
 
       const assignmentSetting: AssignmentSettingResponse = {
         assignment: assignmentData,
         assignmentSections: assignmentSectionsData,
       };
 
-      setAssignmentSetting(assignmentSetting);
+      setAssignmentSections(assignmentSectionsData);
       return assignmentSetting;
     },
     enabled: !!course_id && !!assignment_id,
+    refetchOnWindowFocus: false,
   });
 };
-
-// interface UpdatePayload {
-//   sections: string[];
-//   releaseDate: string;
-//   dueDate: string;
-//   cutOffDate: string;
-// }
-
-// Update data function
-// const updateCustomizeTimeApi = async (payload: UpdatePayload): Promise<FetchResponse> => {
-//   const response = await fetch(`/api/assignments/${assignmentId}/customize-time`, {
-//     method: 'PUT',
-//     headers: {
-//       'Content-Type': 'application/json',
-//     },
-//     body: JSON.stringify(payload),
-//   });
-
-//   if (!response.ok) {
-//     throw new Error('Failed to update customize time');
-//   }
-//   return response.json();
-// };
-
-// // UseQuery for fetching data
-// const { data, isFetching, error } = useQuery<FetchResponse>({
-//   queryKey: ['customizeTime', assignmentId],
-//   queryFn: fetchCustomizeTime,
-//   enabled: Boolean(assignmentId),
-// });
-
-// // UseEffect to manage the query results
-// useEffect(() => {
-//   if (data) {
-//     setSections(data.sections || []);
-//     setDates({
-//       releaseDate: data.releaseDate,
-//       dueDate: data.dueDate,
-//       cutOffDate: data.cutOffDate,
-//     });
-//   }
-// }, [data, setSections, setDates]);
-
-// // UseMutation for updating data
-// const mutation = useMutation<FetchResponse, Error, UpdatePayload>({
-//   mutationFn: updateCustomizeTimeApi,
-//   onSuccess: (data: FetchResponse) => {
-//     setSections(data.sections || []);
-//     setDates({
-//       releaseDate: data.releaseDate,
-//       dueDate: data.dueDate,
-//       cutOffDate: data.cutOffDate,
-//     });
-//     queryClient.invalidateQueries({
-//       queryKey: ['customizeTime', assignmentId], // ใช้ queryKey ผ่าน object
-//     });
-//     console.log('Data updated successfully');
-//   },
-//   onError: (error: Error) => {
-//     console.error('Error updating data:', error);
-//   },
-// });
-
-// return {
-//   data,
-//   isFetching, // ใช้ isFetching แทน isLoading
-//   error,
-//   isUpdating: mutation.status === 'pending', // แก้ไขจาก isLoading เป็น status === 'pending'
-//   updateCustomizeTime: mutation.mutate,
-// };
-// };
