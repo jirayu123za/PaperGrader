@@ -1,53 +1,49 @@
+'use client'
+
 import React from 'react';
-import { TextInput, Checkbox, Radio, Group, Select, Flex, Text } from '@mantine/core';
-import { UseFormReturnType } from '@mantine/form';
+import { TextInput, Checkbox, Radio, Group, Select, Flex, Text, Loader } from '@mantine/core';
 import { Editor } from '../../Create/Editor.tsx/AssignmentEditor';
+import { useAssignmentSettingFormStore } from '@/store/modal/useAssignmentSettingModal';
 
-interface BasicSettingsProps {
-    form: UseFormReturnType<{
-        assignmentName: string;
-        assignmentDescription: string;
-        uploadBy: string;
-        scoringMethod: string;
-        allowLateSubmissions: boolean;
-        published: boolean;
-        enableRegrades: boolean;
-        enableGroupSubmission: boolean;
-        groupSizeLimit: string;
-        submissionType: string;
-        rubricVisibility: string;
-        studentVisibility: string;
-        releaseDate: Date | null;
-        dueDate: Date | null;
-        cutOffDate: Date | null;
-        sections: string[];
-    }>;
-}
-
-const BasicSettings: React.FC<BasicSettingsProps> = ({ form }) => {
+const BasicSettings: React.FC = () => {
+    const { values, reset } = useAssignmentSettingFormStore();
+    const [isLoading, setIsLoading] = React.useState(true);
+      
+    React.useEffect(() => {
+        const timer = setTimeout(() => setIsLoading(false), 400);
+        return () => clearTimeout(timer);
+    }, []);
+    
+    if (isLoading) {
+        return (
+            <Flex justify="center" align="center" py="md">
+                <Loader color="blue" />
+            </Flex>
+        );
+    }
+    
     return (
-        <>
+        <Flex direction="column" gap="xs" ml='md'>
             <TextInput
-                mt="md"
                 label="Assignment Name"
-                required
                 placeholder="Enter assignment name"
-                {...form.getInputProps('assignmentName')}
-            />
-            <Text size="sm" fw={500} mb={2} mt="md">
-                Assignment Description
-            </Text>
-            <Editor 
-                value={form.values.assignmentDescription}
-                onChange={(value: string) => 
-                    form.setFieldValue('assignmentDescription', value)
+                required
+                value={values.assignmentName}
+                onChange={(event) => 
+                    useAssignmentSettingFormStore.getState().setField('assignmentName', event.currentTarget.value)
                 }
             />
+            <Text size="sm" fw={500}>
+                Assignment Description
+            </Text>
+            <Editor/>
             <Radio.Group
                 label="Who will upload submissions?"
                 required
-                mt="md"
-                {...form.getInputProps('uploadBy')}
+                value={values.submittedBy}
+                onChange={(value) => 
+                    useAssignmentSettingFormStore.getState().setField('submittedBy', value)
+                }
             >
                 <Flex gap="md" pt={4}>
                     <Radio value="instructor" label="Instructor" />
@@ -57,53 +53,67 @@ const BasicSettings: React.FC<BasicSettingsProps> = ({ form }) => {
             <Select
                 label="Scoring Method"
                 placeholder="Select Default Scoring Method"
+                clearable
                 data={[
                     { value: 'negative', label: 'Negative scoring' },
                     { value: 'positive', label: 'Positive scoring' },
                 ]}
-                clearable
-                mt="md"
-                {...form.getInputProps('scoringMethod')}
+                value={values.scoringMethod}
+                onChange={(value) => useAssignmentSettingFormStore.getState().setField('scoringMethod', value || '')}
             />
-            <Checkbox.Group label="Other Settings" mt="md">
-                <Group mt={4}>
+            <Checkbox.Group label="Other Settings">
+                <Group mt={2} gap={4}>
                     <Checkbox
-                        value="allowLateSubmissions"
                         label="Allow Late Submissions"
-                        {...form.getInputProps('allowLateSubmissions', { type: 'checkbox' })}
+                        value="lateSubmitted"
+                        checked={values.lateSubmitted}
+                        onChange={(event) => 
+                            useAssignmentSettingFormStore.getState().setField('lateSubmitted', event.currentTarget.checked)
+                        }
                     />
                     <Checkbox
-                        value="published"
                         label="Published"
-                        {...form.getInputProps('published', { type: 'checkbox' })}
+                        value="published"
+                        checked={values.published}
+                        onChange={(event) => 
+                            useAssignmentSettingFormStore.getState().setField('published', event.currentTarget.checked)
+                        }
                     />
                     <Checkbox
                         value="enableRegrades"
                         label="Enable Regrades"
-                        {...form.getInputProps('enableRegrades', { type: 'checkbox' })}
+                        checked={values.regrades}
+                        onChange={(event) => 
+                            useAssignmentSettingFormStore.getState().setField('regrades', event.currentTarget.checked)
+                        }
                     />
                 </Group>
             </Checkbox.Group>
-            <Checkbox.Group label="Group Settings" mt="md">
+            <Checkbox.Group label="Group Settings">
                 {/* Checkbox for Group Submission */}
                 <Checkbox
                     mt={4}
-                    value="enableGroupSubmission"
+                    value="groupSubmitted"
                     label="Enable Group Submission"
-                    {...form.getInputProps('enableGroupSubmission', { type: 'checkbox' })}
+                    checked={values.groupSubmitted}
+                    onChange={(event) => 
+                        useAssignmentSettingFormStore.getState().setField('groupSubmitted', event.currentTarget.checked)
+                    }
                 />
 
                 {/* show TextInput when Group Submission opened */}
-                {form.values.enableGroupSubmission && (
+                {values.groupSubmitted && (
                     <TextInput
                         label="Limit Group Size"
                         placeholder="Enter max group size"
                         mt="md"
-                        {...form.getInputProps('groupSizeLimit')}
+                        value={values.groupSizeLimit}
+                        onChange={(event) => useAssignmentSettingFormStore.getState().setField('groupSizeLimit', event.currentTarget.value)}
+                        type="number"
                     />
                 )}
             </Checkbox.Group>
-        </>
+        </Flex>
     );
 };
 
