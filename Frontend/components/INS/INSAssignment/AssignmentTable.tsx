@@ -8,7 +8,7 @@ import { Button, Menu, Anchor, Text, Checkbox, Flex, Table, Paper, Pagination, A
 import { usePagination } from '@mantine/hooks';
 import { useFetchAssignmentsTable } from '@/hooks/useFetchAssignments';
 import { useAssignmentsListTableStore } from '@/store/useAssignmentStore';
-import { useModalAssignmentSettingStore } from '@/store/modal/useAssignmentSettingModal';
+import { useAssignmentSettingStore, useModalAssignmentSettingStore } from '@/store/modal/useAssignmentSettingModal';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { IconSettings, IconTrash } from '@tabler/icons-react';
 import { useAssignmentSectionStore, useExpandedAssignmentStore } from '@/store/table/useAssignmentsListStore';
@@ -19,6 +19,7 @@ const AssignmentTable: React.FC = () => {
   const { openModal } = useModalAssignmentSettingStore();
   const { isLoading: isLoadingAssignmentsList } = useFetchAssignmentsTable(course_id);
   const { assignmentList } = useAssignmentsListTableStore();
+  const { selectedSectionIDs, setSectionIDs } = useAssignmentSettingStore();
 
   const { expandedAssignmentIDs, toggleExpandedAssignmentID } = useExpandedAssignmentStore();
   const { addAssignmentSectionIDs, removeAssignmentSectionIDs, selectedAssignmentIDs, selectedAssignmentSectionIDs, setAssignmentID, removeAssignmentID } = useAssignmentSectionStore();
@@ -63,9 +64,9 @@ const AssignmentTable: React.FC = () => {
               ) : (
                 paginatedAssignmentsTable.map((assignment) => {
                   const assignmentSectionIDs = assignment.assignment_sections.map(s => s.assignment_section_id);
-                  const selectedSectionIDs = assignmentSectionIDs.filter(id => selectedAssignmentSectionIDs.includes(id));
-                  const isChecked = selectedSectionIDs.length === assignmentSectionIDs.length;
-                  const isIndeterminate = selectedSectionIDs.length > 0 && !isChecked;
+                  const selectedAssignmentSectionIDsForThisAssignment  = assignmentSectionIDs.filter(id => selectedAssignmentSectionIDs.includes(id));
+                  const isChecked = selectedAssignmentSectionIDsForThisAssignment .length === assignmentSectionIDs.length;
+                  const isIndeterminate = selectedAssignmentSectionIDsForThisAssignment .length > 0 && !isChecked;
 
                   return (
                     <React.Fragment key={assignment.assignment_id}>
@@ -77,12 +78,18 @@ const AssignmentTable: React.FC = () => {
                             indeterminate={isIndeterminate}
                             onChange={(event) => {
                               const isNowChecked = event.currentTarget.checked;
+                              const sectionIDs = assignment.assignment_sections.map(s => s.section_id);
+
                               if (isNowChecked) {
                                 setAssignmentID(assignment.assignment_id);
                                 addAssignmentSectionIDs(assignmentSectionIDs);
+                                const merged = Array.from(new Set([...selectedSectionIDs, ...sectionIDs]));
+                                setSectionIDs(merged);
                               } else {
                                 removeAssignmentID(assignment.assignment_id);
                                 removeAssignmentSectionIDs(assignmentSectionIDs);
+                                const updatedSectionIDs = selectedSectionIDs.filter(id => !sectionIDs.includes(id));
+                                setSectionIDs(updatedSectionIDs);
                               }
                             }}
                           />
