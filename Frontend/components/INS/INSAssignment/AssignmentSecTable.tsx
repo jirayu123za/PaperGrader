@@ -28,7 +28,7 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
   const { openModal } = useModalAssignmentSettingStore();
   const { addAssignmentSectionIDs, removeAssignmentSectionIDs, removeAssignmentID, setAssignmentID, selectedAssignmentSectionIDs } = useAssignmentSectionStore();
   const [isLoading, setIsLoading] = React.useState(true);
-  // const { selectedSectionIDs } = useAssignmentSettingStore();
+  const { selectedSectionIDs, setSectionIDs } = useAssignmentSettingStore();
   
   React.useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
@@ -68,11 +68,18 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
                   checked={isChecked}
                   onChange={(event) => {
                     const checked = event.currentTarget.checked;
+                    const sectionID = section.section_id;
+
                     if (checked) {
                       addAssignmentSectionIDs([section.assignment_section_id]);
                     } else {
                       removeAssignmentSectionIDs([section.assignment_section_id]);
                     }
+
+                    const updatedSectionIDs = checked ? [...selectedSectionIDs, sectionID]
+                      : selectedSectionIDs.filter(id => id !== sectionID);
+                      setSectionIDs(Array.from(new Set(updatedSectionIDs)))
+                    ;
                     const allSectionIDs = assignment.assignment_sections.map(s => s.assignment_section_id);
                     const updated = checked
                       ? [...selectedAssignmentSectionIDs, section.assignment_section_id]
