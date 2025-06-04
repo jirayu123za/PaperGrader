@@ -4,7 +4,6 @@ import React from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { Button, Checkbox, Flex, Loader, Menu, Progress, Table, Text } from '@mantine/core';
-import { useSelectSectionStore } from '@/store/useSectionStore';
 import { useModalAssignmentSettingStore } from '@/store/modal/useAssignmentSettingModal';
 import { IconSettings, IconTrash } from '@tabler/icons-react';
 import { useAssignmentSectionStore } from '@/store/table/useAssignmentsListStore';
@@ -26,10 +25,9 @@ type Props = {
 };
 
 const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
-  // const { selectedSections, setSelectedSections } = useSelectSectionStore();
   const { openModal } = useModalAssignmentSettingStore();
-  const [isLoading, setIsLoading] = React.useState(true);
   const { addSectionIDs, removeSectionIDs, removeAssignmentID, setAssignmentID, selectedSectionIDs } = useAssignmentSectionStore();
+  const [isLoading, setIsLoading] = React.useState(true);
   
   React.useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
@@ -100,7 +98,7 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
                     <Button variant="transparent">•••</Button>
                   </Menu.Target>
                   <Menu.Dropdown>
-                    <Menu.Item leftSection={<IconSettings size={14} />} onClick={() => openModal(section.assignment_section_id)}>Settings</Menu.Item>
+                    <Menu.Item leftSection={<IconSettings size={14} />} onClick={() => openModal(assignment.assignment_id)}>Settings</Menu.Item>
                     <Menu.Item color="red" leftSection={<IconTrash size={14} />}>Delete</Menu.Item>
                   </Menu.Dropdown>
                 </Menu>
