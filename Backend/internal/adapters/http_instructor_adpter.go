@@ -252,11 +252,11 @@ func (h *HttpInstructorHandler) UpdateAssignmentAndAssignmentSection(c *fiber.Ct
 			"error":   err.Error(),
 		})
 	}
-	regradesStr := c.FormValue("enableRegrades")
+	regradesStr := c.FormValue("regrades")
 	regrades, err := strconv.ParseBool(regradesStr)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid enableRegrades value",
+			"message": "Invalid regrades value",
 			"error":   err.Error(),
 		})
 	}
@@ -281,7 +281,7 @@ func (h *HttpInstructorHandler) UpdateAssignmentAndAssignmentSection(c *fiber.Ct
 		})
 	}
 
-	releaseDateStr := c.FormValue("releaseDate")
+	releaseDateStr := c.FormValue("release_date")
 	releaseDate, err := utils.ParseDate(releaseDateStr, time.RFC3339)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -290,7 +290,7 @@ func (h *HttpInstructorHandler) UpdateAssignmentAndAssignmentSection(c *fiber.Ct
 		})
 	}
 
-	dueDateStr := c.FormValue("dueDate")
+	dueDateStr := c.FormValue("due_date")
 	dueDate, err := utils.ParseDate(dueDateStr, time.RFC3339)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -299,7 +299,7 @@ func (h *HttpInstructorHandler) UpdateAssignmentAndAssignmentSection(c *fiber.Ct
 		})
 	}
 
-	cutOffDateStr := c.FormValue("cutOffDate")
+	cutOffDateStr := c.FormValue("cut_off_date")
 	cutOffDate, err := utils.ParseDate(cutOffDateStr, time.RFC3339)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -308,9 +308,9 @@ func (h *HttpInstructorHandler) UpdateAssignmentAndAssignmentSection(c *fiber.Ct
 		})
 	}
 
-	fmt.Printf("Received ReleaseDate: %s\n", c.FormValue("releaseDate"))
-	fmt.Printf("Received DueDate: %s\n", c.FormValue("dueDate"))
-	fmt.Printf("Received CutOffDate: %s\n", c.FormValue("cutOffDate"))
+	fmt.Printf("Received ReleaseDate: %s\n", c.FormValue("release_date"))
+	fmt.Printf("Received DueDate: %s\n", c.FormValue("due_date"))
+	fmt.Printf("Received CutOffDate: %s\n", c.FormValue("cut_off_date"))
 
 	var sections []models.AssignmentSection
 	for _, sectionID := range sectionsIDs {
