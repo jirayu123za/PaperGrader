@@ -136,6 +136,11 @@ useEffect(() => {
   }
 }, [questions, boxes]);
 
+useEffect(() => {
+  if (konvaOverlayRef.current && innerContainerRef.current) {
+    konvaOverlayRef.current.style.height = `${innerContainerRef.current.scrollHeight}px`;
+  }
+}, [isLoading]);
 
 
   return (
