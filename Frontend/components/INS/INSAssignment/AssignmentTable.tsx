@@ -21,7 +21,7 @@ const AssignmentTable: React.FC = () => {
   const { assignmentList } = useAssignmentsListTableStore();
 
   const { expandedAssignmentIDs, toggleExpandedAssignmentID } = useExpandedAssignmentStore();
-  const { addSectionIDs, removeSectionIDs, selectedAssignmentIDs, selectedSectionIDs, setAssignmentID, removeAssignmentID } = useAssignmentSectionStore();
+  const { addAssignmentSectionIDs, removeAssignmentSectionIDs, selectedAssignmentIDs, selectedAssignmentSectionIDs, setAssignmentID, removeAssignmentID } = useAssignmentSectionStore();
 
   const pageSize = 8;
   const totalPages = assignmentList ? Math.ceil(assignmentList.length / pageSize) : 1;
@@ -62,10 +62,10 @@ const AssignmentTable: React.FC = () => {
                 </Table.Tr>
               ) : (
                 paginatedAssignmentsTable.map((assignment) => {
-                  const sectionIDs = assignment.assignment_sections.map(s => s.assignment_section_id);
-                  const selectedSectionIDsInThisAssignment = sectionIDs.filter(id => selectedSectionIDs.includes(id));
-                  const isChecked = selectedSectionIDsInThisAssignment.length === sectionIDs.length;
-                  const isIndeterminate = selectedSectionIDsInThisAssignment.length > 0 && !isChecked;
+                  const assignmentSectionIDs = assignment.assignment_sections.map(s => s.assignment_section_id);
+                  const selectedSectionIDs = assignmentSectionIDs.filter(id => selectedAssignmentSectionIDs.includes(id));
+                  const isChecked = selectedSectionIDs.length === assignmentSectionIDs.length;
+                  const isIndeterminate = selectedSectionIDs.length > 0 && !isChecked;
 
                   return (
                     <React.Fragment key={assignment.assignment_id}>
@@ -79,10 +79,10 @@ const AssignmentTable: React.FC = () => {
                               const isNowChecked = event.currentTarget.checked;
                               if (isNowChecked) {
                                 setAssignmentID(assignment.assignment_id);
-                                addSectionIDs(sectionIDs);
+                                addAssignmentSectionIDs(assignmentSectionIDs);
                               } else {
                                 removeAssignmentID(assignment.assignment_id);
-                                removeSectionIDs(sectionIDs);
+                                removeAssignmentSectionIDs(assignmentSectionIDs);
                               }
                             }}
                           />

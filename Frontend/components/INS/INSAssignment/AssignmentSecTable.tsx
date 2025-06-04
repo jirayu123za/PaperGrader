@@ -4,7 +4,7 @@ import React from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { Button, Checkbox, Flex, Loader, Menu, Progress, Table, Text } from '@mantine/core';
-import { useModalAssignmentSettingStore } from '@/store/modal/useAssignmentSettingModal';
+import { useAssignmentSettingStore, useModalAssignmentSettingStore } from '@/store/modal/useAssignmentSettingModal';
 import { IconSettings, IconTrash } from '@tabler/icons-react';
 import { useAssignmentSectionStore } from '@/store/table/useAssignmentsListStore';
 dayjs.extend(utc);
@@ -26,8 +26,9 @@ type Props = {
 
 const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
   const { openModal } = useModalAssignmentSettingStore();
-  const { addSectionIDs, removeSectionIDs, removeAssignmentID, setAssignmentID, selectedSectionIDs } = useAssignmentSectionStore();
+  const { addAssignmentSectionIDs, removeAssignmentSectionIDs, removeAssignmentID, setAssignmentID, selectedAssignmentSectionIDs } = useAssignmentSectionStore();
   const [isLoading, setIsLoading] = React.useState(true);
+  // const { selectedSectionIDs } = useAssignmentSettingStore();
   
   React.useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
@@ -58,7 +59,7 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
       <Table.Tbody>
         {assignment.assignment_sections.map((section) => {
           const progress = calculateProgress(section.release_date, section.due_date);
-          const isChecked = selectedSectionIDs.includes(section.assignment_section_id);
+          const isChecked = selectedAssignmentSectionIDs.includes(section.assignment_section_id);
           return (
             <Table.Tr key={section.assignment_section_id} className={`transition hover:bg-gray-100 ${isChecked ? 'bg-blue-100' : 'bg-gray-50'}`}>
               <Table.Td>
@@ -68,14 +69,14 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
                   onChange={(event) => {
                     const checked = event.currentTarget.checked;
                     if (checked) {
-                      addSectionIDs([section.assignment_section_id]);
+                      addAssignmentSectionIDs([section.assignment_section_id]);
                     } else {
-                      removeSectionIDs([section.assignment_section_id]);
+                      removeAssignmentSectionIDs([section.assignment_section_id]);
                     }
                     const allSectionIDs = assignment.assignment_sections.map(s => s.assignment_section_id);
                     const updated = checked
-                      ? [...selectedSectionIDs, section.assignment_section_id]
-                      : selectedSectionIDs.filter(id => id !== section.assignment_section_id);
+                      ? [...selectedAssignmentSectionIDs, section.assignment_section_id]
+                      : selectedAssignmentSectionIDs.filter(id => id !== section.assignment_section_id);
                     const isAllSelected = allSectionIDs.every(id => updated.includes(id));
                     if (isAllSelected) {
                       setAssignmentID(assignment.assignment_id);
