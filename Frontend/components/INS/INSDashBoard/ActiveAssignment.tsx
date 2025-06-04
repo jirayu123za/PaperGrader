@@ -18,12 +18,10 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
   const router = useRouter();
   const params = useParams();
   const course_id = params?.course_id as string;
-  const { error } = useFetchActiveAssignments(course_id as string);
+  const { isLoading, error } = useFetchActiveAssignments(course_id as string);
   const { activeAssignments } = useActiveAssignmentStore();
   const iconAssignmentTurnedIn = <MdOutlineAssignmentTurnedIn size={24} />;
   dayjs.extend(utc);
-
-  const isLoading = true;
 
   const pageSize = 10;
   const totalPages = Math.ceil(activeAssignments.length / pageSize);
@@ -41,35 +39,24 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
   );
 
   const calculateTimeRemaining = (releaseDate: string | null, dueDate: string | null): number => {
-    if (!releaseDate || !dueDate || releaseDate === 'N/A' || dueDate === 'N/A') return 0;
-
     const now = dayjs();
     const release = dayjs(releaseDate);
     const due = dayjs(dueDate);
-
-    if (now.isBefore(release)) {
-      return 100; // Full bar if before release
-    }
-    if (now.isAfter(due)) {
-      return 0; // Empty bar if after due
-    }
-
     const totalDuration = due.diff(release);
     const remainingDuration = due.diff(now);
 
-    return (remainingDuration / totalDuration) * 100; // Percentage of time remaining
+    if (!releaseDate || !dueDate || releaseDate === 'N/A' || dueDate === 'N/A') return 0;
+    if (now.isBefore(release)) return 100;
+    if (now.isAfter(due)) return 0;
+
+    return (remainingDuration / totalDuration) * 100;
   };
 
   const getProgressColor = (releaseDate: string | null, dueDate: string | null): string => {
     const remainingPercentage = calculateTimeRemaining(releaseDate, dueDate);
-
-    if (remainingPercentage >70) {
-      return 'green';
-    } else if (remainingPercentage > 40) {
-      return 'orange';
-    } else {
-      return 'red';
-    }
+    if (remainingPercentage >70) return 'green';
+    if (remainingPercentage > 40) return 'orange';
+    return 'red';
   };
 
   if (error) {
