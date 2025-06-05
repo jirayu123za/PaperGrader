@@ -1093,7 +1093,7 @@ func (r *GormInstructorRepository) FindQuestionsByAssignmentTemplate(AssignmentI
 
 	if tx.RowsAffected == 0 {
 		return response.QuestionsTemplateResponse{
-			RubricID:      uuid.Nil,
+			RubricID:      nil,
 			QuestionsData: []interface{}{},
 		}, nil
 	}
@@ -1110,7 +1110,7 @@ func (r *GormInstructorRepository) FindQuestionsByAssignmentTemplate(AssignmentI
 	questionsData, _ := rubricData["questions_data"].([]interface{})
 
 	return response.QuestionsTemplateResponse{
-		RubricID:      rubric.RubricID,
+		RubricID:      &rubric.RubricID,
 		QuestionsData: questionsData,
 	}, nil
 }
