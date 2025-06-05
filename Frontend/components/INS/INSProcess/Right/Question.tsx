@@ -1,11 +1,11 @@
 'use client';
 
-import {Button,NumberInput,TextInput,ActionIcon,Table,ScrollArea,Box} from '@mantine/core';
+import { Button, NumberInput, TextInput, ActionIcon, Table, ScrollArea, Box } from '@mantine/core';
 import { FaTrash, FaPlus } from 'react-icons/fa';
 import useBoundingBoxStore from '@/store/BoundingBox/useBoundingBoxStore';
 import { nanoid } from 'nanoid';
-import {handleAddNameBoundingBox,handleAddIdBoundingBox,handleAddQuestionAndBoundingBox,} from '@/components/INS/INSProcess/Right/Boundingbox/boundingBoxActions';
-import { useCreateBoundingBoxes, mapRubricToQuestionsData , useFetchQuestions, useFetchBoundingBoxes } from '@/hooks/BoundingBox/useFetchBoundingBox';
+import { handleAddNameBoundingBox, handleAddIdBoundingBox, handleAddQuestionAndBoundingBox } from '@/components/INS/INSProcess/Right/Boundingbox/boundingBoxActions';
+import { useCreateBoundingBoxes, mapRubricToQuestionsData, useFetchTemplate } from '@/hooks/BoundingBox/useFetchBoundingBox';
 import { useParams } from 'next/navigation';
 import { useEffect } from 'react';
 import React from 'react';
@@ -16,25 +16,28 @@ export default function QuestionOutline() {
   const params = useParams();
   const assignment_id = params.assignment_id as string;
   const { setBoundingBoxesFromAPI, setRubricDataFromAPI } = useBoundingBoxStore();
-  const { data: boxes } = useFetchBoundingBoxes(assignment_id);
-  const { data: questions } = useFetchQuestions(assignment_id);
+  const { data: template } = useFetchTemplate(assignment_id);
 
   useEffect(() => {
-    if (boxes?.bounding_boxes && Array.isArray(boxes.bounding_boxes)) {
-      setBoundingBoxesFromAPI(boxes.bounding_boxes);
+    if (template && template.bounding_boxes) {
+      setBoundingBoxesFromAPI(template.bounding_boxes);
     }
-  }, [boxes]);
+  }, [template]);
 
   useEffect(() => {
-    const rubricQuestions = questions?.questions?.rubric_data?.questions;
+    if (!template) return;
+
+    const rubricQuestions = template.questions?.rubric_data?.questions;
+
     if (Array.isArray(rubricQuestions)) {
       const withBoxIds = rubricQuestions.map((q, i) => ({
+        question_id: nanoid(),
         ...q,
-        bounding_box_id: boxes?.bounding_boxes?.[i]?.bounding_box_id ?? '',
+        bounding_box_id: template.bounding_boxes?.[i]?.bounding_box_id ?? '',
       }));
       setRubricDataFromAPI(withBoxIds);
     }
-  }, [questions, boxes]);
+  }, [template]);
 
   const calculateTotalPoints = () =>
     rubricData.questions.reduce((acc, q) => {

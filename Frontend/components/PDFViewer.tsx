@@ -9,9 +9,9 @@ import { useFetchFile } from '../hooks/useFetchFile';
 import { useParams } from 'next/navigation';
 import { useCreateSidebarStore } from '@/store/process-outline/createSidebarStore';
 import { useLeftProcessSidebarStore } from '@/store/process-outline/leftProcessSidebarStore';
-import { useFetchBoundingBoxes, useFetchQuestions } from '@/hooks/BoundingBox/useFetchBoundingBox';
+import { useFetchTemplate } from '@/hooks/BoundingBox/useFetchBoundingBox';
 import useBoundingBoxStore from '@/store/BoundingBox/useBoundingBoxStore';
-
+import { nanoid } from 'nanoid';
 
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js`;
 
@@ -19,6 +19,7 @@ const KonvaCanvas = dynamic(() => import('./client/KonvaCanvas'), { ssr: false }
 
 const PDFViewer: React.FC = () => {
   const konvaOverlayRef = useRef<HTMLDivElement>(null);
+  const pageOffsetsRef = useRef<number[]>([]);
   const params = useParams();
   const course_id = params.course_id as string;
   const assignment_id = params.assignment_id as string;
@@ -33,8 +34,8 @@ const PDFViewer: React.FC = () => {
   const isCreateCollapsed = useCreateSidebarStore((state) => state.isCollapsed);
   const isLeftCollapsed = useLeftProcessSidebarStore((state) => state.isCollapsed);
   const { setBoundingBoxesFromAPI, setRubricDataFromAPI } = useBoundingBoxStore();
-  const { data: boxes } = useFetchBoundingBoxes(assignment_id);
-  const { data: questions } = useFetchQuestions(assignment_id);
+
+  const { data: template } = useFetchTemplate(assignment_id);
 
   useEffect(() => {
     const handleResize = () => {
@@ -63,22 +64,27 @@ const PDFViewer: React.FC = () => {
         innerContainerRef.current.innerHTML = '';
         pdfPagesRef.current = {};
 
+        const pageOffsets: number[] = [];
+        let cumulativeHeight = 0;
+
         for (let pageNum = 1; pageNum <= numPages; pageNum++) {
           const page = await pdf.getPage(pageNum);
           const unscaledViewport = page.getViewport({ scale: 1.0 });
-          const dpiRatio = window.devicePixelRatio || 1;
           const baseScaleW = containerWidth / unscaledViewport.width;
           const baseScaleH = containerHeight / unscaledViewport.height;
           const baseScale = Math.max(baseScaleW, baseScaleH);
           const layoutViewport = page.getViewport({ scale: baseScale });
-          const scaledViewport = page.getViewport({ scale: baseScale * dpiRatio });
-          const transform = dpiRatio !== 1 ? [dpiRatio, 0, 0, dpiRatio, 0, 0] : undefined;
+          const aspectRatio = layoutViewport.height / layoutViewport.width;
+          const pageHeight = containerWidth * aspectRatio;
+
+          pageOffsets.push(cumulativeHeight);
+          cumulativeHeight += pageHeight;
+
           const canvas = document.createElement('canvas');
           const context = canvas.getContext('2d');
-          const aspectRatio = layoutViewport.height / layoutViewport.width;
 
-          canvas.width = Math.floor(scaledViewport.width);
-          canvas.height = Math.floor(scaledViewport.height);
+          canvas.width = Math.floor(layoutViewport.width);
+          canvas.height = Math.floor(layoutViewport.height);
           canvas.style.width = '100%';
           canvas.style.height = `${containerWidth * aspectRatio}px`;
           canvas.style.display = 'block';
@@ -88,7 +94,6 @@ const PDFViewer: React.FC = () => {
           renderTaskRef.current = page.render({
             canvasContext: context!,
             viewport: layoutViewport,
-            transform: transform,
           });
 
           try {
@@ -96,15 +101,10 @@ const PDFViewer: React.FC = () => {
           } catch (error) {
             console.warn('Render task cancelled or failed:', error);
           }
-
-          if (pageNum < numPages) {
-            const divider = document.createElement('div');
-            divider.style.height = '1px';
-            divider.style.background = '#ccc';
-            divider.style.width = '100%';
-            innerContainerRef.current?.appendChild(divider);
-          }
         }
+
+        pageOffsetsRef.current = pageOffsets;
+
       } finally {
         setIsLoading(false);
       }
@@ -112,39 +112,38 @@ const PDFViewer: React.FC = () => {
     renderPDF();
   }, [fileForm.values.pdfUrl, containerWidth]);
 
-useEffect(() => {
-  if (boxes?.bounding_boxes && Array.isArray(boxes.bounding_boxes)) {
-    setBoundingBoxesFromAPI(boxes.bounding_boxes);
-  }
-}, [boxes]);
+  useEffect(() => {
+    if (template && template.bounding_boxes) {
+      setBoundingBoxesFromAPI(template.bounding_boxes);
+    }
+  }, [template]);
 
-useEffect(() => {
-  const rubricQuestions = questions?.questions?.rubric_data?.questions;
-  const apiBoxes = boxes?.bounding_boxes;
+  useEffect(() => {
+    if (!template) return;
 
-  if (Array.isArray(rubricQuestions) && Array.isArray(apiBoxes)) {
-    const questionBoxes = apiBoxes.filter(b => b.bounding_box_type === 'question');
+    const rubricQuestions = template.questions?.rubric_data?.questions;
+    const apiBoxes = template.bounding_boxes;
 
-    const withBoxIds = rubricQuestions.map((q, i) => ({
-      ...q,
-      bounding_box_id: questionBoxes[i]?.bounding_box_id ?? '',
-    }));
+    if (Array.isArray(rubricQuestions) && Array.isArray(apiBoxes)) {
+      const questionBoxes = apiBoxes.filter(b => b.bounding_box_type === 'question');
 
-    setRubricDataFromAPI(withBoxIds);
-  } else {
-    console.warn('questions or boxes format unexpected:', questions, boxes);
-  }
-}, [questions, boxes]);
+      const withBoxIds = rubricQuestions.map((q, i) => ({
+        question_id: nanoid(),
+        ...q,
+        bounding_box_id: questionBoxes[i]?.bounding_box_id ?? '',
+      }));
 
-useEffect(() => {
-  if (konvaOverlayRef.current && innerContainerRef.current) {
-    konvaOverlayRef.current.style.height = `${innerContainerRef.current.scrollHeight}px`;
-  }
-}, [isLoading]);
+      setRubricDataFromAPI(withBoxIds);
+    }
+  }, [template]);
 
+  useEffect(() => {
+    if (konvaOverlayRef.current && innerContainerRef.current) {
+      konvaOverlayRef.current.style.height = `${innerContainerRef.current.scrollHeight}px`;
+    }
+  }, [isLoading]);
 
   return (
-
     <Container
       style={{ height: '100vh', position: 'relative', display: 'flex', flexDirection: 'column', overflow: 'hidden', flexGrow: 1 }}
       ref={pdfContainerRef}
@@ -169,23 +168,10 @@ useEffect(() => {
         </Box>
       )}
       <Paper style={{ flexGrow: 1, overflow: 'auto', position: 'relative' }}>
-        {/* PDF Layer */}
         <div ref={innerContainerRef} style={{ position: 'relative', zIndex: 1 }} />
-
-        {/* Konva Overlay Layer */}
-        <div ref={konvaOverlayRef} style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          zIndex: 2,
-          width: '100%',
-          height: '100%',
-          pointerEvents: 'auto',
-        }} />
-
-        <KonvaCanvas innerContainerRef={konvaOverlayRef} />
+        <div ref={konvaOverlayRef} style={{ position: 'absolute', top: 0, left: 0, zIndex: 2, width: '100%', height: '100%', pointerEvents: 'auto' }} />
+        <KonvaCanvas innerContainerRef={konvaOverlayRef} pageOffsets={pageOffsetsRef} />
       </Paper>
-
     </Container>
   );
 };
