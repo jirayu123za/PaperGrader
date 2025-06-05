@@ -112,7 +112,6 @@ func RegisterRoutes(
 	apiGroup.Get("/instructor/ocr/process", instructorHandler.GetProcessOCRForSubmissions)
 
 	// Bounding Box
-	apiGroup.Get("/instructor/boundingBoxes", instructorHandler.GetAssignmentTemplateData)
 	apiGroup.Post("/instructor/boundingBoxes", instructorHandler.CreateBoundingBoxesAndQuestions)
 	apiGroup.Get("/instructor/boundingBoxes/position", instructorHandler.GetBoundingBoxesTypePosition)
 	apiGroup.Delete("/instructor/boundingBoxes", instructorHandler.DeleteBoundingBoxes)
