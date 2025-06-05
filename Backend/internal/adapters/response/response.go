@@ -140,7 +140,7 @@ type RubricData struct {
 
 // Struct for Get Questions By Assignment Template
 type QuestionsTemplateResponse struct {
-	RubricID      uuid.UUID     `json:"rubric_id"`
+	RubricID      *uuid.UUID    `json:"rubric_id"`
 	QuestionsData []interface{} `json:"questions_data"`
 }
 
