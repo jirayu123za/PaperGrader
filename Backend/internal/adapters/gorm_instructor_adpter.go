@@ -1051,7 +1051,15 @@ func (r *GormInstructorRepository) FindBoundingBoxesByAssignmentTemplate(Assignm
 
 	if err := r.db.
 		Table("bounding_boxes").
-		Select("bounding_box_id, bounding_box_position, bounding_box_type, bounding_box_page").
+		Select(`
+			bounding_box_id,
+			CAST(bounding_box_data->>'point_x' AS FLOAT8) AS point_x,
+			CAST(bounding_box_data->>'point_y' AS FLOAT8) AS point_y,
+			CAST(bounding_box_data->>'width' AS FLOAT8) AS width,
+			CAST(bounding_box_data->>'height' AS FLOAT8) AS height,
+			CAST(bounding_box_data->>'bounding_box_page' AS INT) AS bounding_box_page,
+			bounding_box_data->>'bounding_box_type' AS bounding_box_type
+		`).
 		Where("bounding_boxes.assignment_id = ?", AssignmentID).
 		Where("bounding_boxes.deleted_at IS NULL").
 		Find(&boundingBoxes).Error; err != nil {
