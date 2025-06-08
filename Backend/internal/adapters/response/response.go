@@ -167,9 +167,13 @@ type SubmissionFilesResponse struct {
 	SubmittedAt        time.Time `json:"submitted_at"`
 }
 
-type SubmissionBoxPositionResponse struct {
-	BoundingBoxType     string `json:"bounding_box_type"`
-	BoundingBoxPosition string `json:"bounding_box_position"`
+type BoundingBoxDataResponse struct {
+	BoundingBoxType string  `json:"bounding_box_type"`
+	BoundingBoxPage uint    `json:"bounding_box_page"`
+	PointX          float64 `json:"point_x"`
+	PointY          float64 `json:"point_y"`
+	Width           float64 `json:"width"`
+	Height          float64 `json:"height"`
 }
 
 type StudentListForOCRResponse struct {
@@ -242,10 +246,13 @@ type SubmissionsListResponse struct {
 // bounding boxes
 // Part:1
 type BoundingBoxesRequest struct {
-	BoundingBoxID       *uuid.UUID `json:"bounding_box_id,omitempty"`
-	BoundingBoxPosition string     `json:"bounding_box_position"`
-	BoundingBoxType     string     `json:"bounding_box_type"`
-	BoundingBoxPage     uint       `json:"bounding_box_page"`
+	BoundingBoxID *uuid.UUID `json:"bounding_box_id,omitempty"`
+	PointX        float64    `json:"bounding_box_point_x"`
+	PointY        float64    `json:"bounding_box_point_y"`
+	Width         float64    `json:"bounding_box_width"`
+	Height        float64    `json:"bounding_box_height"`
+	Type          string     `json:"bounding_box_type"`
+	Page          uint       `json:"bounding_box_page"`
 }
 
 // Case 1: Only name and id
