@@ -1830,22 +1830,34 @@ func (h *HttpInstructorHandler) GetProcessOCRForSubmissions(c *fiber.Ctx) error 
 // 		})
 // 	}
 
-// 	var payload []models.Rubric
-// 	if err := c.BodyParser(&payload); err != nil {
+// 	// var request response.CreateRubricRequest
+// 	// if err := c.BodyParser(&request); err != nil {
+// 	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+// 	// 		"message": "Invalid JSON format",
+// 	// 		"error":   err.Error(),
+// 	// 	})
+// 	// }
+
+// 	// services: 1
+// 	rubricData, err := h.services.GetRubricData(assignmentID)
+// 	if err != nil {
 // 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-// 			"error": "Invalid payload",
+// 			"message": "Invalid rubric request",
+// 			"error":   err.Error(),
 // 		})
 // 	}
 
-// 	for _, rubric := range payload {
-// 		if err := h.services.CreateRubric(assignmentID, &rubric); err != nil {
-// 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-// 				"error": "Failed to save rubric",
-// 			})
-// 		}
-// 	}
+// 	// request.AssignmentID = assignmentID
+// 	// services: 2
+// 	// if err := h.services.CreateRubric(&request); err != nil {
+// 	// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+// 	// 		"message": "Failed to create rubric",
+// 	// 		"error":   err.Error(),
+// 	// 	})
+// 	// }
 
 // 	return c.JSON(fiber.Map{
 // 		"message": "Rubrics created successfully",
+// 		"rubric":  rubricData,
 // 	})
 // }

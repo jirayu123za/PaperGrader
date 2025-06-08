@@ -1122,3 +1122,22 @@ func (r *GormInstructorRepository) FindQuestionsByAssignmentTemplate(AssignmentI
 // 	}
 // 	return nil
 // }
+
+// func (r *GormInstructorRepository) FindRubricData(AssignmentID uuid.UUID) (response.RubricDataResp, error) {
+// 	var rubricRecord struct {
+// 		RubricData datatypes.JSON `gorm:"column:rubric_data"`
+// 	}
+// 	err := r.db.Table("rubrics").
+// 		Where("assignment_id = ? AND deleted_at IS NULL", AssignmentID).
+// 		Take(&rubricRecord).Error
+// 	if err != nil {
+// 		return response.RubricDataResp{}, fmt.Errorf("rubric not found: %w", err)
+// 	}
+
+// 	var rubricData response.RubricDataResp
+// 	if err := json.Unmarshal(rubricRecord.RubricData, &rubricData); err != nil {
+// 		return response.RubricDataResp{}, fmt.Errorf("failed to parse rubric_data: %w", err)
+// 	}
+
+// 	return rubricData, nil
+// }

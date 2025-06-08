@@ -121,6 +121,7 @@ func RegisterRoutes(
 
 	// Rubric
 	// apiGroup.Post("/instructor/rubric", instructorHandler.CreateRubric)
+	// apiGroup.Get("/instructor/rubric", instructorHandler.CreateRubric)
 
 	apiGroup.Get("/student/dashboard", studentHandler.GetCoursesAndAssignments)
 	// test api get pdf files name

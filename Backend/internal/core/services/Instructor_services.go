@@ -79,6 +79,7 @@ type InstructorService interface {
 
 	// CRUD Rubric
 	// CreateRubric(AssignmentID uuid.UUID, rubric *models.Rubric) error
+	// GetRubricData(AssignmentID uuid.UUID) ([]response.RubricDataResp, error)
 }
 
 type InstructorServiceImpl struct {
@@ -589,4 +590,12 @@ func (s *InstructorServiceImpl) GetQuestionsByAssignmentTemplate(AssignmentID uu
 // 		return err
 // 	}
 // 	return nil
+// }
+
+// func (s *InstructorServiceImpl) GetRubricData(AssignmentID uuid.UUID) ([]response.RubricDataResp, error) {
+// 	rubricData, err := s.repo.FindRubricData(AssignmentID)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return []response.RubricDataResp{rubricData}, nil
 // }

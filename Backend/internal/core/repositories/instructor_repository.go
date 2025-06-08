@@ -76,4 +76,5 @@ type InstructorRepository interface {
 
 	// CRUD Rubric
 	// AddRubric(AssignmentID uuid.UUID, rubric *models.Rubric) error
+	// FindRubricData(AssignmentID uuid.UUID) (response.RubricDataResp, error)
 }

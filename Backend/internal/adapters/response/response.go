@@ -273,3 +273,50 @@ type RubricSubQuestion struct {
 	SubQuestionTitle string     `json:"sub_question_title"`
 	SubQuestionPoint float64    `json:"sub_question_point"`
 }
+
+// Create rubrics
+type RubricRequest struct {
+	RubricID      uuid.UUID             `json:"rubric_id"`
+	RubricSetting string                `json:"rubric_setting"`
+	RubricDetails []RubricDetailRequest `json:"rubric_details"`
+}
+
+type RubricDetailRequest struct {
+	RubricDetailID    uuid.UUID `json:"rubric_detail_id"`
+	RubricPoint       int       `json:"rubric_point"`
+	RubricDescription string    `json:"rubric_description"`
+	HasSelected       bool      `json:"has_selected"`
+}
+
+type CreateRubricRequest struct {
+	AssignmentID  uuid.UUID  `json:"assignment_id"`
+	QuestionID    uuid.UUID  `json:"question_id"`
+	SubQuestionID *uuid.UUID `json:"sub_question_id,omitempty"`
+	RubricSetting string     `json:"rubric_setting"`
+	RubricDetails []struct {
+		RubricPoint       int    `json:"rubric_point"`
+		RubricDescription string `json:"rubric_description"`
+	} `json:"rubric_details"`
+}
+
+// Find rubric data
+type RubricDataResp struct {
+	QuestionsData []QuestionData `json:"questions_data"`
+}
+
+type QuestionData struct {
+	QuestionID    string            `json:"question_id"`
+	QuestionTitle string            `json:"question_title"`
+	QuestionPoint int               `json:"question_point"`
+	BoundingBoxID *string           `json:"bounding_box_id,omitempty"`
+	SubQuestions  []SubQuestionData `json:"sub_questions,omitempty"`
+	Rubrics       *RubricRequest    `json:"rubrics,omitempty"` // optional
+}
+
+type SubQuestionData struct {
+	SubQuestionID    string         `json:"sub_question_id"`
+	SubQuestionTitle string         `json:"sub_question_title"`
+	SubQuestionPoint int            `json:"sub_question_point"`
+	BoundingBoxID    string         `json:"bounding_box_id"`
+	Rubrics          *RubricRequest `json:"rubrics,omitempty"` // optional
+}
