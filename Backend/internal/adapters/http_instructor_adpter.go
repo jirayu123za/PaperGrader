@@ -17,6 +17,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -1340,7 +1341,7 @@ func (h *HttpInstructorHandler) GetAssignmentTemplateCount(c *fiber.Ctx) error {
 	})
 }
 
-func (h *HttpInstructorHandler) CreateSubmissionAFile(c *fiber.Ctx) error {
+func (h *HttpInstructorHandler) CreateSubmissionFileByInstructor(c *fiber.Ctx) error {
 	userID, err := utils.GetUserIDFromJWT(c)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -1367,7 +1368,7 @@ func (h *HttpInstructorHandler) CreateSubmissionAFile(c *fiber.Ctx) error {
 		})
 	}
 
-	boundingBoxesPosition, err := h.services.GetBoundingBoxesType(assignmentID)
+	boundingBoxData, err := h.services.GetBoundingBoxesType(assignmentID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to get bounding boxes type position",
@@ -1487,7 +1488,7 @@ func (h *HttpInstructorHandler) CreateSubmissionAFile(c *fiber.Ctx) error {
 				SubmittedAt:        time.Now(),
 			}
 
-			if err := h.services.CreateSubmissionAFile(&submission); err != nil {
+			if err := h.services.CreateSubmissionFileByInstructor(&submission); err != nil {
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"message": "Failed to save submission",
 					"error":   err.Error(),
@@ -1495,9 +1496,8 @@ func (h *HttpInstructorHandler) CreateSubmissionAFile(c *fiber.Ctx) error {
 			}
 
 			// Under line here for cropping the submission file based on bounding boxes
-			submissionFirstPage := 1
-			for _, bbox := range boundingBoxesPosition {
-				croppedFilePath, err := utils.CropPDFWithBoundingBox(mergedFilePath, submissionFileName, bbox.BoundingBoxType, bbox.BoundingBoxPosition, submissionFirstPage)
+			for _, bbox := range boundingBoxData {
+				croppedFilePath, err := utils.CropPDFWithBoundingBox(mergedFilePath, submissionFileName, bbox.BoundingBoxType, bbox.BoundingBoxPage, bbox.PointX, bbox.PointY, bbox.Width, bbox.Height)
 				if err != nil {
 					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 						"message": fmt.Sprintf("Failed to crop PDF for %s", bbox.BoundingBoxType),
@@ -1552,7 +1552,7 @@ func (h *HttpInstructorHandler) GetBoundingBoxesTypePosition(c *fiber.Ctx) error
 		})
 	}
 
-	boundingBoxesTypePosition, err := h.services.GetBoundingBoxesType(assignmentID)
+	boundingBoxesData, err := h.services.GetBoundingBoxesType(assignmentID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to get bounding boxes type position",
@@ -1562,7 +1562,7 @@ func (h *HttpInstructorHandler) GetBoundingBoxesTypePosition(c *fiber.Ctx) error
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Bounding boxes type position are retrieved",
-		"result":  boundingBoxesTypePosition,
+		"result":  boundingBoxesData,
 	})
 }
 
@@ -1588,11 +1588,26 @@ func (h *HttpInstructorHandler) CreateBoundingBoxesAndQuestions(c *fiber.Ctx) er
 	var updateBoxes []models.BoundingBox
 
 	for _, boundingBox := range fullRequest.BoundingBoxes {
+		boxData := models.BoundingBoxData{
+			PointX: boundingBox.PointX,
+			PointY: boundingBox.PointY,
+			Width:  boundingBox.Width,
+			Height: boundingBox.Height,
+			Type:   models.BoundingBoxType(boundingBox.Type),
+			Page:   boundingBox.Page,
+		}
+
+		jsonData, err := json.Marshal(boxData)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"message": "Failed to marshal bounding box data",
+				"error":   err.Error(),
+			})
+		}
+
 		box := models.BoundingBox{
-			AssignmentID:        assignmentID,
-			BoundingBoxPosition: boundingBox.BoundingBoxPosition,
-			BoundingBoxType:     models.BoundingBoxType(boundingBox.BoundingBoxType),
-			BoundingBoxPage:     boundingBox.BoundingBoxPage,
+			AssignmentID:    assignmentID,
+			BoundingBoxData: datatypes.JSON(jsonData),
 		}
 
 		if boundingBox.BoundingBoxID != nil {
