@@ -706,7 +706,7 @@ func (r *GormInstructorRepository) AddSubmissionFiles(submissionFiles []models.S
 	return nil
 }
 
-func (r *GormInstructorRepository) AddSubmissionAFile(submissionFile *models.Submission) error {
+func (r *GormInstructorRepository) AddSubmissionFileByInstructor(submissionFile *models.Submission) error {
 	if err := r.db.Create(submissionFile).Error; err != nil {
 		return err
 	}
@@ -901,7 +901,12 @@ func (r *GormInstructorRepository) AddBoundingBoxesQuestions(AssignmentID uuid.U
 
 		var questionBoxIDs []uuid.UUID
 		for _, box := range boundingBoxes {
-			if box.BoundingBoxType == "question" {
+			var data models.BoundingBoxData
+
+			if err := json.Unmarshal(box.BoundingBoxData, &data); err != nil {
+				return fmt.Errorf("failed to parse bounding_box_data: %w", err)
+			}
+			if data.Type == models.QuestionRegion {
 				questionBoxIDs = append(questionBoxIDs, box.BoundingBoxID)
 			}
 		}
@@ -970,15 +975,12 @@ func (r *GormInstructorRepository) AddBoundingBoxesQuestions(AssignmentID uuid.U
 func (r *GormInstructorRepository) ModifyBoundingBoxesNameAndID(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		for _, boundingBox := range boundingBoxes {
-			if boundingBox.BoundingBoxType != "name" && boundingBox.BoundingBoxType != "id" {
+			if boundingBox.BoundingBoxID == uuid.Nil {
 				continue
 			}
 			if err := tx.Model(&models.BoundingBox{}).
 				Where("bounding_box_id = ? AND assignment_id = ?", boundingBox.BoundingBoxID, AssignmentID).
-				Updates(map[string]interface{}{
-					"bounding_box_position": boundingBox.BoundingBoxPosition,
-					"bounding_box_page":     boundingBox.BoundingBoxPage,
-				}).Error; err != nil {
+				Update("bounding_box_data", boundingBox.BoundingBoxData).Error; err != nil {
 				return err
 			}
 		}
@@ -989,12 +991,12 @@ func (r *GormInstructorRepository) ModifyBoundingBoxesNameAndID(AssignmentID uui
 func (r *GormInstructorRepository) ModifyBoundingBoxesQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData []response.RubricQuestion) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		for _, boundingBox := range boundingBoxes {
+			if boundingBox.BoundingBoxID == uuid.Nil {
+				continue
+			}
 			if err := tx.Model(&models.BoundingBox{}).
 				Where("bounding_box_id = ? AND assignment_id = ?", boundingBox.BoundingBoxID, AssignmentID).
-				Updates(map[string]interface{}{
-					"bounding_box_position": boundingBox.BoundingBoxPosition,
-					"bounding_box_page":     boundingBox.BoundingBoxPage,
-				}).Error; err != nil {
+				Update("bounding_box_data", boundingBox.BoundingBoxData).Error; err != nil {
 				return err
 			}
 		}
@@ -1058,13 +1060,20 @@ func (r *GormInstructorRepository) FindBoundingBoxesByAssignmentTemplate(Assignm
 	return boundingBoxes, nil
 }
 
-func (r *GormInstructorRepository) FindBoundingBoxesType(AssignmentID uuid.UUID) ([]response.SubmissionBoxPositionResponse, error) {
-	var boundingBoxes []response.SubmissionBoxPositionResponse
+func (r *GormInstructorRepository) FindBoundingBoxesType(AssignmentID uuid.UUID) ([]response.BoundingBoxDataResponse, error) {
+	var boundingBoxes []response.BoundingBoxDataResponse
 
 	if err := r.db.
 		Table("bounding_boxes").
-		Select("bounding_box_position, bounding_box_type").
-		Where("assignment_id = ? AND bounding_box_type IN ('name', 'id') AND deleted_at IS NULL", AssignmentID).
+		Select(`
+			CAST(bounding_box_data->>'point_x' AS FLOAT8) AS point_x,
+			CAST(bounding_box_data->>'point_y' AS FLOAT8) AS point_y,
+			CAST(bounding_box_data->>'width' AS FLOAT8) AS width,
+			CAST(bounding_box_data->>'height' AS FLOAT8) AS height,
+			(bounding_box_data->'bounding_box_page')::int AS bounding_box_page,
+			bounding_box_data->>'bounding_box_type' AS bounding_box_type
+		`).
+		Where("assignment_id = ? AND bounding_box_data->>'bounding_box_type' IN ('name', 'id') AND deleted_at IS NULL", AssignmentID).
 		Find(&boundingBoxes).Error; err != nil {
 		return nil, err
 	}
