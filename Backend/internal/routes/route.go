@@ -97,7 +97,7 @@ func RegisterRoutes(
 
 	// Submission
 	apiGroup.Post("/instructor/submission/files", instructorHandler.CreateSubmissionFiles)
-	apiGroup.Post("/instructor/submission/file", instructorHandler.CreateSubmissionAFile)
+	apiGroup.Post("/instructor/submission/file", instructorHandler.CreateSubmissionFileByInstructor)
 	apiGroup.Get("/instructor/submission/files", instructorHandler.GetSubmissionFiles)
 	apiGroup.Get("/instructor/submissions", instructorHandler.GetFileFormSubmission)
 	apiGroup.Get("/instructor/submissionsList", instructorHandler.GetSubmissionListByCourseIDAndAssignmentID)
