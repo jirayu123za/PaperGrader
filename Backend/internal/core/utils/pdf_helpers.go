@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math"
 	"net/http"
 	"os"
 	"os/exec"
@@ -16,13 +15,6 @@ import (
 	"github.com/pdfcpu/pdfcpu/pkg/pdfcpu/model"
 	"github.com/pdfcpu/pdfcpu/pkg/pdfcpu/types"
 )
-
-type BoundingBoxPosition struct {
-	X1 float64 `json:"X1"`
-	Y1 float64 `json:"Y1"`
-	X2 float64 `json:"X2"`
-	Y2 float64 `json:"Y2"`
-}
 
 func GetPDFPageCount(filePath string) (int, error) {
 	ctx, err := api.ReadContextFile(filePath)
@@ -68,45 +60,7 @@ func ExtractPDFPages(inputPath string, startPage, endPage int) (string, error) {
 	return mergedFilePath, nil
 }
 
-func ParseBoundingBoxPosition(positionStr string) (BoundingBoxPosition, error) {
-	var position BoundingBoxPosition
-	cleaned := strings.ReplaceAll(positionStr, "(", "")
-	cleaned = strings.ReplaceAll(cleaned, ")", "")
-
-	parts := strings.Split(cleaned, ",")
-	if len(parts) != 4 {
-		return position, fmt.Errorf("invalid bounding box format")
-	}
-
-	x2, err := strconv.ParseFloat(strings.TrimSpace(parts[0]), 64)
-	if err != nil {
-		return position, fmt.Errorf("invalid x2 value")
-	}
-	y2, err := strconv.ParseFloat(strings.TrimSpace(parts[1]), 64)
-	if err != nil {
-		return position, fmt.Errorf("invalid y2 value")
-	}
-	x1, err := strconv.ParseFloat(strings.TrimSpace(parts[2]), 64)
-	if err != nil {
-		return position, fmt.Errorf("invalid x1 value")
-	}
-	y1, err := strconv.ParseFloat(strings.TrimSpace(parts[3]), 64)
-	if err != nil {
-		return position, fmt.Errorf("invalid y1 value")
-	}
-
-	position = BoundingBoxPosition{
-		X1: math.Min(x1, x2),
-		Y1: math.Min(y1, y2),
-		X2: math.Max(x1, x2),
-		Y2: math.Max(y1, y2),
-	}
-
-	log.Printf("Parsed bounding box position: %v", position)
-	return position, nil
-}
-
-func GetPDFPageSize(pdfPath string, pageNumber int) (float64, float64, error) {
+func GetPDFPageSize(pdfPath string, pageNumber uint) (float64, float64, error) {
 	ctx, err := api.ReadContextFile(pdfPath)
 	if err != nil {
 		return 0, 0, fmt.Errorf("failed to read PDF context: %v", err)
@@ -116,7 +70,7 @@ func GetPDFPageSize(pdfPath string, pageNumber int) (float64, float64, error) {
 	if err != nil {
 		return 0, 0, fmt.Errorf("failed to get page dimensions: %v", err)
 	}
-	if pageNumber < 1 || pageNumber > len(pageDims) {
+	if pageNumber < 1 || pageNumber > uint(len(pageDims)) {
 		return 0, 0, fmt.Errorf("invalid page number: %d", pageNumber)
 	}
 
@@ -124,44 +78,26 @@ func GetPDFPageSize(pdfPath string, pageNumber int) (float64, float64, error) {
 	return width, height, nil
 }
 
-func ConvertBoundingBoxPosition(original BoundingBoxPosition, pageHeight float64) BoundingBoxPosition {
-	return BoundingBoxPosition{
-		X1: original.X1,
-		Y1: pageHeight - original.Y2,
-		X2: original.X2,
-		Y2: pageHeight - original.Y1,
-	}
-}
+func CropPDFWithBoundingBox(inputPath, submissionFileName, bboxType string, bboxPage uint, bboxPointX float64, bboxPointY float64, bboxWidth float64, bboxHeight float64) (string, error) {
+	log.Printf("Start cropping PDF: %s, Page: %d, BBox Type: %s, Position: %f, %f, %f, %f", inputPath, bboxPage, bboxType, bboxPointX, bboxPointY, bboxWidth, bboxHeight)
 
-func CropPDFWithBoundingBox(inputPath, submissionFileName, bboxType string, positionStr string, pageNumber int) (string, error) {
-	log.Printf("Start cropping PDF: %s, Page: %d, BBox Type: %s, Position: %s", inputPath, pageNumber, bboxType, positionStr)
-
-	position, err := ParseBoundingBoxPosition(positionStr)
-	if err != nil {
-		log.Printf("Failed to parse bounding box: %v", err)
-		return "", fmt.Errorf("failed to parse bounding box: %v", err)
-	}
-	log.Printf("Parsed bounding box: %+v", position)
-
-	pageWidth, pageHeight, err := GetPDFPageSize(inputPath, pageNumber)
+	pageWidth, pageHeight, err := GetPDFPageSize(inputPath, bboxPage)
 	if err != nil {
 		return "", fmt.Errorf("failed to get PDF page size: %v", err)
 	}
 	log.Printf("PDF page size: %.2f x %.2f", pageWidth, pageHeight)
 
-	convertedBox := ConvertBoundingBoxPosition(position, pageHeight)
-
+	llx := bboxPointX
+	lly := pageHeight - bboxPointY - bboxHeight
 	box := &model.Box{
-		Rect: &types.Rectangle{
-			LL: types.Point{X: convertedBox.X1, Y: convertedBox.Y1},
-			UR: types.Point{X: convertedBox.X2, Y: convertedBox.Y2},
-		},
+		Rect: types.RectForWidthAndHeight(llx, lly, bboxWidth, bboxHeight),
 	}
+	log.Printf("Bounding box: %v", box)
 
 	croppedPDFPath := filepath.Join(os.TempDir(), fmt.Sprintf("%s_%s_cropped.pdf", strings.TrimSuffix(submissionFileName, ".pdf"), bboxType))
 	log.Printf("Cropped PDF path: %s", croppedPDFPath)
 
-	err = api.CropFile(inputPath, croppedPDFPath, []string{strconv.Itoa(pageNumber)}, box, nil)
+	err = api.CropFile(inputPath, croppedPDFPath, []string{strconv.Itoa(int(bboxPage))}, box, nil)
 	if err != nil {
 		log.Printf("Failed to crop PDF: %v", err)
 		return "", fmt.Errorf("failed to crop PDF: %v", err)
@@ -182,7 +118,7 @@ func CropPDFWithBoundingBox(inputPath, submissionFileName, bboxType string, posi
 	}
 
 	originalOutputPath := fmt.Sprintf("%s-1.png", outputPrefix)
-	desiredImagePath := filepath.Join(os.TempDir(), fmt.Sprintf("%s_%s_cropped_%d.png", strings.TrimSuffix(submissionFileName, ".pdf"), bboxType, pageNumber))
+	desiredImagePath := filepath.Join(os.TempDir(), fmt.Sprintf("%s_%s_cropped_%d.png", strings.TrimSuffix(submissionFileName, ".pdf"), bboxType, bboxPage))
 
 	if _, err := os.Stat(originalOutputPath); os.IsNotExist(err) {
 		return "", fmt.Errorf("converted image not found: %s", originalOutputPath)
