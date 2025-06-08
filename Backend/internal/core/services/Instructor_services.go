@@ -47,7 +47,7 @@ type InstructorService interface {
 	GetInstructorsNameByCourseID(courseID uuid.UUID) ([]response.InstructorListResponse, error)
 
 	CreateSubmissionFiles(submission []models.Submission) error
-	CreateSubmissionAFile(submissionFile *models.Submission) error
+	CreateSubmissionFileByInstructor(submissionFile *models.Submission) error
 	UpdateSubmissionList(SubmissionID uuid.UUID, AssignmentID uuid.UUID, PersonalDataID uuid.UUID, MatchedBy string) error
 	GetSubmissionFiles(AssignmentID uuid.UUID) ([]response.SubmissionFilesResponse, error)
 	GetSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
@@ -65,7 +65,7 @@ type InstructorService interface {
 	//! OCR Services
 	GetStudentsListForOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForOCRResponse, error)
 	GetBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error)
-	GetBoundingBoxesType(AssignmentID uuid.UUID) ([]response.SubmissionBoxPositionResponse, error)
+	GetBoundingBoxesType(AssignmentID uuid.UUID) ([]response.BoundingBoxDataResponse, error)
 
 	// Bounding Boxes Services
 	CreateBoundingBoxesNameAndID(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
@@ -301,8 +301,8 @@ func (s *InstructorServiceImpl) CreateSubmissionFiles(submission []models.Submis
 	return nil
 }
 
-func (s *InstructorServiceImpl) CreateSubmissionAFile(submissionFile *models.Submission) error {
-	if err := s.repo.AddSubmissionAFile(submissionFile); err != nil {
+func (s *InstructorServiceImpl) CreateSubmissionFileByInstructor(submissionFile *models.Submission) error {
+	if err := s.repo.AddSubmissionFileByInstructor(submissionFile); err != nil {
 		return err
 	}
 	return nil
@@ -534,7 +534,7 @@ func (s *InstructorServiceImpl) GetBoundingBoxesByAssignmentTemplate(AssignmentI
 	return boundingBoxes, nil
 }
 
-func (s *InstructorServiceImpl) GetBoundingBoxesType(AssignmentID uuid.UUID) ([]response.SubmissionBoxPositionResponse, error) {
+func (s *InstructorServiceImpl) GetBoundingBoxesType(AssignmentID uuid.UUID) ([]response.BoundingBoxDataResponse, error) {
 	boundingBoxes, err := s.repo.FindBoundingBoxesType(AssignmentID)
 	if err != nil {
 		return nil, err
