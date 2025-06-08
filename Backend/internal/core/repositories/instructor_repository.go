@@ -43,7 +43,7 @@ type InstructorRepository interface {
 
 	// CRUD operations for Submissions
 	AddSubmissionFiles(submission []models.Submission) error
-	AddSubmissionAFile(submissionFile *models.Submission) error
+	AddSubmissionFileByInstructor(submissionFile *models.Submission) error
 	ModifySubmissionList(SubmissionID uuid.UUID, AssignmentID uuid.UUID, PersonalDataID uuid.UUID, MatchedBy string) error
 	FindSubmissionFiles(AssignmentID uuid.UUID) ([]response.SubmissionFilesResponse, error)
 	FindSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
@@ -61,7 +61,7 @@ type InstructorRepository interface {
 	//! CRUD OCR
 	FindStudentsListForOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForOCRResponse, error)
 	FindSubmissionBoxesForOCR(AssignmentID uuid.UUID) ([]response.GroupSubmissionBoxesForOCR, error)
-	FindBoundingBoxesType(AssignmentID uuid.UUID) ([]response.SubmissionBoxPositionResponse, error)
+	FindBoundingBoxesType(AssignmentID uuid.UUID) ([]response.BoundingBoxDataResponse, error)
 	FindBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error)
 
 	// CRUD BoundingBox
