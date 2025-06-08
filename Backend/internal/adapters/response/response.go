@@ -130,10 +130,10 @@ type BoundingBoxTemplateResponse struct {
 	BoundingBoxID   uuid.UUID `json:"bounding_box_id"`
 	BoundingBoxType string    `json:"bounding_box_type"`
 	BoundingBoxPage uint      `json:"bounding_box_page"`
-	PointX          float64   `json:"point_x"`
-	PointY          float64   `json:"point_y"`
-	Width           float64   `json:"width"`
-	Height          float64   `json:"height"`
+	PointX          float64   `json:"bounding_box_point_x"`
+	PointY          float64   `json:"bounding_box_point_y"`
+	Width           float64   `json:"bounding_box_width"`
+	Height          float64   `json:"bounding_box_height"`
 }
 
 type RubricData struct {
