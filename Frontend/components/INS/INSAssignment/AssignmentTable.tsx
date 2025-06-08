@@ -4,7 +4,7 @@ import React from 'react';
 import AssignmentSetting from '../../Customize/AssignmentSetting';
 import AssignmentSecTable from './AssignmentSecTable';
 import { useParams, useRouter } from 'next/navigation';
-import { Button, Menu, Anchor, Text, Checkbox, Flex, Table, Paper, Pagination, ActionIcon } from '@mantine/core';
+import { Button, Menu, Anchor, Text, Checkbox, Flex, Table, Paper, Pagination, ActionIcon, Image } from '@mantine/core';
 import { usePagination } from '@mantine/hooks';
 import { useFetchAssignmentsTable } from '@/hooks/useFetchAssignments';
 import { useAssignmentsListTableStore } from '@/store/useAssignmentStore';
@@ -34,6 +34,27 @@ const AssignmentTable: React.FC = () => {
   const endIndex = startIndex + pageSize;
   const paginatedAssignmentsTable = assignmentList.slice(startIndex, endIndex);
   
+  if (!isLoadingAssignmentsList && assignmentList.length === 0) {
+    return (
+      <Flex direction="column" align="center" justify="center" gap="sm" py="xl">
+        <Image
+          src="/Image/table/no_data.svg"
+          alt="No assignments"
+          w="auto"
+          h={150}
+          fit="contain"
+          fallbackSrc="https://placehold.co/200x200?text=Placeholder"
+        />
+        <Text size="lg" fw={500} mt="md">
+          No assignments found
+        </Text>
+        <Text size="sm" c="dimmed">
+          You haven’t created any assignments yet.
+        </Text>
+      </Flex>
+    );
+  }
+
   return (
     <Flex direction="column" gap="md">
       <Text fw={600} size="xl" mb="md">
