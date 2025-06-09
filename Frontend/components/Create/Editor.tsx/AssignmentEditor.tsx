@@ -1,7 +1,7 @@
 "use client";
 
 import '@mantine/tiptap/styles.css';
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Superscript from '@tiptap/extension-superscript';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
@@ -11,9 +11,12 @@ import Highlight from '@tiptap/extension-highlight';
 import { Link, RichTextEditor } from '@mantine/tiptap'
 import { useEditor } from '@tiptap/react';
 import { useAssignmentSettingFormStore } from '@/store/modal/useAssignmentSettingModal';
+import { ActionIcon, Flex, ScrollArea, Tooltip } from '@mantine/core';
+import { FaSlidersH } from "react-icons/fa";
 
 export const Editor: React.FC = () => {
   const { values, setField } = useAssignmentSettingFormStore();
+  const [showToolbar, setShowToolbar] = useState(true);
 
   const editor = useEditor({
     extensions: [
@@ -44,52 +47,69 @@ export const Editor: React.FC = () => {
 
   return (
     <RichTextEditor editor={editor}>
-    <RichTextEditor.Toolbar sticky stickyOffset={60}>
+    {showToolbar && (
+      <RichTextEditor.Toolbar sticky stickyOffset={60}>
+        <RichTextEditor.ControlsGroup>
+        <RichTextEditor.Bold />
+        <RichTextEditor.Italic />
+        <RichTextEditor.Underline />
+        <RichTextEditor.Strikethrough />
+        <RichTextEditor.ClearFormatting />
+        <RichTextEditor.Highlight />
+        <RichTextEditor.Code />
+      </RichTextEditor.ControlsGroup>
+
       <RichTextEditor.ControlsGroup>
-      <RichTextEditor.Bold />
-      <RichTextEditor.Italic />
-      <RichTextEditor.Underline />
-      <RichTextEditor.Strikethrough />
-      <RichTextEditor.ClearFormatting />
-      <RichTextEditor.Highlight />
-      <RichTextEditor.Code />
-    </RichTextEditor.ControlsGroup>
+        <RichTextEditor.H1 />
+        <RichTextEditor.H2 />
+        <RichTextEditor.H3 />
+        <RichTextEditor.H4 />
+      </RichTextEditor.ControlsGroup>
 
-    <RichTextEditor.ControlsGroup>
-      <RichTextEditor.H1 />
-      <RichTextEditor.H2 />
-      <RichTextEditor.H3 />
-      <RichTextEditor.H4 />
-    </RichTextEditor.ControlsGroup>
+      <RichTextEditor.ControlsGroup>
+        <RichTextEditor.Blockquote />
+        <RichTextEditor.Hr />
+        <RichTextEditor.BulletList />
+        <RichTextEditor.OrderedList />
+        <RichTextEditor.Subscript />
+        <RichTextEditor.Superscript />
+      </RichTextEditor.ControlsGroup>
 
-    <RichTextEditor.ControlsGroup>
-      <RichTextEditor.Blockquote />
-      <RichTextEditor.Hr />
-      <RichTextEditor.BulletList />
-      <RichTextEditor.OrderedList />
-      <RichTextEditor.Subscript />
-      <RichTextEditor.Superscript />
-    </RichTextEditor.ControlsGroup>
+      <RichTextEditor.ControlsGroup>
+        <RichTextEditor.Link />
+        <RichTextEditor.Unlink />
+      </RichTextEditor.ControlsGroup>
 
-    <RichTextEditor.ControlsGroup>
-      <RichTextEditor.Link />
-      <RichTextEditor.Unlink />
-    </RichTextEditor.ControlsGroup>
+      <RichTextEditor.ControlsGroup>
+        <RichTextEditor.AlignLeft />
+        <RichTextEditor.AlignCenter />
+        <RichTextEditor.AlignJustify />
+        <RichTextEditor.AlignRight />
+      </RichTextEditor.ControlsGroup>
 
-    <RichTextEditor.ControlsGroup>
-      <RichTextEditor.AlignLeft />
-      <RichTextEditor.AlignCenter />
-      <RichTextEditor.AlignJustify />
-      <RichTextEditor.AlignRight />
-    </RichTextEditor.ControlsGroup>
+      <RichTextEditor.ControlsGroup>
+        <RichTextEditor.Undo />
+        <RichTextEditor.Redo />
+      </RichTextEditor.ControlsGroup>
+      </RichTextEditor.Toolbar>
+    )}
 
-    <RichTextEditor.ControlsGroup>
-      <RichTextEditor.Undo />
-      <RichTextEditor.Redo />
-    </RichTextEditor.ControlsGroup>
-    </RichTextEditor.Toolbar>
+    <ScrollArea h={120} offsetScrollbars>
+      <RichTextEditor.Content />
+    </ScrollArea>
 
-    <RichTextEditor.Content />
+    <Flex justify="flex-end">
+      <Tooltip label={showToolbar ? "Hide toolbar" : "Show toolbar"} position="right" withArrow>
+        <ActionIcon
+          onClick={() => setShowToolbar(!showToolbar)}
+          variant="light"
+          color="gray"
+          size="sm"
+        >
+          <FaSlidersH size={16} />
+        </ActionIcon>
+      </Tooltip>
+    </Flex>
   </RichTextEditor>
   )
 }
