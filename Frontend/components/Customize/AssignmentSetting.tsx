@@ -93,7 +93,7 @@ const AssignmentSetting: React.FC = () => {
         closeModal();
       }}
       title="Edit assignment"
-      size="lg"
+      size='xl'
       overlayProps={{ opacity: 0.55, blur: 3 }}
     >
       <form 
