@@ -16,14 +16,14 @@ const BasicSettings: React.FC = () => {
     
     if (isLoading) {
         return (
-            <Flex justify="center" align="center" py="md">
+            <Flex justify="center" align="center" py="md" h='600px'>
                 <Loader color="blue" />
             </Flex>
         );
     }
     
     return (
-        <Flex direction="column" gap="xs" ml='md'>
+        <Flex direction="column" gap="xs" ml='md' h='600px'>
             <TextInput
                 label="Assignment Name"
                 placeholder="Enter assignment name"
@@ -62,7 +62,7 @@ const BasicSettings: React.FC = () => {
                 onChange={(value) => useAssignmentSettingFormStore.getState().setField('scoringMethod', value || '')}
             />
             <Checkbox.Group label="Other Settings">
-                <Group mt={2} gap={4}>
+                <Flex direction="column" gap={4} mt={4}>
                     <Checkbox
                         label="Allow Late Submissions"
                         value="lateSubmitted"
@@ -87,7 +87,7 @@ const BasicSettings: React.FC = () => {
                             useAssignmentSettingFormStore.getState().setField('regrades', event.currentTarget.checked)
                         }
                     />
-                </Group>
+                </Flex>
             </Checkbox.Group>
             <Checkbox.Group label="Group Settings">
                 {/* Checkbox for Group Submission */}

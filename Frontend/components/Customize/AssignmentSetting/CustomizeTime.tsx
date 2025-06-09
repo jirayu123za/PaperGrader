@@ -18,14 +18,14 @@ const CustomizeTime: React.FC = () => {
   
   if (isLoading) {
     return (
-      <Flex justify="center" align="center" py="md">
+      <Flex justify="center" align="center" py="md" h='600px'>
         <Loader color="blue" />
       </Flex>
     );
   }
 
   return (
-    <Flex direction="column" gap="xs" ml='md'>
+    <Flex direction="column" gap="xs" ml='md' h='600px'>
       <SectionEditAssignment/>
       
       <Flex gap="md">
