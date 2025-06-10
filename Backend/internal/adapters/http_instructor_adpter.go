@@ -1178,6 +1178,7 @@ func (h *HttpInstructorHandler) UpdateSubmissionList(c *fiber.Ctx) error {
 	})
 }
 
+// Get submission files for table submissions list
 func (h *HttpInstructorHandler) GetSubmissionFiles(c *fiber.Ctx) error {
 	assignmentIDParam := c.Query("assignment_id")
 	assignmentID, err := uuid.Parse(assignmentIDParam)
@@ -1197,8 +1198,8 @@ func (h *HttpInstructorHandler) GetSubmissionFiles(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message":     "Submission files are retrieved",
-		"submissions": submissions,
+		"message":          "Submission files are retrieved",
+		"submissions_list": submissions,
 	})
 }
 
