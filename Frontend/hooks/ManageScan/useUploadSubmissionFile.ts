@@ -1,5 +1,7 @@
-import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSubmissionFilesStore } from '@/store/ManageScan/useSubmissionFiles';
+import { useFetchSubmissionFiles } from './useFetchSubmissionFiles';
 
 interface UploadFileParams {
     assignment_id: string;
@@ -25,12 +27,22 @@ const uploadSubmissionFile = async ({ assignment_id, course_id, files }: UploadF
     return data;
 };
 
-export const useUploadSubmissionFile = () => {
+export const useUploadSubmissionFile = (assignment_id: string) => {
+    const queryClient = useQueryClient();
+    const { setSubmissionsList } = useSubmissionFilesStore();
+    const { refetch: refetchSubmissionsList } = useFetchSubmissionFiles(assignment_id);
+
     return useMutation({
         mutationFn: uploadSubmissionFile,
         onSuccess: (data) => {
             console.log('Upload successful:', data);
             alert(`File uploaded successfully!`);
+            queryClient.invalidateQueries({ queryKey: ['submissions_list'] });
+            refetchSubmissionsList().then((response) => {
+                if (response.data) {
+                    setSubmissionsList(response.data);
+                }
+            });
         },
         onError: (error) => {
             console.error('Upload failed:', error);
