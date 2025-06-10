@@ -728,12 +728,38 @@ func (r *GormInstructorRepository) ModifySubmissionList(SubmissionID uuid.UUID, 
 func (r *GormInstructorRepository) FindSubmissionFiles(AssignmentID uuid.UUID) ([]response.SubmissionFilesResponse, error) {
 	var submissionFiles []response.SubmissionFilesResponse
 
+	query := `
+		SELECT DISTINCT ON (s.submitted_by, s.file_prefix)
+			s.submission_id,
+			regexp_replace(s.submission_file_name, '_submission_[0-9]+(\.[a-zA-Z0-9]+)$', '\1') AS submission_file_name,
+			s.submitted_at,
+			sub_count.total_submissions,
+			(u.first_name || ' ' || u.last_name) AS submitted_by,
+			s.file_prefix
+		FROM (
+			SELECT *,
+				regexp_replace(submission_file_name, '_submission_[0-9]+(\.[a-zA-Z0-9]+)$', '', 'g') AS file_prefix
+			FROM submissions
+			WHERE assignment_id = ?
+			AND deleted_at IS NULL
+		) s
+		JOIN users u ON s.submitted_by = u.user_id
+		JOIN (
+			SELECT
+				regexp_replace(submission_file_name, '_submission_[0-9]+(\.[a-zA-Z0-9]+)$', '', 'g') AS file_prefix,
+				submitted_by,
+				COUNT(*) AS total_submissions
+			FROM submissions
+			WHERE assignment_id = ?
+			AND deleted_at IS NULL
+			GROUP BY file_prefix, submitted_by
+		) sub_count ON sub_count.file_prefix = s.file_prefix AND sub_count.submitted_by = s.submitted_by
+		ORDER BY s.submitted_by, s.file_prefix, s.submitted_at DESC
+	`
+
 	if err := r.db.
-		Table("submissions").
-		Select("submission_id, submission_file_name, submitted_at").
-		Where("assignment_id = ?", AssignmentID).
-		Where("deleted_at IS NULL").
-		Find(&submissionFiles).Error; err != nil {
+		Raw(query, AssignmentID, AssignmentID).
+		Scan(&submissionFiles).Error; err != nil {
 		return nil, err
 	}
 	return submissionFiles, nil
