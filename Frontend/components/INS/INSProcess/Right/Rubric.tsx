@@ -2,7 +2,7 @@
 import markedKatex from 'marked-katex-extension';
 import DOMPurify from 'dompurify';
 import 'katex/dist/katex.min.css';
-import { Box, Button, Checkbox, Divider, Flex, Group, NumberInput, Progress, ScrollArea, Text, Textarea } from '@mantine/core';
+import { Box, Button, Checkbox, Divider, Flex, Group, NumberInput, Progress, ScrollArea, Text, Textarea, Image } from '@mantine/core';
 import React, { useState } from 'react'
 import { FaPlus } from "react-icons/fa";
 import { AiTwotoneDelete } from "react-icons/ai"
@@ -61,8 +61,6 @@ export const Rubric = () => {
         has_graded: 2,
         total_grade: 10,
     });
-
-    const totalScore = rubrics.reduce((sum, r) => sum + r.rubric_point, 0);
     const [editingRubricId, setEditingRubricId] = useState<number | null>(null);
     const [editingDescriptionId, setEditingDescriptionId] = useState<number | null>(null);
 
@@ -76,6 +74,8 @@ export const Rubric = () => {
         setRubrics(newItems);
     };
 
+    // const [rubrics, setRubrics] = useState<RubricItem[]>([]);
+
     return (
         <Flex direction="column" className="flex-1 min-h-0 p-4">
             {/* Header */}
@@ -84,18 +84,18 @@ export const Rubric = () => {
                     <QuestionSelector/>
                 </Flex>
 
-                <Progress color="violet" value={(totalScore / question.question_points) * 100} />
+                <Progress color="violet" value={(graded.total_grade / question.question_points) * 100} />
                 <Text size="xs" c="#495057">
-                    {graded.has_graded} of {graded.total_grade} questions graded
+                    {graded.has_graded} of {graded.total_grade} already assigned rubrics
                 </Text>
 
                 <Flex justify="space-between" align="flex-end" pt="md">
                     <Box>
-                        <Text span fw={500} c="#495057">Total Points</Text>
+                        <Text span fw={500} c="#495057">Total question points</Text>
                         <Text fw={500} size="xl" c="#495057" style={{ fontSize: '28px', lineHeight: '1.2' }}>
-                            {totalScore.toFixed(2)}
+                            {/* {totalScore.toFixed(2)} */}
                             <Text span fw={500} c="#495057" style={{ fontSize: '28px', lineHeight: '1.2' }}>
-                                / {question.question_points.toFixed(1)} pts
+                                {question.question_points.toFixed(1)} pts
                             </Text>
                         </Text>
                     </Box>
@@ -105,132 +105,159 @@ export const Rubric = () => {
                 <Divider label="Collapse View" labelPosition="right" pb='xs' />
             </Box>
 
-            {/* Scroll Area */}
-            <ScrollArea type="auto" scrollbarSize={4} scrollbars="y" h="calc(100vh - 340px)">
-                <DragDropContext onDragEnd={handleDragEnd}>
-                    <Droppable droppableId="rubric-list">
-                        {(provided) => (
-                        <Flex
-                            direction="column"
-                            className="space-y-1"
-                            {...provided.droppableProps}
-                            ref={provided.innerRef}
-                            {...provided.droppableProps}
-                        >
-                            {rubrics.map((rubric, index) => (
-                            <Draggable
-                                key={rubric.rubric_id.toString()}
-                                draggableId={rubric.rubric_id.toString()}
-                                index={index}
+            {rubrics.length === 0 ? (
+                <Flex direction="column" align="center" justify="center" gap="xs" py="xl" w='100%'>
+                    <Image
+                        src="/Image/table/no_data.svg"
+                        alt="No rubrics found"
+                        w="auto"
+                        h={150}
+                        fit="contain"
+                        fallbackSrc="https://placehold.co/200x200?text=Placeholder"
+                    />
+                    <Text size="lg" fw={500} mt="md">
+                        No rubrics found
+                    </Text>
+                    <Text size="sm" c="dimmed">
+                        You haven’t created any rubrics yet.
+                    </Text>
+
+                    <Button
+                        leftSection={<FaPlus size={12} />}
+                        w={456}
+                        variant="outline"
+                        color="violet"
+                        className="mt-2"
+                    >
+                        Add rubric item
+                    </Button>
+                </Flex>
+            ) : (       
+                <ScrollArea type="auto" scrollbarSize={4} scrollbars="y" h="calc(100vh - 340px)">
+                    <DragDropContext onDragEnd={handleDragEnd}>
+                        <Droppable droppableId="rubric-list">
+                            {(provided) => (
+                            <Flex
+                                direction="column"
+                                className="space-y-1"
+                                {...provided.droppableProps}
+                                ref={provided.innerRef}
+                                {...provided.droppableProps}
                             >
-                                {(provided, snapshot) => (
-                                <Checkbox.Card
-                                    checked={false}
-                                    component="div"
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    p="sm"
-                                    w="456px"
-                                    bd={snapshot.isDragging ? '2px solid #827f7f' : '1px solid #827f7f'}
-                                    bg={snapshot.isDragging ? '#f0f0f0' : '#f9f9f9'}
-                                    radius={0}
-                                    className="hover:shadow-sm group"
+                                {rubrics.map((rubric, index) => (
+                                <Draggable
+                                    key={rubric.rubric_id.toString()}
+                                    draggableId={rubric.rubric_id.toString()}
+                                    index={index}
                                 >
-                                    <Group wrap="nowrap" align="flex-start">
-                                    <Checkbox.Indicator
-                                        icon={() => <Text size="sm" fw={500}>{rubric.rubric_id}</Text>}
-                                    />
-                                    <div>
-                                        {editingRubricId === rubric.rubric_id ? (
-                                            <NumberInput
-                                                hideControls
-                                                autoFocus
-                                                decimalScale={2}
-                                                w={100}
-                                                value={rubric.rubric_point}
-                                                prefix={rubric.rubric_setting === 'positive' ? '+' : ''}
-                                                // min={0}
-                                                // max={question.question_points}
-                                                allowNegative={true}
-                                                onChange={(val) => {
-                                                    setRubrics((prev) =>
-                                                    prev.map((r) =>
-                                                        r.rubric_id === rubric.rubric_id
-                                                            ? { ...r, rubric_point: typeof val === 'number' ? val : 0, rubric_setting: typeof val === 'number' && val < 0 ? 'negative' : 'positive', }
-                                                            : r
-                                                        )
-                                                    );
-                                                }}
-                                                onBlur={() => setEditingRubricId(null)}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter' || e.key === 'Escape') {
-                                                    e.preventDefault();
-                                                    setEditingRubricId(null);
-                                                    }
-                                                }}
-                                            />
-                                        ) : (
-                                            <Text fw={600} c={rubric.rubric_setting === 'positive' ? 'green' : 'red'} onClick={() => setEditingRubricId(rubric.rubric_id)}>
-                                                {rubric.rubric_setting === 'positive' ? '+' : '-'}{new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 }).format(Math.abs(rubric.rubric_point))}
-                                            </Text>
-                                        )}
-                                        {editingDescriptionId === rubric.rubric_id ? (
-                                            <Textarea
-                                                miw={360}
-                                                autoFocus
-                                                autosize
-                                                radius="none"
-                                                defaultValue={rubric.rubric_description}
-                                                onBlur={(e) => {
-                                                    setRubrics((prev) =>
+                                    {(provided, snapshot) => (
+                                    <Checkbox.Card
+                                        checked={false}
+                                        component="div"
+                                        ref={provided.innerRef}
+                                        {...provided.draggableProps}
+                                        {...provided.dragHandleProps}
+                                        p="sm"
+                                        w="456px"
+                                        bd={snapshot.isDragging ? '2px solid #827f7f' : '1px solid #827f7f'}
+                                        bg={snapshot.isDragging ? '#f0f0f0' : '#f9f9f9'}
+                                        radius={0}
+                                        className="hover:shadow-sm group"
+                                    >
+                                        <Group wrap="nowrap" align="flex-start">
+                                        <Checkbox.Indicator
+                                            icon={() => <Text size="sm" fw={500}>{rubric.rubric_id}</Text>}
+                                        />
+                                        <div>
+                                            {editingRubricId === rubric.rubric_id ? (
+                                                <NumberInput
+                                                    hideControls
+                                                    autoFocus
+                                                    decimalScale={2}
+                                                    w={100}
+                                                    value={rubric.rubric_point}
+                                                    prefix={rubric.rubric_setting === 'positive' ? '+' : ''}
+                                                    // min={0}
+                                                    // max={question.question_points}
+                                                    allowNegative={true}
+                                                    onChange={(val) => {
+                                                        setRubrics((prev) =>
                                                         prev.map((r) =>
                                                             r.rubric_id === rubric.rubric_id
-                                                                ? { ...r, rubric_description: e.target.value }
+                                                                ? { ...r, rubric_point: typeof val === 'number' ? val : 0, rubric_setting: typeof val === 'number' && val < 0 ? 'negative' : 'positive', }
                                                                 : r
-                                                        )
-                                                    );
-                                                    setEditingDescriptionId(null);
-                                                }}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                                            )
+                                                        );
+                                                    }}
+                                                    onBlur={() => setEditingRubricId(null)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' || e.key === 'Escape') {
                                                         e.preventDefault();
+                                                        setEditingRubricId(null);
+                                                        }
+                                                    }}
+                                                />
+                                            ) : (
+                                                <Text fw={600} c={rubric.rubric_setting === 'positive' ? 'green' : 'red'} onClick={() => setEditingRubricId(rubric.rubric_id)}>
+                                                    {rubric.rubric_setting === 'positive' ? '+' : '-'}{new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 }).format(Math.abs(rubric.rubric_point))}
+                                                </Text>
+                                            )}
+                                            {editingDescriptionId === rubric.rubric_id ? (
+                                                <Textarea
+                                                    miw={360}
+                                                    autoFocus
+                                                    autosize
+                                                    radius="none"
+                                                    defaultValue={rubric.rubric_description}
+                                                    onBlur={(e) => {
                                                         setRubrics((prev) =>
                                                             prev.map((r) =>
                                                                 r.rubric_id === rubric.rubric_id
-                                                                    ? { ...r, rubric_description: (e.target as HTMLTextAreaElement).value }
+                                                                    ? { ...r, rubric_description: e.target.value }
                                                                     : r
                                                             )
                                                         );
                                                         setEditingDescriptionId(null);
-                                                    } else if (e.key === 'Escape') {
-                                                        setEditingDescriptionId(null);
-                                                    }
-                                                }}
-                                            />
-                                        ) : (
-                                            <Text
-                                                size="sm"
-                                                c="#495057"
-                                                className="whitespace-pre-wrap"
-                                                onClick={() => setEditingDescriptionId(rubric.rubric_id)}
-                                                dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(marked.parse(rubric.rubric_description) as string),
-                                            }}/>
-                                        )}
-                                    </div>
-                                    <Box
-                                        onClick={() => console.log("Delete rubric", rubric.rubric_id)}
-                                        className="ml-auto cursor-pointer text-gray-500 hover:text-red-600 hover:scale-105 transition-transform duration-200 opacity-0 group-hover:opacity-100"
-                                    >
-                                        <AiTwotoneDelete size={20} />
-                                    </Box>
-                                    </Group>
-                                </Checkbox.Card>
-                                )}
-                            </Draggable>
-                            ))}
-                            {provided.placeholder}
-                        </Flex>
+                                                    }}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                                            e.preventDefault();
+                                                            setRubrics((prev) =>
+                                                                prev.map((r) =>
+                                                                    r.rubric_id === rubric.rubric_id
+                                                                        ? { ...r, rubric_description: (e.target as HTMLTextAreaElement).value }
+                                                                        : r
+                                                                )
+                                                            );
+                                                            setEditingDescriptionId(null);
+                                                        } else if (e.key === 'Escape') {
+                                                            setEditingDescriptionId(null);
+                                                        }
+                                                    }}
+                                                />
+                                            ) : (
+                                                <Text
+                                                    size="sm"
+                                                    c="#495057"
+                                                    className="whitespace-pre-wrap"
+                                                    onClick={() => setEditingDescriptionId(rubric.rubric_id)}
+                                                    dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(marked.parse(rubric.rubric_description) as string),
+                                                }}/>
+                                            )}
+                                        </div>
+                                        <Box
+                                            onClick={() => console.log("Delete rubric", rubric.rubric_id)}
+                                            className="ml-auto cursor-pointer text-gray-500 hover:text-red-600 hover:scale-105 transition-transform duration-200 opacity-0 group-hover:opacity-100"
+                                        >
+                                            <AiTwotoneDelete size={20} />
+                                        </Box>
+                                        </Group>
+                                    </Checkbox.Card>
+                                    )}
+                                </Draggable>
+                                ))}
+                                {provided.placeholder}
+                            </Flex>
                         )}
                     </Droppable>
                 </DragDropContext>
@@ -245,6 +272,7 @@ export const Rubric = () => {
                     Add Rubric Item
                 </Button>
             </ScrollArea>
+        )}
         </Flex>
     );
 }
