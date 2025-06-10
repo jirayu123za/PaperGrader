@@ -1,21 +1,19 @@
 import { create } from 'zustand';
 
-interface Submission {
+interface SubmissionsList {
     submission_id: string;
-    submission_file_name: string;
+    file_name: string;
     submitted_at: string;
+    total_submissions: number;
+    submitted_by: string;
 }
 
 interface SubmissionFilesStoreState {
-    submissions: Submission[];
-    setSubmissions: (submissions: Submission[]) => void;
-    visibleCount: number;
-    setVisibleCount: (count: number) => void;
+    submissionsList: SubmissionsList[];
+    setSubmissionsList: (submissions: SubmissionsList[]) => void;
 }
 
 export const useSubmissionFilesStore = create<SubmissionFilesStoreState>((set) => ({
-    submissions: [],
-    setSubmissions: (submissions) => set({ submissions }),
-    visibleCount: 7,
-    setVisibleCount: (count) => set({ visibleCount: count }),
+    submissionsList: [],
+    setSubmissionsList: (submissionsList) => set({ submissionsList }),
 }));
