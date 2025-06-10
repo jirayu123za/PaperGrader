@@ -166,8 +166,11 @@ type StudentSubmissionSplitResponse struct {
 
 type SubmissionFilesResponse struct {
 	SubmissionID       uuid.UUID `json:"submission_id"`
-	SubmissionFileName string    `json:"submission_file_name"`
+	SubmissionFileName string    `json:"file_name"`
 	SubmittedAt        time.Time `json:"submitted_at"`
+	TotalSubmissions   int       `json:"total_submissions"`
+	SubmittedBy        string    `json:"submitted_by"`
+	FilePrefix         string    `json:"-"`
 }
 
 type BoundingBoxDataResponse struct {
