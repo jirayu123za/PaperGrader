@@ -1,29 +1,24 @@
 "use client";
 
 import React from 'react';
-import { useParams } from 'next/navigation';
-import { Container, Title, Button, Flex, Tabs } from '@mantine/core';
-import { FaRegArrowAltCircleLeft } from "react-icons/fa";
-import { useDisclosure } from '@mantine/hooks';
-import { Rubric } from './Rubric';
 import Question from './Question'
+import { useParams } from 'next/navigation';
+import { Container, Title, Flex, Tabs, Burger } from '@mantine/core';
+import { Rubric } from './Rubric';
 import { useCreateSidebarStore } from '@/store/process-outline/createSidebarStore';
 
 const Create: React.FC = () => {
   const params = useParams();
   const course_id = params.course_id as string;
   const assignment_id = params.assignment_id as string;
-  // const [ isCollapsed, { toggle }] = useDisclosure(false);
   const isCollapsed: boolean = useCreateSidebarStore((state: { isCollapsed: boolean }) => state.isCollapsed);
   const toggle: () => void = useCreateSidebarStore((state: { toggle: () => void }) => state.toggle);
 
   return (
-    <Container className={`transition-all duration-300 ease-in-out bg-white border-1 ${isCollapsed ? 'w-[100px] min-w-[100px]' : 'w-[500px] min-w-[500px]'} flex-shrink-0 h-screen flex flex-col`}>
-      <Flex justify="space-between" align="center" p="md" c={"white"} className='bg-[#6665AC]'>
-        <Title order={4} className={`${isCollapsed ? 'hidden' : 'block'}`}>Create bounding box & Rubric</Title>
-        <Button onClick={toggle} variant="transparent" color="white" className={`transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}>
-          <FaRegArrowAltCircleLeft size={24} />
-        </Button>
+    <Container className={`transition-all duration-300 ease-in-out bg-white border-1 ${isCollapsed ? 'w-[70px] min-w-[65px]' : 'w-[500px] min-w-[500px]'} flex-shrink-0 h-screen flex flex-col`}>
+      <Flex justify="space-between" align="center" p="md" className='bg-[#6665AC]'>
+        <Burger lineSize={4} size="md" opened={!isCollapsed} onClick={toggle} color="white" aria-label="Toggle navigation" />
+        <Title c="white" order={4} className={`${isCollapsed ? 'hidden' : 'block'}`}>Create bounding box & Rubric</Title>
       </Flex>
 
       {!isCollapsed && (
