@@ -4,7 +4,7 @@ import React from 'react';
 import Question from './Question'
 import { useParams } from 'next/navigation';
 import { Container, Title, Flex, Tabs, Burger } from '@mantine/core';
-import { Rubric } from './Rubric';
+import { Rubric } from './Rubric/Rubric';
 import { useCreateSidebarStore } from '@/store/process-outline/createSidebarStore';
 
 const Create: React.FC = () => {
