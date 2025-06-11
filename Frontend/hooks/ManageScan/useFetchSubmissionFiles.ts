@@ -26,7 +26,7 @@ export const useFetchSubmissionFiles = (assignment_id: string) => {
                 throw new Error('Failed to fetch submission files');
             }
 
-            const data = response.data.submissions;
+            const data = response.data.submissions_list;
             setSubmissionFiles(data || []);
             return data || [];
         },
