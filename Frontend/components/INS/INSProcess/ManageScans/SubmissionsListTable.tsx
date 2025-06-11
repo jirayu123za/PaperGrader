@@ -8,6 +8,7 @@ import { IconTrash } from "@tabler/icons-react";
 import { FaRegFilePdf } from "react-icons/fa";
 import { useSubmissionFilesStore } from "@/store/ManageScan/useSubmissionFiles";
 import { usePagination } from "@mantine/hooks";
+import { DeleteSubmission } from "./DeleteSubmission";
 
 type Props = {
   assignment_id: string;
@@ -87,12 +88,11 @@ export const SubmissionsListTable: React.FC<Props> = ({ assignment_id }) => {
                                 <Table.Td>{submissions.total_submissions}</Table.Td>
                                 <Table.Td>{submissions.submitted_by}</Table.Td>
                                 <Table.Td>
-                                    <ActionIcon
-                                        variant="subtle"
-                                        color="red"
-                                    >
-                                        <IconTrash size={14} />
-                                    </ActionIcon>
+                                    <DeleteSubmission 
+                                        assignment_id={assignment_id} 
+                                        submission_id={submissions.submission_id} 
+                                        submission_name={submissions.file_name}
+                                    />
                                 </Table.Td>
                             </Table.Tr>
                         ))
