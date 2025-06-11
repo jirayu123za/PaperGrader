@@ -1,5 +1,5 @@
 "use client";
-import { Popover, Button, Text, Box, UnstyledButton, Title, Flex, Divider, ScrollArea, Anchor } from "@mantine/core";
+import { Popover, Box, Title, Flex, ScrollArea, Anchor } from "@mantine/core";
 import { useState } from "react";
 import { MdExpandMore } from "react-icons/md";
 

@@ -10,6 +10,7 @@ import { RubricSettings } from './RubricSettings';
 import { QuestionSelector } from './QuestionSelector';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { marked } from 'marked';
+import { NoQuestion } from './NoQuestion';
 marked.use(markedKatex({ throwOnError: false }));
 
 interface Rubric {
@@ -57,6 +58,10 @@ export const Rubric = () => {
         question_title: 'Question Title',
         question_points: 10.0,
     });
+
+    // const [rubrics, setRubrics] = useState<RubricItem[]>([]);
+    // const [question, setQuestion] = useState<Question | null>(null);
+
     const [graded, setGraded] = useState<Graded>({
         has_graded: 2,
         total_grade: 10,
@@ -74,7 +79,9 @@ export const Rubric = () => {
         setRubrics(newItems);
     };
 
-    // const [rubrics, setRubrics] = useState<RubricItem[]>([]);
+    if (question === null) {
+        return <NoQuestion/>
+    }
 
     return (
         <Flex direction="column" className="flex-1 min-h-0 p-4">
@@ -84,7 +91,7 @@ export const Rubric = () => {
                     <QuestionSelector/>
                 </Flex>
 
-                <Progress color="violet" value={(graded.total_grade / question.question_points) * 100} />
+                <Progress color="violet" value={question ? (graded.total_grade / question.question_points) * 100 : 0} />
                 <Text size="xs" c="#495057">
                     {graded.has_graded} of {graded.total_grade} already assigned rubrics
                 </Text>
@@ -95,7 +102,7 @@ export const Rubric = () => {
                         <Text fw={500} size="xl" c="#495057" style={{ fontSize: '28px', lineHeight: '1.2' }}>
                             {/* {totalScore.toFixed(2)} */}
                             <Text span fw={500} c="#495057" style={{ fontSize: '28px', lineHeight: '1.2' }}>
-                                {question.question_points.toFixed(1)} pts
+                                {question?.question_points.toFixed(1)} pts
                             </Text>
                         </Text>
                     </Box>
