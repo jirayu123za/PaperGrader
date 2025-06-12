@@ -3,7 +3,10 @@ import axios from 'axios';
 
 interface BoundingBox {
   bounding_box_id?: string;
-  bounding_box_position: string;
+  point_x: number;
+  point_y: number;
+  width: number;
+  height: number;
   bounding_box_type: 'question' | 'name' | 'id';
   bounding_box_page: number;
 }
@@ -31,7 +34,10 @@ interface BoundingBoxPayload {
 type TemplateResponse = {
   bounding_boxes: Array<{
     bounding_box_id: string;
-    bounding_box_position: string;
+    point_x: number;
+  point_y: number;
+  width: number;
+  height: number;
     bounding_box_type: string;
     bounding_box_page: number;
   }>;
@@ -70,7 +76,7 @@ export function useCreateBoundingBoxes() {
   return useMutation({
     mutationKey: ['createBoundingBoxes'],
     mutationFn: async ({ assignment_id, bounding_boxes, questions_data }: BoundingBoxPayload) => {
-      const res = await axios.post(`/api/instructor/boundingBoxes?assignment_id=${assignment_id}`, {
+      const res = await axios.post(`/api/api/instructor/boundingBoxes?assignment_id=${assignment_id}`, {
         bounding_boxes,
         ...(questions_data ? { questions_data } : {}),
       });
