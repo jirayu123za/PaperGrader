@@ -16,7 +16,7 @@ import { FaSlidersH } from "react-icons/fa";
 
 export const Editor: React.FC = () => {
   const { values, setField } = useAssignmentSettingFormStore();
-  const [showToolbar, setShowToolbar] = useState(true);
+  const [showToolbar, setShowToolbar] = useState(false);
 
   const editor = useEditor({
     extensions: [
