@@ -67,7 +67,11 @@ export default function KonvaCanvas({ innerContainerRef, pageOffsets }: KonvaCan
         ? 'Student Name'
         : 'Student ID';
 
-      const { x, y, width, height } = parsePosition(box.bounding_box_position);
+      const x = box.point_x || 0;
+      const y = box.point_y || 0;
+      const width = box.width || 100;
+      const height = box.height || 100;
+
       const yOffset = pageOffsets.current?.[box.bounding_box_page - 1] || 0;
       const adjustedY = y + yOffset;
 
@@ -104,26 +108,4 @@ export default function KonvaCanvas({ innerContainerRef, pageOffsets }: KonvaCan
   }, [innerContainerRef.current?.scrollHeight]);
 
   return null;
-}
-
-function parsePosition(pos: string): { x: number; y: number; width: number; height: number } {
-  if (!pos) return { x: 0, y: 0, width: 100, height: 100 };
-
-  const match = pos.match(/\(([^,]+),([^\)]+)\),\(([^,]+),([^\)]+)\)/);
-  if (!match) {
-    const parts = pos.split(',').map(parseFloat);
-    return {
-      x: parts[0] || 0,
-      y: parts[1] || 0,
-      width: parts[2] || 100,
-      height: parts[3] || 100,
-    };
-  }
-
-  return {
-    x: parseFloat(match[1]),
-    y: parseFloat(match[2]),
-    width: parseFloat(match[3]),
-    height: parseFloat(match[4]),
-  };
 }

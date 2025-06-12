@@ -2,7 +2,10 @@ import { create } from 'zustand';
 
 interface BoundingBox {
   bounding_box_id: string;
-  bounding_box_position: string;
+  point_x: number;
+  point_y: number;
+  width: number;
+  height: number;
   bounding_box_type: string;
   bounding_box_page: number;
 
@@ -51,15 +54,22 @@ const useBoundingBoxStore = create<BoundingBoxStore>((set) => ({
   setRubricData: (rubricData) => set({ rubricData }),
 
 
-  addBoundingBox: (box) =>
-    set((state) => ({
-      boundingBoxes: [...state.boundingBoxes, {
+addBoundingBox: (box) => set((state) => {
+  return {
+    boundingBoxes: [
+      ...state.boundingBoxes,
+      {
         bounding_box_id: box.bounding_box_id,
-        bounding_box_position: box.bounding_box_position,
+        point_x: box.point_x,
+        point_y: box.point_y,
+        width: box.width,
+        height: box.height,
         bounding_box_type: box.bounding_box_type,
-        bounding_box_page: box.bounding_box_page
-      }],
-    })),
+        bounding_box_page: box.bounding_box_page,
+      },
+    ],
+  };
+}),
 
   addQuestion: (question) =>
     set((state) => ({
@@ -69,19 +79,21 @@ const useBoundingBoxStore = create<BoundingBoxStore>((set) => ({
       },
     })),
 
-  updateBoundingBox: (id, updatedBox) =>
-    set((state) => ({
-      boundingBoxes: state.boundingBoxes.map((box) =>
-        box.bounding_box_id === id
-          ? {
+updateBoundingBox: (id, updatedBox) =>
+  set((state) => ({
+    boundingBoxes: state.boundingBoxes.map((box) =>
+      box.bounding_box_id === id
+        ? {
             ...box,
             ...updatedBox,
-            bounding_box_position: updatedBox.bounding_box_position || box.bounding_box_position,
+            point_x: updatedBox.point_x !== undefined ? updatedBox.point_x : box.point_x,
+            point_y: updatedBox.point_y !== undefined ? updatedBox.point_y : box.point_y,
+            width: updatedBox.width !== undefined ? updatedBox.width : box.width,
+            height: updatedBox.height !== undefined ? updatedBox.height : box.height,
           }
-          : box
-      ),
-    })),
-
+        : box
+    ),
+  })),
 
 
   updateQuestion: (id, updatedQuestion) =>

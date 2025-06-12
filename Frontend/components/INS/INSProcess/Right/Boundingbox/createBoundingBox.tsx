@@ -1,29 +1,10 @@
 import Konva from 'konva';
 
-function parsePosition(pos: string): { x: number; y: number; width: number; height: number } {
-  if (!pos) return { x: 0, y: 0, width: 100, height: 100 };
-
-  const match = pos.match(/\(([^,]+),([^\)]+)\),\(([^,]+),([^\)]+)\)/);
-  if (!match) {
-    const parts = pos.split(',').map(parseFloat);
-    return {
-      x: parts[0] || 0,
-      y: parts[1] || 0,
-      width: parts[2] || 100,
-      height: parts[3] || 100,
-    };
-  }
-
-  return {
-    x: parseFloat(match[1]),
-    y: parseFloat(match[2]),
-    width: parseFloat(match[3]),
-    height: parseFloat(match[4]),
-  };
-}
-
-export function createBoundingBoxGroup(box: any, selectShape: (group: Konva.Group) => void): Konva.Group {
-  const { x, y, width, height } = parsePosition(box.bounding_box_position);
+export function createBoundingBoxGroup(box: any, selectShape: (node: Konva.Node) => void): Konva.Group {
+  const x = box.point_x || 0;
+  const y = box.point_y || 0;
+  const width = box.width || 100;
+  const height = box.height || 100;
 
   const group = new Konva.Group({
     x,
@@ -76,7 +57,7 @@ export function createBoundingBoxGroup(box: any, selectShape: (group: Konva.Grou
   group.add(titleText);
 
   group.on('click', () => {
-    selectShape(group);
+    selectShape(background); // bind transformer to the Rect, not the group
   });
 
   group.on('dragend transformend', () => {
@@ -86,7 +67,6 @@ export function createBoundingBoxGroup(box: any, selectShape: (group: Konva.Grou
 
     const updatedX = group.x();
     const updatedY = group.y();
-
     const updatedWidth = background.width() * background.scaleX();
     const updatedHeight = background.height() * background.scaleY();
 
@@ -103,13 +83,17 @@ export function createBoundingBoxGroup(box: any, selectShape: (group: Konva.Grou
       });
     }
 
-    const newPosition = `(${updatedX},${updatedY}),(${updatedWidth},${updatedHeight})`;
-
     const bounding_box_id = box.bounding_box_id;
     const { updateBoundingBox } = require('@/store/BoundingBox/useBoundingBoxStore').default.getState();
     updateBoundingBox(bounding_box_id, {
-      bounding_box_position: newPosition,
+      point_x: updatedX,
+      point_y: updatedY,
+      width: updatedWidth,
+      height: updatedHeight,
     });
+     group.position({ x: updatedX, y: updatedY });
+  background.width(updatedWidth);
+  background.height(updatedHeight);
   });
 
   return group;
