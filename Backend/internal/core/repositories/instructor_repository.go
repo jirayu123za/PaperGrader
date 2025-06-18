@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"encoding/json"
 	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/models"
 
@@ -75,6 +76,15 @@ type InstructorRepository interface {
 	FindQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (response.QuestionsTemplateResponse, error)
 
 	// CRUD Rubric
-	// AddRubric(AssignmentID uuid.UUID, rubric *models.Rubric) error
-	// FindRubricData(AssignmentID uuid.UUID) (response.RubricDataResp, error)
+	// Main Question
+	FindRubricsExists(assignmentID uuid.UUID, questionID uuid.UUID, initRubricsJSON []byte) error
+	AddRubricDetailsToMainQuestion(assignmentID uuid.UUID, questionID uuid.UUID, newDetails []byte) error
+	AddRubricToMainQuestion(assignmentID uuid.UUID, questionID uuid.UUID, rubricData json.RawMessage) error
+	// Sub Question
+	FindSubQuestionRubricExists(assignmentID uuid.UUID, questionID uuid.UUID, subQuestionID uuid.UUID, initRubricsJSON []byte) error
+	AddRubricDetailsToSubQuestion(assignmentID uuid.UUID, questionID uuid.UUID, subQuestionID uuid.UUID, newDetails []byte) error
+	AddRubricToSubQuestion(assignmentID uuid.UUID, questionID uuid.UUID, subQuestionID uuid.UUID, rubricData json.RawMessage) error
+	// etc..
+	// FindRubricDataByQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID) (response.RubricResult, error)
+	// FindRubricDataBySubQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID uuid.UUID) (response.RubricResult, error)
 }
