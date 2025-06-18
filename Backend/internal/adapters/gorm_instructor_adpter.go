@@ -1159,28 +1159,212 @@ func (r *GormInstructorRepository) FindQuestionsByAssignmentTemplate(AssignmentI
 }
 
 // For rubric
-// func (r *GormInstructorRepository) AddRubric(AssignmentID uuid.UUID, rubric *models.Rubric) error {
-// 	if err := r.db.Create(rubric).Error; err != nil {
-// 		return err
-// 	}
-// 	return nil
+// Main question
+func (r *GormInstructorRepository) AddRubricToMainQuestion(AssignmentID uuid.UUID, QuestionID uuid.UUID, rubricData json.RawMessage) error {
+	var rubricMap map[string]interface{}
+	if err := json.Unmarshal(rubricData, &rubricMap); err != nil {
+		return err
+	}
+
+	newDetails, err := json.Marshal(rubricMap["rubric_details"])
+	if err != nil {
+		return err
+	}
+
+	initRubrics := map[string]interface{}{
+		"rubric_id":      rubricMap["rubric_id"],
+		"rubric_setting": rubricMap["rubric_setting"],
+		"rubric_details": []interface{}{},
+	}
+
+	initRubricsJSON, err := json.Marshal(initRubrics)
+	if err != nil {
+		return err
+	}
+
+	if err := r.FindRubricsExists(AssignmentID, QuestionID, initRubricsJSON); err != nil {
+		return err
+	}
+
+	return r.AddRubricDetailsToMainQuestion(AssignmentID, QuestionID, newDetails)
+}
+
+func (r *GormInstructorRepository) FindRubricsExists(assignmentID uuid.UUID, questionID uuid.UUID, initRubricsJSON []byte) error {
+	query := `
+		WITH q_index AS (
+			SELECT idx - 1 AS i
+			FROM (
+				SELECT idx, q->>'question_id' AS qid
+				FROM rubrics r,
+					jsonb_array_elements(r.rubric_data->'questions_data') WITH ORDINALITY AS q(q, idx)
+				WHERE r.assignment_id = ?
+			) sub
+			WHERE qid = ?
+		)
+		UPDATE rubrics
+		SET rubric_data = jsonb_set(
+			rubric_data,
+			ARRAY['questions_data', q_index.i::text, 'rubrics'],
+			?::jsonb,
+			true
+		)
+		FROM q_index
+		WHERE assignment_id = ?
+		  AND (rubric_data->'questions_data'->(q_index.i::text)::int->'rubrics') IS NULL
+	`
+	return r.db.Exec(query, assignmentID, questionID, string(initRubricsJSON), assignmentID).Error
+}
+
+func (r *GormInstructorRepository) AddRubricDetailsToMainQuestion(assignmentID uuid.UUID, questionID uuid.UUID, newDetails []byte) error {
+	query := `
+		WITH appended AS (
+			SELECT idx - 1 AS i
+			FROM (
+				SELECT idx, q->>'question_id' AS qid
+				FROM rubrics r,
+					jsonb_array_elements(r.rubric_data->'questions_data') WITH ORDINALITY AS q(q, idx)
+				WHERE r.assignment_id = ?
+			) sub
+			WHERE qid = ?
+		)
+		UPDATE rubrics
+		SET rubric_data = jsonb_set(
+			rubric_data,
+			ARRAY['questions_data', appended.i::text, 'rubrics', 'rubric_details'],
+			COALESCE(
+				rubric_data->'questions_data'->(appended.i::text)::int->'rubrics'->'rubric_details',
+				'[]'::jsonb
+			) || ?::jsonb,
+			true
+		)
+		FROM appended
+		WHERE assignment_id = ?
+	`
+	return r.db.Exec(query, assignmentID, questionID, string(newDetails), assignmentID).Error
+}
+
+// Sub question
+func (r *GormInstructorRepository) AddRubricToSubQuestion(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID uuid.UUID, rubricData json.RawMessage) error {
+	var rubricMap map[string]interface{}
+	if err := json.Unmarshal(rubricData, &rubricMap); err != nil {
+		return err
+	}
+
+	newDetails, err := json.Marshal(rubricMap["rubric_details"])
+	if err != nil {
+		return err
+	}
+
+	initRubrics := map[string]interface{}{
+		"rubric_id":      rubricMap["rubric_id"],
+		"rubric_setting": rubricMap["rubric_setting"],
+		"rubric_details": []interface{}{},
+	}
+
+	initRubricsJSON, err := json.Marshal(initRubrics)
+	if err != nil {
+		return err
+	}
+
+	if err := r.FindSubQuestionRubricExists(AssignmentID, QuestionID, SubQuestionID, initRubricsJSON); err != nil {
+		return err
+	}
+
+	return r.AddRubricDetailsToSubQuestion(AssignmentID, QuestionID, SubQuestionID, newDetails)
+}
+
+func (r *GormInstructorRepository) FindSubQuestionRubricExists(assignmentID uuid.UUID, questionID uuid.UUID, subQuestionID uuid.UUID, initRubricsJSON []byte) error {
+	query := `
+		WITH q_index AS (
+			SELECT idx - 1 AS i
+			FROM (
+				SELECT idx, q->>'question_id' AS qid
+				FROM rubrics r,
+					jsonb_array_elements(r.rubric_data->'questions_data') WITH ORDINALITY AS q(q, idx)
+				WHERE r.assignment_id = ?
+			) sub
+			WHERE qid = ?
+		),
+		sq_index AS (
+			SELECT q_index.i, idx - 1 AS j
+			FROM rubrics r, q_index,
+				jsonb_array_elements(r.rubric_data->'questions_data'->(q_index.i)::int->'sub_questions') WITH ORDINALITY AS sq(sq, idx)
+			WHERE r.assignment_id = ? AND sq.sq->>'sub_question_id' = ?
+		)
+		UPDATE rubrics
+		SET rubric_data = jsonb_set(
+			rubric_data,
+			ARRAY['questions_data', sq_index.i::text, 'sub_questions', sq_index.j::text, 'rubrics'],
+			?::jsonb,
+			true
+		)
+		FROM sq_index
+		WHERE assignment_id = ?
+		AND (rubric_data->'questions_data'->(sq_index.i)::int->'sub_questions'->(sq_index.j)::int->'rubrics') IS NULL
+	`
+	return r.db.Exec(query, assignmentID, questionID, assignmentID, subQuestionID, string(initRubricsJSON), assignmentID).Error
+}
+
+func (r *GormInstructorRepository) AddRubricDetailsToSubQuestion(assignmentID uuid.UUID, questionID uuid.UUID, subQuestionID uuid.UUID, newDetails []byte) error {
+	query := `
+		WITH q_index AS (
+			SELECT idx - 1 AS i
+			FROM (
+				SELECT idx, q->>'question_id' AS qid
+				FROM rubrics r,
+					jsonb_array_elements(r.rubric_data->'questions_data') WITH ORDINALITY AS q(q, idx)
+				WHERE r.assignment_id = ?
+			) sub
+			WHERE qid = ?
+		),
+		sq_index AS (
+			SELECT q_index.i, idx - 1 AS j
+			FROM rubrics r, q_index,
+				jsonb_array_elements(r.rubric_data->'questions_data'->(q_index.i)::int->'sub_questions') WITH ORDINALITY AS sq(sq, idx)
+			WHERE r.assignment_id = ? AND sq.sq->>'sub_question_id' = ?
+		)
+		UPDATE rubrics
+		SET rubric_data = jsonb_set(
+			rubric_data,
+			ARRAY['questions_data', sq_index.i::text, 'sub_questions', sq_index.j::text, 'rubrics', 'rubric_details'],
+			COALESCE(
+				rubric_data->'questions_data'->(sq_index.i)::int->'sub_questions'->(sq_index.j)::int->'rubrics'->'rubric_details',
+				'[]'::jsonb
+			) || ?::jsonb,
+			true
+		)
+		FROM sq_index
+		WHERE assignment_id = ?
+	`
+	return r.db.Exec(query, assignmentID, questionID, assignmentID, subQuestionID, string(newDetails), assignmentID).Error
+}
+
+// etc..
+// func (r *GormInstructorRepository) FindRubricDataByQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID) (response.RubricResult, error) {
+// 	var result response.RubricResult
+// 	query := `
+// 		SELECT rubric_id, q.question->'rubrics' AS rubric_info
+// 		FROM rubrics,
+// 		     LATERAL jsonb_array_elements(rubric_data) AS q(question)
+// 		WHERE assignment_id = ?
+// 		  AND q.question->>'question_id' = ?
+// 		  AND NOT q.question ? 'sub_questions'
+// 	`
+// 	err := r.db.Raw(query, AssignmentID, QuestionID).Scan(&result).Error
+// 	return result, err
 // }
 
-// func (r *GormInstructorRepository) FindRubricData(AssignmentID uuid.UUID) (response.RubricDataResp, error) {
-// 	var rubricRecord struct {
-// 		RubricData datatypes.JSON `gorm:"column:rubric_data"`
-// 	}
-// 	err := r.db.Table("rubrics").
-// 		Where("assignment_id = ? AND deleted_at IS NULL", AssignmentID).
-// 		Take(&rubricRecord).Error
-// 	if err != nil {
-// 		return response.RubricDataResp{}, fmt.Errorf("rubric not found: %w", err)
-// 	}
-
-// 	var rubricData response.RubricDataResp
-// 	if err := json.Unmarshal(rubricRecord.RubricData, &rubricData); err != nil {
-// 		return response.RubricDataResp{}, fmt.Errorf("failed to parse rubric_data: %w", err)
-// 	}
-
-// 	return rubricData, nil
+// func (r *GormInstructorRepository) FindRubricDataBySubQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID uuid.UUID) (response.RubricResult, error) {
+// 	var result response.RubricResult
+// 	query := `
+// 		SELECT rubric_id, subq->'rubrics' AS rubric_info
+// 		FROM rubrics,
+// 		     LATERAL jsonb_array_elements(rubric_data) AS q(question),
+// 		     LATERAL jsonb_array_elements(q.question->'sub_questions') AS subq
+// 		WHERE assignment_id = ?
+// 		  AND q.question->>'question_id' = ?
+// 		  AND subq->>'sub_question_id' = ?
+// 	`
+// 	err := r.db.Raw(query, AssignmentID, QuestionID, SubQuestionID).Scan(&result).Error
+// 	return result, err
 // }
