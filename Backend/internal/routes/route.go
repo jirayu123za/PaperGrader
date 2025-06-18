@@ -120,8 +120,8 @@ func RegisterRoutes(
 	apiGroup.Get("/instructor/assignment/template", instructorHandler.GetAssignmentTemplateData)
 
 	// Rubric
-	// apiGroup.Post("/instructor/rubric", instructorHandler.CreateRubric)
-	// apiGroup.Get("/instructor/rubric", instructorHandler.CreateRubric)
+	apiGroup.Post("/instructor/rubric", instructorHandler.CreateRubric)
+	// apiGroup.Get("/instructor/rubric", instructorHandler.GetRubricData)
 
 	apiGroup.Get("/student/dashboard", studentHandler.GetCoursesAndAssignments)
 	// test api get pdf files name
