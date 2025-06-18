@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/json"
 	"os"
 	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/core/repositories"
@@ -78,8 +79,8 @@ type InstructorService interface {
 	GetQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (response.QuestionsTemplateResponse, error)
 
 	// CRUD Rubric
-	// CreateRubric(AssignmentID uuid.UUID, rubric *models.Rubric) error
-	// GetRubricData(AssignmentID uuid.UUID) ([]response.RubricDataResp, error)
+	CreateRubricData(assignment_id uuid.UUID, rubricData response.CreateRubricRequest) error
+	// MockGetRubricData(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID *uuid.UUID) (response.RubricResult, error)
 }
 
 type InstructorServiceImpl struct {
@@ -585,17 +586,50 @@ func (s *InstructorServiceImpl) GetQuestionsByAssignmentTemplate(AssignmentID uu
 	return questions, nil
 }
 
-// func (s *InstructorServiceImpl) CreateRubric(AssignmentID uuid.UUID, rubric *models.Rubric) error {
-// 	if err := s.repo.AddRubric(AssignmentID, rubric); err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
+func (s *InstructorServiceImpl) CreateRubricData(assignmentID uuid.UUID, rubricData response.CreateRubricRequest) error {
+	rubricID := uuid.New()
 
-// func (s *InstructorServiceImpl) GetRubricData(AssignmentID uuid.UUID) ([]response.RubricDataResp, error) {
-// 	rubricData, err := s.repo.FindRubricData(AssignmentID)
-// 	if err != nil {
-// 		return nil, err
+	var details []map[string]interface{}
+	for _, d := range rubricData.Rubric.RubricDetails {
+		point := 0
+		if d.RubricPoint != nil {
+			point = *d.RubricPoint
+		}
+		desc := ""
+		if d.RubricDescription != nil {
+			desc = *d.RubricDescription
+		}
+
+		detail := map[string]interface{}{
+			"rubric_detail_id":   uuid.New(),
+			"rubric_point":       point,
+			"rubric_description": desc,
+			"has_selected":       false,
+		}
+		details = append(details, detail)
+	}
+
+	rubricObject := map[string]interface{}{
+		"rubric_id":      rubricID,
+		"rubric_setting": rubricData.Rubric.RubricSetting,
+		"rubric_details": details,
+	}
+
+	rubricBytes, err := json.Marshal(rubricObject)
+	if err != nil {
+		return err
+	}
+
+	if rubricData.SubQuestionID != nil {
+		return s.repo.AddRubricToSubQuestion(assignmentID, rubricData.QuestionID, *rubricData.SubQuestionID, rubricBytes)
+	} else {
+		return s.repo.AddRubricToMainQuestion(assignmentID, rubricData.QuestionID, rubricBytes)
+	}
+}
+
+// func (s *InstructorServiceImpl) MockGetRubricData(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID *uuid.UUID) (response.RubricResult, error) {
+// 	if SubQuestionID != nil {
+// 		return s.repo.FindRubricDataBySubQuestionID(AssignmentID, QuestionID, *SubQuestionID)
 // 	}
-// 	return []response.RubricDataResp{rubricData}, nil
+// 	return s.repo.FindRubricDataByQuestionID(AssignmentID, QuestionID)
 // }
