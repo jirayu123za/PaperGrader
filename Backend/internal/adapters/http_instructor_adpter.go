@@ -1836,7 +1836,37 @@ func (h *HttpInstructorHandler) GetProcessOCRForSubmissions(c *fiber.Ctx) error 
 }
 
 // Rubric Handlers
-// func (h *HttpInstructorHandler) CreateRubric(c *fiber.Ctx) error {
+func (h *HttpInstructorHandler) CreateRubric(c *fiber.Ctx) error {
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	var req response.CreateRubricRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request body",
+			"error":   err.Error(),
+		})
+	}
+
+	if err := h.services.CreateRubricData(assignmentID, req); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to create rubric",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message": "Rubric created successfully",
+	})
+}
+
+// func (h *HttpInstructorHandler) GetRubricData(c *fiber.Ctx) error {
 // 	assignmentIDParam := c.Query("assignment_id")
 // 	assignmentID, err := uuid.Parse(assignmentIDParam)
 // 	if err != nil {
@@ -1846,34 +1876,45 @@ func (h *HttpInstructorHandler) GetProcessOCRForSubmissions(c *fiber.Ctx) error 
 // 		})
 // 	}
 
-// 	// var request response.CreateRubricRequest
-// 	// if err := c.BodyParser(&request); err != nil {
-// 	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-// 	// 		"message": "Invalid JSON format",
-// 	// 		"error":   err.Error(),
-// 	// 	})
-// 	// }
-
-// 	// services: 1
-// 	rubricData, err := h.services.GetRubricData(assignmentID)
+// 	questionIDParam := c.Query("question_id")
+// 	questionID, err := uuid.Parse(questionIDParam)
 // 	if err != nil {
 // 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-// 			"message": "Invalid rubric request",
+// 			"message": "Invalid question_id",
 // 			"error":   err.Error(),
 // 		})
 // 	}
 
-// 	// request.AssignmentID = assignmentID
-// 	// services: 2
-// 	// if err := h.services.CreateRubric(&request); err != nil {
-// 	// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-// 	// 		"message": "Failed to create rubric",
-// 	// 		"error":   err.Error(),
-// 	// 	})
-// 	// }
+// 	var subQuestionID uuid.UUID
+// 	subQuestionIDParam := c.Query("sub_question_id")
+// 	hasSub := false
+// 	if subQuestionIDParam != "" {
+// 		subQuestionID, err = uuid.Parse(subQuestionIDParam)
+// 		if err != nil {
+// 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+// 				"message": "Invalid sub_question_id",
+// 				"error":   err.Error(),
+// 			})
+// 		}
+// 		hasSub = true
+// 	}
 
-// 	return c.JSON(fiber.Map{
-// 		"message": "Rubrics created successfully",
+// 	var rubricData response.RubricResult
+// 	if hasSub {
+// 		rubricData, err = h.services.MockGetRubricData(assignmentID, questionID, &subQuestionID)
+// 	} else {
+// 		rubricData, err = h.services.MockGetRubricData(assignmentID, questionID, nil)
+// 	}
+
+// 	if err != nil {
+// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+// 			"message": "Failed to get rubric data",
+// 			"error":   err.Error(),
+// 		})
+// 	}
+
+// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+// 		"message": "Rubric data retrieved successfully",
 // 		"rubric":  rubricData,
 // 	})
 // }
