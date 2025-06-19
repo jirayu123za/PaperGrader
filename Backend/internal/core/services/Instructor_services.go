@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/core/repositories"
@@ -80,6 +81,7 @@ type InstructorService interface {
 
 	// CRUD Rubric
 	CreateRubricData(assignment_id uuid.UUID, rubricData response.CreateRubricRequest) error
+	UpdateRubricData(assignmentID uuid.UUID, rubricData response.UpdateRubricRequest) error
 	// MockGetRubricData(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID *uuid.UUID) (response.RubricResult, error)
 }
 
@@ -625,6 +627,83 @@ func (s *InstructorServiceImpl) CreateRubricData(assignmentID uuid.UUID, rubricD
 	} else {
 		return s.repo.AddRubricToMainQuestion(assignmentID, rubricData.QuestionID, rubricBytes)
 	}
+}
+
+func (s *InstructorServiceImpl) UpdateRubricData(assignmentID uuid.UUID, rubricData response.UpdateRubricRequest) error {
+	// First: call repo get rubric data by assignmentID and questionID
+	rubricMap, err := s.repo.FindRubricDataByAssignmentID(assignmentID)
+	if err != nil {
+		return err
+	}
+
+	questionsData, ok := rubricMap["questions_data"].([]interface{})
+	if !ok {
+		return err
+	}
+
+	for _, q := range questionsData {
+		qMap := q.(map[string]interface{})
+		if qMap["question_id"] == rubricData.QuestionID.String() {
+			var rubricTarget map[string]interface{}
+
+			// Sub-question rubric
+			if rubricData.SubQuestionID != nil {
+				subQs, ok := qMap["sub_questions"].([]interface{})
+				if !ok {
+					return err
+				}
+				for _, sq := range subQs {
+					sqMap := sq.(map[string]interface{})
+					if sqMap["sub_question_id"] == rubricData.SubQuestionID.String() {
+						if rubrics, ok := sqMap["rubrics"].(map[string]interface{}); ok {
+							rubricTarget = rubrics
+						}
+					}
+				}
+			} else {
+				// Main question rubric
+				if rubrics, ok := qMap["rubrics"].(map[string]interface{}); ok {
+					rubricTarget = rubrics
+				}
+			}
+
+			// Update rubric_detail match rubric_detail_id
+			if rubricTarget != nil && rubricTarget["rubric_id"] == rubricData.Rubric.RubricID {
+				details, ok := rubricTarget["rubric_details"].([]interface{})
+				if !ok {
+					return err
+				}
+
+			FOUND:
+				for _, d := range details {
+					detailMap := d.(map[string]interface{})
+					currentID := fmt.Sprintf("%v", detailMap["rubric_detail_id"])
+
+					for _, incomingDetail := range rubricData.Rubric.RubricData {
+						// fmt.Println("🔍 Comparing:")
+						// fmt.Println("  DB rubric_detail_id    =", currentID)
+						// fmt.Println("  Incoming rubric_detail_id =", incomingDetail.RubricDetailID)
+
+						if currentID == incomingDetail.RubricDetailID {
+							// fmt.Println("✅ Match found! Updating...")
+							detailMap["rubric_point"] = incomingDetail.RubricPoint
+							detailMap["rubric_description"] = incomingDetail.RubricDescription
+							break FOUND
+						}
+
+					}
+				}
+
+			}
+		}
+	}
+
+	// Marshal and update to DB
+	updatedJSON, err := json.Marshal(rubricMap)
+	if err != nil {
+		return err
+	}
+	return s.repo.ModifyRubricData(assignmentID, updatedJSON)
 }
 
 // func (s *InstructorServiceImpl) MockGetRubricData(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID *uuid.UUID) (response.RubricResult, error) {
