@@ -304,6 +304,24 @@ type RubricInput struct {
 	RubricDetails []RubricDetailInput `json:"rubric_details"`
 }
 
+// Update rubric
+type UpdateRubricRequest struct {
+	QuestionID    uuid.UUID    `json:"question_id"`
+	SubQuestionID *uuid.UUID   `json:"sub_question_id,omitempty"`
+	Rubric        RubricDetail `json:"rubric"`
+}
+
+type RubricDetail struct {
+	RubricID   string          `json:"rubric_id"`
+	RubricData []RubricDetails `json:"rubric_details"`
+}
+
+type RubricDetails struct {
+	RubricDetailID    string `json:"rubric_detail_id"`
+	RubricPoint       int    `json:"rubric_point"`
+	RubricDescription string `json:"rubric_description"`
+}
+
 // Query rubrics
 // type RubricResult struct {
 // 	RubricID   *uuid.UUID     `json:"rubric_id"`
