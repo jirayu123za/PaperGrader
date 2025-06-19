@@ -322,6 +322,14 @@ type RubricDetails struct {
 	RubricDescription string `json:"rubric_description"`
 }
 
+// Delete rubric
+type DeleteRubricRequest struct {
+	QuestionID     uuid.UUID  `json:"question_id"`
+	SubQuestionID  *uuid.UUID `json:"sub_question_id,omitempty"`
+	RubricID       string     `json:"rubric_id"`
+	RubricDetailID string     `json:"rubric_detail_id"`
+}
+
 // Query rubrics
 // type RubricResult struct {
 // 	RubricID   *uuid.UUID     `json:"rubric_id"`
