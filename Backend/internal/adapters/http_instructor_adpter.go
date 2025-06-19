@@ -1896,6 +1896,36 @@ func (h *HttpInstructorHandler) UpdateRubric(c *fiber.Ctx) error {
 	})
 }
 
+func (h *HttpInstructorHandler) DeleteRubric(c *fiber.Ctx) error {
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	var request response.DeleteRubricRequest
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request body",
+			"error":   err.Error(),
+		})
+	}
+
+	if err := h.services.DeleteRubricData(assignmentID, request); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to delete rubric",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Rubric deleted successfully",
+	})
+}
+
 // func (h *HttpInstructorHandler) GetRubricData(c *fiber.Ctx) error {
 // 	assignmentIDParam := c.Query("assignment_id")
 // 	assignmentID, err := uuid.Parse(assignmentIDParam)
