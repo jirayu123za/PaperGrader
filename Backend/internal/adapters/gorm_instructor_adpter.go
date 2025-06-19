@@ -1159,7 +1159,7 @@ func (r *GormInstructorRepository) FindQuestionsByAssignmentTemplate(AssignmentI
 }
 
 // For rubric
-// Main question
+// First: main question
 func (r *GormInstructorRepository) AddRubricToMainQuestion(AssignmentID uuid.UUID, QuestionID uuid.UUID, rubricData json.RawMessage) error {
 	var rubricMap map[string]interface{}
 	if err := json.Unmarshal(rubricData, &rubricMap); err != nil {
@@ -1243,7 +1243,7 @@ func (r *GormInstructorRepository) AddRubricDetailsToMainQuestion(assignmentID u
 	return r.db.Exec(query, assignmentID, questionID, string(newDetails), assignmentID).Error
 }
 
-// Sub question
+// Second: sub question
 func (r *GormInstructorRepository) AddRubricToSubQuestion(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID uuid.UUID, rubricData json.RawMessage) error {
 	var rubricMap map[string]interface{}
 	if err := json.Unmarshal(rubricData, &rubricMap); err != nil {
@@ -1337,6 +1337,41 @@ func (r *GormInstructorRepository) AddRubricDetailsToSubQuestion(assignmentID uu
 		WHERE assignment_id = ?
 	`
 	return r.db.Exec(query, assignmentID, questionID, assignmentID, subQuestionID, string(newDetails), assignmentID).Error
+}
+
+func (r *GormInstructorRepository) FindRubricDataByAssignmentID(AssignmentID uuid.UUID) (map[string]interface{}, error) {
+	var record struct {
+		RubricData datatypes.JSON `gorm:"column:rubric_data"`
+	}
+	err := r.db.
+		Table("rubrics").
+		Where("assignment_id = ? AND deleted_at IS NULL", AssignmentID).
+		Take(&record).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var rubricData map[string]interface{}
+	if err := json.Unmarshal(record.RubricData, &rubricData); err != nil {
+		return nil, err
+	}
+	return rubricData, nil
+}
+
+func (r *GormInstructorRepository) ModifyRubricData(AssignmentID uuid.UUID, rubricData json.RawMessage) error {
+	rubricJSON, err := json.Marshal(rubricData)
+	if err != nil {
+		return err
+	}
+
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&models.Rubric{}).
+			Where("assignment_id = ?", AssignmentID).
+			Update("rubric_data", datatypes.JSON(rubricJSON)).Error; err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 // etc..
