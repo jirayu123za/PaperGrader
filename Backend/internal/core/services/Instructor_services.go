@@ -82,6 +82,7 @@ type InstructorService interface {
 	// CRUD Rubric
 	CreateRubricData(assignment_id uuid.UUID, rubricData response.CreateRubricRequest) error
 	UpdateRubricData(assignmentID uuid.UUID, rubricData response.UpdateRubricRequest) error
+	DeleteRubricData(assignmentID uuid.UUID, rubricData response.DeleteRubricRequest) error
 	// MockGetRubricData(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID *uuid.UUID) (response.RubricResult, error)
 }
 
@@ -699,6 +700,72 @@ func (s *InstructorServiceImpl) UpdateRubricData(assignmentID uuid.UUID, rubricD
 	}
 
 	// Marshal and update to DB
+	updatedJSON, err := json.Marshal(rubricMap)
+	if err != nil {
+		return err
+	}
+	return s.repo.ModifyRubricData(assignmentID, updatedJSON)
+}
+
+func (s *InstructorServiceImpl) DeleteRubricData(assignmentID uuid.UUID, rubricData response.DeleteRubricRequest) error {
+	// First: call repo get rubric data by assignmentID and questionID
+	rubricMap, err := s.repo.FindRubricDataByAssignmentID(assignmentID)
+	if err != nil {
+		return err
+	}
+
+	questionsData, ok := rubricMap["questions_data"].([]interface{})
+	if !ok {
+		return err
+	}
+
+	for _, q := range questionsData {
+		qMap := q.(map[string]interface{})
+		if qMap["question_id"] == rubricData.QuestionID.String() {
+			var rubricTarget map[string]interface{}
+
+			// Sub-question rubric
+			if rubricData.SubQuestionID != nil {
+				subQs, ok := qMap["sub_questions"].([]interface{})
+				if !ok {
+					return err
+				}
+				for _, sq := range subQs {
+					sqMap := sq.(map[string]interface{})
+					if sqMap["sub_question_id"] == rubricData.SubQuestionID.String() {
+						if rubrics, ok := sqMap["rubrics"].(map[string]interface{}); ok {
+							rubricTarget = rubrics
+						}
+					}
+				}
+			} else {
+				// Main question rubric
+				if rubrics, ok := qMap["rubrics"].(map[string]interface{}); ok {
+					rubricTarget = rubrics
+				}
+			}
+
+			// Delete rubric_detail match rubric_detail_id
+			if rubricTarget != nil && rubricTarget["rubric_id"] == rubricData.RubricID {
+				details, ok := rubricTarget["rubric_details"].([]interface{})
+				if !ok {
+					return err
+				}
+
+				var updatedDetails []interface{}
+				for _, d := range details {
+					detailMap := d.(map[string]interface{})
+					currentID := fmt.Sprintf("%v", detailMap["rubric_detail_id"])
+					if currentID != rubricData.RubricDetailID {
+						updatedDetails = append(updatedDetails, detailMap)
+					}
+				}
+				rubricTarget["rubric_details"] = updatedDetails
+			}
+		}
+	}
+
+	// Marshal and update to
 	updatedJSON, err := json.Marshal(rubricMap)
 	if err != nil {
 		return err
