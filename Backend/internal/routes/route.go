@@ -122,6 +122,7 @@ func RegisterRoutes(
 	// Rubric
 	apiGroup.Post("/instructor/rubric", instructorHandler.CreateRubric)
 	apiGroup.Put("/instructor/rubric", instructorHandler.UpdateRubric)
+	apiGroup.Delete("/instructor/rubric", instructorHandler.DeleteRubric)
 	// apiGroup.Get("/instructor/rubric", instructorHandler.GetRubricData)
 
 	apiGroup.Get("/student/dashboard", studentHandler.GetCoursesAndAssignments)
