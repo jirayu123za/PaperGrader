@@ -1866,6 +1866,36 @@ func (h *HttpInstructorHandler) CreateRubric(c *fiber.Ctx) error {
 	})
 }
 
+func (h *HttpInstructorHandler) UpdateRubric(c *fiber.Ctx) error {
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	var req response.UpdateRubricRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request body",
+			"error":   err.Error(),
+		})
+	}
+
+	if err := h.services.UpdateRubricData(assignmentID, req); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to update rubric",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Rubric updated successfully",
+	})
+}
+
 // func (h *HttpInstructorHandler) GetRubricData(c *fiber.Ctx) error {
 // 	assignmentIDParam := c.Query("assignment_id")
 // 	assignmentID, err := uuid.Parse(assignmentIDParam)
