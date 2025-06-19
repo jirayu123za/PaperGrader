@@ -76,15 +76,17 @@ type InstructorRepository interface {
 	FindQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (response.QuestionsTemplateResponse, error)
 
 	// CRUD Rubric
-	// Main Question
+	// First: main Question
 	FindRubricsExists(assignmentID uuid.UUID, questionID uuid.UUID, initRubricsJSON []byte) error
 	AddRubricDetailsToMainQuestion(assignmentID uuid.UUID, questionID uuid.UUID, newDetails []byte) error
 	AddRubricToMainQuestion(assignmentID uuid.UUID, questionID uuid.UUID, rubricData json.RawMessage) error
-	// Sub Question
+	// First: sub Question
 	FindSubQuestionRubricExists(assignmentID uuid.UUID, questionID uuid.UUID, subQuestionID uuid.UUID, initRubricsJSON []byte) error
 	AddRubricDetailsToSubQuestion(assignmentID uuid.UUID, questionID uuid.UUID, subQuestionID uuid.UUID, newDetails []byte) error
 	AddRubricToSubQuestion(assignmentID uuid.UUID, questionID uuid.UUID, subQuestionID uuid.UUID, rubricData json.RawMessage) error
 	// etc..
+	FindRubricDataByAssignmentID(assignmentID uuid.UUID) (map[string]interface{}, error)
+	ModifyRubricData(assignmentID uuid.UUID, rubricData json.RawMessage) error
 	// FindRubricDataByQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID) (response.RubricResult, error)
 	// FindRubricDataBySubQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID uuid.UUID) (response.RubricResult, error)
 }
