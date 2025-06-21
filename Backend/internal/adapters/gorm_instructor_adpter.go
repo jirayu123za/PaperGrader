@@ -1375,31 +1375,115 @@ func (r *GormInstructorRepository) ModifyRubricData(AssignmentID uuid.UUID, rubr
 }
 
 // etc..
-// func (r *GormInstructorRepository) FindRubricDataByQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID) (response.RubricResult, error) {
-// 	var result response.RubricResult
-// 	query := `
-// 		SELECT rubric_id, q.question->'rubrics' AS rubric_info
-// 		FROM rubrics,
-// 		     LATERAL jsonb_array_elements(rubric_data) AS q(question)
-// 		WHERE assignment_id = ?
-// 		  AND q.question->>'question_id' = ?
-// 		  AND NOT q.question ? 'sub_questions'
-// 	`
-// 	err := r.db.Raw(query, AssignmentID, QuestionID).Scan(&result).Error
-// 	return result, err
-// }
+func (r *GormInstructorRepository) FindRubricByQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID) (response.RubricResponse, error) {
+	var rubric struct {
+		RubricID   uuid.UUID      `gorm:"column:rubric_id"`
+		RubricData datatypes.JSON `gorm:"column:rubric_data"`
+	}
 
-// func (r *GormInstructorRepository) FindRubricDataBySubQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID uuid.UUID) (response.RubricResult, error) {
-// 	var result response.RubricResult
-// 	query := `
-// 		SELECT rubric_id, subq->'rubrics' AS rubric_info
-// 		FROM rubrics,
-// 		     LATERAL jsonb_array_elements(rubric_data) AS q(question),
-// 		     LATERAL jsonb_array_elements(q.question->'sub_questions') AS subq
-// 		WHERE assignment_id = ?
-// 		  AND q.question->>'question_id' = ?
-// 		  AND subq->>'sub_question_id' = ?
-// 	`
-// 	err := r.db.Raw(query, AssignmentID, QuestionID, SubQuestionID).Scan(&result).Error
-// 	return result, err
-// }
+	if err := r.db.
+		Table("rubrics").
+		Select("rubric_id, rubric_data").
+		Where("assignment_id = ? AND deleted_at IS NULL", AssignmentID).
+		Take(&rubric).Error; err != nil {
+		return response.RubricResponse{}, err
+	}
+
+	var rubricJSON struct {
+		QuestionsData []map[string]interface{} `json:"questions_data"`
+	}
+	if err := json.Unmarshal(rubric.RubricData, &rubricJSON); err != nil {
+		return response.RubricResponse{}, err
+	}
+
+	for _, q := range rubricJSON.QuestionsData {
+		if q["question_id"] == QuestionID.String() {
+			if rubricMap, ok := q["rubrics"].(map[string]interface{}); ok {
+				rubricIDStr, _ := rubricMap["rubric_id"].(string)
+				rubricID, _ := uuid.Parse(rubricIDStr)
+
+				details := make([]response.RubricDetails, 0)
+				if rubricItems, ok := rubricMap["rubric_details"].([]interface{}); ok {
+					for _, r := range rubricItems {
+						rMap := r.(map[string]interface{})
+						details = append(details, response.RubricDetails{
+							RubricDetailID:    rMap["rubric_detail_id"].(string),
+							RubricPoint:       int(rMap["rubric_point"].(float64)),
+							RubricDescription: rMap["rubric_description"].(string),
+						})
+					}
+				}
+
+				return response.RubricResponse{
+					RubricID:   &rubricID,
+					RubricData: details,
+				}, nil
+			}
+		}
+	}
+
+	return response.RubricResponse{
+		RubricID:   nil,
+		RubricData: nil,
+	}, nil
+}
+
+func (r *GormInstructorRepository) FindRubricBySubQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID *uuid.UUID) (response.RubricResponse, error) {
+	var rubric struct {
+		RubricID   uuid.UUID      `gorm:"column:rubric_id"`
+		RubricData datatypes.JSON `gorm:"column:rubric_data"`
+	}
+
+	if err := r.db.
+		Table("rubrics").
+		Select("rubric_id, rubric_data").
+		Where("assignment_id = ? AND deleted_at IS NULL", AssignmentID).
+		Take(&rubric).Error; err != nil {
+		return response.RubricResponse{}, err
+	}
+
+	var rubricJSON struct {
+		QuestionsData []map[string]interface{} `json:"questions_data"`
+	}
+	if err := json.Unmarshal(rubric.RubricData, &rubricJSON); err != nil {
+		return response.RubricResponse{}, err
+	}
+
+	for _, q := range rubricJSON.QuestionsData {
+		if q["question_id"] == QuestionID.String() {
+			if subs, ok := q["sub_questions"].([]interface{}); ok {
+				for _, s := range subs {
+					sMap := s.(map[string]interface{})
+					if sMap["sub_question_id"] == SubQuestionID.String() {
+						if rubricMap, ok := sMap["rubrics"].(map[string]interface{}); ok {
+							rubricIDStr, _ := rubricMap["rubric_id"].(string)
+							rubricID, _ := uuid.Parse(rubricIDStr)
+
+							details := make([]response.RubricDetails, 0)
+							if rubricItems, ok := rubricMap["rubric_details"].([]interface{}); ok {
+								for _, r := range rubricItems {
+									rMap := r.(map[string]interface{})
+									details = append(details, response.RubricDetails{
+										RubricDetailID:    rMap["rubric_detail_id"].(string),
+										RubricPoint:       int(rMap["rubric_point"].(float64)),
+										RubricDescription: rMap["rubric_description"].(string),
+									})
+								}
+							}
+
+							return response.RubricResponse{
+								RubricID:   &rubricID,
+								RubricData: details,
+							}, nil
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return response.RubricResponse{
+		RubricID:   nil,
+		RubricData: nil,
+	}, nil
+}
