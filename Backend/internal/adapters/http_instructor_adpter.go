@@ -1926,55 +1926,34 @@ func (h *HttpInstructorHandler) DeleteRubric(c *fiber.Ctx) error {
 	})
 }
 
-// func (h *HttpInstructorHandler) GetRubricData(c *fiber.Ctx) error {
-// 	assignmentIDParam := c.Query("assignment_id")
-// 	assignmentID, err := uuid.Parse(assignmentIDParam)
-// 	if err != nil {
-// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-// 			"message": "Invalid assignment_id",
-// 			"error":   err.Error(),
-// 		})
-// 	}
+func (h *HttpInstructorHandler) GetRubric(c *fiber.Ctx) error {
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
 
-// 	questionIDParam := c.Query("question_id")
-// 	questionID, err := uuid.Parse(questionIDParam)
-// 	if err != nil {
-// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-// 			"message": "Invalid question_id",
-// 			"error":   err.Error(),
-// 		})
-// 	}
+	var request response.GetRubricRequest
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request body",
+			"error":   err.Error(),
+		})
+	}
 
-// 	var subQuestionID uuid.UUID
-// 	subQuestionIDParam := c.Query("sub_question_id")
-// 	hasSub := false
-// 	if subQuestionIDParam != "" {
-// 		subQuestionID, err = uuid.Parse(subQuestionIDParam)
-// 		if err != nil {
-// 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-// 				"message": "Invalid sub_question_id",
-// 				"error":   err.Error(),
-// 			})
-// 		}
-// 		hasSub = true
-// 	}
+	rubric, err := h.services.GetRubricData(assignmentID, request)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get rubric",
+			"error":   err.Error(),
+		})
+	}
 
-// 	var rubricData response.RubricResult
-// 	if hasSub {
-// 		rubricData, err = h.services.MockGetRubricData(assignmentID, questionID, &subQuestionID)
-// 	} else {
-// 		rubricData, err = h.services.MockGetRubricData(assignmentID, questionID, nil)
-// 	}
-
-// 	if err != nil {
-// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-// 			"message": "Failed to get rubric data",
-// 			"error":   err.Error(),
-// 		})
-// 	}
-
-// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-// 		"message": "Rubric data retrieved successfully",
-// 		"rubric":  rubricData,
-// 	})
-// }
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Rubric retrieved successfully",
+		"rubric":  rubric,
+	})
+}
