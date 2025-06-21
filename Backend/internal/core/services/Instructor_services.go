@@ -83,7 +83,7 @@ type InstructorService interface {
 	CreateRubricData(assignment_id uuid.UUID, rubricData response.CreateRubricRequest) error
 	UpdateRubricData(assignmentID uuid.UUID, rubricData response.UpdateRubricRequest) error
 	DeleteRubricData(assignmentID uuid.UUID, rubricData response.DeleteRubricRequest) error
-	// MockGetRubricData(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID *uuid.UUID) (response.RubricResult, error)
+	GetRubricData(AssignmentID uuid.UUID, rubricData response.GetRubricRequest) (response.RubricResponse, error)
 }
 
 type InstructorServiceImpl struct {
@@ -773,9 +773,10 @@ func (s *InstructorServiceImpl) DeleteRubricData(assignmentID uuid.UUID, rubricD
 	return s.repo.ModifyRubricData(assignmentID, updatedJSON)
 }
 
-// func (s *InstructorServiceImpl) MockGetRubricData(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID *uuid.UUID) (response.RubricResult, error) {
-// 	if SubQuestionID != nil {
-// 		return s.repo.FindRubricDataBySubQuestionID(AssignmentID, QuestionID, *SubQuestionID)
-// 	}
-// 	return s.repo.FindRubricDataByQuestionID(AssignmentID, QuestionID)
-// }
+// Query
+func (s *InstructorServiceImpl) GetRubricData(AssignmentID uuid.UUID, rubricData response.GetRubricRequest) (response.RubricResponse, error) {
+	if rubricData.SubQuestionID != nil {
+		return s.repo.FindRubricBySubQuestionID(AssignmentID, rubricData.QuestionID, rubricData.SubQuestionID)
+	}
+	return s.repo.FindRubricByQuestionID(AssignmentID, rubricData.QuestionID)
+}
