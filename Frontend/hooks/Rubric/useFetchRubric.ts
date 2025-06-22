@@ -11,6 +11,7 @@ interface RubricDetail {
 
 interface Rubric {
     rubric_id: string | null;
+    rubric_setting: string | null;
     rubric_details: RubricDetail[] | null;
 }
 
