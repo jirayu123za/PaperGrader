@@ -17,11 +17,12 @@ interface Question {
 
 export const useFetchQuestion = (assignment_id: string) => {
     const setQuestions = useQuestionStore((state) => state.setQuestions);
+    const setDefaultSelectedQuestion = useQuestionStore((state) => state.setDefaultSelectedQuestion);
 
     return useQuery<Question[]>({
-        queryKey: ['template', assignment_id],
+        queryKey: ['questions', assignment_id],
         queryFn: async () => {
-            const response = await axios.get(`/api/api/instructor/assignment/template`, {
+            const response = await axios.get(`/api/api/instructor/assignment/mock`, {
                 params: {
                     assignment_id
                 }
@@ -39,9 +40,10 @@ export const useFetchQuestion = (assignment_id: string) => {
                 }))
             }));
             setQuestions(parsedQuestions);
+            setDefaultSelectedQuestion();
             return parsedQuestions;
         },
         enabled: !!assignment_id,
-        refetchOnWindowFocus: false
+        refetchOnWindowFocus: false,
     });
 };
