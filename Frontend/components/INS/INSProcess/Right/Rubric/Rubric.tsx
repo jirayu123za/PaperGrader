@@ -15,6 +15,7 @@ import { useFetchRubric } from '@/hooks/Rubric/useFetchRubric';
 import { useParams } from 'next/navigation';
 import { useQuestionStore } from '@/store/question/useQuestionStore';
 import { useRubricStore } from '@/store/rubric/useRubricStore';
+import { useFetchQuestion } from '@/hooks/Question/useFetchQuestion';
 marked.use(markedKatex({ throwOnError: false }));
 
 interface Graded {
@@ -26,7 +27,8 @@ export const Rubric = () => {
     const params = useParams();
     const assignment_id = params.assignment_id as string;
     const { questions, selectedQuestion, defaultSelectedQuestion } = useQuestionStore();
-    const { isLoading, data } = useFetchRubric(assignment_id);
+    const { isLoading: isLoadingQuestions, data: questionsData } = useFetchQuestion(assignment_id);
+    const { isLoading: isLoadingRubric, data: data } = useFetchRubric(assignment_id);
     const { rubricData, setRubricData, rubrics, setRubrics, editingRubricID, setEditingRubricID, editingDescriptionID, setEditingDescriptionID } = useRubricStore();
 
     const [graded, setGraded] = useState<Graded>({
@@ -72,7 +74,7 @@ export const Rubric = () => {
         return question.question_point;
     };
 
-    if (questions === null) {
+    if (questions.length === 0) {
         return <NoQuestion/>
     }
     
