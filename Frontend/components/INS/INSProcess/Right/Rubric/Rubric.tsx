@@ -34,17 +34,12 @@ export const Rubric = () => {
     const assignment_id = params.assignment_id as string;
     const { questions, selectedQuestion, defaultSelectedQuestion } = useQuestionStore();
     const { isLoading, data } = useFetchRubric(assignment_id);
-    const { rubricData, setRubricData } = useRubricStore();
-    const [rubrics, setRubrics] = useState<RubricItem[]>([]);
+    const { rubricData, setRubricData, rubrics, setRubrics, editingRubricID, setEditingRubricID, editingDescriptionID, setEditingDescriptionID } = useRubricStore();
 
     const [graded, setGraded] = useState<Graded>({
         has_graded: 2,
         total_grade: 10,
     });
-
-    const [editingRubricId, setEditingRubricId] = useState<string | null>(null);
-    const [editingDescriptionId, setEditingDescriptionId] = useState<string | null>(null);
-
     const handleDragEnd = (result: DropResult) => {
         const { destination, source } = result;
         if (!destination || destination.index === source.index) return;
@@ -181,7 +176,7 @@ export const Rubric = () => {
                                                 icon={() => <Text size="sm" fw={500}>{index + 1}</Text>}
                                             />
                                             <div>
-                                                {editingRubricId === rubric.rubric_id ? (
+                                                {editingRubricID === rubric.rubric_id ? (
                                                     <NumberInput
                                                         hideControls
                                                         autoFocus
@@ -193,31 +188,36 @@ export const Rubric = () => {
                                                         // max={question.question_points}
                                                         allowNegative={true}
                                                         onChange={(val) => {
-                                                            setRubrics((prev) =>
-                                                            prev.map((r) =>
+                                                            const numberVal = typeof val === 'number' ? val : 0;
+                                                            const setting: 'Positive scoring' | 'Negative scoring' = numberVal < 0 ? 'Negative scoring' : 'Positive scoring';
+                                                            const updated = rubrics.map((r) =>
                                                                 r.rubric_id === rubric.rubric_id
-                                                                    ? { ...r, rubric_point: typeof val === 'number' ? val : 0, rubric_setting: typeof val === 'number' && val < 0 ? 'Negative scoring' : 'Positive scoring', }
-                                                                    : r
-                                                                )
+                                                                ? {
+                                                                    ...r,
+                                                                    rubric_point: numberVal,
+                                                                    rubric_setting: setting,
+                                                                    }
+                                                                : r
                                                             );
+                                                            setRubrics(updated);
                                                         }}
-                                                        onBlur={() => setEditingRubricId(null)}
+                                                        onBlur={() => setEditingRubricID(null)}
                                                         onKeyDown={(e) => {
                                                             if (e.key === 'Enter' || e.key === 'Escape') {
                                                             e.preventDefault();
-                                                            setEditingRubricId(null);
+                                                            setEditingRubricID(null);
                                                             }
                                                         }}
                                                     />
                                                 ) : (
                                                     <Text 
                                                         fw={600} c={rubric.rubric_setting === 'Positive scoring' ? 'green' : 'red'} 
-                                                        onClick={() => setEditingRubricId(rubric.rubric_id)}
+                                                        onClick={() => setEditingRubricID(rubric.rubric_id)}
                                                     >
                                                         {rubric.rubric_setting === 'Positive scoring' ? '+' : '-'}{new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 }).format(Math.abs(rubric.rubric_point))}
                                                     </Text>
                                                 )}
-                                                {editingDescriptionId === rubric.rubric_id ? (
+                                                {editingDescriptionID === rubric.rubric_id ? (
                                                     <Textarea
                                                         miw={360}
                                                         autoFocus
@@ -225,28 +225,31 @@ export const Rubric = () => {
                                                         radius="none"
                                                         defaultValue={rubric.rubric_description}
                                                         onBlur={(e) => {
-                                                            setRubrics((prev) =>
-                                                                prev.map((r) =>
-                                                                    r.rubric_id === rubric.rubric_id
-                                                                        ? { ...r, rubric_description: e.target.value }
-                                                                        : r
-                                                                )
+                                                            const updated = rubrics.map((r) =>
+                                                                r.rubric_id === rubric.rubric_id
+                                                                ? { ...r, rubric_description: e.target.value }
+                                                                : r
                                                             );
-                                                            setEditingDescriptionId(null);
+                                                            setRubrics(updated);
+                                                            setEditingDescriptionID(null);
                                                         }}
                                                         onKeyDown={(e) => {
                                                             if (e.key === 'Enter' && !e.shiftKey) {
                                                                 e.preventDefault();
-                                                                setRubrics((prev) =>
-                                                                    prev.map((r) =>
-                                                                        r.rubric_id === rubric.rubric_id
-                                                                            ? { ...r, rubric_description: (e.target as HTMLTextAreaElement).value }
-                                                                            : r
-                                                                    )
+
+                                                                const value = (e.target as HTMLTextAreaElement).value;
+
+                                                                const updatedRubrics = rubrics.map((r) =>
+                                                                r.rubric_id === rubric.rubric_id
+                                                                    ? { ...r, rubric_description: value }
+                                                                    : r
                                                                 );
-                                                                setEditingDescriptionId(null);
+
+                                                                setRubrics(updatedRubrics);
+                                                                setEditingDescriptionID(null);
+
                                                             } else if (e.key === 'Escape') {
-                                                                setEditingDescriptionId(null);
+                                                                setEditingDescriptionID(null);
                                                             }
                                                         }}
                                                     />
@@ -256,7 +259,7 @@ export const Rubric = () => {
                                                         c={rubric.rubric_description ? "#495057" : "dimmed"}
                                                         fs={rubric.rubric_description ? undefined : "italic"}
                                                         className="whitespace-pre-wrap"
-                                                        onClick={() => setEditingDescriptionId(rubric.rubric_id)}
+                                                        onClick={() => setEditingDescriptionID(rubric.rubric_id)}
                                                         dangerouslySetInnerHTML={
                                                         {
                                                             __html: DOMPurify.sanitize(
