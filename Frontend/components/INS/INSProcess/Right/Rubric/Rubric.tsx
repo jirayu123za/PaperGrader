@@ -11,6 +11,9 @@ import { QuestionSelector } from './QuestionSelector';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { marked } from 'marked';
 import { NoQuestion } from './NoQuestion';
+import { useFetchRubric } from '@/hooks/Rubric/useFetchRubric';
+import { useParams } from 'next/navigation';
+import { useQuestionStore } from '@/store/question/useQuestionStore';
 marked.use(markedKatex({ throwOnError: false }));
 
 interface Rubric {
@@ -38,6 +41,10 @@ interface Graded {
 }
 
 export const Rubric = () => {
+    const params = useParams();
+    const assignment_id = params.assignment_id as string;
+    const { questions, selectedQuestion, defaultSelectedQuestion } = useQuestionStore();
+
     const [rubrics, setRubrics] = useState<RubricItem[]>([
         { rubric_id: 1, rubric_point: 1.5, rubric_description: 'Clearly explains the concept with accurate terminology', rubric_selected: true, rubric_setting: 'positive' },
         { rubric_id: 2, rubric_point: 1.0, rubric_description: 'Demonstrates correct application of formulas or methods', rubric_selected: false , rubric_setting: 'positive'},
@@ -52,15 +59,6 @@ export const Rubric = () => {
         { rubric_id: 11, rubric_point: 5.55, rubric_description: 'Answer is incomplete or lacks explanation', rubric_selected: false , rubric_setting: 'negative'},
         { rubric_id: 12, rubric_point: 0.0, rubric_description: 'Incorrect method or misunderstanding of the concept', rubric_selected: false , rubric_setting: 'positive'},
     ]);
-    const [question, setQuestion] = useState<Question>({
-        question_id: 1,
-        question_number: 1,
-        question_title: 'Question Title',
-        question_points: 10.0,
-    });
-
-    // const [rubrics, setRubrics] = useState<RubricItem[]>([]);
-    // const [question, setQuestion] = useState<Question | null>(null);
 
     const [graded, setGraded] = useState<Graded>({
         has_graded: 2,
@@ -79,10 +77,28 @@ export const Rubric = () => {
         setRubrics(newItems);
     };
 
-    if (question === null) {
+    const { isLoading, data } = useFetchRubric(assignment_id);
+
+    const getSelectedQuestionPoint = (): number | null => {
+        const target = selectedQuestion ?? defaultSelectedQuestion;
+        if (!target) return null;
+
+        const question = questions.find(q => q.question_id === target.question_id);
+        if (!question) return null;
+
+        if (target.sub_question_id) {
+            const sub = question.sub_questions?.find(sq => sq.sub_question_id === target.sub_question_id);
+            return sub?.sub_question_point ?? null;
+        }
+        return question.question_point;
+    };
+
+    if (questions === null) {
         return <NoQuestion/>
     }
 
+    console.log("Rubric", data );
+    
     return (
         <Flex direction="column" className="flex-1 min-h-0 p-4">
             {/* Header */}
@@ -91,7 +107,7 @@ export const Rubric = () => {
                     <QuestionSelector/>
                 </Flex>
 
-                <Progress color="violet" value={question ? (graded.total_grade / question.question_points) * 100 : 0} />
+                <Progress color="violet" value={100} />
                 <Text size="xs" c="#495057">
                     {graded.has_graded} of {graded.total_grade} already assigned rubrics
                 </Text>
@@ -102,7 +118,7 @@ export const Rubric = () => {
                         <Text fw={500} size="xl" c="#495057" style={{ fontSize: '28px', lineHeight: '1.2' }}>
                             {/* {totalScore.toFixed(2)} */}
                             <Text span fw={500} c="#495057" style={{ fontSize: '28px', lineHeight: '1.2' }}>
-                                {question?.question_points.toFixed(1)} pts
+                                {getSelectedQuestionPoint() !== null ? `${getSelectedQuestionPoint()?.toFixed(1)} pts` : '0.0 pts'}
                             </Text>
                         </Text>
                     </Box>
