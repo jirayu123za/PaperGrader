@@ -17,13 +17,6 @@ import { useQuestionStore } from '@/store/question/useQuestionStore';
 import { useRubricStore } from '@/store/rubric/useRubricStore';
 marked.use(markedKatex({ throwOnError: false }));
 
-interface RubricItem {
-  rubric_id: string;
-  rubric_point: number;
-  rubric_description: string;
-  rubric_setting: 'Positive scoring' | 'Negative scoring' | null;
-}
-
 interface Graded {
     has_graded: number;
     total_grade: number;
