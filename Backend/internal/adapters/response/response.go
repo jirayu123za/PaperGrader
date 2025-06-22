@@ -332,6 +332,7 @@ type DeleteRubricRequest struct {
 
 // Query rubrics
 type RubricResponse struct {
-	RubricID   *uuid.UUID      `json:"rubric_id"`
-	RubricData []RubricDetails `json:"rubric_details"`
+	RubricID      *uuid.UUID      `json:"rubric_id"`
+	RubricSetting string          `json:"rubric_setting"`
+	RubricData    []RubricDetails `json:"rubric_details"`
 }
