@@ -335,8 +335,3 @@ type RubricResponse struct {
 	RubricID   *uuid.UUID      `json:"rubric_id"`
 	RubricData []RubricDetails `json:"rubric_details"`
 }
-
-type GetRubricRequest struct {
-	QuestionID    uuid.UUID  `json:"question_id"`
-	SubQuestionID *uuid.UUID `json:"sub_question_id,omitempty"`
-}
