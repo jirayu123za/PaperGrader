@@ -1936,15 +1936,35 @@ func (h *HttpInstructorHandler) GetRubric(c *fiber.Ctx) error {
 		})
 	}
 
-	var request response.GetRubricRequest
-	if err := c.BodyParser(&request); err != nil {
+	questionIDParam := c.Query("question_id")
+	questionID, err := uuid.Parse(questionIDParam)
+	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid request body",
+			"message": "Invalid questionID",
 			"error":   err.Error(),
 		})
 	}
 
-	rubric, err := h.services.GetRubricData(assignmentID, request)
+	subQuestionIDParam := c.Query("sub_question_id")
+	var subQuestionID *uuid.UUID
+	if subQuestionIDParam != "" {
+		id, err := uuid.Parse(subQuestionIDParam)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"message": "Invalid sub_question_id",
+				"error":   err.Error(),
+			})
+		}
+		if id != uuid.Nil {
+			subQuestionID = &id
+		}
+	}
+
+	fmt.Println("Assignment ID:", assignmentID)
+	fmt.Println("Question ID:", questionID)
+	fmt.Println("Sub Question ID:", subQuestionID)
+
+	rubric, err := h.services.GetRubricData(assignmentID, questionID, subQuestionID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to get rubric",
