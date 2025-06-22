@@ -1401,6 +1401,7 @@ func (r *GormInstructorRepository) FindRubricByQuestionID(AssignmentID uuid.UUID
 			if rubricMap, ok := q["rubrics"].(map[string]interface{}); ok {
 				rubricIDStr, _ := rubricMap["rubric_id"].(string)
 				rubricID, _ := uuid.Parse(rubricIDStr)
+				rubricSetting, _ := rubricMap["rubric_setting"].(string)
 
 				details := make([]response.RubricDetails, 0)
 				if rubricItems, ok := rubricMap["rubric_details"].([]interface{}); ok {
@@ -1415,8 +1416,9 @@ func (r *GormInstructorRepository) FindRubricByQuestionID(AssignmentID uuid.UUID
 				}
 
 				return response.RubricResponse{
-					RubricID:   &rubricID,
-					RubricData: details,
+					RubricID:      &rubricID,
+					RubricSetting: rubricSetting,
+					RubricData:    details,
 				}, nil
 			}
 		}
@@ -1458,6 +1460,7 @@ func (r *GormInstructorRepository) FindRubricBySubQuestionID(AssignmentID uuid.U
 						if rubricMap, ok := sMap["rubrics"].(map[string]interface{}); ok {
 							rubricIDStr, _ := rubricMap["rubric_id"].(string)
 							rubricID, _ := uuid.Parse(rubricIDStr)
+							rubricSetting, _ := rubricMap["rubric_setting"].(string)
 
 							details := make([]response.RubricDetails, 0)
 							if rubricItems, ok := rubricMap["rubric_details"].([]interface{}); ok {
@@ -1472,8 +1475,9 @@ func (r *GormInstructorRepository) FindRubricBySubQuestionID(AssignmentID uuid.U
 							}
 
 							return response.RubricResponse{
-								RubricID:   &rubricID,
-								RubricData: details,
+								RubricID:      &rubricID,
+								RubricSetting: rubricSetting,
+								RubricData:    details,
 							}, nil
 						}
 					}
