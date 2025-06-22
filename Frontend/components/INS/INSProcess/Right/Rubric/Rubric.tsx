@@ -210,7 +210,10 @@ export const Rubric = () => {
                                                         }}
                                                     />
                                                 ) : (
-                                                    <Text fw={600} c={rubric.rubric_setting === 'Positive scoring' ? 'green' : 'red'} onClick={() => setEditingRubricId(rubric.rubric_id)}>
+                                                    <Text 
+                                                        fw={600} c={rubric.rubric_setting === 'Positive scoring' ? 'green' : 'red'} 
+                                                        onClick={() => setEditingRubricId(rubric.rubric_id)}
+                                                    >
                                                         {rubric.rubric_setting === 'Positive scoring' ? '+' : '-'}{new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 }).format(Math.abs(rubric.rubric_point))}
                                                     </Text>
                                                 )}
@@ -250,7 +253,8 @@ export const Rubric = () => {
                                                 ) : (
                                                     <Text
                                                         size="sm"
-                                                        c="#495057"
+                                                        c={rubric.rubric_description ? "#495057" : "dimmed"}
+                                                        fs={rubric.rubric_description ? undefined : "italic"}
                                                         className="whitespace-pre-wrap"
                                                         onClick={() => setEditingDescriptionId(rubric.rubric_id)}
                                                         dangerouslySetInnerHTML={
