@@ -1957,3 +1957,36 @@ func (h *HttpInstructorHandler) GetRubric(c *fiber.Ctx) error {
 		"rubric":  rubric,
 	})
 }
+
+func (h *HttpInstructorHandler) MockGetData(c *fiber.Ctx) error {
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	boundingBoxes, err := h.services.GetBoundingBoxesByAssignmentTemplate(assignmentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get bounding boxes",
+			"error":   err.Error(),
+		})
+	}
+
+	questions, err := h.services.GetQuestionsByAssignmentTemplate(assignmentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get questions",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"bounding_boxes": boundingBoxes,
+		"questions":      questions,
+		"message":        "Assignment template data retrieved",
+	})
+}
