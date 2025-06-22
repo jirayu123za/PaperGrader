@@ -27,8 +27,6 @@ export function QuestionSelector() {
     }
     return `${questionIndex + 1}: ${question.question_title}`;
   };
-
-  console.log("Selected Question:", selectedQuestion);
   
   return (
     <Popover
