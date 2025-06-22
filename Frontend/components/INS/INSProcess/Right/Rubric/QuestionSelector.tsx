@@ -1,6 +1,5 @@
 "use client";
 
-import { useFetchQuestion } from "@/hooks/Question/useFetchQuestion";
 import { useQuestionStore } from "@/store/question/useQuestionStore";
 import { Popover, Box, Title, Flex, ScrollArea, Anchor } from "@mantine/core";
 import { useParams } from "next/navigation";
@@ -9,7 +8,6 @@ import { MdExpandMore } from "react-icons/md";
 export function QuestionSelector() {
   const params = useParams();
   const assignment_id = params.assignment_id as string;
-  const { isLoading, data } = useFetchQuestion(assignment_id);
   const { questions, selectedQuestion, defaultSelectedQuestion, selectQuestion } = useQuestionStore();
 
   const getSelectedLabel = () => {
@@ -45,7 +43,6 @@ export function QuestionSelector() {
             </Title>
             <MdExpandMore size={20} className='group-hover:text-[#3B5BDB] mt-2'/>
         </Flex>
-
       </Popover.Target>
 
       <Popover.Dropdown p={0}>
