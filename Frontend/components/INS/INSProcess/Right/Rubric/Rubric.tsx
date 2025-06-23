@@ -11,6 +11,7 @@ import { QuestionSelector } from './QuestionSelector';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { marked } from 'marked';
 import { NoQuestion } from './NoQuestion';
+import { NoRubric } from './NoRubric';
 import { useFetchRubric } from '@/hooks/Rubric/useFetchRubric';
 import { useParams } from 'next/navigation';
 import { useQuestionStore } from '@/store/question/useQuestionStore';
@@ -74,6 +75,8 @@ export const Rubric = () => {
         return question.question_point;
     };
 
+    const target = selectedQuestion ?? defaultSelectedQuestion;
+
     if (questions.length === 0) {
         return <NoQuestion/>
     }
@@ -108,32 +111,7 @@ export const Rubric = () => {
             </Box>
 
             {rubrics.length === 0 ? (
-                <Flex direction="column" align="center" justify="center" gap="xs" py="xl" w='100%'>
-                    <Image
-                        src="/Image/table/no_data.svg"
-                        alt="No rubrics found"
-                        w="auto"
-                        h={150}
-                        fit="contain"
-                        fallbackSrc="https://placehold.co/200x200?text=Placeholder"
-                    />
-                    <Text size="lg" fw={500} mt="md">
-                        No rubrics found
-                    </Text>
-                    <Text size="sm" c="dimmed">
-                        You haven’t created any rubrics yet.
-                    </Text>
-
-                    <Button
-                        leftSection={<FaPlus size={12} />}
-                        w={456}
-                        variant="outline"
-                        color="violet"
-                        className="mt-2"
-                    >
-                        Add rubric item
-                    </Button>
-                </Flex>
+                <NoRubric assignment_id={assignment_id} />
             ) : (       
                 <ScrollArea type="auto" scrollbarSize={4} scrollbars="y" h="calc(100vh - 340px)">
                     <DragDropContext onDragEnd={handleDragEnd}>
@@ -290,6 +268,7 @@ export const Rubric = () => {
                     variant="outline"
                     color="violet"
                     className="mt-2"
+                    onClick={() => alert(`Add rubric functionality not implemented yet. Question ID: ${target?.question_id}, Sub-Question ID: ${target?.sub_question_id}`)}
                 >
                     Add Rubric Item
                 </Button>
