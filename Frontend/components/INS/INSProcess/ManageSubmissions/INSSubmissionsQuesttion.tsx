@@ -1,170 +1,134 @@
 'use client';
 
 import React from 'react';
-import { Table, Progress, Text, Divider, Flex, Paper } from '@mantine/core';
-
-interface Question {
-  questionId: string;
-  questionText: string;
-  points: number;
-  progress: number;
-  gradedCount: number;
-  totalSubmissions: number;
-  subQuestions?: Question[];
-}
-
-const mockQuestions: Question[] = [
-  {
-    questionId: '1',
-    questionText: 'What is SQL?',
-    points: 10,
-    progress: 50,
-    gradedCount: 10,
-    totalSubmissions: 20,
-    subQuestions: [
-      {
-        questionId: '1.1',
-        questionText: 'What is data?',
-        points: 5,
-        progress: 40,
-        gradedCount: 8,
-        totalSubmissions: 20,
-      },
-      {
-        questionId: '1.2',
-        questionText: 'What is a number?',
-        points: 5,
-        progress: 60,
-        gradedCount: 12,
-        totalSubmissions: 20,
-      },
-    ],
-  },
-  {
-    questionId: '2',
-    questionText: 'Explain primary keys.',
-    points: 8,
-    progress: 25,
-    gradedCount: 5,
-    totalSubmissions: 20,
-    subQuestions: [
-      {
-        questionId: '2.1',
-        questionText: 'What is a primary key?',
-        points: 4,
-        progress: 50,
-        gradedCount: 10,
-        totalSubmissions: 20,
-      },
-      {
-        questionId: '2.2',
-        questionText: 'Why are primary keys important?',
-        points: 4,
-        progress: 0,
-        gradedCount: 0,
-        totalSubmissions: 20,
-      },
-    ],
-  },
-  {
-    questionId: '3',
-    questionText: 'Define normalization.',
-    points: 6,
-    progress: 100,
-    gradedCount: 20,
-    totalSubmissions: 20,
-  },
-];
-
-const RenderProgress = ({ graded, total, percent }: { graded: number; total: number; percent: number }) => (
-  <Flex direction="column" align="center">
-    <Flex justify="space-between" align="center" w={400}>
-      <Progress
-        value={percent}
-        color={percent === 100 ? 'green' : 'blue'}
-        size="md"
-        striped
-        w={380}
-      />
-      <Text size="xs" ml="sm">{`${percent}%`}</Text>
-    </Flex>
-    <Text size="xs" mt={4}>
-      {`${graded}/${total}`}
-    </Text>
-  </Flex>
-);
+import { Table, Progress, Text, Flex, Paper } from '@mantine/core';
+import { useQuestionStore } from '@/store/question/useQuestionStore';
+import { useFetchQuestion } from '@/hooks/Question/useFetchQuestion';
+import { useParams } from 'next/navigation';
 
 const INSSubmissionsQuestion: React.FC = () => {
-  return (
-    <Flex direction="column" justify="flex-start" gap="xs" p="xs">
-      <Text size="lg" fw={500}>
-        Grading Dashboard
-      </Text>
-      <Text size="sm" c="dimmed" mb="md">
-        Grade submissions by selecting individual questions below.
-      </Text>
+  const params = useParams();
+  const assignment_id = params.assignment_id as string;
+  const { isLoading: isLoadingQuestions, data: questionsData } = useFetchQuestion(assignment_id);
+  const { questions } = useQuestionStore();
+  
+  // Mock data for progress bars
+  const mockProgressMain = Math.floor(Math.random() * 100);
+  const mockProgressSub = Math.floor(Math.random() * 100);
 
-      <Paper withBorder h="100%">
-        <Table
-          highlightOnHover
-          verticalSpacing="md"
-          horizontalSpacing="lg"
-        >
+  return (
+    <Flex direction="column" gap="sm" p="md">
+      <Paper withBorder>
+        <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
           <Table.Thead className='bg-gray-100'>
             <Table.Tr>
-              <Table.Th ta='left'>Question</Table.Th>
+              <Table.Th>Question</Table.Th>
               <Table.Th ta='center'>Points</Table.Th>
               <Table.Th ta='center'>Progress</Table.Th>
               <Table.Th ta='center'>Graded by</Table.Th>
             </Table.Tr>
           </Table.Thead>
-
           <Table.Tbody>
-            {mockQuestions.map((question) => (
-              <React.Fragment key={question.questionId}>
-                <Table.Tr>
-                  <Table.Td>{`${question.questionId}: ${question.questionText}`}</Table.Td>
-                  <Table.Td ta='center'>{question.points}</Table.Td>
-                  <Table.Td ta='center'>
-                    {/* <Progress
-                      value={question.progress}
-                      color={question.progress === 100 ? 'green' : 'blue'}
-                      size="md"
-                      striped
-                    />
-                    <Text size="xs" mt={4}>
-                      {`${question.gradedCount}/${question.totalSubmissions}`} ({question.progress}%)
-                    </Text> */}
-                    <RenderProgress graded={question.gradedCount} total={question.totalSubmissions} percent={question.progress} />
-                  </Table.Td>
-                  <Table.Td ta='center'>--</Table.Td>
-                </Table.Tr>
+            {questions.map((question, index) => {
+              const hasSub = question.sub_questions && question.sub_questions.length > 0;
 
-                {question.subQuestions &&
-                  question.subQuestions.map((subQuestion) => (
-                    <Table.Tr key={subQuestion.questionId}>
-                      <Table.Td pl='2rem'>
-                        {`${subQuestion.questionId}: ${subQuestion.questionText}`}
-                      </Table.Td>
-                      <Table.Td ta='center'>{subQuestion.points}</Table.Td>
-                      <Table.Td ta='center'>
-                        {/* <Progress
-                          value={subQuestion.progress}
-                          color={subQuestion.progress === 100 ? 'green' : 'blue'}
-                          size="md"
-                          striped
-                        />
-                        <Text size="xs" mt={4}>
-                          {`${subQuestion.gradedCount}/${subQuestion.totalSubmissions}`} ({subQuestion.progress}%)
-                        </Text> */}
-                        <RenderProgress graded={subQuestion.gradedCount} total={subQuestion.totalSubmissions} percent={subQuestion.progress} />
-                      </Table.Td>
-                      <Table.Td ta='center'>--</Table.Td>
-                    </Table.Tr>
-                  ))
-                }
-              </React.Fragment>
-            ))}
+              return (
+                <Table.Tr key={question.question_id}>
+                  {/* Question Column */}
+                  <Table.Td className="align-top">
+                    <Text size="md" mb="xs">
+                      {index + 1}: {question.question_title}
+                    </Text>
+                    {hasSub && (
+                      <Flex direction="column" gap={16}>
+                        {question.sub_questions?.map((sub, subIndex) => (
+                          <Flex key={sub.sub_question_id} align="center" ml="lg">
+                            <span className="w-3 h-3 border-l-2 border-b-2 border-dotted border-gray-300 mr-2 -translate-y-[2px]" />
+                            <Text size="sm" c="dimmed">
+                              {index + 1}.{subIndex + 1}: {sub.sub_question_title}
+                            </Text>
+                          </Flex>
+                        ))}
+                      </Flex>
+                    )}
+                  </Table.Td>
+
+                  {/* Points Column */}
+                  <Table.Td ta="center" className="align-top">
+                    <Text mb="xs" size="md" fw={500} h='24.80px' c="dimmed">{question.question_point.toFixed(1)}</Text>
+                    {hasSub && (
+                      <Flex direction="column" gap={16}>
+                        {question.sub_questions?.map((sub) => (
+                          <Text
+                            key={sub.sub_question_id}
+                            size="sm"
+                            fw={500}
+                            c="dimmed"
+                          >
+                            {sub.sub_question_point.toFixed(1)}
+                          </Text>
+                        ))}
+                      </Flex>
+                    )}
+                  </Table.Td>
+
+                  {/* Progress Column */}
+                  <Table.Td ta="center" className="align-top">
+                    {!hasSub ? (
+                      <Flex align="center" justify="center">
+                        <Progress value={mockProgressMain} color="green" w={350} size="lg" />
+                        <Text size="sm" fw={500} c="green" w={30}>{mockProgressMain}%</Text>
+                      </Flex>
+                    ) : (
+                      <>
+                        <div className="min-h-[24px] mb-[10px]" />
+                        <Flex direction="column" gap={16}>
+                          {question.sub_questions?.map((sub) => (
+                            <Flex
+                              key={sub.sub_question_id}
+                              align="center"
+                              justify="center"
+                              gap="2px"
+                            >
+                              <Progress
+                                value={mockProgressSub}
+                                color="gray"
+                                w={350}
+                                size="lg"
+                              />
+                              <Text size="sm" fw={500} c="green" w={30}>{mockProgressSub}%</Text>
+                            </Flex>
+                          ))}
+                        </Flex>                      
+                      </>
+                    )}
+                  </Table.Td>
+
+                  {/* Graded by Column */}
+                  <Table.Td ta="center" className="align-top">
+                    {!hasSub ? (
+                        <Text size="sm" fw={500} c="dimmed">Mock user</Text>
+                      ) : (
+                        <>
+                          <div className="min-h-[24px] mb-[10px]" />
+                          <Flex direction="column" gap={16}>
+                            {question.sub_questions?.map((sub) => (
+                              <Text
+                                key={sub.sub_question_id}
+                                size="sm"
+                                fw={500}
+                                c="dimmed"
+                              >
+                                Mock user
+                              </Text>
+                            ))}
+                          </Flex>
+                        </>
+                    )}
+                  </Table.Td>
+                </Table.Tr>
+              );
+            })}
           </Table.Tbody>
         </Table>
       </Paper>
