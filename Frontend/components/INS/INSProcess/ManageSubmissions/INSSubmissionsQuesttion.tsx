@@ -18,6 +18,16 @@ const INSSubmissionsQuestion: React.FC = () => {
 
   return (
     <Flex direction="column" gap="sm" p="md">
+      <Flex direction="column">
+        <Text size="lg" fw={500}>
+          Grading Dashboard
+        </Text>
+        <Text size="sm" c="dimmed" mb="md">
+          Grade submissions by selecting individual questions below.
+        </Text>
+      </Flex>
+
+
       <Paper withBorder>
         <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
           <Table.Thead className='bg-gray-100'>
