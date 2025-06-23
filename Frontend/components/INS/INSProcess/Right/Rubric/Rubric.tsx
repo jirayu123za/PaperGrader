@@ -17,6 +17,7 @@ import { useParams } from 'next/navigation';
 import { useQuestionStore } from '@/store/question/useQuestionStore';
 import { useRubricStore } from '@/store/rubric/useRubricStore';
 import { useFetchQuestion } from '@/hooks/Question/useFetchQuestion';
+import { useCreateRubric } from '@/hooks/Rubric/useCreateRubric';
 marked.use(markedKatex({ throwOnError: false }));
 
 interface Graded {
@@ -30,8 +31,26 @@ export const Rubric = () => {
     const { questions, selectedQuestion, defaultSelectedQuestion } = useQuestionStore();
     const { isLoading: isLoadingQuestions, data: questionsData } = useFetchQuestion(assignment_id);
     const { isLoading: isLoadingRubric, data: data } = useFetchRubric(assignment_id);
+    const { mutate: createRubric, isPending } = useCreateRubric(assignment_id);
     const { rubricData, setRubricData, rubrics, setRubrics, editingRubricID, setEditingRubricID, editingDescriptionID, setEditingDescriptionID } = useRubricStore();
 
+    const target = selectedQuestion ?? defaultSelectedQuestion;
+
+    const handleCreateRubric = () => {
+        createRubric({ 
+            assignment_id, 
+            question_id: target?.question_id,
+            sub_question_id: target?.sub_question_id,
+            rubric: {
+                rubric_setting: "Negative scoring",
+                rubric_details: [{
+                    rubric_point: 0,
+                    rubric_description: "",
+                }],
+            },
+        });
+    };
+    
     const [graded, setGraded] = useState<Graded>({
         has_graded: 2,
         total_grade: 10,
@@ -74,8 +93,6 @@ export const Rubric = () => {
         }
         return question.question_point;
     };
-
-    const target = selectedQuestion ?? defaultSelectedQuestion;
 
     if (questions.length === 0) {
         return <NoQuestion/>
@@ -268,7 +285,8 @@ export const Rubric = () => {
                     variant="outline"
                     color="violet"
                     className="mt-2"
-                    onClick={() => alert(`Add rubric functionality not implemented yet. Question ID: ${target?.question_id}, Sub-Question ID: ${target?.sub_question_id}`)}
+                    onClick={handleCreateRubric}
+                    loading={isPending}
                 >
                     Add Rubric Item
                 </Button>
