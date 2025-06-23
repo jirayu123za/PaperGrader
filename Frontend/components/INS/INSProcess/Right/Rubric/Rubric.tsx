@@ -18,6 +18,7 @@ import { useQuestionStore } from '@/store/question/useQuestionStore';
 import { useRubricStore } from '@/store/rubric/useRubricStore';
 import { useFetchQuestion } from '@/hooks/Question/useFetchQuestion';
 import { useCreateRubric } from '@/hooks/Rubric/useCreateRubric';
+import { useDeleteRubric } from '@/hooks/Rubric/useDeleteRubric';
 marked.use(markedKatex({ throwOnError: false }));
 
 interface Graded {
@@ -31,7 +32,8 @@ export const Rubric = () => {
     const { questions, selectedQuestion, defaultSelectedQuestion } = useQuestionStore();
     const { isLoading: isLoadingQuestions, data: questionsData } = useFetchQuestion(assignment_id);
     const { isLoading: isLoadingRubric, data: data } = useFetchRubric(assignment_id);
-    const { mutate: createRubric, isPending } = useCreateRubric(assignment_id);
+    const { mutate: createRubric, isPending: isPendingCreate } = useCreateRubric(assignment_id);
+    const { mutate: deleteRubric, isPending: isPendingDelete } = useDeleteRubric(assignment_id);
     const { rubricData, setRubricData, rubrics, setRubrics, editingRubricID, setEditingRubricID, editingDescriptionID, setEditingDescriptionID } = useRubricStore();
 
     const target = selectedQuestion ?? defaultSelectedQuestion;
@@ -48,6 +50,16 @@ export const Rubric = () => {
                     rubric_description: "",
                 }],
             },
+        });
+    };
+
+    const handleDeleteRubric = (rubric_id: string, rubric_detail_id: string) => {
+        deleteRubric({
+            assignment_id,
+            question_id: target?.question_id,
+            sub_question_id: target?.sub_question_id,
+            rubric_id: rubric_id,
+            rubric_detail_id: rubric_detail_id,
         });
     };
 
@@ -268,7 +280,7 @@ export const Rubric = () => {
                                                 aria-label="Delete rubric"
                                                 c="red"
                                                 className="ml-auto hover:text-red-600 hover:scale-105 transition-transform duration-200 opacity-0 group-hover:opacity-100"
-                                                onClick={() => alert(`Delete rubric id ${rubric.rubric_id}, rubric detail id ${rubric.rubric_detail_id}`)}
+                                                onClick={() => handleDeleteRubric(rubric.rubric_id, rubric.rubric_detail_id)}
                                             >
                                                 <AiTwotoneDelete size={20} />
                                             </ActionIcon>
@@ -290,7 +302,7 @@ export const Rubric = () => {
                     color="violet"
                     className="mt-2"
                     onClick={handleCreateRubric}
-                    loading={isPending}
+                    loading={isPendingCreate}
                 >
                     Add Rubric Item
                 </Button>
