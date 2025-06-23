@@ -35,7 +35,7 @@ export default function Submissions() {
               <INSSubmissions/>
             </Tabs.Panel>
 
-            <Tabs.Panel value="questions" pt="md">
+            <Tabs.Panel value="questions">
               <INSSubmissionsQuestion />
             </Tabs.Panel>
           </Tabs>
