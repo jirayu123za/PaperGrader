@@ -40,7 +40,7 @@ export const useFetchRubric = (assignment_id: string) => {
             setRubricData(rubric);
             return rubric;
         },
-        enabled: !!assignment_id && !!target?.question_id && !!target?.sub_question_id,
+        // enabled: !!assignment_id && !!target?.question_id && !!target?.sub_question_id,
         refetchOnWindowFocus: false,
     });
 }
