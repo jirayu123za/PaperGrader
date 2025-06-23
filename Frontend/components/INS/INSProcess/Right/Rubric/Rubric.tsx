@@ -42,7 +42,7 @@ export const Rubric = () => {
             question_id: target?.question_id,
             sub_question_id: target?.sub_question_id,
             rubric: {
-                rubric_setting: "Negative scoring",
+                rubric_setting: rubricData?.rubric_setting ?? "Negative scoring",
                 rubric_details: [{
                     rubric_point: 0,
                     rubric_description: "",
@@ -50,7 +50,7 @@ export const Rubric = () => {
             },
         });
     };
-    
+
     const [graded, setGraded] = useState<Graded>({
         has_graded: 2,
         total_grade: 10,
