@@ -2,8 +2,8 @@
 import markedKatex from 'marked-katex-extension';
 import DOMPurify from 'dompurify';
 import 'katex/dist/katex.min.css';
-import { Box, Button, Checkbox, Divider, Flex, Group, NumberInput, Progress, ScrollArea, Text, Textarea, Image } from '@mantine/core';
 import React, { useEffect, useState } from 'react'
+import { Box, Button, Checkbox, Divider, Flex, Group, NumberInput, Progress, ScrollArea, Text, Textarea, Image, ActionIcon } from '@mantine/core';
 import { FaPlus } from "react-icons/fa";
 import { AiTwotoneDelete } from "react-icons/ai"
 import { RubricSettings } from './RubricSettings';
@@ -69,7 +69,8 @@ export const Rubric = () => {
         if (rubricData?.rubric_details) {
             const setting: 'Positive scoring' | 'Negative scoring' | null = rubricData.rubric_setting === 'Negative scoring' ? 'Negative scoring' : 'Positive scoring';
             const mapped = rubricData.rubric_details.map((r) => ({
-                rubric_id: r.rubric_detail_id,
+                rubric_id: rubricData.rubric_id ?? "",
+                rubric_detail_id: r.rubric_detail_id,
                 rubric_point: r.rubric_point,
                 rubric_description: r.rubric_description,
                 rubric_setting: setting,
@@ -143,8 +144,8 @@ export const Rubric = () => {
                             >
                                 {rubrics.map((rubric, index) => (
                                     <Draggable
-                                        key={rubric.rubric_id.toString()}
-                                        draggableId={rubric.rubric_id.toString()}
+                                        key={rubric.rubric_detail_id.toString()}
+                                        draggableId={rubric.rubric_detail_id.toString()}
                                         index={index}
                                     >
                                         {(provided, snapshot) => (
@@ -166,7 +167,7 @@ export const Rubric = () => {
                                                 icon={() => <Text size="sm" fw={500}>{index + 1}</Text>}
                                             />
                                             <div>
-                                                {editingRubricID === rubric.rubric_id ? (
+                                                {editingRubricID === rubric.rubric_detail_id ? (
                                                     <NumberInput
                                                         hideControls
                                                         autoFocus
@@ -181,7 +182,7 @@ export const Rubric = () => {
                                                             const numberVal = typeof val === 'number' ? val : 0;
                                                             const setting: 'Positive scoring' | 'Negative scoring' = numberVal < 0 ? 'Negative scoring' : 'Positive scoring';
                                                             const updated = rubrics.map((r) =>
-                                                                r.rubric_id === rubric.rubric_id
+                                                                r.rubric_detail_id === rubric.rubric_detail_id
                                                                 ? {
                                                                     ...r,
                                                                     rubric_point: numberVal,
@@ -202,12 +203,12 @@ export const Rubric = () => {
                                                 ) : (
                                                     <Text 
                                                         fw={600} c={rubric.rubric_setting === 'Positive scoring' ? 'green' : 'red'} 
-                                                        onClick={() => setEditingRubricID(rubric.rubric_id)}
+                                                        onClick={() => setEditingRubricID(rubric.rubric_detail_id)}
                                                     >
                                                         {rubric.rubric_setting === 'Positive scoring' ? '+' : '-'}{new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 }).format(Math.abs(rubric.rubric_point))}
                                                     </Text>
                                                 )}
-                                                {editingDescriptionID === rubric.rubric_id ? (
+                                                {editingDescriptionID === rubric.rubric_detail_id ? (
                                                     <Textarea
                                                         miw={360}
                                                         autoFocus
@@ -216,7 +217,7 @@ export const Rubric = () => {
                                                         defaultValue={rubric.rubric_description}
                                                         onBlur={(e) => {
                                                             const updated = rubrics.map((r) =>
-                                                                r.rubric_id === rubric.rubric_id
+                                                                r.rubric_detail_id === rubric.rubric_detail_id
                                                                 ? { ...r, rubric_description: e.target.value }
                                                                 : r
                                                             );
@@ -230,7 +231,7 @@ export const Rubric = () => {
                                                                 const value = (e.target as HTMLTextAreaElement).value;
 
                                                                 const updatedRubrics = rubrics.map((r) =>
-                                                                r.rubric_id === rubric.rubric_id
+                                                                r.rubric_detail_id === rubric.rubric_detail_id
                                                                     ? { ...r, rubric_description: value }
                                                                     : r
                                                                 );
@@ -249,7 +250,7 @@ export const Rubric = () => {
                                                         c={rubric.rubric_description ? "#495057" : "dimmed"}
                                                         fs={rubric.rubric_description ? undefined : "italic"}
                                                         className="whitespace-pre-wrap"
-                                                        onClick={() => setEditingDescriptionID(rubric.rubric_id)}
+                                                        onClick={() => setEditingDescriptionID(rubric.rubric_detail_id)}
                                                         dangerouslySetInnerHTML={
                                                         {
                                                             __html: DOMPurify.sanitize(
@@ -262,12 +263,15 @@ export const Rubric = () => {
                                                     />
                                                 )}
                                             </div>
-                                            <Box
-                                                onClick={() => console.log("Delete rubric", rubric.rubric_id)}
-                                                className="ml-auto cursor-pointer text-gray-500 hover:text-red-600 hover:scale-105 transition-transform duration-200 opacity-0 group-hover:opacity-100"
+                                            <ActionIcon
+                                                variant="transparent" 
+                                                aria-label="Delete rubric"
+                                                c="red"
+                                                className="ml-auto hover:text-red-600 hover:scale-105 transition-transform duration-200 opacity-0 group-hover:opacity-100"
+                                                onClick={() => alert(`Delete rubric id ${rubric.rubric_id}, rubric detail id ${rubric.rubric_detail_id}`)}
                                             >
                                                 <AiTwotoneDelete size={20} />
-                                            </Box>
+                                            </ActionIcon>
                                             </Group>
                                         </Checkbox.Card>
                                         )}
