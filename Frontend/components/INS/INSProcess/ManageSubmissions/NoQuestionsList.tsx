@@ -26,7 +26,7 @@ export const NoQuestionsList = () => {
                 No question found
             </Text>
             <Text size="sm" c="dimmed">
-                Please create bounding box for question to view or edit rubrics.
+                Please define bounding boxes to display the list of questions.
             </Text>
             <Button mt="lg" onClick={handleBack} leftSection={<IoChevronBackOutline />} variant="light" color="blue">
                 Back to create
