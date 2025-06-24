@@ -1,15 +1,16 @@
 'use client';
 
 import React from 'react';
-import { Table, Progress, Text, Flex, Paper } from '@mantine/core';
+import { Table, Progress, Text, Flex, Paper, Anchor, Box } from '@mantine/core';
 import { useQuestionStore } from '@/store/question/useQuestionStore';
 import { useFetchQuestion } from '@/hooks/Question/useFetchQuestion';
-import { useParams } from 'next/navigation';
-import { VscListUnordered } from "react-icons/vsc";
+import { useParams, useRouter } from 'next/navigation';
 import { NoQuestionsList } from './NoQuestionsList';
+import { VscListUnordered } from "react-icons/vsc";
 
 const INSSubmissionsQuestion: React.FC = () => {
   const params = useParams();
+  const router = useRouter();
   const assignment_id = params.assignment_id as string;
   const { isLoading: isLoadingQuestions, data: questionsData } = useFetchQuestion(assignment_id);
   const { questions } = useQuestionStore();
@@ -51,17 +52,37 @@ const INSSubmissionsQuestion: React.FC = () => {
                 <Table.Tr key={question.question_id}>
                   {/* Question Column */}
                   <Table.Td className="align-top">
-                    <Text size="md" mb="xs">
-                      {index + 1}: {question.question_title}
-                    </Text>
+                    {hasSub ? (
+                      <Box className="mb-2">
+                        <Text size="md">
+                          {index + 1}: {question.question_title}
+                        </Text>
+                      </Box>
+                    ) : (
+                      <Box className="mb-2">
+                        <Anchor
+                          underline="hover"
+                          c="dark"
+                          onClick={() => router.push(`/grading/question/${question.question_id}`)}
+                        >
+                          {index + 1}: {question.question_title}
+                        </Anchor>
+                      </Box>
+                    )}
+
                     {hasSub && (
                       <Flex direction="column" gap={16}>
                         {question.sub_questions?.map((sub, subIndex) => (
                           <Flex key={sub.sub_question_id} align="center" ml="lg">
                             <span className="w-3 h-3 border-l-2 border-b-2 border-dotted border-gray-300 mr-2 -translate-y-[2px]" />
-                            <Text size="sm" c="dimmed">
+                            <Anchor
+                              underline="hover"
+                              size="sm"
+                              c="dimmed"
+                              onClick={() => router.push(`/grading/sub-question/${sub.sub_question_id}`)}
+                            >
                               {index + 1}.{subIndex + 1}: {sub.sub_question_title}
-                            </Text>
+                            </Anchor>
                           </Flex>
                         ))}
                       </Flex>
