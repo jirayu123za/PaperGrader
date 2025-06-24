@@ -5,16 +5,22 @@ import { Table, Progress, Text, Flex, Paper } from '@mantine/core';
 import { useQuestionStore } from '@/store/question/useQuestionStore';
 import { useFetchQuestion } from '@/hooks/Question/useFetchQuestion';
 import { useParams } from 'next/navigation';
+import { VscListUnordered } from "react-icons/vsc";
+import { NoQuestionsList } from './NoQuestionsList';
 
 const INSSubmissionsQuestion: React.FC = () => {
   const params = useParams();
   const assignment_id = params.assignment_id as string;
   const { isLoading: isLoadingQuestions, data: questionsData } = useFetchQuestion(assignment_id);
   const { questions } = useQuestionStore();
-  
+
   // Mock data for progress bars
   const mockProgressMain = Math.floor(Math.random() * 100);
   const mockProgressSub = Math.floor(Math.random() * 100);
+
+  if (questions.length === 0) {
+    return <NoQuestionsList />;
+  }
 
   return (
     <Flex direction="column" gap="sm" p="md">
@@ -26,7 +32,6 @@ const INSSubmissionsQuestion: React.FC = () => {
           Grade submissions by selecting individual questions below.
         </Text>
       </Flex>
-
 
       <Paper withBorder>
         <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
