@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react'
-import { Loader, Text } from '@mantine/core';
+import { Loader } from '@mantine/core';
+import MainQuestionsListClient from '@/components/client/MainQuestionsListClient';
 
 export const metadata = {
   title: 'Submissions',
@@ -12,12 +13,10 @@ export default async function page({ params }: {
   const { course_id, question_id } = await params;
 
   return (
-    <div className="flex min-h-screen">
-      <div className="grow p-4">
-        <Suspense fallback={<Loader size="sm" />}>
-          <Text>Submissions for Course {course_id}, Question {question_id}</Text>
-        </Suspense>
-      </div>
-    </div>
+    <>
+      <Suspense fallback={<Loader size="sm" />}>
+        <MainQuestionsListClient course_id={course_id} question_id={question_id} />
+      </Suspense>    
+    </>
   )
 }
