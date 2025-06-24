@@ -12,6 +12,7 @@ const INSSubmissionsQuestion: React.FC = () => {
   const params = useParams();
   const router = useRouter();
   const assignment_id = params.assignment_id as string;
+  const course_id = params.course_id as string;
   const { isLoading: isLoadingQuestions, data: questionsData } = useFetchQuestion(assignment_id);
   const { questions } = useQuestionStore();
 
@@ -72,7 +73,7 @@ const INSSubmissionsQuestion: React.FC = () => {
                           size='xs'
                           ml='xs'
                           className="invisible group-hover:visible"
-                          onClick={() => router.push(`/grading/question/${question.question_id}/submissions`)}
+                          onClick={() => router.push(`/instructor/course/${course_id}/questions/${question.question_id}/submissions`)}
                         >
                           <Flex align="center" gap={4} >
                             <VscListUnordered size={12} className='translate-y-[1px]'/>
@@ -100,7 +101,7 @@ const INSSubmissionsQuestion: React.FC = () => {
                               size='xs'
                               ml='xs'
                               className="invisible group-hover:visible"
-                              onClick={() => router.push(`/grading/sub-question/${sub.sub_question_id}/submissions`)}
+                              onClick={() => router.push(`/instructor/course/${course_id}/questions/${question.question_id}/subs/${sub.sub_question_id}/submissions`)}
                             >
                               <Flex align="center" gap={4} >
                                 <VscListUnordered size={12} className='translate-y-[1px]'/>
