@@ -59,7 +59,7 @@ const INSSubmissionsQuestion: React.FC = () => {
                         </Text>
                       </Box>
                     ) : (
-                      <Box className="mb-2">
+                      <Box className="mb-2 group flex items-center gap-1 relative w-fit">
                         <Anchor
                           underline="hover"
                           c="dark"
@@ -67,13 +67,25 @@ const INSSubmissionsQuestion: React.FC = () => {
                         >
                           {index + 1}: {question.question_title}
                         </Anchor>
+                        <Anchor
+                          underline="hover"
+                          size='xs'
+                          ml='xs'
+                          className="invisible group-hover:visible"
+                          onClick={() => router.push(`/grading/question/${question.question_id}/submissions`)}
+                        >
+                          <Flex align="center" gap={4} >
+                            <VscListUnordered size={12} className='translate-y-[1px]'/>
+                            <span>Submissions</span>
+                          </Flex>
+                        </Anchor>
                       </Box>
                     )}
 
                     {hasSub && (
                       <Flex direction="column" gap={16}>
                         {question.sub_questions?.map((sub, subIndex) => (
-                          <Flex key={sub.sub_question_id} align="center" ml="lg">
+                          <Flex key={sub.sub_question_id} align="center" ml="lg" className="group relative w-fit">
                             <span className="w-3 h-3 border-l-2 border-b-2 border-dotted border-gray-300 mr-2 -translate-y-[2px]" />
                             <Anchor
                               underline="hover"
@@ -82,6 +94,18 @@ const INSSubmissionsQuestion: React.FC = () => {
                               onClick={() => router.push(`/grading/sub-question/${sub.sub_question_id}`)}
                             >
                               {index + 1}.{subIndex + 1}: {sub.sub_question_title}
+                            </Anchor>
+                            <Anchor
+                              underline="hover"
+                              size='xs'
+                              ml='xs'
+                              className="invisible group-hover:visible"
+                              onClick={() => router.push(`/grading/sub-question/${sub.sub_question_id}/submissions`)}
+                            >
+                              <Flex align="center" gap={4} >
+                                <VscListUnordered size={12} className='translate-y-[1px]'/>
+                                <span>Submissions</span>
+                              </Flex>
                             </Anchor>
                           </Flex>
                         ))}
