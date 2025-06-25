@@ -341,7 +341,7 @@ type RubricResponse struct {
 type SubmissionsFromQuestionResponse struct {
 	SubmissionID uuid.UUID        `json:"submission_id"`
 	UserName     FullNameAndEmail `json:"user_name"`
-	Section      string           `json:"section"`
+	SectionName  string           `json:"section_name"`
 	// Under line: This mock data
 	GradedBy    string `json:"graded_by"`
 	Score       int    `json:"score"`
@@ -359,5 +359,5 @@ type SubmissionsFromQuestionRaw struct {
 	FirstName    string    `json:"first_name"`
 	LastName     string    `json:"last_name"`
 	Email        string    `json:"email"`
-	Section      string    `json:"section"`
+	SectionName  string    `json:"section_name"`
 }
