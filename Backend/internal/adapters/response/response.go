@@ -336,3 +336,28 @@ type RubricResponse struct {
 	RubricSetting string          `json:"rubric_setting"`
 	RubricData    []RubricDetails `json:"rubric_details"`
 }
+
+// Query submissions from question
+type SubmissionsFromQuestionResponse struct {
+	SubmissionID uuid.UUID        `json:"submission_id"`
+	UserName     FullNameAndEmail `json:"user_name"`
+	Section      string           `json:"section"`
+	// Under line: This mock data
+	GradedBy    string `json:"graded_by"`
+	Score       int    `json:"score"`
+	GradeStatus bool   `json:"grade_status"`
+}
+
+type FullNameAndEmail struct {
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+}
+
+type SubmissionsFromQuestionRaw struct {
+	SubmissionID uuid.UUID `json:"submission_id"`
+	FirstName    string    `json:"first_name"`
+	LastName     string    `json:"last_name"`
+	Email        string    `json:"email"`
+	Section      string    `json:"section"`
+}
