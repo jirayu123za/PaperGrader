@@ -1409,7 +1409,7 @@ func (r *GormInstructorRepository) FindRubricByQuestionID(AssignmentID uuid.UUID
 						rMap := r.(map[string]interface{})
 						details = append(details, response.RubricDetails{
 							RubricDetailID:    rMap["rubric_detail_id"].(string),
-							RubricPoint:       int(rMap["rubric_point"].(float64)),
+							RubricPoint:       rMap["rubric_point"].(float64),
 							RubricDescription: rMap["rubric_description"].(string),
 						})
 					}
@@ -1468,7 +1468,7 @@ func (r *GormInstructorRepository) FindRubricBySubQuestionID(AssignmentID uuid.U
 									rMap := r.(map[string]interface{})
 									details = append(details, response.RubricDetails{
 										RubricDetailID:    rMap["rubric_detail_id"].(string),
-										RubricPoint:       int(rMap["rubric_point"].(float64)),
+										RubricPoint:       rMap["rubric_point"].(float64),
 										RubricDescription: rMap["rubric_description"].(string),
 									})
 								}

@@ -317,9 +317,9 @@ type RubricDetail struct {
 }
 
 type RubricDetails struct {
-	RubricDetailID    string `json:"rubric_detail_id"`
-	RubricPoint       int    `json:"rubric_point"`
-	RubricDescription string `json:"rubric_description"`
+	RubricDetailID    string  `json:"rubric_detail_id"`
+	RubricPoint       float64 `json:"rubric_point"`
+	RubricDescription string  `json:"rubric_description"`
 }
 
 // Delete rubric
