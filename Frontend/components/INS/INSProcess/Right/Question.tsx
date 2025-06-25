@@ -27,14 +27,22 @@ export default function QuestionOutline() {
   useEffect(() => {
     if (!template) return;
 
-    const rubricQuestions = template.questions?.rubric_data?.questions;
+    const rubricQuestions = template.questions?.questions_data;
 
     if (Array.isArray(rubricQuestions)) {
-      const withBoxIds = rubricQuestions.map((q, i) => ({
-        question_id: nanoid(),
-        ...q,
-        bounding_box_id: template.bounding_boxes?.[i]?.bounding_box_id ?? '',
+      const withBoxIds = rubricQuestions.map((q: any) => ({
+        question_id: q.question_id ?? nanoid(),
+        question_title: q.question_title,
+        question_point: q.question_point,
+        bounding_box_id: q.bounding_box_id ?? '',
+        subquestions: q.sub_questions?.map((sub: any) => ({
+          subquestion_id: sub.sub_question_id ?? nanoid(),
+          subquestion_title: sub.sub_question_title,
+          subquestion_point: sub.sub_question_point,
+          bounding_box_id: sub.bounding_box_id ?? '',
+        })) ?? [],
       }));
+
       setRubricDataFromAPI(withBoxIds);
     }
   }, [template]);
@@ -49,7 +57,11 @@ export default function QuestionOutline() {
     createBoundingBoxes({
       assignment_id,
       bounding_boxes: boundingBoxes.map((b) => ({
-        bounding_box_position: b.bounding_box_position,
+        bounding_box_id: b.bounding_box_id,
+        point_x: b.point_x,
+        point_y: b.point_y,
+        width: b.width,
+        height: b.height,
         bounding_box_type: b.bounding_box_type as 'question' | 'name' | 'id',
         bounding_box_page: b.bounding_box_page,
       })),
