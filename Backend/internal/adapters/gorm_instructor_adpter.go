@@ -1499,11 +1499,11 @@ func (r *GormInstructorRepository) FindSubmissionsFromQuestion(courseID uuid.UUI
 
 	err := r.db.
 		Table("submissions AS s").
-		Select(`s.submission_id, p.first_name, p.last_name, p.email, sec.section_name`).
+		Select("s.submission_id, p.first_name, p.last_name, p.email, sec.section_name").
 		Joins("LEFT JOIN personal_data p ON p.personal_data_id = s.belongs_to").
-		Joins("LEFT JOIN enrollment_lists el ON el.personal_data_id = p.personal_data_id").
-		Joins("LEFT JOIN sections sec ON sec.section_id = el.section_id").
-		Where("s.assignment_id = ? AND (el.course_id = ? OR el.course_id IS NULL) AND s.deleted_at IS NULL", assignmentID, courseID).
+		Joins("LEFT JOIN enrollment_lists el ON el.personal_data_id = p.personal_data_id AND el.course_id = ?", courseID).
+		Joins("LEFT JOIN sections sec ON sec.section_id = el.section_id AND sec.deleted_at IS NULL").
+		Where("s.assignment_id = ? AND s.deleted_at IS NULL", assignmentID).
 		Scan(&rawResults).Error
 	if err != nil {
 		return nil, err
@@ -1518,7 +1518,7 @@ func (r *GormInstructorRepository) FindSubmissionsFromQuestion(courseID uuid.UUI
 				LastName:  r.LastName,
 				Email:     r.Email,
 			},
-			Section:     r.Section,
+			SectionName: r.SectionName,
 			GradedBy:    utils.RandomGrader(),
 			Score:       rand.Intn(100),
 			GradeStatus: rand.Intn(2) == 1,
