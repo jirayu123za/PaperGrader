@@ -1,46 +1,22 @@
-"use client";
+import { TabsGradeSubmissionsClient } from '@/components/client/TabsGradeSubmissionsClient';
+import React, { Suspense } from 'react'
+import { Loader } from '@mantine/core';
 
-import { useEffect, useState } from 'react';
-import { Tabs, Loader } from '@mantine/core';
-import INSSubmissions from '@/components/INS/INSProcess/ManageSubmissions/INSSubmissions';
-import INSSubmissionsQuestion from '@/components/INS/INSProcess/ManageSubmissions/INSSubmissionsQuesttion';
+export const metadata = {
+  title: 'Grade Submissions',
+  description: 'Grade Submissions for the assignment in the course process page.',
+};
 
-export default function Submissions() {
-  const [loading, setLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    setTimeout(() => {
-      setLoading(false);
-    }, 600);
-  }, []);
+export default async function Submissions({ params }: { 
+  params: Promise<{ course_id: string; assignment_id: string }>
+}) {
+  const { course_id, assignment_id } = await params;
 
   return (
-    <div className="flex min-h-screen">
-
-      {/* Main Content */}
-      <div className="grow p-6">
-        {/* Loading Spinner */}
-        {loading ? (
-          <div className="flex justify-center items-center min-h-[200px]">
-            <Loader size="lg" />
-          </div>
-        ) : (
-          <Tabs defaultValue="submissions">
-            <Tabs.List>
-              <Tabs.Tab value="submissions">Submissions list</Tabs.Tab>
-              <Tabs.Tab value="questions">Questions list</Tabs.Tab>
-            </Tabs.List>
-
-            <Tabs.Panel value="submissions" pt="md">
-              <INSSubmissions/>
-            </Tabs.Panel>
-
-            <Tabs.Panel value="questions">
-              <INSSubmissionsQuestion />
-            </Tabs.Panel>
-          </Tabs>
-        )}
-      </div>
-    </div>
+    <>
+      <Suspense fallback={<Loader size="lg" />}>
+        <TabsGradeSubmissionsClient />
+      </Suspense>    
+    </>
   );
 }
