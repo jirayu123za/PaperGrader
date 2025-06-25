@@ -84,6 +84,9 @@ type InstructorService interface {
 	UpdateRubricData(assignmentID uuid.UUID, rubricData response.UpdateRubricRequest) error
 	DeleteRubricData(assignmentID uuid.UUID, rubricData response.DeleteRubricRequest) error
 	GetRubricData(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID *uuid.UUID) (response.RubricResponse, error)
+
+	// R Submission from question
+	GetSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error)
 }
 
 type InstructorServiceImpl struct {
@@ -779,4 +782,13 @@ func (s *InstructorServiceImpl) GetRubricData(AssignmentID uuid.UUID, QuestionID
 		return s.repo.FindRubricBySubQuestionID(AssignmentID, QuestionID, SubQuestionID)
 	}
 	return s.repo.FindRubricByQuestionID(AssignmentID, QuestionID)
+}
+
+// Submission from question
+func (s *InstructorServiceImpl) GetSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error) {
+	submissions, err := s.repo.FindSubmissionsFromQuestion(courseID, assignmentID)
+	if err != nil {
+		return nil, err
+	}
+	return submissions, nil
 }
