@@ -1960,10 +1960,6 @@ func (h *HttpInstructorHandler) GetRubric(c *fiber.Ctx) error {
 		}
 	}
 
-	fmt.Println("Assignment ID:", assignmentID)
-	fmt.Println("Question ID:", questionID)
-	fmt.Println("Sub Question ID:", subQuestionID)
-
 	rubric, err := h.services.GetRubricData(assignmentID, questionID, subQuestionID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
