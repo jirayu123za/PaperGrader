@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
@@ -1490,4 +1491,38 @@ func (r *GormInstructorRepository) FindRubricBySubQuestionID(AssignmentID uuid.U
 		RubricID:   nil,
 		RubricData: nil,
 	}, nil
+}
+
+// R submissions from question
+func (r *GormInstructorRepository) FindSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error) {
+	var rawResults []response.SubmissionsFromQuestionRaw
+
+	err := r.db.
+		Table("submissions AS s").
+		Select(`s.submission_id, p.first_name, p.last_name, p.email, sec.section_name`).
+		Joins("LEFT JOIN personal_data p ON p.personal_data_id = s.belongs_to").
+		Joins("LEFT JOIN enrollment_lists el ON el.personal_data_id = p.personal_data_id").
+		Joins("LEFT JOIN sections sec ON sec.section_id = el.section_id").
+		Where("s.assignment_id = ? AND (el.course_id = ? OR el.course_id IS NULL) AND s.deleted_at IS NULL", assignmentID, courseID).
+		Scan(&rawResults).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var results []response.SubmissionsFromQuestionResponse
+	for _, r := range rawResults {
+		results = append(results, response.SubmissionsFromQuestionResponse{
+			SubmissionID: r.SubmissionID,
+			UserName: response.FullNameAndEmail{
+				FirstName: r.FirstName,
+				LastName:  r.LastName,
+				Email:     r.Email,
+			},
+			Section:     r.Section,
+			GradedBy:    utils.RandomGrader(),
+			Score:       rand.Intn(100),
+			GradeStatus: rand.Intn(2) == 1,
+		})
+	}
+	return results, nil
 }

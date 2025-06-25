@@ -90,4 +90,6 @@ type InstructorRepository interface {
 	// etc..
 	FindRubricByQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID) (response.RubricResponse, error)
 	FindRubricBySubQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID *uuid.UUID) (response.RubricResponse, error)
+	// R submissions from question
+	FindSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error)
 }
