@@ -5,12 +5,20 @@ import Konva from 'konva';
 import useBoundingBoxStore from '@/store/BoundingBox/useBoundingBoxStore';
 import { createBoundingBoxGroup } from '@/components/INS/INSProcess/Right/Boundingbox/createBoundingBox';
 
-interface KonvaCanvasProps {
-  innerContainerRef: React.RefObject<HTMLDivElement>;
-  pageOffsets: React.RefObject<number[]>;
+interface PageMetadata {
+  pageNumber: number;
+  scale: number;
+  width: number;
+  height: number;
+  offsetY: number;
 }
 
-export default function KonvaCanvas({ innerContainerRef, pageOffsets }: KonvaCanvasProps) {
+interface KonvaCanvasProps {
+  innerContainerRef: React.RefObject<HTMLDivElement>;
+  pageMetas: PageMetadata[];
+}
+
+export default function KonvaCanvas({ innerContainerRef, pageMetas }: KonvaCanvasProps) {
   const boundingBoxes = useBoundingBoxStore((state) => state.boundingBoxes);
   const rubricData = useBoundingBoxStore((state) => state.rubricData);
   const stageRef = useRef<Konva.Stage | null>(null);
@@ -45,7 +53,7 @@ export default function KonvaCanvas({ innerContainerRef, pageOffsets }: KonvaCan
   useEffect(() => {
     const layer = layerRef.current;
     const groupMap = groupMapRef.current;
-    if (!layer) return;
+    if (!layer || !pageMetas?.length) return;
 
     const currentIds = new Set(boundingBoxes.map(b => b.bounding_box_id));
     for (const [id, group] of groupMap.entries()) {
@@ -60,6 +68,9 @@ export default function KonvaCanvas({ innerContainerRef, pageOffsets }: KonvaCan
       const groupId = box.bounding_box_id;
       const existingGroup = groupMap.get(groupId);
 
+      const meta = pageMetas.find(p => p.pageNumber === box.bounding_box_page);
+      if (!meta) return;
+
       const matchingQuestion = rubricData.questions.find((q: any) => q.bounding_box_id === box.bounding_box_id);
       const newText = box.bounding_box_type === 'question'
         ? `${matchingQuestion?.question_title ?? 'Question'} (${matchingQuestion?.question_point ?? 0} pts)`
@@ -67,13 +78,10 @@ export default function KonvaCanvas({ innerContainerRef, pageOffsets }: KonvaCan
         ? 'Student Name'
         : 'Student ID';
 
-      const x = box.point_x || 0;
-      const y = box.point_y || 0;
-      const width = box.width || 100;
-      const height = box.height || 100;
-
-      const yOffset = pageOffsets.current?.[box.bounding_box_page - 1] || 0;
-      const adjustedY = y + yOffset;
+      const adjustedX = (box.bounding_box_point_x || 0) * meta.scale;
+      const adjustedY = (box.bounding_box_point_y || 0) * meta.scale + meta.offsetY;
+      const adjustedWidth = (box.bounding_box_width || 100) * meta.scale;
+      const adjustedHeight = (box.bounding_box_height || 100) * meta.scale;
 
       if (existingGroup) {
         const titleTextNode = existingGroup.findOne((node: Konva.Node) => node.getClassName() === 'Text') as Konva.Text;
@@ -91,13 +99,15 @@ export default function KonvaCanvas({ innerContainerRef, pageOffsets }: KonvaCan
             layer.batchDraw();
           }
         );
-        group.position({ x, y: adjustedY });
+        group.position({ x: adjustedX, y: adjustedY });
+        group.findOne('.background')?.setAttrs({ width: adjustedWidth, height: adjustedHeight });
+
         groupMap.set(groupId, group);
         layer.add(group);
         layer.batchDraw();
       }
     });
-  }, [boundingBoxes, rubricData, pageOffsets]);
+  }, [boundingBoxes, rubricData, pageMetas]);
 
   useEffect(() => {
     if (innerContainerRef.current && stageRef.current) {
