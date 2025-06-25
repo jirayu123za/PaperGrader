@@ -19,7 +19,7 @@ interface UserName {
 }
 
 
-export default function MainQuestionsListClient({ course_id, question_id }: { course_id: string; question_id: string; }) {
+export default function MainQuestionsListClient({ course_id, assignment_id, question_id }: { course_id: string; assignment_id: string; question_id: string; }) {
   const generateMockSubmissions = (count: number): SubmissionsList[] => {
     const names = ["Alice", "Bob", "Charlie", "David", "Eva", "Frank", "Grace", "Helen", "Isaac", "Jade"];
     const graders = ["Dr. Smith", "Prof. Kim", "Dr. Lee", "Ms. Brown"];
@@ -54,8 +54,8 @@ export default function MainQuestionsListClient({ course_id, question_id }: { co
   }
 
   return (
-    <Flex direction="column" gap="xs" p="36px">
-      <h1>Main Questions for Course {course_id}, Question {question_id}</h1>
+    <Flex direction="column" gap="xs" p="16px">
+      <h1>Main Questions for Course {course_id}, Assignment {assignment_id}, Question {question_id}</h1>
       <Title order={3} fw="500" mb="lg">Question 1: Mock question title</Title>
       {submissionsList.length === 0 ? (
         <NoSubmissionsList />
