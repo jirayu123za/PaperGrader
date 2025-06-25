@@ -8,7 +8,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { NoQuestionsList } from './NoQuestionsList';
 import { VscListUnordered } from "react-icons/vsc";
 
-const INSSubmissionsQuestion: React.FC = () => {
+export const INSSubmissionsQuestion: React.FC = () => {
   const params = useParams();
   const router = useRouter();
   const assignment_id = params.assignment_id as string;
@@ -196,5 +196,3 @@ const INSSubmissionsQuestion: React.FC = () => {
     </Flex>
   );
 };
-
-export default INSSubmissionsQuestion;

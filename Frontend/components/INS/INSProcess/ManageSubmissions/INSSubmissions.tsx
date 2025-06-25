@@ -9,7 +9,7 @@ import { usePagination } from '@mantine/hooks';
 import { IoListOutline, IoSearch } from 'react-icons/io5';
 import { FaRegFilePdf } from 'react-icons/fa';
 
-const INSSubmissions: React.FC = () => {
+export const INSSubmissions = () => {
   const router = useRouter();
   const params = useParams();
   const course_id = params.course_id as string;
@@ -134,5 +134,3 @@ const INSSubmissions: React.FC = () => {
     </Paper>
   );
 };
-
-export default INSSubmissions;
