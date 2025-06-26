@@ -79,11 +79,13 @@ type InstructorService interface {
 	// CRUD Questions
 	GetQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (response.QuestionsTemplateResponse, error)
 
-	// CRUD Rubric
+	// Part:1 CRUD Rubric
 	CreateRubricData(assignment_id uuid.UUID, rubricData response.CreateRubricRequest) error
 	UpdateRubricData(assignmentID uuid.UUID, rubricData response.UpdateRubricRequest) error
 	DeleteRubricData(assignmentID uuid.UUID, rubricData response.DeleteRubricRequest) error
 	GetRubricData(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID *uuid.UUID) (response.RubricResponse, error)
+	// Part:2 U Rubric
+	UpdateRubricSetting(assignmentID uuid.UUID, rubricData response.UpdateRubricSettingRequest) error
 
 	// R Submission from question
 	GetSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error)
@@ -810,6 +812,56 @@ func (s *InstructorServiceImpl) GetRubricData(AssignmentID uuid.UUID, QuestionID
 		return s.repo.FindRubricBySubQuestionID(AssignmentID, QuestionID, SubQuestionID)
 	}
 	return s.repo.FindRubricByQuestionID(AssignmentID, QuestionID)
+}
+
+// Update Rubric Setting
+func (s *InstructorServiceImpl) UpdateRubricSetting(assignmentID uuid.UUID, rubricData response.UpdateRubricSettingRequest) error {
+	// First: call repo get rubric data by assignmentID and questionID
+	rubricMap, err := s.repo.FindRubricDataByAssignmentID(assignmentID)
+	if err != nil {
+		return err
+	}
+
+	questionsData, ok := rubricMap["questions_data"].([]interface{})
+	if !ok {
+		return err
+	}
+
+	for _, q := range questionsData {
+		qMap := q.(map[string]interface{})
+		if qMap["question_id"] == rubricData.QuestionID.String() {
+			if rubricData.SubQuestionID != nil {
+				subQs, ok := qMap["sub_questions"].([]interface{})
+				if !ok {
+					return err
+				}
+
+				for _, sq := range subQs {
+					sqMap := sq.(map[string]interface{})
+					if sqMap["sub_question_id"] == rubricData.SubQuestionID.String() {
+						if rubrics, ok := sqMap["rubrics"].(map[string]interface{}); ok {
+							if rubrics["rubric_id"] == rubricData.Rubric.RubricID {
+								rubrics["rubric_setting"] = rubricData.Rubric.RubricSetting
+							}
+						}
+					}
+				}
+			} else {
+				if rubrics, ok := qMap["rubrics"].(map[string]interface{}); ok {
+					if rubrics["rubric_id"] == rubricData.Rubric.RubricID {
+						rubrics["rubric_setting"] = rubricData.Rubric.RubricSetting
+					}
+				}
+			}
+		}
+	}
+
+	// Marshal and update to DB
+	updatedJSON, err := json.Marshal(rubricMap)
+	if err != nil {
+		return err
+	}
+	return s.repo.ModifyRubricData(assignmentID, updatedJSON)
 }
 
 // Submission from question
