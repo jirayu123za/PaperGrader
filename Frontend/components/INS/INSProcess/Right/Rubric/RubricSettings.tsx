@@ -1,13 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import React from 'react';
 import { Popover, Button, Radio, Text, Alert } from '@mantine/core';
 import { IconInfoCircle } from '@tabler/icons-react';
 import { IoIosSettings } from "react-icons/io";
+import { useRubricStore } from '@/store/rubric/useRubricStore';
+import { useQuestionStore } from '@/store/question/useQuestionStore';
 
 export function RubricSettings() {
-  const [scoringMethod, setScoringMethod] = useState<string | null>(null);
+  const { rubricData, setRubricData } = useRubricStore();
+  const { questions, selectedQuestion, defaultSelectedQuestion } = useQuestionStore();
 
+  const getSelectedQuestionPoint = (): number | null => {
+    const target = selectedQuestion ?? defaultSelectedQuestion;
+    if (!target) return null;
+
+    const question = questions.find(q => q.question_id === target.question_id);
+    if (!question) return null;
+
+    if (target.sub_question_id) {
+        const sub = question.sub_questions?.find(sq => sq.sub_question_id === target.sub_question_id);
+        return sub?.sub_question_point ?? null;
+    }
+    return question.question_point;
+  };
+  
   return (
     <Popover
       width={380}
@@ -35,23 +52,33 @@ export function RubricSettings() {
           color="blue"
         />
 
-        <Text size="sm" fw={500} pl={16} pr={16} pt={8} pb={8}>Select Scoring Method:</Text>
+        <Text size="sm" fw={500} pl={16} pr={16} pt={8} pb={8}>Select scoring method:</Text>
 
         <Radio.Group
           name="scoring-method"
-          value={scoringMethod}
-          onChange={setScoringMethod}
+          value={rubricData?.rubric_setting || 'Positive scoring'}
+          onChange={(value) => {
+            setRubricData({
+              rubric_id: rubricData?.rubric_id ?? null,
+              rubric_details: rubricData?.rubric_details ?? null,
+              rubric_setting: value,
+            });
+          }}
           className="pl-4 pr-4 pb-2"
         >
           <Radio
-            value="negative"
-            label="Negative scoring (points are subtracted from 5.0)"
+            value="Negative scoring"
+            label={
+              getSelectedQuestionPoint() !== null
+                ? `Negative scoring (${getSelectedQuestionPoint()?.toFixed(1)} pts)`
+                : '0 pts'
+            }
             classNames={{
               root: 'mb-2 ml-2 hover:text-blue-600 transition-colors',
             }}
           />
           <Radio
-            value="positive"
+            value="Positive scoring"
             label="Positive scoring (points are added to 0)"
             classNames={{
               root: 'mb-2 ml-2 hover:text-blue-600 transition-colors',
