@@ -24,7 +24,7 @@ export const DropFilesBox: React.FC<Props> = ({ course_id, assignment_id }) => {
 
   return (
     <Dropzone
-      w='50%'
+      w='60%'
       loading={isPending}
       onDrop={(files) => handleFileChange(files)}
       onReject={(files) => console.log('rejected files', files)}

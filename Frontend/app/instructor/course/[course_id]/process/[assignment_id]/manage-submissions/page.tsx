@@ -3,8 +3,8 @@ import { Loader } from '@mantine/core';
 import { Suspense } from 'react';
 
 export const metadata = {
-  title: 'Manage Scans',
-  description: 'Manage Scans for the assignment in the course process page.',
+  title: 'Manage submissions',
+  description: 'Manage submissions list for the assignment in the course process page.',
 };
 
 export default async function Page({ params }: { 

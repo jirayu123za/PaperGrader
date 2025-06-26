@@ -89,15 +89,15 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
         <Table striped highlightOnHover verticalSpacing="sm">
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>NAME</Table.Th>
-              <Table.Th style={{ textAlign: 'center' }}>RELEASED</Table.Th>
-              <Table.Th style={{ textAlign: 'center' }}>Time Remain</Table.Th>
-              <Table.Th style={{ textAlign: 'center' }}>DUE</Table.Th>
-              <Table.Th style={{ textAlign: 'center' }}>LATE</Table.Th>
-              <Table.Th style={{ textAlign: 'center' }}>% SUBMISSION</Table.Th>
-              <Table.Th style={{ textAlign: 'center' }}>% GRADE</Table.Th>
-              <Table.Th style={{ textAlign: 'center' }}>PUBLISHED</Table.Th>
-              <Table.Th style={{ textAlign: 'center' }}>REGRADES</Table.Th>
+              <Table.Th>Name</Table.Th>
+              <Table.Th ta="center">Released</Table.Th>
+              <Table.Th ta="center">Time remain</Table.Th>
+              <Table.Th ta="center">Due</Table.Th>
+              <Table.Th ta="center">Late</Table.Th>
+              <Table.Th ta="center">% Submission</Table.Th>
+              <Table.Th ta="center">% Graded</Table.Th>
+              <Table.Th ta="center">Published</Table.Th>
+              <Table.Th ta="center">Regrades</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -117,12 +117,12 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
                   >
                     {assignment.assignment_name}
                   </Table.Td>
-                  <Table.Td style={{ textAlign: 'center' }}>
+                  <Table.Td ta="center">
                     {assignment.assignment_release_date
                       ? dayjs(assignment.assignment_release_date).utc().format('MMM D, YYYY h:mm A')
                       : 'N/A'}
                   </Table.Td>
-                  <Table.Td style={{ textAlign: 'center' }}>
+                  <Table.Td ta="center">
                     <Progress
                       value={calculateTimeRemaining(
                         assignment.assignment_release_date,
@@ -136,20 +136,20 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
                       radius="lg"
                     />
                   </Table.Td>
-                  <Table.Td style={{ textAlign: 'center' }}>
+                  <Table.Td ta="center">
                     {assignment.assignment_due_date
                       ? dayjs(assignment.assignment_due_date).utc().format('MMM D, YYYY h:mm A')
                       : 'N/A'}
                   </Table.Td>
-                  <Table.Td style={{ textAlign: 'center' }}>
+                  <Table.Td ta="center">
                     {assignment.assignment_cut_off_date
                       ? dayjs(assignment.assignment_cut_off_date).utc().format('MMM D, YYYY h:mm A')
                       : 'N/A'}
                   </Table.Td>
-                  <Table.Td style={{ textAlign: 'center' }}>0</Table.Td>
-                  <Table.Td style={{ textAlign: 'center' }}>0%</Table.Td>
-                  <Table.Td style={{ textAlign: 'center' }}>{assignment.published ? 'Yes' : 'No'}</Table.Td>
-                  <Table.Td style={{ textAlign: 'center' }}>{assignment.regrades ? 'Yes' : 'No'}</Table.Td>
+                  <Table.Td ta="center">0</Table.Td>
+                  <Table.Td ta="center">0%</Table.Td>
+                  <Table.Td ta="center">{assignment.published ? 'Yes' : 'No'}</Table.Td>
+                  <Table.Td ta="center">{assignment.regrades ? 'Yes' : 'No'}</Table.Td>
                 </Table.Tr>
               ))}
           </Table.Tbody>

@@ -8,7 +8,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { NoQuestionsList } from './NoQuestionsList';
 import { VscListUnordered } from "react-icons/vsc";
 
-const INSSubmissionsQuestion: React.FC = () => {
+export const INSSubmissionsQuestion: React.FC = () => {
   const params = useParams();
   const router = useRouter();
   const assignment_id = params.assignment_id as string;
@@ -73,7 +73,7 @@ const INSSubmissionsQuestion: React.FC = () => {
                           size='xs'
                           ml='xs'
                           className="invisible group-hover:visible"
-                          onClick={() => router.push(`/instructor/course/${course_id}/questions/${question.question_id}/submissions`)}
+                          onClick={() => router.push(`/instructor/course/${course_id}/process/${assignment_id}/grade-submissions/questions/${question.question_id}/submissions`)}
                         >
                           <Flex align="center" gap={4} >
                             <VscListUnordered size={12} className='translate-y-[1px]'/>
@@ -101,7 +101,7 @@ const INSSubmissionsQuestion: React.FC = () => {
                               size='xs'
                               ml='xs'
                               className="invisible group-hover:visible"
-                              onClick={() => router.push(`/instructor/course/${course_id}/questions/${question.question_id}/subs/${sub.sub_question_id}/submissions`)}
+                              onClick={() => router.push(`/instructor/course/${course_id}/process/${assignment_id}/grade-submissions/questions/${question.question_id}/sub-questions/${sub.sub_question_id}/submissions`)}
                             >
                               <Flex align="center" gap={4} >
                                 <VscListUnordered size={12} className='translate-y-[1px]'/>
@@ -196,5 +196,3 @@ const INSSubmissionsQuestion: React.FC = () => {
     </Flex>
   );
 };
-
-export default INSSubmissionsQuestion;

@@ -13,14 +13,12 @@ type Props = {
 const UploadFiles: React.FC<Props> = ({ course_id, assignment_id }) => {
   return (
     <Flex direction="column" gap="md">
-      <Flex justify="space-between" gap="md">
-        {/* Left Section */}
-        <SubmissionsListTable assignment_id={assignment_id} />
-        {/* Right Section */}
-        <DropFilesBox course_id={course_id} assignment_id={assignment_id}/>
-      </Flex>
-      {/*Under right Section*/}
-      <Flex justify="end" mt="md">
+      {/* Top: Submissions Table */}
+      <SubmissionsListTable assignment_id={assignment_id} />
+
+      {/* Bottom: Drop zone and alert aligned vertically */}
+      <Flex direction="row" gap="md">
+        <DropFilesBox course_id={course_id} assignment_id={assignment_id} />
         <AlertForSubmission />
       </Flex>
     </Flex>

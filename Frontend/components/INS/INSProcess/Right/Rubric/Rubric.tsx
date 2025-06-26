@@ -3,7 +3,7 @@ import markedKatex from 'marked-katex-extension';
 import DOMPurify from 'dompurify';
 import 'katex/dist/katex.min.css';
 import React, { useEffect, useState } from 'react'
-import { Box, Button, Checkbox, Divider, Flex, Group, NumberInput, Progress, ScrollArea, Text, Textarea, Image, ActionIcon } from '@mantine/core';
+import { Box, Button, Checkbox, Divider, Flex, Group, NumberInput, Progress, ScrollArea, Text, Textarea, ActionIcon } from '@mantine/core';
 import { FaPlus } from "react-icons/fa";
 import { AiTwotoneDelete } from "react-icons/ai"
 import { RubricSettings } from './RubricSettings';
@@ -19,6 +19,7 @@ import { useRubricStore } from '@/store/rubric/useRubricStore';
 import { useFetchQuestion } from '@/hooks/Question/useFetchQuestion';
 import { useCreateRubric } from '@/hooks/Rubric/useCreateRubric';
 import { useDeleteRubric } from '@/hooks/Rubric/useDeleteRubric';
+import { useUpdateRubric } from '@/hooks/Rubric/useUpdateRubric';
 marked.use(markedKatex({ throwOnError: false }));
 
 interface Graded {
@@ -34,6 +35,7 @@ export const Rubric = () => {
     const { isLoading: isLoadingRubric, data: data } = useFetchRubric(assignment_id);
     const { mutate: createRubric, isPending: isPendingCreate } = useCreateRubric(assignment_id);
     const { mutate: deleteRubric, isPending: isPendingDelete } = useDeleteRubric(assignment_id);
+    const { mutate: updateRubric, isPending: isPendingUpdate } = useUpdateRubric(assignment_id);
     const { rubricData, setRubricData, rubrics, setRubrics, editingRubricID, setEditingRubricID, editingDescriptionID, setEditingDescriptionID } = useRubricStore();
 
     const target = selectedQuestion ?? defaultSelectedQuestion;
@@ -52,6 +54,26 @@ export const Rubric = () => {
             },
         });
     };
+
+    const handleUpdateRubric = (rubric_id: string, rubric_detail_id: string,  rubric_point: number, rubric_description: string) => {
+        updateRubric({
+            assignment_id,
+            question_id: target?.question_id,
+            sub_question_id: target?.sub_question_id,
+            rubric: {
+                rubric_id: rubric_id,
+                rubric_details: [{
+                    rubric_detail_id: rubric_detail_id,
+                    rubric_point: rubric_point,
+                    rubric_description: rubric_description,
+                }],
+            },
+        });
+        console.log("Updating rubric with ID:", rubric_id);
+        console.log("Updating rubric detail ID:", rubric_detail_id);
+        console.log("Rubric point:", rubric_point);
+        console.log("Rubric description:", rubric_description);
+    }
 
     const handleDeleteRubric = (rubric_id: string, rubric_detail_id: string) => {
         deleteRubric({
@@ -191,7 +213,7 @@ export const Rubric = () => {
                                                         // max={question.question_points}
                                                         allowNegative={true}
                                                         onChange={(val) => {
-                                                            const numberVal = typeof val === 'number' ? val : 0;
+                                                            const numberVal = typeof val === 'number' ? val : rubric.rubric_point;
                                                             const setting: 'Positive scoring' | 'Negative scoring' = numberVal < 0 ? 'Negative scoring' : 'Positive scoring';
                                                             const updated = rubrics.map((r) =>
                                                                 r.rubric_detail_id === rubric.rubric_detail_id
@@ -204,11 +226,25 @@ export const Rubric = () => {
                                                             );
                                                             setRubrics(updated);
                                                         }}
-                                                        onBlur={() => setEditingRubricID(null)}
+                                                        onBlur={() => {
+                                                            setEditingRubricID(null);
+                                                            handleUpdateRubric(
+                                                                rubric.rubric_id,
+                                                                rubric.rubric_detail_id,
+                                                                rubric.rubric_point,
+                                                                rubric.rubric_description
+                                                            );
+                                                        }}
                                                         onKeyDown={(e) => {
                                                             if (e.key === 'Enter' || e.key === 'Escape') {
                                                             e.preventDefault();
                                                             setEditingRubricID(null);
+                                                            handleUpdateRubric(
+                                                                rubric.rubric_id,
+                                                                rubric.rubric_detail_id,
+                                                                rubric.rubric_point,
+                                                                rubric.rubric_description
+                                                            );
                                                             }
                                                         }}
                                                     />
@@ -233,24 +269,32 @@ export const Rubric = () => {
                                                                 ? { ...r, rubric_description: e.target.value }
                                                                 : r
                                                             );
+                                                            handleUpdateRubric(
+                                                                rubric.rubric_id,
+                                                                rubric.rubric_detail_id,
+                                                                rubric.rubric_point,
+                                                                e.target.value
+                                                            );
                                                             setRubrics(updated);
                                                             setEditingDescriptionID(null);
                                                         }}
                                                         onKeyDown={(e) => {
-                                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                            if (e.key === 'Enter' || e.key === 'Escape' && !e.shiftKey) {
                                                                 e.preventDefault();
-
                                                                 const value = (e.target as HTMLTextAreaElement).value;
-
                                                                 const updatedRubrics = rubrics.map((r) =>
                                                                 r.rubric_detail_id === rubric.rubric_detail_id
                                                                     ? { ...r, rubric_description: value }
                                                                     : r
                                                                 );
-
+                                                                handleUpdateRubric(
+                                                                    rubric.rubric_id,
+                                                                    rubric.rubric_detail_id,
+                                                                    rubric.rubric_point,
+                                                                    value
+                                                                );
                                                                 setRubrics(updatedRubrics);
                                                                 setEditingDescriptionID(null);
-
                                                             } else if (e.key === 'Escape') {
                                                                 setEditingDescriptionID(null);
                                                             }
