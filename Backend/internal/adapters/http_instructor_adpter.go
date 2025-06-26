@@ -1835,7 +1835,7 @@ func (h *HttpInstructorHandler) GetProcessOCRForSubmissions(c *fiber.Ctx) error 
 	})
 }
 
-// Rubric Handlers
+// Part:1 Rubric Handlers
 func (h *HttpInstructorHandler) CreateRubric(c *fiber.Ctx) error {
 	assignmentIDParam := c.Query("assignment_id")
 	assignmentID, err := uuid.Parse(assignmentIDParam)
@@ -2004,6 +2004,37 @@ func (h *HttpInstructorHandler) MockGetData(c *fiber.Ctx) error {
 		"bounding_boxes": boundingBoxes,
 		"questions":      questions,
 		"message":        "Assignment template data retrieved",
+	})
+}
+
+// Part: 2 Rubric Handlers
+func (h *HttpInstructorHandler) UpdateRubricSetting(c *fiber.Ctx) error {
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	var req response.UpdateRubricSettingRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request body",
+			"error":   err.Error(),
+		})
+	}
+
+	if err := h.services.UpdateRubricSetting(assignmentID, req); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to update rubric setting",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Rubric setting updated successfully",
 	})
 }
 
