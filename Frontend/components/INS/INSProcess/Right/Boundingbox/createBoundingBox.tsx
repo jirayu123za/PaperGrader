@@ -1,10 +1,10 @@
 import Konva from 'konva';
 
 export function createBoundingBoxGroup(box: any, selectShape: (node: Konva.Node) => void): Konva.Group {
-  const x = box.point_x || 0;
-  const y = box.point_y || 0;
-  const width = box.width || 100;
-  const height = box.height || 100;
+  const x = box.bounding_box_point_x || 0;
+  const y = box.bounding_box_point_y || 0;
+  const width = box.bounding_box_width || 100;
+  const height = box.bounding_box_height || 100;
 
   const group = new Konva.Group({
     x,
@@ -86,14 +86,15 @@ export function createBoundingBoxGroup(box: any, selectShape: (node: Konva.Node)
     const bounding_box_id = box.bounding_box_id;
     const { updateBoundingBox } = require('@/store/BoundingBox/useBoundingBoxStore').default.getState();
     updateBoundingBox(bounding_box_id, {
-      point_x: updatedX,
-      point_y: updatedY,
-      width: updatedWidth,
-      height: updatedHeight,
+      bounding_box_point_x: updatedX,
+      bounding_box_point_y: updatedY,
+      bounding_box_width: updatedWidth,
+      bounding_box_height: updatedHeight,
     });
-     group.position({ x: updatedX, y: updatedY });
-  background.width(updatedWidth);
-  background.height(updatedHeight);
+
+    group.position({ x: updatedX, y: updatedY });
+    background.width(updatedWidth);
+    background.height(updatedHeight);
   });
 
   return group;

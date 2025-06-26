@@ -11,6 +11,15 @@ interface BoundingBox {
   bounding_box_page: number;
 }
 
+export interface ApiBoundingBox {
+  bounding_box_point_x: number;
+  bounding_box_point_y: number;
+  bounding_box_width: number;
+  bounding_box_height: number;
+  bounding_box_type: 'question' | 'name' | 'id';
+  bounding_box_page: number;
+}
+
 interface sub_Question {
   subquestion_title: string;
   subquestion_point: number;
@@ -22,14 +31,24 @@ interface Question {
   sub_questions?: sub_Question[];
 }
 
-interface BoundingBoxPayload {
+
+
+export interface CreateBoundingBoxPayload {
   assignment_id: string;
-  bounding_boxes: BoundingBox[];
-  questions_data?: {
-    questions: Question[];
-  };
+  bounding_boxes: ApiBoundingBox[]; 
+  questions_data: Question[];
 }
 
+export function mapBoundingBoxesToApiFormat(boundingBoxes: any[]) {
+  return boundingBoxes.map((b) => ({
+    bounding_box_point_x: b.point_x,
+    bounding_box_point_y: b.point_y,
+    bounding_box_width: b.width,
+    bounding_box_height: b.height,
+    bounding_box_type: b.bounding_box_type,
+    bounding_box_page: b.bounding_box_page,
+  }));
+}
 
 type TemplateResponse = {
   bounding_boxes: Array<{
@@ -43,6 +62,7 @@ type TemplateResponse = {
   }>;
   message: string;
   questions: {
+    [x: string]: any;
     rubric_id: string; 
     rubric_data: {
       questions: Array<{
@@ -75,7 +95,7 @@ export function useCreateBoundingBoxes() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: ['createBoundingBoxes'],
-    mutationFn: async ({ assignment_id, bounding_boxes, questions_data }: BoundingBoxPayload) => {
+    mutationFn: async ({ assignment_id, bounding_boxes, questions_data }: CreateBoundingBoxPayload) => {
       const res = await axios.post(`/api/api/instructor/boundingBoxes?assignment_id=${assignment_id}`, {
         bounding_boxes,
         ...(questions_data ? { questions_data } : {}),
@@ -118,15 +138,22 @@ export function useDeleteBoundingBox(assignment_id: string) {
 }
 
 // helper to map local rubricData to API structure
-export function mapRubricToQuestionsData(rubricData: any): BoundingBoxPayload["questions_data"] {
-  return {
-    questions: rubricData.questions.map((q: any) => ({
+export function mapRubricToQuestionsData(rubricData: any) {
+  return rubricData.questions.map((q: any) => {
+    const hasSub = Array.isArray(q.subquestions) && q.subquestions.length > 0;
+
+    const questionPayload: any = {
       question_title: q.question_title,
       question_point: q.question_point,
-      subquestions: q.subquestions?.map((s: any) => ({
-        subquestion_title: s.subquestion_title,
-        subquestion_point: s.subquestion_point,
-      })),
-    })),
-  };
+    };
+
+    if (hasSub) {
+      questionPayload.sub_questions = q.subquestions.map((sub: any) => ({
+        sub_question_title: sub.subquestion_title,
+        sub_question_point: sub.subquestion_point,
+      }));
+    }
+
+    return questionPayload;
+  });
 }

@@ -15,18 +15,25 @@ import { nanoid } from 'nanoid';
 
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js`;
 
-const KonvaCanvas = dynamic(() => import('./client/KonvaCanvas'), { ssr: false });
+const KonvaCanvas = dynamic(() => import('./client/KonvaCanvas').then((mod) => mod.default), { ssr: false });
+
+interface PageMetadata {
+  pageNumber: number;
+  scale: number;
+  width: number;
+  height: number;
+  offsetY: number;
+}
 
 const PDFViewer: React.FC = () => {
   const konvaOverlayRef = useRef<HTMLDivElement>(null);
-  const pageOffsetsRef = useRef<number[]>([]);
+  const [pageMetas, setPageMetas] = useState<PageMetadata[]>([]);
   const params = useParams();
   const course_id = params.course_id as string;
   const assignment_id = params.assignment_id as string;
   const pdfContainerRef = useRef<HTMLDivElement>(null);
   const innerContainerRef = useRef<HTMLDivElement>(null);
   const renderTaskRef = useRef<any>(null);
-  const pdfPagesRef = useRef<{ [key: number]: HTMLCanvasElement }>({});
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { form: fileForm } = useFetchFile({ course_id, assignment_id });
   const [containerWidth, setContainerWidth] = useState<number>(0);
@@ -34,7 +41,6 @@ const PDFViewer: React.FC = () => {
   const isCreateCollapsed = useCreateSidebarStore((state) => state.isCollapsed);
   const isLeftCollapsed = useLeftProcessSidebarStore((state) => state.isCollapsed);
   const { setBoundingBoxesFromAPI, setRubricDataFromAPI } = useBoundingBoxStore();
-
   const { data: template } = useFetchTemplate(assignment_id);
 
   useEffect(() => {
@@ -62,22 +68,24 @@ const PDFViewer: React.FC = () => {
         const numPages = pdf.numPages;
 
         innerContainerRef.current.innerHTML = '';
-        pdfPagesRef.current = {};
-
-        const pageOffsets: number[] = [];
+        const pageMetas: PageMetadata[] = [];
         let cumulativeHeight = 0;
 
         for (let pageNum = 1; pageNum <= numPages; pageNum++) {
           const page = await pdf.getPage(pageNum);
           const unscaledViewport = page.getViewport({ scale: 1.0 });
-          const baseScaleW = containerWidth / unscaledViewport.width;
-          const baseScaleH = containerHeight / unscaledViewport.height;
-          const baseScale = Math.max(baseScaleW, baseScaleH);
-          const layoutViewport = page.getViewport({ scale: baseScale });
-          const aspectRatio = layoutViewport.height / layoutViewport.width;
-          const pageHeight = containerWidth * aspectRatio;
+          const layoutScale = containerWidth / unscaledViewport.width;
+          const layoutViewport = page.getViewport({ scale: layoutScale });
+          const pageHeight = layoutViewport.height;
 
-          pageOffsets.push(cumulativeHeight);
+          pageMetas.push({
+            pageNumber: pageNum,
+            scale: layoutScale,
+            width: layoutViewport.width,
+            height: layoutViewport.height,
+            offsetY: cumulativeHeight,
+          });
+
           cumulativeHeight += pageHeight;
 
           const canvas = document.createElement('canvas');
@@ -86,7 +94,7 @@ const PDFViewer: React.FC = () => {
           canvas.width = Math.floor(layoutViewport.width);
           canvas.height = Math.floor(layoutViewport.height);
           canvas.style.width = '100%';
-          canvas.style.height = `${containerWidth * aspectRatio}px`;
+          canvas.style.height = `${layoutViewport.height}px`;
           canvas.style.display = 'block';
 
           innerContainerRef.current?.appendChild(canvas);
@@ -103,8 +111,7 @@ const PDFViewer: React.FC = () => {
           }
         }
 
-        pageOffsetsRef.current = pageOffsets;
-
+        setPageMetas(pageMetas);
       } finally {
         setIsLoading(false);
       }
@@ -113,26 +120,27 @@ const PDFViewer: React.FC = () => {
   }, [fileForm.values.pdfUrl, containerWidth]);
 
   useEffect(() => {
-    if (template && template.bounding_boxes) {
+    if (template?.bounding_boxes) {
       setBoundingBoxesFromAPI(template.bounding_boxes);
     }
   }, [template]);
 
   useEffect(() => {
     if (!template) return;
-
-    const rubricQuestions = template.questions?.rubric_data?.questions;
-    const apiBoxes = template.bounding_boxes;
-
-    if (Array.isArray(rubricQuestions) && Array.isArray(apiBoxes)) {
-      const questionBoxes = apiBoxes.filter(b => b.bounding_box_type === 'question');
-
-      const withBoxIds = rubricQuestions.map((q, i) => ({
-        question_id: nanoid(),
-        ...q,
-        bounding_box_id: questionBoxes[i]?.bounding_box_id ?? '',
+    const rubricQuestions = template.questions?.questions_data;
+    if (Array.isArray(rubricQuestions)) {
+      const withBoxIds = rubricQuestions.map((q: any) => ({
+        question_id: q.question_id ?? nanoid(),
+        question_title: q.question_title,
+        question_point: q.question_point,
+        bounding_box_id: q.bounding_box_id ?? '',
+        subquestions: q.sub_questions?.map((sub: any) => ({
+          subquestion_id: sub.sub_question_id ?? nanoid(),
+          subquestion_title: sub.sub_question_title,
+          subquestion_point: sub.sub_question_point,
+          bounding_box_id: sub.bounding_box_id ?? '',
+        })) ?? [],
       }));
-
       setRubricDataFromAPI(withBoxIds);
     }
   }, [template]);
@@ -140,6 +148,7 @@ const PDFViewer: React.FC = () => {
   useEffect(() => {
     if (konvaOverlayRef.current && innerContainerRef.current) {
       konvaOverlayRef.current.style.height = `${innerContainerRef.current.scrollHeight}px`;
+      konvaOverlayRef.current.style.width = `${innerContainerRef.current.scrollWidth}px`;
     }
   }, [isLoading]);
 
@@ -170,7 +179,7 @@ const PDFViewer: React.FC = () => {
       <Paper style={{ flexGrow: 1, overflow: 'auto', position: 'relative' }}>
         <div ref={innerContainerRef} style={{ position: 'relative', zIndex: 1 }} />
         <div ref={konvaOverlayRef} style={{ position: 'absolute', top: 0, left: 0, zIndex: 2, width: '100%', height: '100%', pointerEvents: 'auto' }} />
-        <KonvaCanvas innerContainerRef={konvaOverlayRef} pageOffsets={pageOffsetsRef} />
+        <KonvaCanvas innerContainerRef={konvaOverlayRef} pageMetas={pageMetas} />
       </Paper>
     </Container>
   );
