@@ -1,15 +1,21 @@
 'use client';
 
 import React from 'react';
+import { useParams } from 'next/navigation';
 import { Popover, Button, Radio, Text, Alert } from '@mantine/core';
 import { IconInfoCircle } from '@tabler/icons-react';
 import { IoIosSettings } from "react-icons/io";
 import { useRubricStore } from '@/store/rubric/useRubricStore';
 import { useQuestionStore } from '@/store/question/useQuestionStore';
+import { useUpdateRubricScoringMethod } from '@/hooks/Rubric/useUpdateRubricSetting';
 
 export function RubricSettings() {
+  const params = useParams();
+  const assignment_id = params.assignment_id as string;
   const { rubricData, setRubricData } = useRubricStore();
   const { questions, selectedQuestion, defaultSelectedQuestion } = useQuestionStore();
+  const { mutate: updateRubricScoringMethod } = useUpdateRubricScoringMethod(assignment_id);
+  const target = selectedQuestion ?? defaultSelectedQuestion;
 
   const getSelectedQuestionPoint = (): number | null => {
     const target = selectedQuestion ?? defaultSelectedQuestion;
@@ -24,6 +30,18 @@ export function RubricSettings() {
     }
     return question.question_point;
   };
+
+  const handleUpdateRubricSetting = (rubric_id: string, rubric_setting: "Positive scoring" | "Negative scoring") => {
+    updateRubricScoringMethod({
+        assignment_id,
+        question_id: target?.question_id,
+        sub_question_id: target?.sub_question_id,
+        rubric: {
+          rubric_id: rubric_id,
+          rubric_setting: rubric_setting,
+        },
+    });
+  }
   
   return (
     <Popover
@@ -56,13 +74,14 @@ export function RubricSettings() {
 
         <Radio.Group
           name="scoring-method"
-          value={rubricData?.rubric_setting || 'Positive scoring'}
+          value={(rubricData?.rubric_setting || 'Positive scoring') as "Positive scoring" | "Negative scoring"}
           onChange={(value) => {
             setRubricData({
               rubric_id: rubricData?.rubric_id ?? null,
               rubric_details: rubricData?.rubric_details ?? null,
               rubric_setting: value,
             });
+            handleUpdateRubricSetting(rubricData?.rubric_id ?? '', value as "Positive scoring" | "Negative scoring");
           }}
           className="pl-4 pr-4 pb-2"
         >
