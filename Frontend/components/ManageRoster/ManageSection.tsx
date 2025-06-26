@@ -42,8 +42,8 @@ const ManageSection: React.FC = () => {
         <Table highlightOnHover verticalSpacing="sm">
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Section Name</Table.Th>
-              <Table.Th ta='center'>Students Enrolled</Table.Th>
+              <Table.Th>Section name</Table.Th>
+              <Table.Th ta='center'>Students enrolled</Table.Th>
               <Table.Th ta='center'>View</Table.Th>
               <Table.Th ta='center'>Remove</Table.Th>
             </Table.Tr>
