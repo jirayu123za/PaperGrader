@@ -83,8 +83,8 @@ export default function MainQuestionsListClient({ course_id, assignment_id, ques
                   <Table.Tr key={submission.submission_id}>
                     <Table.Td>{index + 1}</Table.Td>
                     <Table.Td className="hover:underline hover:text-blue-500 hover:cursor-pointer">
-                      {submission.user_name?.first_name && submission.user_name?.last_name && submission.user_name?.email ? (
-                        `${submission.user_name.first_name} ${submission.user_name.last_name} (${submission.user_name.email})`
+                      {submission.user_name?.first_name && submission.user_name?.email ? (
+                        `${submission.user_name.first_name}${submission.user_name.last_name ? ` ${submission.user_name.last_name}` : ''} (${submission.user_name.email})`
                       ) : (
                         <Text size="sm" c="gray" fs="italic">Not assigned student to this submission</Text>
                       )}
