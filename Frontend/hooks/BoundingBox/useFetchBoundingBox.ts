@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
+import { usePageMetaStore } from '@/store/BoundingBox/usePageMetaStore';
 
 interface BoundingBox {
   bounding_box_id?: string;
@@ -39,16 +40,26 @@ export interface CreateBoundingBoxPayload {
   questions_data: Question[];
 }
 
-export function mapBoundingBoxesToApiFormat(boundingBoxes: any[]) {
-  return boundingBoxes.map((b) => ({
-    bounding_box_point_x: b.point_x,
-    bounding_box_point_y: b.point_y,
-    bounding_box_width: b.width,
-    bounding_box_height: b.height,
-    bounding_box_type: b.bounding_box_type,
-    bounding_box_page: b.bounding_box_page,
-  }));
+
+
+export function mapBoundingBoxesToApiFormat(boundingBoxes: any[]): ApiBoundingBox[] {
+  const pageMetas = usePageMetaStore.getState().pageMetas;
+
+  return boundingBoxes.map((box) => {
+    const meta = pageMetas.find((m) => m.pageNumber === box.bounding_box_page);
+    if (!meta) return null;
+
+    return {
+      bounding_box_point_x: box.point_x / meta.scale,
+      bounding_box_point_y: box.point_y / meta.scale - meta.offsetY,
+      bounding_box_width: box.width / meta.scale,
+      bounding_box_height: box.height / meta.scale,
+      bounding_box_type: box.bounding_box_type,
+      bounding_box_page: box.bounding_box_page,
+    };
+  }).filter((b): b is ApiBoundingBox => b !== null);
 }
+
 
 type TemplateResponse = {
   bounding_boxes: Array<{
