@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import CustomizeTime from './AssignmentSetting/CustomizeTime';
 import BasicSettings from './AssignmentSetting/BasicSettings';
-import { Tabs, Button, Modal, Group } from '@mantine/core';
+import { Tabs, Button, Modal, Group, Flex } from '@mantine/core';
 import { RiDeleteBinLine, RiFilePaper2Line } from 'react-icons/ri';
 import { CiSettings } from 'react-icons/ci';
 import { LuPenLine, LuClock } from 'react-icons/lu';
@@ -93,7 +93,7 @@ const AssignmentSetting: React.FC = () => {
         closeModal();
       }}
       title="Edit assignment"
-      size='xl'
+      size="xl"
       overlayProps={{ opacity: 0.55, blur: 3 }}
     >
       <form 
@@ -103,72 +103,61 @@ const AssignmentSetting: React.FC = () => {
         }}
       >
         <Tabs orientation="vertical" defaultValue="basic-settings" color="violet" value={activeTab} onChange={setActiveTab}>
-          <Tabs.List>
-            <Tabs.Tab value="basic-settings" leftSection={icons.settings}>
-              Basic Settings
-            </Tabs.Tab>
-            <Tabs.Tab value="customize-time" leftSection={icons.clock}>
-              Time Setting
-            </Tabs.Tab>
-            <Tabs.Tab value="submission-settings" leftSection={icons.paper}>
-              Submission Settings
-            </Tabs.Tab>
-            <Tabs.Tab value="grading-defaults" leftSection={icons.choice}>
-              Grading Defaults
-            </Tabs.Tab>
-            <Tabs.Tab value="rubric-settings" leftSection={icons.pen}>
-              Rubric Settings
-            </Tabs.Tab>
-            <Tabs.Tab value="student-visibility" leftSection={icons.eye}>
-              Student Visibility
-            </Tabs.Tab>
-          </Tabs.List>
+          <Flex w="100%" h="100%" gap="xs">
+            <Tabs.List>
+              <Tabs.Tab value="basic-settings" leftSection={icons.settings}>
+                Basic Settings
+              </Tabs.Tab>
+              <Tabs.Tab value="customize-time" leftSection={icons.clock}>
+                Time Setting
+              </Tabs.Tab>
+              <Tabs.Tab value="submission-settings" leftSection={icons.paper}>
+                Submission Settings
+              </Tabs.Tab>
+              <Tabs.Tab value="grading-defaults" leftSection={icons.choice}>
+                Grading Defaults
+              </Tabs.Tab>
+              <Tabs.Tab value="rubric-settings" leftSection={icons.pen}>
+                Rubric Settings
+              </Tabs.Tab>
+              <Tabs.Tab value="student-visibility" leftSection={icons.eye}>
+                Student Visibility
+              </Tabs.Tab>
+            </Tabs.List>          
 
-          {/* Tab 1: Basic Settings */}
-          <Tabs.Panel value="basic-settings">
-            {/* <BasicSettings /> */}
-            {activeTab === 'basic-settings' && <BasicSettings />}
-          </Tabs.Panel>
+            <Flex direction="column" w="100%" ml="md" mt="md">
+              {/* Panels */}
+              <Tabs.Panel value="basic-settings">
+                {activeTab === 'basic-settings' && <BasicSettings />}
+              </Tabs.Panel>
+              <Tabs.Panel value="customize-time">
+                {activeTab === 'customize-time' && <CustomizeTime />}
+              </Tabs.Panel>
+              <Tabs.Panel value="submission-settings">
+                {activeTab === 'submission-settings' && <SubmissionSettings />}
+              </Tabs.Panel>
+              <Tabs.Panel value="grading-defaults">
+                {activeTab === 'grading-defaults' && <GradingDefault />}
+              </Tabs.Panel>
+              <Tabs.Panel value="rubric-settings">
+                {activeTab === 'rubric-settings' && <RubricSettings />}
+              </Tabs.Panel>
+              <Tabs.Panel value="student-visibility">
+                {activeTab === 'student-visibility' && <StudentVisibility />}
+              </Tabs.Panel>
 
-          {/* Tab 2: Customize Time */}
-          <Tabs.Panel value="customize-time">
-            {/* <CustomizeTime/> */}
-            {activeTab === 'customize-time' && <CustomizeTime />}
-          </Tabs.Panel>
-
-          {/* Tab 3: Submission Settings */}
-          <Tabs.Panel value="submission-settings">
-            {/* <SubmissionSettings/> */}
-            {activeTab === 'submission-settings' && <SubmissionSettings />}
-          </Tabs.Panel>
-
-          {/* Tab 4: Grading Defaults */}
-          <Tabs.Panel value="grading-defaults">
-            {/* <GradingDefault/> */}
-            {activeTab === 'grading-defaults' && <GradingDefault />}
-          </Tabs.Panel>
-
-          {/* Tab 5: Rubric Settings */}
-          <Tabs.Panel value="rubric-settings">
-            {/* <RubricSettings/> */}
-            {activeTab === 'rubric-settings' && <RubricSettings />}
-          </Tabs.Panel>
-
-          {/* Tab 5: Student Visibility */}
-          <Tabs.Panel value="student-visibility">
-            {/* <StudentVisibility/> */}
-            {activeTab === 'student-visibility' && <StudentVisibility />}
-          </Tabs.Panel>
+              {/* Button Group - directly below content */}
+              <Group mt="md" p="md" justify="end" gap="xs">
+                <Button type="submit" disabled={isLoading} loading={isPending}>
+                  Save
+                </Button>
+                <Button color="red" variant="outline" leftSection={icons.bin}>
+                  Delete Assignment
+                </Button>
+              </Group>
+            </Flex>
+          </Flex>              
         </Tabs>
-
-        <Group p={16} justify='end' gap='xs'>
-          <Button type="submit" disabled={isLoading} loading={isPending}>
-            Save
-          </Button>
-          <Button color="red" variant="outline" leftSection={icons.bin}>
-            Delete Assignment
-          </Button>
-        </Group>
       </form>
     </Modal>
   );
