@@ -3,8 +3,8 @@ import { Loader } from '@mantine/core';
 import MainQuestionsListClient from '@/components/client/MainQuestionsListClient';
 
 export const metadata = {
-  title: 'Submissions list',
-  description: 'Manage Submissions list from main questions of the assignment in the course process page.',
+  title: 'Grade Submissions - Main Questions',
+  description: 'Manage and grade submissions for main questions in the assignment.',
 };
 
 export default async function SubmissionsMainQuestionsPage({ params }: { 

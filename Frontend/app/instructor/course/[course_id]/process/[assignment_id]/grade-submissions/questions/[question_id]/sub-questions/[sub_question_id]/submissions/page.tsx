@@ -3,8 +3,8 @@ import { Loader } from '@mantine/core';
 import SubQuestionsListClient from '@/components/client/SubQuestionsListClient';
 
 export const metadata = {
-  title: 'Submissions',
-  description: 'Manage Submissions list from sub-questions for the assignment in the course process page.',
+  title: 'Grade Submissions - Sub Questions',
+  description: 'Manage and grade submissions for sub questions in the assignment.',
 };
 
 export default async function SubmissionsSubQuestionsPage({ params }: { 
