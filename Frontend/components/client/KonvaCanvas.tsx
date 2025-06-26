@@ -55,6 +55,25 @@ export default function KonvaCanvas({ innerContainerRef, pageMetas }: KonvaCanva
     const groupMap = groupMapRef.current;
     if (!layer || !pageMetas?.length) return;
 
+    // ✅ Map bounding_box_id → { title, point } จาก rubric ทั้งหมด
+    const questionMap = new Map<string, { title: string; point: number }>();
+    rubricData.questions.forEach((q: any) => {
+      if (q.bounding_box_id) {
+        questionMap.set(q.bounding_box_id, {
+          title: q.question_title,
+          point: q.question_point,
+        });
+      }
+      q.subquestions?.forEach((sub: any) => {
+        if (sub.bounding_box_id) {
+          questionMap.set(sub.bounding_box_id, {
+            title: sub.subquestion_title,
+            point: sub.subquestion_point,
+          });
+        }
+      });
+    });
+
     const currentIds = new Set(boundingBoxes.map(b => b.bounding_box_id));
     for (const [id, group] of groupMap.entries()) {
       if (!currentIds.has(id)) {
@@ -67,16 +86,19 @@ export default function KonvaCanvas({ innerContainerRef, pageMetas }: KonvaCanva
     boundingBoxes.forEach((box: any) => {
       const groupId = box.bounding_box_id;
       const existingGroup = groupMap.get(groupId);
-
       const meta = pageMetas.find(p => p.pageNumber === box.bounding_box_page);
       if (!meta) return;
 
-      const matchingQuestion = rubricData.questions.find((q: any) => q.bounding_box_id === box.bounding_box_id);
-      const newText = box.bounding_box_type === 'question'
-        ? `${matchingQuestion?.question_title ?? 'Question'} (${matchingQuestion?.question_point ?? 0} pts)`
-        : box.bounding_box_type === 'name'
-        ? 'Student Name'
-        : 'Student ID';
+      const matched = questionMap.get(box.bounding_box_id);
+      const questionTitle = matched?.title || 'Question';
+      const questionPoint = matched?.point || 0;
+
+      const newText =
+        box.bounding_box_type === 'question'
+          ? `${questionTitle} (${questionPoint} pts)`
+          : box.bounding_box_type === 'name'
+          ? 'Student Name'
+          : 'Student ID';
 
       const adjustedX = (box.bounding_box_point_x || 0) * meta.scale;
       const adjustedY = (box.bounding_box_point_y || 0) * meta.scale + meta.offsetY;
@@ -91,7 +113,11 @@ export default function KonvaCanvas({ innerContainerRef, pageMetas }: KonvaCanva
         }
       } else {
         const group = createBoundingBoxGroup(
-          { ...box, question_title: matchingQuestion?.question_title, question_point: matchingQuestion?.question_point },
+          {
+            ...box,
+            question_title: questionTitle,
+            question_point: questionPoint,
+          },
           (shape) => {
             const tr = new Konva.Transformer();
             layer.add(tr);
