@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { FaUser, FaCog, FaFileAlt, FaUsers, FaHome, FaRegArrowAltCircleRight} from 'react-icons/fa';
 import { IoStatsChart } from 'react-icons/io5';
-import { PiExportDuotone } from "react-icons/pi";
+import { FaFileExport } from "react-icons/fa";
 import { Button, Divider, Flex, Skeleton, Image, Stack, Title, Text } from '@mantine/core';
 import { useInsCourseStore } from '../../store/useCourseStore';
 import { useFetchInstructorList } from '../../hooks/useFetchInstructorList';
@@ -33,7 +33,7 @@ export default function LeftMain() {
     users: <FaUsers />,
     user: <FaUser />,
     stats: <IoStatsChart />,
-    export: <PiExportDuotone />,
+    export: <FaFileExport />,
     cog: <FaCog />,
   };
 
