@@ -11,7 +11,7 @@ import Highlight from '@tiptap/extension-highlight';
 import { Link, RichTextEditor } from '@mantine/tiptap'
 import { useEditor } from '@tiptap/react';
 import { useAssignmentSettingFormStore } from '@/store/modal/useAssignmentSettingModal';
-import { ActionIcon, Box, Flex, ScrollArea, Tooltip } from '@mantine/core';
+import { ActionIcon, Box, Tooltip } from '@mantine/core';
 import { FaSlidersH } from "react-icons/fa";
 
 export const Editor: React.FC = () => {
@@ -94,9 +94,9 @@ export const Editor: React.FC = () => {
           </RichTextEditor.ControlsGroup>
           </RichTextEditor.Toolbar>
         )}
-        <ScrollArea maw={540} offsetScrollbars>
+        <Box maw={540}>
           <RichTextEditor.Content />
-        </ScrollArea>
+        </Box>
       </RichTextEditor>
         <Tooltip label={showToolbar ? "Hide toolbar" : "Show toolbar"} position="right" withArrow>
           <ActionIcon
@@ -106,7 +106,7 @@ export const Editor: React.FC = () => {
             size="sm"
             pos='absolute'
             top="14px"
-            right="8px"
+            right="2px"
             style={{ zIndex: 1000 }}
           >
             <FaSlidersH size={26} />
