@@ -6,57 +6,9 @@ import { IoCheckmarkSharp } from "react-icons/io5";
 import { useFetchSubmissionsFromQuestion } from "@/hooks/Submissions/useFetchSubmissions";
 import { useSubmissionsStore } from "@/store/Submissions/useSubmissionsStore";
 
-// interface SubmissionsList {
-//   id: string;
-//   user_name: UserName;
-//   graded_by: string;
-//   section: string;
-//   score: number;
-//   grade_status: boolean;
-// }
-
-// interface UserName {
-//   name: string;
-//   email: string;
-// }
-
-
 export default function MainQuestionsListClient({ course_id, assignment_id, question_id }: { course_id: string; assignment_id: string; question_id: string; }) {
-  // const generateMockSubmissions = (count: number): SubmissionsList[] => {
-  //   const names = ["Alice", "Bob", "Charlie", "David", "Eva", "Frank", "Grace", "Helen", "Isaac", "Jade"];
-  //   const graders = ["Dr. Smith", "Prof. Kim", "Dr. Lee", "Ms. Brown"];
-  //   const sections = ["001", "002", "003", "004", "005", "006", "701", "702", "703", "704", "801", "802", "803", "804"];
-  //   const surnames = ["Johnson", "Lee", "Kim", "Williams", "Brown", "Clark"];
-  //   const getRandomItem = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
-
-  //   return Array.from({ length: count }, (_, i) => {
-  //     const name = getRandomItem(names);
-  //     const surname = getRandomItem(surnames);
-  //     const fullName = `${name} ${surname}`;
-  //     const email = `${name.toLowerCase()}.${surname.toLowerCase()}@example.com`;
-
-  //     return {
-  //       id: `submission-${i}`,
-  //       user_name: {
-  //         name: fullName,
-  //         email: email,
-  //       },
-  //       graded_by: getRandomItem(graders),
-  //       section: getRandomItem(sections),
-  //       score: Math.floor(Math.random() * 101),
-  //       grade_status: Math.random() < 0.5,
-  //     };
-  //   });
-  // };
-
-  // const submissionsList: SubmissionsList[] = generateMockSubmissions(250);
-
   const { isLoading, data: submissionsData } = useFetchSubmissionsFromQuestion(course_id, assignment_id);
   const { submissions } = useSubmissionsStore();
-
-  // if (submissions?.submissions.length === 0) {
-  //   return <NoSubmissionsList />
-  // }
 
   return (
     <Flex direction="column" gap="xs" p="16px">
