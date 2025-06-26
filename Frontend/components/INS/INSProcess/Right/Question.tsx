@@ -19,6 +19,7 @@ import {
   mapRubricToQuestionsData,
   useFetchTemplate,
 } from '@/hooks/BoundingBox/useFetchBoundingBox';
+import { mapBoundingBoxesToApiFormat } from '@/hooks/BoundingBox/useFetchBoundingBox';
 import { useParams } from 'next/navigation';
 import { useEffect } from 'react';
 import React from 'react';
@@ -64,21 +65,14 @@ export default function QuestionOutline() {
   const calculateTotalPoints = () =>
     rubricData.questions.reduce((acc, q) => acc + q.question_point, 0);
 
-  const handleSave = () => {
-    createBoundingBoxes({
-      assignment_id,
-      bounding_boxes: boundingBoxes.map((b) => ({
-        bounding_box_id: b.bounding_box_id,
-        point_x: b.point_x,
-        point_y: b.point_y,
-        width: b.width,
-        height: b.height,
-        bounding_box_type: b.bounding_box_type as 'question' | 'name' | 'id',
-        bounding_box_page: b.bounding_box_page,
-      })),
-      questions_data: mapRubricToQuestionsData(rubricData),
-    });
-  };
+const handleSave = () => {
+  createBoundingBoxes({
+    assignment_id,
+    bounding_boxes: mapBoundingBoxesToApiFormat(boundingBoxes), 
+    questions_data: mapRubricToQuestionsData(rubricData),
+  });
+};
+
 
   return (
     <div className="p-6 space-y-6 rounded-md max-h-[86vh] overflow-y-auto">
