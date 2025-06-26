@@ -12,6 +12,7 @@ import { useLeftProcessSidebarStore } from '@/store/process-outline/leftProcessS
 import { useFetchTemplate } from '@/hooks/BoundingBox/useFetchBoundingBox';
 import useBoundingBoxStore from '@/store/BoundingBox/useBoundingBoxStore';
 import { nanoid } from 'nanoid';
+import { usePageMetaStore } from '@/store/BoundingBox/usePageMetaStore';
 
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js`;
 
@@ -112,6 +113,7 @@ const PDFViewer: React.FC = () => {
         }
 
         setPageMetas(pageMetas);
+        usePageMetaStore.getState().setPageMetas(pageMetas);
       } finally {
         setIsLoading(false);
       }
@@ -179,7 +181,7 @@ const PDFViewer: React.FC = () => {
       <Paper style={{ flexGrow: 1, overflow: 'auto', position: 'relative' }}>
         <div ref={innerContainerRef} style={{ position: 'relative', zIndex: 1 }} />
         <div ref={konvaOverlayRef} style={{ position: 'absolute', top: 0, left: 0, zIndex: 2, width: '100%', height: '100%', pointerEvents: 'auto' }} />
-        <KonvaCanvas innerContainerRef={konvaOverlayRef} pageMetas={pageMetas} />
+        <KonvaCanvas innerContainerRef={konvaOverlayRef} />
       </Paper>
     </Container>
   );

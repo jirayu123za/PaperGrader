@@ -4,26 +4,20 @@ import { useEffect, useRef } from 'react';
 import Konva from 'konva';
 import useBoundingBoxStore from '@/store/BoundingBox/useBoundingBoxStore';
 import { createBoundingBoxGroup } from '@/components/INS/INSProcess/Right/Boundingbox/createBoundingBox';
+import { usePageMetaStore } from '@/store/BoundingBox/usePageMetaStore';
 
-interface PageMetadata {
-  pageNumber: number;
-  scale: number;
-  width: number;
-  height: number;
-  offsetY: number;
-}
 
 interface KonvaCanvasProps {
   innerContainerRef: React.RefObject<HTMLDivElement>;
-  pageMetas: PageMetadata[];
 }
 
-export default function KonvaCanvas({ innerContainerRef, pageMetas }: KonvaCanvasProps) {
+export default function KonvaCanvas({ innerContainerRef }: KonvaCanvasProps) {
   const boundingBoxes = useBoundingBoxStore((state) => state.boundingBoxes);
   const rubricData = useBoundingBoxStore((state) => state.rubricData);
   const stageRef = useRef<Konva.Stage | null>(null);
   const layerRef = useRef<Konva.Layer | null>(null);
   const groupMapRef = useRef<Map<string, Konva.Group>>(new Map());
+  const pageMetas = usePageMetaStore((state) => state.pageMetas);
 
   useEffect(() => {
     if (!innerContainerRef.current || stageRef.current) return;
