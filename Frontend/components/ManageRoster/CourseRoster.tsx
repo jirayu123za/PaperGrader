@@ -5,14 +5,13 @@ import AddMember from '../AddStudent/AddMember';
 import EditCourseMember from '../Customize/EditCourseMember';
 import { Button, Table, Menu, Paper, Text, TextInput, Select, Skeleton, Pagination, Flex } from '@mantine/core';
 import { useFetchUsersRoster } from '../../hooks/Roster/useFetchUsersRoster';
-import { useRouter , useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useRosterStore } from '../../store/useRosterStore';
 import { useModalEditRosterMemberStore } from '../../store/modal/useRosterModalStore';
 import { usePagination } from '@mantine/hooks';
 import { IoSearch } from 'react-icons/io5';
 
 const CourseRoster: React.FC = () => {
-  const router = useRouter();
   const params = useParams();
   const course_id = params?.course_id as string;
   const { isLoading, error } = useFetchUsersRoster(course_id as string);
@@ -37,7 +36,7 @@ const CourseRoster: React.FC = () => {
     return matchesSearch && matchesRole;
   });
 
-  const pageSize = 10;
+  const pageSize = 8;
   const totalPages = Math.ceil(filteredUsers.length / pageSize);
 
   const pagination = usePagination({

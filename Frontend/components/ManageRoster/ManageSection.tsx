@@ -17,7 +17,7 @@ const ManageSection: React.FC = () => {
   const { sectionDetails } = useSectionDetailsStore();
   const openModal = useModalStore((state) => state.openModal);
   
-  const pageSize = 10;
+  const pageSize = 9;
   const totalPages = Math.ceil(sectionDetails.length / pageSize);
 
   const pagination = usePagination({
@@ -45,7 +45,7 @@ const ManageSection: React.FC = () => {
               <Table.Th>Section Name</Table.Th>
               <Table.Th ta='center'>Students Enrolled</Table.Th>
               <Table.Th ta='center'>View</Table.Th>
-              <Table.Th pl='md'>Remove</Table.Th>
+              <Table.Th ta='center'>Remove</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -85,7 +85,7 @@ const ManageSection: React.FC = () => {
                     View Student List
                   </Button>
                 </Table.Td>
-                <Table.Td>
+                <Table.Td ta='center'>
                   <Button
                     variant="outline"
                     color="red"
