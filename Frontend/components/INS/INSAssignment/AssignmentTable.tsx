@@ -67,12 +67,12 @@ const AssignmentTable: React.FC = () => {
             <Table.Thead className='bg-gray-100 h-14'>
               <Table.Tr>
                 <Table.Th w={50}></Table.Th>
-                <Table.Th w={300}>NAME</Table.Th>
-                <Table.Th w={160}>PUBLISHED GRADE</Table.Th>
-                <Table.Th w={120}>REGRADES</Table.Th>
-                <Table.Th w={150}>SUBMIT BY</Table.Th>
-                <Table.Th w={120}>SECTIONS</Table.Th>
-                <Table.Th w={100}>ACTIONS</Table.Th>
+                <Table.Th w={300}>Name</Table.Th>
+                <Table.Th w={160}>Published grade</Table.Th>
+                <Table.Th w={120}>Regrades</Table.Th>
+                <Table.Th w={150}>Submitted by</Table.Th>
+                <Table.Th w={120}>Sections</Table.Th>
+                <Table.Th w={100}>Actions</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
