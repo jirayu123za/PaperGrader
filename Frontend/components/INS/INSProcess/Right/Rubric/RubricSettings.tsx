@@ -69,41 +69,48 @@ export function RubricSettings() {
           title="Set rubric settings for this question."
           color="blue"
         />
+        {!rubricData || !rubricData.rubric_setting ? (
+          <Text size="sm" c="gray" px="46" py="sm" fs="italic">
+            No rubric data found for this question. Please create rubric first.
+          </Text>
+        ) : (
+          <>
+            <Text size="sm" fw={500} pl={16} pr={16} pt={8} pb={8}>Select scoring method:</Text>
+            <Radio.Group
+              name="scoring-method"
+              value={(rubricData?.rubric_setting || 'Positive scoring') as "Positive scoring" | "Negative scoring"}
+              onChange={(value) => {
+                setRubricData({
+                  rubric_id: rubricData?.rubric_id ?? null,
+                  rubric_details: rubricData?.rubric_details ?? null,
+                  rubric_setting: value,
+                });
+                handleUpdateRubricSetting(rubricData?.rubric_id ?? '', value as "Positive scoring" | "Negative scoring");
+              }}
+              className="pl-4 pr-4 pb-2"
+            >
+              <Radio
+                value="Negative scoring"
+                label={
+                  getSelectedQuestionPoint() !== null
+                    ? `Negative scoring (${getSelectedQuestionPoint()?.toFixed(1)} pts)`
+                    : '0 pts'
+                }
+                classNames={{
+                  root: 'mb-2 ml-2 hover:text-blue-600 transition-colors',
+                }}
+              />
+              <Radio
+                value="Positive scoring"
+                label="Positive scoring (points are added to 0)"
+                classNames={{
+                  root: 'mb-2 ml-2 hover:text-blue-600 transition-colors',
+                }}
+              />
+            </Radio.Group>          
+          </>
 
-        <Text size="sm" fw={500} pl={16} pr={16} pt={8} pb={8}>Select scoring method:</Text>
-
-        <Radio.Group
-          name="scoring-method"
-          value={(rubricData?.rubric_setting || 'Positive scoring') as "Positive scoring" | "Negative scoring"}
-          onChange={(value) => {
-            setRubricData({
-              rubric_id: rubricData?.rubric_id ?? null,
-              rubric_details: rubricData?.rubric_details ?? null,
-              rubric_setting: value,
-            });
-            handleUpdateRubricSetting(rubricData?.rubric_id ?? '', value as "Positive scoring" | "Negative scoring");
-          }}
-          className="pl-4 pr-4 pb-2"
-        >
-          <Radio
-            value="Negative scoring"
-            label={
-              getSelectedQuestionPoint() !== null
-                ? `Negative scoring (${getSelectedQuestionPoint()?.toFixed(1)} pts)`
-                : '0 pts'
-            }
-            classNames={{
-              root: 'mb-2 ml-2 hover:text-blue-600 transition-colors',
-            }}
-          />
-          <Radio
-            value="Positive scoring"
-            label="Positive scoring (points are added to 0)"
-            classNames={{
-              root: 'mb-2 ml-2 hover:text-blue-600 transition-colors',
-            }}
-          />
-        </Radio.Group>
+        )}
       </Popover.Dropdown>
     </Popover>
   );
