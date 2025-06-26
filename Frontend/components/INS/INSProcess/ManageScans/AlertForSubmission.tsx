@@ -5,7 +5,7 @@ import { IconAlertCircle } from '@tabler/icons-react'
 
 export const AlertForSubmission = () => {
   return (
-    <Box w='40%'>
+    <Box w='50%'>
         <Alert
             icon={<IconAlertCircle size={15} />}
             color="yellow"
