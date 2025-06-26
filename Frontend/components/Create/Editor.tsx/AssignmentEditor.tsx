@@ -1,7 +1,7 @@
 "use client";
 
 import '@mantine/tiptap/styles.css';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import Superscript from '@tiptap/extension-superscript';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
@@ -10,13 +10,12 @@ import SubScript from '@tiptap/extension-subscript';
 import Highlight from '@tiptap/extension-highlight';
 import { Link, RichTextEditor } from '@mantine/tiptap'
 import { useEditor } from '@tiptap/react';
-import { useAssignmentSettingFormStore } from '@/store/modal/useAssignmentSettingModal';
-import { ActionIcon, Box, Tooltip } from '@mantine/core';
-import { FaSlidersH } from "react-icons/fa";
+import { useAssignmentSettingFormStore, useAssignmentSettingStore } from '@/store/modal/useAssignmentSettingModal';
+import { Box } from '@mantine/core';
 
 export const Editor: React.FC = () => {
   const { values, setField } = useAssignmentSettingFormStore();
-  const [showToolbar, setShowToolbar] = useState(false);
+  const { showToolbar } = useAssignmentSettingStore();
 
   const editor = useEditor({
     extensions: [
@@ -98,21 +97,6 @@ export const Editor: React.FC = () => {
           <RichTextEditor.Content />
         </Box>
       </RichTextEditor>
-        <Tooltip label={showToolbar ? "Hide toolbar" : "Show toolbar"} position="right" withArrow>
-          <ActionIcon
-            onClick={() => setShowToolbar(!showToolbar)}
-            variant="transparent"
-            color="gray"
-            size="sm"
-            pos='absolute'
-            top="14px"
-            right="2px"
-            style={{ zIndex: 1000 }}
-          >
-            <FaSlidersH size={26} />
-          </ActionIcon>
-        </Tooltip>
     </Box>
-
   )
 }

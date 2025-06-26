@@ -1,12 +1,14 @@
 'use client'
 
 import React from 'react';
-import { TextInput, Checkbox, Radio, Select, Flex, Text, Loader, Box } from '@mantine/core';
+import { TextInput, Checkbox, Radio, Select, Flex, Text, Loader, Box, Tooltip, ActionIcon } from '@mantine/core';
 import { Editor } from '../../Create/Editor.tsx/AssignmentEditor';
-import { useAssignmentSettingFormStore } from '@/store/modal/useAssignmentSettingModal';
+import { useAssignmentSettingFormStore, useAssignmentSettingStore } from '@/store/modal/useAssignmentSettingModal';
+import { FaSlidersH } from 'react-icons/fa';
 
 const BasicSettings: React.FC = () => {
     const { values, reset } = useAssignmentSettingFormStore();
+    const { showToolbar, toggleToolbar } = useAssignmentSettingStore();
     const [isLoading, setIsLoading] = React.useState(true);
       
     React.useEffect(() => {
@@ -36,9 +38,21 @@ const BasicSettings: React.FC = () => {
                 />
 
                 <Flex direction="column" gap="4px">
-                    <Text size="sm" fw={500}>
-                        Assignment Description
-                    </Text>
+                    <Flex direction="row" align="center" gap="2px">
+                        <Text size="sm" fw={500}>
+                            Assignment Description
+                        </Text>
+                        <Tooltip label={showToolbar ? "Hide toolbar" : "Show toolbar"} position="right" withArrow>
+                            <ActionIcon
+                                onClick={toggleToolbar}
+                                variant="transparent"
+                                color="gray"
+                                size="sm"
+                            >
+                                <FaSlidersH size={14} />
+                            </ActionIcon>
+                        </Tooltip>
+                    </Flex>
                     <Editor/>                        
                 </Flex>
 
