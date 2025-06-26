@@ -16,7 +16,7 @@ const AddMemberDropdown: React.FC = () => {
   return (
     <>
       {/* Dropdown Menu */}
-      <Menu shadow="md" width={200}>
+      <Menu shadow="md" width={200} position='bottom-end'>
         <Menu.Target>
           <Button leftSection={addPersonIcon} color='#4C6EF5'>
             Add Members
