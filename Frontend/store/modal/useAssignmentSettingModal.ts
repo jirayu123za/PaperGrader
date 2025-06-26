@@ -8,6 +8,8 @@ interface ModalState {
     clearSectionIDs: () => void;
     openModal: (assignment: { assignment_id: string }) => void;
     closeModal: () => void;
+    showToolbar: boolean;
+    toggleToolbar: () => void;
 }
 
 export const useAssignmentSettingStore = create<ModalState>((set) => ({
@@ -32,6 +34,11 @@ export const useAssignmentSettingStore = create<ModalState>((set) => ({
         set(() => ({
             isOpen: false,
             selectedAssignment: null,
+        })),
+    showToolbar: false,
+    toggleToolbar: () =>
+        set((state) => ({
+            showToolbar: !state.showToolbar,
         })),
 }));
 
