@@ -287,6 +287,7 @@ type RubricSubQuestion struct {
 	SubQuestionPoint float64    `json:"sub_question_point"`
 }
 
+// Part: 1 Rubric
 // Create rubrics
 type CreateRubricRequest struct {
 	QuestionID    uuid.UUID   `json:"question_id"`
@@ -335,6 +336,20 @@ type RubricResponse struct {
 	RubricID      *uuid.UUID      `json:"rubric_id"`
 	RubricSetting string          `json:"rubric_setting"`
 	RubricData    []RubricDetails `json:"rubric_details"`
+}
+
+// Part: 2 Rubric
+// Update rubric setting
+type UpdateRubricSettingRequest struct {
+	QuestionID    uuid.UUID               `json:"question_id"`
+	SubQuestionID *uuid.UUID              `json:"sub_question_id,omitempty"`
+	Rubric        RubricDetailWithSetting `json:"rubric"`
+}
+
+type RubricDetailWithSetting struct {
+	RubricID      string `json:"rubric_id"`
+	RubricSetting string `json:"rubric_setting"`
+	// RubricData    []RubricDetails `json:"rubric_details"`
 }
 
 // Query submissions from question
