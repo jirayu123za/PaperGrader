@@ -725,45 +725,73 @@ func (s *InstructorServiceImpl) DeleteRubricData(assignmentID uuid.UUID, rubricD
 	for _, q := range questionsData {
 		qMap := q.(map[string]interface{})
 		if qMap["question_id"] == rubricData.QuestionID.String() {
-			var rubricTarget map[string]interface{}
 
-			// Sub-question rubric
 			if rubricData.SubQuestionID != nil {
 				subQs, ok := qMap["sub_questions"].([]interface{})
 				if !ok {
 					return err
 				}
+
 				for _, sq := range subQs {
 					sqMap := sq.(map[string]interface{})
 					if sqMap["sub_question_id"] == rubricData.SubQuestionID.String() {
-						if rubrics, ok := sqMap["rubrics"].(map[string]interface{}); ok {
-							rubricTarget = rubrics
+						rubrics, ok := sqMap["rubrics"].(map[string]interface{})
+						if !ok || rubrics["rubric_id"] != rubricData.RubricID {
+							continue
+						}
+
+						details, ok := rubrics["rubric_details"].([]interface{})
+						if !ok {
+							continue
+						}
+
+						var updatedDetails []interface{}
+						for _, d := range details {
+							if d == nil {
+								continue
+							}
+							detailMap := d.(map[string]interface{})
+							currentID := fmt.Sprintf("%v", detailMap["rubric_detail_id"])
+							if currentID != rubricData.RubricDetailID {
+								updatedDetails = append(updatedDetails, detailMap)
+							}
+						}
+
+						if len(updatedDetails) == 0 {
+							delete(sqMap, "rubrics")
+						} else {
+							rubrics["rubric_details"] = updatedDetails
 						}
 					}
 				}
 			} else {
-				// Main question rubric
-				if rubrics, ok := qMap["rubrics"].(map[string]interface{}); ok {
-					rubricTarget = rubrics
+				rubrics, ok := qMap["rubrics"].(map[string]interface{})
+				if !ok || rubrics["rubric_id"] != rubricData.RubricID {
+					continue
 				}
-			}
 
-			// Delete rubric_detail match rubric_detail_id
-			if rubricTarget != nil && rubricTarget["rubric_id"] == rubricData.RubricID {
-				details, ok := rubricTarget["rubric_details"].([]interface{})
+				details, ok := rubrics["rubric_details"].([]interface{})
 				if !ok {
-					return err
+					continue
 				}
 
 				var updatedDetails []interface{}
 				for _, d := range details {
+					if d == nil {
+						continue
+					}
 					detailMap := d.(map[string]interface{})
 					currentID := fmt.Sprintf("%v", detailMap["rubric_detail_id"])
 					if currentID != rubricData.RubricDetailID {
 						updatedDetails = append(updatedDetails, detailMap)
 					}
 				}
-				rubricTarget["rubric_details"] = updatedDetails
+
+				if len(updatedDetails) == 0 {
+					delete(qMap, "rubrics")
+				} else {
+					rubrics["rubric_details"] = updatedDetails
+				}
 			}
 		}
 	}
