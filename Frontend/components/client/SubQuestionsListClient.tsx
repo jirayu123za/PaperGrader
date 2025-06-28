@@ -5,16 +5,14 @@ import { NoSubmissionsList } from "@/components/INS/INSProcess/ManageSubmissions
 import { IoCheckmarkSharp } from "react-icons/io5";
 import { useFetchSubmissionsFromQuestion } from "@/hooks/Submissions/useFetchSubmissions";
 import { useSubmissionsStore } from "@/store/Submissions/useSubmissionsStore";
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 
 export default function SubQuestionsListClient({ course_id, assignment_id, question_id, sub_question_id }: { course_id: string; assignment_id: string; question_id: string; sub_question_id: string; }) {
   const { isLoading, data: submissionsData } = useFetchSubmissionsFromQuestion(course_id, assignment_id);
   const { submissions } = useSubmissionsStore();
   const router = useRouter();
-  const params = useParams();
 
-  const submission_id = params.submission_id as string;
   return (
     <Flex direction="column" gap="xs" p="36px">
       <h1>Sub Questions for Course {course_id}, Assignment {assignment_id}, Question {question_id}, Sub-Question {sub_question_id}</h1>
@@ -39,9 +37,12 @@ export default function SubQuestionsListClient({ course_id, assignment_id, quest
                 {submissions?.submissions.map((submission, index) => (
                   <Table.Tr key={submission.submission_id}>
                     <Table.Td>{index + 1}</Table.Td>
-                    <Table.Td onClick={() =>router.push(`/instructor/course/${course_id}/process/${assignment_id}/grade-submissions/questions/${question_id}/sub-questions/${sub_question_id}/lists/${submission_id}`)
- }
-                      className="hover:underline hover:text-blue-500 hover:cursor-pointer">
+                    <Table.Td 
+                      onClick={() =>
+                        router.push(`/instructor/course/${course_id}/process/${assignment_id}/grade-submissions/questions/${question_id}/sub-questions/${sub_question_id}/lists/${submission.submission_id}`)
+                      }
+                      className="hover:underline hover:text-blue-500 hover:cursor-pointer"
+                    >
                       {submission.user_name?.first_name && submission.user_name?.email ? (
                         `${submission.user_name.first_name}${submission.user_name.last_name ? ` ${submission.user_name.last_name}` : ''} (${submission.user_name.email})`
                       ) : (
