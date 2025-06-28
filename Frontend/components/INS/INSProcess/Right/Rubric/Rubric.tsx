@@ -95,6 +95,8 @@ export const Rubric = () => {
         const newItems = Array.from(rubrics);
         const [moved] = newItems.splice(source.index, 1);
         newItems.splice(destination.index, 0, moved);
+        console.log("newItems after drag:", newItems);
+        
         setRubrics(newItems);
     };
 
@@ -106,6 +108,7 @@ export const Rubric = () => {
                 rubric_detail_id: r.rubric_detail_id,
                 rubric_point: r.rubric_point,
                 rubric_description: r.rubric_description,
+                has_selected: r.has_selected,
                 rubric_setting: setting,
             }));
             setRubrics(mapped);
