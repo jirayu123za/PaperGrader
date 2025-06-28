@@ -323,6 +323,18 @@ type RubricDetails struct {
 	RubricDescription string  `json:"rubric_description"`
 }
 
+// Update rubric indexes
+type UpdateRubricIndexesRequest struct {
+	QuestionID    uuid.UUID               `json:"question_id"`
+	SubQuestionID *uuid.UUID              `json:"sub_question_id,omitempty"`
+	Rubric        RubricDetailWithIndexes `json:"rubric"`
+}
+
+type RubricDetailWithIndexes struct {
+	RubricID   string                      `json:"rubric_id"`
+	RubricData []RubricDetailWithHasSelect `json:"rubric_details"`
+}
+
 // Delete rubric
 type DeleteRubricRequest struct {
 	QuestionID     uuid.UUID  `json:"question_id"`
@@ -333,9 +345,16 @@ type DeleteRubricRequest struct {
 
 // Query rubrics
 type RubricResponse struct {
-	RubricID      *uuid.UUID      `json:"rubric_id"`
-	RubricSetting string          `json:"rubric_setting"`
-	RubricData    []RubricDetails `json:"rubric_details"`
+	RubricID      *uuid.UUID                  `json:"rubric_id"`
+	RubricSetting string                      `json:"rubric_setting"`
+	RubricData    []RubricDetailWithHasSelect `json:"rubric_details"`
+}
+
+type RubricDetailWithHasSelect struct {
+	RubricDetailID    string  `json:"rubric_detail_id"`
+	RubricPoint       float64 `json:"rubric_point"`
+	RubricDescription string  `json:"rubric_description"`
+	HasSelected       bool    `json:"has_selected"`
 }
 
 // Part: 2 Rubric
