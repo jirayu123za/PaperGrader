@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useParams } from 'next/navigation';
-import { Popover, Button, Radio, Text, Alert } from '@mantine/core';
+import { Popover, Button, Radio, Text, Alert, Loader, Flex } from '@mantine/core';
 import { IconInfoCircle } from '@tabler/icons-react';
 import { IoIosSettings } from "react-icons/io";
 import { useRubricStore } from '@/store/rubric/useRubricStore';
@@ -14,7 +14,7 @@ export function RubricSettings() {
   const assignment_id = params.assignment_id as string;
   const { rubricData, setRubricData } = useRubricStore();
   const { questions, selectedQuestion, defaultSelectedQuestion } = useQuestionStore();
-  const { mutate: updateRubricScoringMethod } = useUpdateRubricScoringMethod(assignment_id);
+  const { mutate: updateRubricScoringMethod, isPending } = useUpdateRubricScoringMethod(assignment_id);
   const target = selectedQuestion ?? defaultSelectedQuestion;
 
   const getSelectedQuestionPoint = (): number | null => {
@@ -73,6 +73,10 @@ export function RubricSettings() {
           <Text size="sm" c="gray" px="46" py="sm" fs="italic">
             No rubric data found for this question. Please create rubric first.
           </Text>
+        ) : isPending ? (
+          <Flex justify="center" align="center">
+            <Loader size="sm" variant="bars" mx="auto" my="md" type="bars"/>
+          </Flex>
         ) : (
           <>
             <Text size="sm" fw={500} pl={16} pr={16} pt={8} pb={8}>Select scoring method:</Text>
@@ -109,7 +113,6 @@ export function RubricSettings() {
               />
             </Radio.Group>          
           </>
-
         )}
       </Popover.Dropdown>
     </Popover>
