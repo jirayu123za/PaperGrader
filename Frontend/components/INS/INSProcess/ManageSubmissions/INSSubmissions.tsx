@@ -9,7 +9,11 @@ import { usePagination } from '@mantine/hooks';
 import { IoListOutline, IoSearch } from 'react-icons/io5';
 import { FaRegFilePdf } from 'react-icons/fa';
 
+
+
+
 export const INSSubmissions = () => {
+  
   const router = useRouter();
   const params = useParams();
   const course_id = params.course_id as string;
@@ -21,6 +25,8 @@ export const INSSubmissions = () => {
   };
 
   // Need implement submissionFilter, setSubmissionFilter
+
+
   const { submissions, searchTerm, setSearchTerm } = useINS_SubmissionStore();
   const { isLoading, error } = useFetchSubmissions(course_id as string, assignment_id as string);
 
@@ -50,7 +56,7 @@ export const INSSubmissions = () => {
 
   const handleViewPDF = (submission_id: string) => {
     router.push(
-      `/courses/${course_id}/process/${assignment_id}/submissions/${submission_id}/Grade`
+      `/instructor/course/${course_id}/process/${assignment_id}/grade-submissions/${submission_id}`
     );
   };
 
