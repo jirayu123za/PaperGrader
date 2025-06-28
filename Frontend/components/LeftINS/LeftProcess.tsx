@@ -43,7 +43,7 @@ export default function LeftProcess() {
     { key: 'editOutline', label: 'Edit Outline and Rubric', href: `/instructor/course/${course_id}/process/${assignment_id}/create-outline` },
     { key: 'manageSubmissions', label: 'Manage Submissions', href: `/instructor/course/${course_id}/process/${assignment_id}/manage-submissions` },
     { key: 'gradeSubmissions', label: 'Grade Submissions', href: `/instructor/course/${course_id}/process/${assignment_id}/grade-submissions` },
-    { key: 'ReviewGrade', label: 'Review Grade', href: '#' },
+    { key: 'ReviewGrade', label: 'Review Grade', href: `/instructor/course/${course_id}/process/${assignment_id}/statistics` },
   ];
 
   const icons: Record<string, JSX.Element> = {
