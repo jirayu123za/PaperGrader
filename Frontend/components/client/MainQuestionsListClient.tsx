@@ -5,11 +5,16 @@ import { NoSubmissionsList } from "@/components/INS/INSProcess/ManageSubmissions
 import { IoCheckmarkSharp } from "react-icons/io5";
 import { useFetchSubmissionsFromQuestion } from "@/hooks/Submissions/useFetchSubmissions";
 import { useSubmissionsStore } from "@/store/Submissions/useSubmissionsStore";
+import { useParams, useRouter } from 'next/navigation';
+
 
 export default function MainQuestionsListClient({ course_id, assignment_id, question_id }: { course_id: string; assignment_id: string; question_id: string; }) {
   const { isLoading, data: submissionsData } = useFetchSubmissionsFromQuestion(course_id, assignment_id);
   const { submissions } = useSubmissionsStore();
+  const router = useRouter();
+  const params = useParams();
 
+  const submission_id = params.submission_id as string;
   return (
     <Flex direction="column" gap="xs" p="16px">
       <h1>Main Questions for Course {course_id}, Assignment {assignment_id}, Question {question_id}</h1>
@@ -34,7 +39,12 @@ export default function MainQuestionsListClient({ course_id, assignment_id, ques
                 {submissions?.submissions.map((submission, index) => (
                   <Table.Tr key={submission.submission_id}>
                     <Table.Td>{index + 1}</Table.Td>
-                    <Table.Td className="hover:underline hover:text-blue-500 hover:cursor-pointer">
+                    <Table.Td
+                      onClick={() =>
+                        router.push(`/instructor/course/${course_id}/process/${assignment_id}/grade-submissions/questions/${question_id}/lists/${submission_id}`)
+                      }
+                      className="hover:underline hover:text-blue-500 hover:cursor-pointer"
+                    >
                       {submission.user_name?.first_name && submission.user_name?.email ? (
                         `${submission.user_name.first_name}${submission.user_name.last_name ? ` ${submission.user_name.last_name}` : ''} (${submission.user_name.email})`
                       ) : (
@@ -44,7 +54,7 @@ export default function MainQuestionsListClient({ course_id, assignment_id, ques
                     <Table.Td ta='center'>{submission.graded_by}</Table.Td>
                     <Table.Td ta='center'>{submission.section_name}</Table.Td>
                     <Table.Td ta='center'>{submission.score.toFixed(2)}</Table.Td>
-                    <Table.Td ta='center' align="center">  
+                    <Table.Td ta='center' align="center">
                       {submission.grade_status ? (
                         <Flex justify="center" align="center">
                           <IoCheckmarkSharp color="green" />
