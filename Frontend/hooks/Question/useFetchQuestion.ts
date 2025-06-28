@@ -22,26 +22,16 @@ export const useFetchQuestion = (assignment_id: string) => {
     return useQuery<Question[]>({
         queryKey: ['questions', assignment_id],
         queryFn: async () => {
-            const response = await axios.get(`/api/api/instructor/assignment/mock`, {
+            const response = await axios.get(`/api/api/instructor/assignment/questions`, {
                 params: {
                     assignment_id
                 }
             });
 
-            const responseData = response.data.questions.questions_data ?? [];
-            const parsedQuestions: Question[] = responseData.map((q: any) => ({
-                question_id: q.question_id,
-                question_title: q.question_title,
-                question_point: q.question_point,
-                sub_questions: q.sub_questions?.map((sq: any) => ({
-                    sub_question_id: sq.sub_question_id,
-                    sub_question_title: sq.sub_question_title,
-                    sub_question_point: sq.sub_question_point
-                }))
-            }));
-            setQuestions(parsedQuestions);
+            const responseData = response.data.questions ?? [];
+            setQuestions(responseData);
             setDefaultSelectedQuestion();
-            return parsedQuestions;
+            return responseData;
         },
         enabled: !!assignment_id,
         refetchOnWindowFocus: false,
