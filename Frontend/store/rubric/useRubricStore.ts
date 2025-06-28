@@ -30,7 +30,7 @@ interface RubricStore {
 }
 
 // For rubrics
-interface RubricItem {
+export interface RubricItem {
     rubric_id: string;
     rubric_detail_id: string;
     rubric_point: number;
