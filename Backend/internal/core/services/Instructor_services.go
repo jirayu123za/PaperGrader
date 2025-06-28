@@ -82,6 +82,7 @@ type InstructorService interface {
 	// Part:1 CRUD Rubric
 	CreateRubricData(assignment_id uuid.UUID, rubricData response.CreateRubricRequest) error
 	UpdateRubricData(assignmentID uuid.UUID, rubricData response.UpdateRubricRequest) error
+	UpdateRubricIndexes(assignmentID uuid.UUID, rubricData response.UpdateRubricIndexesRequest) error
 	DeleteRubricData(assignmentID uuid.UUID, rubricData response.DeleteRubricRequest) error
 	GetRubricData(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID *uuid.UUID) (response.RubricResponse, error)
 	// Part:2 U Rubric
@@ -701,6 +702,86 @@ func (s *InstructorServiceImpl) UpdateRubricData(assignmentID uuid.UUID, rubricD
 				}
 
 			}
+		}
+	}
+
+	// Marshal and update to DB
+	updatedJSON, err := json.Marshal(rubricMap)
+	if err != nil {
+		return err
+	}
+	return s.repo.ModifyRubricData(assignmentID, updatedJSON)
+}
+
+func (s *InstructorServiceImpl) UpdateRubricIndexes(assignmentID uuid.UUID, rubricData response.UpdateRubricIndexesRequest) error {
+	// First: call repo get rubric data by assignmentID and questionID
+	rubricMap, err := s.repo.FindRubricDataByAssignmentID(assignmentID)
+	if err != nil {
+		return err
+	}
+
+	questionsData, ok := rubricMap["questions_data"].([]interface{})
+	if !ok {
+		return err
+	}
+
+	// business logic to update rubric indexes
+	for _, q := range questionsData {
+		qMap := q.(map[string]interface{})
+
+		if qMap["question_id"] == rubricData.QuestionID.String() {
+			if rubricData.SubQuestionID != nil {
+				subQs, ok := qMap["sub_questions"].([]interface{})
+				if !ok {
+					return err
+				}
+
+				for _, sq := range subQs {
+					sqMap := sq.(map[string]interface{})
+					if sqMap["sub_question_id"] == rubricData.SubQuestionID.String() {
+
+						rubricObj, ok := sqMap["rubrics"].(map[string]interface{})
+						if !ok {
+							rubricObj = make(map[string]interface{})
+							sqMap["rubrics"] = rubricObj
+						}
+
+						rubricObj["rubric_id"] = rubricData.Rubric.RubricID
+
+						var newDetails []map[string]interface{}
+						for _, d := range rubricData.Rubric.RubricData {
+							newDetails = append(newDetails, map[string]interface{}{
+								"rubric_detail_id":   d.RubricDetailID,
+								"rubric_point":       d.RubricPoint,
+								"rubric_description": d.RubricDescription,
+								"has_selected":       d.HasSelected,
+							})
+						}
+						rubricObj["rubric_details"] = newDetails
+						break
+					}
+				}
+			} else {
+				rubricObj, ok := qMap["rubrics"].(map[string]interface{})
+				if !ok {
+					rubricObj = make(map[string]interface{})
+					qMap["rubrics"] = rubricObj
+				}
+
+				rubricObj["rubric_id"] = rubricData.Rubric.RubricID
+
+				var newDetails []map[string]interface{}
+				for _, d := range rubricData.Rubric.RubricData {
+					newDetails = append(newDetails, map[string]interface{}{
+						"rubric_detail_id":   d.RubricDetailID,
+						"rubric_point":       d.RubricPoint,
+						"rubric_description": d.RubricDescription,
+						"has_selected":       d.HasSelected,
+					})
+				}
+				rubricObj["rubric_details"] = newDetails
+			}
+			break
 		}
 	}
 
