@@ -92,7 +92,6 @@ export const Rubric = () => {
     const handleDragEnd = (result: DropResult) => {
         const { destination, source } = result;
         if (!destination || destination.index === source.index) return;
-    
         const newItems = Array.from(rubrics);
         const [moved] = newItems.splice(source.index, 1);
         newItems.splice(destination.index, 0, moved);
@@ -197,137 +196,145 @@ export const Rubric = () => {
                                             className="hover:shadow-sm group"
                                         >
                                             <Group wrap="nowrap" align="flex-start">
-                                            <Checkbox.Indicator
-                                                icon={() => <Text size="sm" fw={500}>{index + 1}</Text>}
-                                            />
-                                            <div>
-                                                {editingRubricID === rubric.rubric_detail_id ? (
-                                                    <NumberInput
-                                                        hideControls
-                                                        autoFocus
-                                                        decimalScale={2}
-                                                        w={100}
-                                                        value={rubric.rubric_point}
-                                                        prefix={rubric.rubric_setting === 'Positive scoring' ? '+' : ''}
-                                                        // min={0}
-                                                        // max={question.question_points}
-                                                        allowNegative={true}
-                                                        onChange={(val) => {
-                                                            const numberVal = typeof val === 'number' ? val : rubric.rubric_point;
-                                                            const setting: 'Positive scoring' | 'Negative scoring' = numberVal < 0 ? 'Negative scoring' : 'Positive scoring';
-                                                            const updated = rubrics.map((r) =>
-                                                                r.rubric_detail_id === rubric.rubric_detail_id
-                                                                ? {
-                                                                    ...r,
-                                                                    rubric_point: numberVal,
-                                                                    rubric_setting: setting,
-                                                                    }
-                                                                : r
-                                                            );
-                                                            setRubrics(updated);
-                                                        }}
-                                                        onBlur={() => {
-                                                            setEditingRubricID(null);
-                                                            handleUpdateRubric(
-                                                                rubric.rubric_id,
-                                                                rubric.rubric_detail_id,
-                                                                rubric.rubric_point,
-                                                                rubric.rubric_description
-                                                            );
-                                                        }}
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter' || e.key === 'Escape') {
-                                                            e.preventDefault();
-                                                            setEditingRubricID(null);
-                                                            handleUpdateRubric(
-                                                                rubric.rubric_id,
-                                                                rubric.rubric_detail_id,
-                                                                rubric.rubric_point,
-                                                                rubric.rubric_description
-                                                            );
-                                                            }
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <Text 
-                                                        fw={600} c={rubric.rubric_setting === 'Positive scoring' ? 'green' : 'red'} 
-                                                        onClick={() => setEditingRubricID(rubric.rubric_detail_id)}
-                                                    >
-                                                        {rubric.rubric_setting === 'Positive scoring' ? '+' : '-'}{new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 }).format(Math.abs(rubric.rubric_point))}
-                                                    </Text>
-                                                )}
-                                                {editingDescriptionID === rubric.rubric_detail_id ? (
-                                                    <Textarea
-                                                        miw={360}
-                                                        autoFocus
-                                                        autosize
-                                                        radius="none"
-                                                        defaultValue={rubric.rubric_description}
-                                                        onBlur={(e) => {
-                                                            const updated = rubrics.map((r) =>
-                                                                r.rubric_detail_id === rubric.rubric_detail_id
-                                                                ? { ...r, rubric_description: e.target.value }
-                                                                : r
-                                                            );
-                                                            handleUpdateRubric(
-                                                                rubric.rubric_id,
-                                                                rubric.rubric_detail_id,
-                                                                rubric.rubric_point,
-                                                                e.target.value
-                                                            );
-                                                            setRubrics(updated);
-                                                            setEditingDescriptionID(null);
-                                                        }}
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter' || e.key === 'Escape' && !e.shiftKey) {
+                                                <Checkbox.Indicator
+                                                    icon={() => <Text size="sm" fw={500}>{index + 1}</Text>}
+                                                />
+                                                <Flex direction="column" className="flex-1">
+                                                    {editingRubricID === rubric.rubric_detail_id ? (
+                                                        <NumberInput
+                                                            hideControls
+                                                            autoFocus
+                                                            decimalScale={2}
+                                                            w={100}
+                                                            value={rubric.rubric_point}
+                                                            onChange={(val) => {
+                                                                const numberVal = typeof val === 'number' ? val : rubric.rubric_point;
+                                                                const setting: 'Positive scoring' | 'Negative scoring' = numberVal < 0 ? 'Negative scoring' : 'Positive scoring';
+                                                                const updated = rubrics.map((r) =>
+                                                                    r.rubric_detail_id === rubric.rubric_detail_id
+                                                                    ? {
+                                                                        ...r,
+                                                                        rubric_point: numberVal,
+                                                                        rubric_setting: setting,
+                                                                        }
+                                                                    : r
+                                                                );
+                                                                setRubrics(updated);
+                                                            }}
+                                                            onBlur={() => {
+                                                                setEditingRubricID(null);
+                                                                handleUpdateRubric(
+                                                                    rubric.rubric_id,
+                                                                    rubric.rubric_detail_id,
+                                                                    rubric.rubric_point,
+                                                                    rubric.rubric_description
+                                                                );
+                                                            }}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter' || e.key === 'Escape') {
                                                                 e.preventDefault();
-                                                                const value = (e.target as HTMLTextAreaElement).value;
-                                                                const updatedRubrics = rubrics.map((r) =>
-                                                                r.rubric_detail_id === rubric.rubric_detail_id
-                                                                    ? { ...r, rubric_description: value }
+                                                                setEditingRubricID(null);
+                                                                handleUpdateRubric(
+                                                                    rubric.rubric_id,
+                                                                    rubric.rubric_detail_id,
+                                                                    rubric.rubric_point,
+                                                                    rubric.rubric_description
+                                                                );
+                                                                }
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <Text 
+                                                            fw={600} 
+                                                            c={
+                                                                rubric.rubric_point > 0 ? 'green'
+                                                                : rubric.rubric_point < 0 ? 'red'
+                                                                : rubric.rubric_setting === 'Positive scoring'? 'green'
+                                                                : 'red'
+                                                            }
+                                                            onClick={() => setEditingRubricID(rubric.rubric_detail_id)}
+                                                        >
+                                                            {rubric.rubric_point > 0 ? '+'
+                                                                : rubric.rubric_point < 0 ? '-'
+                                                                : rubric.rubric_setting === 'Positive scoring' ? '+'
+                                                                : '-'
+                                                            }
+                                                            {new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 }).format(Math.abs(rubric.rubric_point))}
+                                                        </Text>
+                                                    )}
+                                                    {editingDescriptionID === rubric.rubric_detail_id ? (
+                                                        <Textarea
+                                                            miw={360}
+                                                            autoFocus
+                                                            autosize
+                                                            radius="none"
+                                                            defaultValue={rubric.rubric_description}
+                                                            onBlur={(e) => {
+                                                                const updated = rubrics.map((r) =>
+                                                                    r.rubric_detail_id === rubric.rubric_detail_id
+                                                                    ? { ...r, rubric_description: e.target.value }
                                                                     : r
                                                                 );
                                                                 handleUpdateRubric(
                                                                     rubric.rubric_id,
                                                                     rubric.rubric_detail_id,
                                                                     rubric.rubric_point,
-                                                                    value
+                                                                    e.target.value
                                                                 );
-                                                                setRubrics(updatedRubrics);
+                                                                setRubrics(updated);
                                                                 setEditingDescriptionID(null);
-                                                            } else if (e.key === 'Escape') {
-                                                                setEditingDescriptionID(null);
-                                                            }
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <Text
-                                                        size="sm"
-                                                        c={rubric.rubric_description ? "#495057" : "dimmed"}
-                                                        fs={rubric.rubric_description ? undefined : "italic"}
-                                                        className="whitespace-pre-wrap"
-                                                        onClick={() => setEditingDescriptionID(rubric.rubric_detail_id)}
-                                                        dangerouslySetInnerHTML={
-                                                        {
-                                                            __html: DOMPurify.sanitize(
-                                                                marked.parse(
-                                                                    rubric.rubric_description && rubric.rubric_description.trim() !== ""
-                                                                    ? rubric.rubric_description
-                                                                    : "Click here to replace this description."
-                                                            ) as string),
-                                                        }}
-                                                    />
-                                                )}
-                                            </div>
-                                            <ActionIcon
-                                                variant="transparent" 
-                                                aria-label="Delete rubric"
-                                                c="red"
-                                                className="ml-auto hover:text-red-600 hover:scale-105 transition-transform duration-200 opacity-0 group-hover:opacity-100"
-                                                onClick={() => handleDeleteRubric(rubric.rubric_id, rubric.rubric_detail_id)}
-                                            >
-                                                <AiTwotoneDelete size={20} />
-                                            </ActionIcon>
+                                                            }}
+                                                            onKeyDown={(e) => {
+                                                                if ((e.key === 'Enter' && !e.shiftKey) || (e.key === 'Escape' && !e.shiftKey)) {
+                                                                    e.preventDefault();
+                                                                    const value = (e.target as HTMLTextAreaElement).value;
+                                                                    const updatedRubrics = rubrics.map((r) =>
+                                                                    r.rubric_detail_id === rubric.rubric_detail_id
+                                                                        ? { ...r, rubric_description: value }
+                                                                        : r
+                                                                    );
+                                                                    handleUpdateRubric(
+                                                                        rubric.rubric_id,
+                                                                        rubric.rubric_detail_id,
+                                                                        rubric.rubric_point,
+                                                                        value
+                                                                    );
+                                                                    setRubrics(updatedRubrics);
+                                                                    setEditingDescriptionID(null);
+                                                                } else if (e.key === 'Escape') {
+                                                                    setEditingDescriptionID(null);
+                                                                }
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <Text
+                                                            size="sm"
+                                                            h={28} 
+                                                            c={rubric.rubric_description ? "#495057" : "dimmed"}
+                                                            fs={rubric.rubric_description ? undefined : "italic"}
+                                                            className="whitespace-pre-wrap"
+                                                            onClick={() => setEditingDescriptionID(rubric.rubric_detail_id)}
+                                                            dangerouslySetInnerHTML={
+                                                            {
+                                                                __html: DOMPurify.sanitize(
+                                                                    marked.parse(
+                                                                        rubric.rubric_description && rubric.rubric_description.trim() !== ""
+                                                                        ? rubric.rubric_description
+                                                                        : "Click here to replace this description."
+                                                                ) as string),
+                                                            }}
+                                                        />
+                                                    )}
+                                                </Flex>
+                                                <ActionIcon
+                                                    variant="transparent" 
+                                                    aria-label="Delete rubric"
+                                                    c="red"
+                                                    className="ml-auto hover:text-red-600 hover:scale-105 transition-transform duration-200 opacity-0 group-hover:opacity-100"
+                                                    onClick={() => handleDeleteRubric(rubric.rubric_id, rubric.rubric_detail_id)}
+                                                >
+                                                    <AiTwotoneDelete size={20} />
+                                                </ActionIcon>
                                             </Group>
                                         </Checkbox.Card>
                                         )}
