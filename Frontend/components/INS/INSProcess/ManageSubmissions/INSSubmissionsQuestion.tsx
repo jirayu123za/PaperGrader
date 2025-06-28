@@ -13,6 +13,9 @@ export const INSSubmissionsQuestion: React.FC = () => {
   const router = useRouter();
   const assignment_id = params.assignment_id as string;
   const course_id = params.course_id as string;
+  const question_id = params.question_id as string;
+  const submission_id = params.submission_id as string;
+  
   const { isLoading: isLoadingQuestions, data: questionsData } = useFetchQuestion(assignment_id);
   const { questions } = useQuestionStore();
 
@@ -64,7 +67,7 @@ export const INSSubmissionsQuestion: React.FC = () => {
                         <Anchor
                           underline="hover"
                           c="dark"
-                          onClick={() => router.push(`/grading/question/${question.question_id}`)}
+                          onClick={() => router.push(`/instructor/course/${course_id}/process/${assignment_id}/grade-submissions/questions/${question.question_id}/submissions/${submission_id}`)}
                         >
                           {index + 1}: {question.question_title}
                         </Anchor>
@@ -92,7 +95,7 @@ export const INSSubmissionsQuestion: React.FC = () => {
                               underline="hover"
                               size="sm"
                               c="dimmed"
-                              onClick={() => router.push(`/grading/sub-question/${sub.sub_question_id}`)}
+                              onClick={() => router.push(`/instructor/course/${course_id}/process/${assignment_id}/grade-submissions/questions/${question.question_id}/sub-questions/${sub.sub_question_id}/submissions/${submission_id}`)}
                             >
                               {index + 1}.{subIndex + 1}: {sub.sub_question_title}
                             </Anchor>
