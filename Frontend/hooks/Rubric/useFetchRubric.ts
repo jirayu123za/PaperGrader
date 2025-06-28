@@ -7,6 +7,7 @@ interface RubricDetail {
     rubric_detail_id: string;
     rubric_point: number;
     rubric_description: string;
+    has_selected: boolean;
 }
 
 interface Rubric {

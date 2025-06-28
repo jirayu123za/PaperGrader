@@ -4,6 +4,7 @@ interface RubricDetail {
     rubric_detail_id: string;
     rubric_point: number;
     rubric_description: string;
+    has_selected: boolean;
 }
 
 interface Rubric {
@@ -34,6 +35,7 @@ interface RubricItem {
     rubric_detail_id: string;
     rubric_point: number;
     rubric_description: string;
+    has_selected: boolean;
     rubric_setting: 'Positive scoring' | 'Negative scoring' | null;
 }
 
