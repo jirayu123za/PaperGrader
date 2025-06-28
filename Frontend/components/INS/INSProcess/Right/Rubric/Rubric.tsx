@@ -20,6 +20,8 @@ import { useFetchQuestion } from '@/hooks/Question/useFetchQuestion';
 import { useCreateRubric } from '@/hooks/Rubric/useCreateRubric';
 import { useDeleteRubric } from '@/hooks/Rubric/useDeleteRubric';
 import { useUpdateRubric } from '@/hooks/Rubric/useUpdateRubric';
+import { useUpdateRubricsIndexes } from '@/hooks/Rubric/useUpdateRubricsIndexes';
+import type { RubricItem } from '@/store/rubric/useRubricStore'; 
 marked.use(markedKatex({ throwOnError: false }));
 
 interface Graded {
@@ -36,6 +38,7 @@ export const Rubric = () => {
     const { mutate: createRubric, isPending: isPendingCreate } = useCreateRubric(assignment_id);
     const { mutate: deleteRubric, isPending: isPendingDelete } = useDeleteRubric(assignment_id);
     const { mutate: updateRubric, isPending: isPendingUpdate } = useUpdateRubric(assignment_id);
+    const { mutate: updateRubricsIndexes, isPending: isPendingUpdateIndexes } = useUpdateRubricsIndexes(assignment_id);
     const { rubricData, setRubricData, rubrics, setRubrics, editingRubricID, setEditingRubricID, editingDescriptionID, setEditingDescriptionID } = useRubricStore();
 
     const target = selectedQuestion ?? defaultSelectedQuestion;
@@ -75,6 +78,25 @@ export const Rubric = () => {
         console.log("Rubric description:", rubric_description);
     }
 
+    const handleUpdateRubricsIndexes = (rubricItems: RubricItem[], rubric_id: string) => {
+        updateRubricsIndexes({
+            assignment_id,
+            question_id: target?.question_id,
+            sub_question_id: target?.sub_question_id,
+            rubric: {
+                rubric_id: rubric_id,
+                rubric_details: rubricItems.map((r) => ({
+                    rubric_detail_id: r.rubric_detail_id,
+                    rubric_point: r.rubric_point,
+                    rubric_description: r.rubric_description,
+                    has_selected: r.has_selected,
+                })),
+            },
+        });
+        console.log("Updating rubric indexes with ID:", rubric_id);
+        console.log("New rubric items after drag:", rubricItems);
+    }
+
     const handleDeleteRubric = (rubric_id: string, rubric_detail_id: string) => {
         deleteRubric({
             assignment_id,
@@ -89,15 +111,20 @@ export const Rubric = () => {
         has_graded: 2,
         total_grade: 10,
     });
+
     const handleDragEnd = (result: DropResult) => {
         const { destination, source } = result;
         if (!destination || destination.index === source.index) return;
         const newItems = Array.from(rubrics);
         const [moved] = newItems.splice(source.index, 1);
         newItems.splice(destination.index, 0, moved);
-        console.log("newItems after drag:", newItems);
         
         setRubrics(newItems);
+        setTimeout(() => {
+            console.log("newItems after drag:", newItems);
+            console.log("rubric id:", moved.rubric_id);
+            handleUpdateRubricsIndexes(newItems, moved.rubric_id);
+        }, 0);  
     };
 
     useEffect(() => {
