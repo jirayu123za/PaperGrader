@@ -1404,14 +1404,15 @@ func (r *GormInstructorRepository) FindRubricByQuestionID(AssignmentID uuid.UUID
 				rubricID, _ := uuid.Parse(rubricIDStr)
 				rubricSetting, _ := rubricMap["rubric_setting"].(string)
 
-				details := make([]response.RubricDetails, 0)
+				details := make([]response.RubricDetailWithHasSelect, 0)
 				if rubricItems, ok := rubricMap["rubric_details"].([]interface{}); ok {
 					for _, r := range rubricItems {
 						rMap := r.(map[string]interface{})
-						details = append(details, response.RubricDetails{
+						details = append(details, response.RubricDetailWithHasSelect{
 							RubricDetailID:    rMap["rubric_detail_id"].(string),
 							RubricPoint:       rMap["rubric_point"].(float64),
 							RubricDescription: rMap["rubric_description"].(string),
+							HasSelected:       rMap["has_selected"].(bool),
 						})
 					}
 				}
@@ -1463,14 +1464,15 @@ func (r *GormInstructorRepository) FindRubricBySubQuestionID(AssignmentID uuid.U
 							rubricID, _ := uuid.Parse(rubricIDStr)
 							rubricSetting, _ := rubricMap["rubric_setting"].(string)
 
-							details := make([]response.RubricDetails, 0)
+							details := make([]response.RubricDetailWithHasSelect, 0)
 							if rubricItems, ok := rubricMap["rubric_details"].([]interface{}); ok {
 								for _, r := range rubricItems {
 									rMap := r.(map[string]interface{})
-									details = append(details, response.RubricDetails{
+									details = append(details, response.RubricDetailWithHasSelect{
 										RubricDetailID:    rMap["rubric_detail_id"].(string),
 										RubricPoint:       rMap["rubric_point"].(float64),
 										RubricDescription: rMap["rubric_description"].(string),
+										HasSelected:       rMap["has_selected"].(bool),
 									})
 								}
 							}
