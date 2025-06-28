@@ -102,25 +102,25 @@ const AssignmentSetting: React.FC = () => {
           handleUpdateSettings();
         }}
       >
-        <Tabs orientation="vertical" defaultValue="basic-settings" color="violet" value={activeTab} onChange={setActiveTab}>
+        <Tabs keepMounted={false} orientation="vertical" defaultValue="basic-settings" color="violet" value={activeTab} onChange={setActiveTab}>
           <Flex w="100%" h="100%" gap="xs">
             <Tabs.List>
-              <Tabs.Tab value="basic-settings" leftSection={icons.settings}>
+              <Tabs.Tab value="basic-settings" leftSection={icons.settings} classNames={{ tabLabel: 'flex justify-start text-left w-full' }}>
                 Basic Settings
               </Tabs.Tab>
-              <Tabs.Tab value="customize-time" leftSection={icons.clock}>
+              <Tabs.Tab value="customize-time" leftSection={icons.clock} classNames={{ tabLabel: 'flex justify-start text-left w-full' }}>
                 Time Setting
               </Tabs.Tab>
-              <Tabs.Tab value="submission-settings" leftSection={icons.paper}>
+              <Tabs.Tab value="submission-settings" leftSection={icons.paper} classNames={{ tabLabel: 'flex justify-start text-left w-full' }}>
                 Submission Settings
               </Tabs.Tab>
-              <Tabs.Tab value="grading-defaults" leftSection={icons.choice}>
+              <Tabs.Tab value="grading-defaults" leftSection={icons.choice} classNames={{ tabLabel: 'flex justify-start text-left w-full' }}>
                 Grading Defaults
               </Tabs.Tab>
-              <Tabs.Tab value="rubric-settings" leftSection={icons.pen}>
+              <Tabs.Tab value="rubric-settings" leftSection={icons.pen} classNames={{ tabLabel: 'flex justify-start text-left w-full' }}>
                 Rubric Settings
               </Tabs.Tab>
-              <Tabs.Tab value="student-visibility" leftSection={icons.eye}>
+              <Tabs.Tab value="student-visibility" leftSection={icons.eye} classNames={{ tabLabel: 'flex justify-start text-left w-full' }}>
                 Student Visibility
               </Tabs.Tab>
             </Tabs.List>          
