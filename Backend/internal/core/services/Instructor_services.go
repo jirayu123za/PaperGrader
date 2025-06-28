@@ -78,6 +78,7 @@ type InstructorService interface {
 
 	// CRUD Questions
 	GetQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (response.QuestionsTemplateResponse, error)
+	GetQuestionsList(AssignmentID uuid.UUID) (response.QuestionsListResponse, error)
 
 	// Part:1 CRUD Rubric
 	CreateRubricData(assignment_id uuid.UUID, rubricData response.CreateRubricRequest) error
@@ -591,6 +592,14 @@ func (s *InstructorServiceImpl) GetQuestionsByAssignmentTemplate(AssignmentID uu
 	questions, err := s.repo.FindQuestionsByAssignmentTemplate(AssignmentID)
 	if err != nil {
 		return response.QuestionsTemplateResponse{}, err
+	}
+	return questions, nil
+}
+
+func (s *InstructorServiceImpl) GetQuestionsList(AssignmentID uuid.UUID) (response.QuestionsListResponse, error) {
+	questions, err := s.repo.FindQuestionsList(AssignmentID)
+	if err != nil {
+		return nil, err
 	}
 	return questions, nil
 }
