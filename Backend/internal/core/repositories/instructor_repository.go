@@ -74,6 +74,7 @@ type InstructorRepository interface {
 
 	// CRUD Questions
 	FindQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (response.QuestionsTemplateResponse, error)
+	FindQuestionsList(AssignmentID uuid.UUID) (response.QuestionsListResponse, error)
 
 	// CRUD Rubric
 	// First: main Question
