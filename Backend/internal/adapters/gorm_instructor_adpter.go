@@ -1125,6 +1125,7 @@ func (r *GormInstructorRepository) RemoveBoundingBoxes(AssignmentID uuid.UUID, b
 	})
 }
 
+// For get Questions By Assignment Template
 func (r *GormInstructorRepository) FindQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (response.QuestionsTemplateResponse, error) {
 	var rubric response.RubricData
 
@@ -1157,6 +1158,53 @@ func (r *GormInstructorRepository) FindQuestionsByAssignmentTemplate(AssignmentI
 		RubricID:      &rubric.RubricID,
 		QuestionsData: questionsData,
 	}, nil
+}
+
+// For get Questions List By Assignment Template
+func (r *GormInstructorRepository) FindQuestionsList(AssignmentID uuid.UUID) (response.QuestionsListResponse, error) {
+	var rubric struct {
+		RubricID   uuid.UUID      `gorm:"column:rubric_id"`
+		RubricData datatypes.JSON `gorm:"column:rubric_data"`
+	}
+
+	tx := r.db.
+		Table("rubrics").
+		Select("rubric_id, rubric_data").
+		Where("assignment_id = ? AND deleted_at IS NULL", AssignmentID).
+		Take(&rubric)
+
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	if tx.RowsAffected == 0 {
+		return response.QuestionsListResponse{}, nil
+	}
+
+	var parsed response.RawRubricData
+	if err := json.Unmarshal(rubric.RubricData, &parsed); err != nil {
+		return nil, err
+	}
+
+	var result response.QuestionsListResponse
+	for _, q := range parsed.QuestionsData {
+		question := response.Question{
+			QuestionID:    q.QuestionID,
+			QuestionTitle: q.QuestionTitle,
+			QuestionPoint: q.QuestionPoint,
+		}
+
+		for _, sq := range q.SubQuestions {
+			question.SubQuestions = append(question.SubQuestions, response.SubQuestion{
+				SubQuestionID:    sq.SubQuestionID,
+				SubQuestionTitle: sq.SubQuestionTitle,
+				SubQuestionPoint: sq.SubQuestionPoint,
+			})
+		}
+
+		result = append(result, question)
+	}
+	return result, nil
 }
 
 // For rubric
