@@ -1,188 +1,274 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
-import { Button, Container, Flex } from '@mantine/core';
-import { Stage, Layer, Rect, Text } from 'react-konva';
-import * as pdfjsLib from 'pdfjs-dist';
-// import 'pdfjs-dist/web/pdf_viewer.css';
-import { useFetchSubmissionFile } from '../../hooks/useFetchFile';
-import { useSubmissionFileStore } from '../../store/useINS_SubmissionStore';
-import { useRouter , useParams } from 'next/navigation';
+import React, { useEffect, useRef, useState } from "react";
+import { Button, Container } from "@mantine/core";
+import * as pdfjsLib from "pdfjs-dist";
+import "pdfjs-dist/web/pdf_viewer.css";
+// import { useFetchSubmissionFile } from "../../hooks/useFetchFile";
+// import { useSubmissionFileStore } from "../../store/useINS_SubmissionStore";
+import { useParams } from "next/navigation";
+import {
+  AiOutlineZoomIn,
+  AiOutlineZoomOut,
+  AiOutlineReload,
+  AiOutlineArrowLeft,
+  AiOutlineArrowRight,
+} from "react-icons/ai";
 
-(pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+(pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js`;
 
-// interface BoundingBox {
-//   id: number;
-//   questionId: string;
-//   topLeft: { x: number; y: number };
-//   bottomRight: { x: number; y: number };
-//   pageNumber: number;
-//   title: string;
-//   points: number;
-//   type: 'NAME' | 'STUDENTID' | 'QUESTION';
-// }
-
-// interface GradePdfViewerProps {
-//   fileUrl: string;
-//   boundingBoxes: BoundingBox[];
-//   onBoundingBoxesChange?: (updatedBoundingBoxes: BoundingBox[]) => void;
-// }
-
-// const GradePdfViewer: React.FC<GradePdfViewerProps> = ({ boundingBoxes, onBoundingBoxesChange }) => {
 const GradePdfViewer: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [scale, setScale] = useState(1.2);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const isDragging = useRef(false);
+  const lastPos = useRef({ x: 0, y: 0 });
   const renderTaskRef = useRef<any>(null);
 
-  const router = useRouter();
-  const { assignment_id, course_id, submission_id } = router.query;
-  const { isLoading, error } = useFetchSubmissionFile(course_id as string, assignment_id as string, submission_id as string);
-  const { submissionFile } = useSubmissionFileStore();
+  const params = useParams() as Record<string, string | undefined>;
+  const assignment_id = params.assignment_id;
+  const course_id = params.course_id;
+  const submission_id = params.submission_id;
+
+  if (!assignment_id || !course_id || !submission_id) {
+    return <div>Missing required route parameters.</div>;
+  }
+
+  // const { isLoading, error } = useFetchSubmissionFile(course_id, assignment_id, submission_id);
+  // const { submissionFile } = useSubmissionFileStore();
+
+  const pdfUrl = "/pdf/test01.pdf";
+
+  const renderPDF = async (pageNum: number, scaleValue: number) => {
+    try {
+      const loadingTask = pdfjsLib.getDocument(pdfUrl);
+      const pdf = await loadingTask.promise;
+      const page = await pdf.getPage(pageNum);
+
+      setTotalPages(pdf.numPages);
+
+      const containerHeight = window.innerHeight;
+      const unscaledViewport = page.getViewport({ scale: 1 });
+      const scaleForHeight = containerHeight / unscaledViewport.height;
+      const finalScale = scaleValue * scaleForHeight;
+
+      const viewport = page.getViewport({ scale: finalScale });
+
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const context = canvas.getContext("2d");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        if (renderTaskRef.current) {
+          renderTaskRef.current.cancel();
+        }
+
+        renderTaskRef.current = page.render({
+          canvasContext: context!,
+          viewport,
+        });
+
+        await renderTaskRef.current.promise;
+      }
+    } catch (error) {
+      console.error("Error rendering PDF:", error);
+    }
+  };
+
 
   useEffect(() => {
-    const renderPDF = async (pageNum: number) => {
-      try {
-        const response = await fetch(submissionFile.submission_file_url);
-        const arrayBuffer = await response.arrayBuffer();
-        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-        const pdf = await loadingTask.promise;
-        const page = await pdf.getPage(pageNum);
+    renderPDF(currentPage, scale);
+  }, [currentPage, scale]);
 
-        setTotalPages(pdf.numPages);
-
-        const scale = 1;
-        const viewport = page.getViewport({ scale });
-
-        const canvas = canvasRef.current;
-        if (canvas) {
-          const context = canvas.getContext('2d');
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
-
-          setCanvasSize({ width: viewport.width, height: viewport.height });
-
-          if (renderTaskRef.current) {
-            renderTaskRef.current.cancel();
-          }
-
-          renderTaskRef.current = page.render({
-            canvasContext: context!,
-            viewport,
-          });
-
-          await renderTaskRef.current.promise;
-        }
-      } catch (error) {
-        console.error('Error rendering PDF:', error);
+  // Mouse wheel zoom
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      if (e.deltaY < 0) {
+        setScale((prev) => prev + 0.1);
+      } else {
+        setScale((prev) => Math.max(0.2, prev - 0.1));
       }
     };
+    const canvas = canvasRef.current;
+    canvas?.addEventListener("wheel", handleWheel, { passive: false });
+    return () => {
+      canvas?.removeEventListener("wheel", handleWheel);
+    };
+  }, []);
 
-    if (submissionFile.submission_file_url) {
-      renderPDF(currentPage);
-    }
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleMouseDown = (e: MouseEvent) => {
+      isDragging.current = true;
+      lastPos.current = { x: e.clientX, y: e.clientY };
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current) return;
+      const dx = e.clientX - lastPos.current.x;
+      const dy = e.clientY - lastPos.current.y;
+      setPan((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
+      lastPos.current = { x: e.clientX, y: e.clientY };
+    };
+
+    const handleMouseUp = () => {
+      isDragging.current = false;
+    };
+
+    canvas.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
 
     return () => {
-      if (renderTaskRef.current) {
-        renderTaskRef.current.cancel();
-      }
+      canvas.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [currentPage, submissionFile.submission_file_url]);
+  }, []);
 
   const handleNextPage = () => {
+    setPan({ x: 0, y: 0 });
     if (currentPage < totalPages) {
       setCurrentPage((prev) => prev + 1);
     }
   };
 
   const handlePreviousPage = () => {
+    setPan({ x: 0, y: 0 });
     if (currentPage > 1) {
       setCurrentPage((prev) => prev - 1);
     }
   };
 
+  const handleZoomIn = () => {
+    setScale((prev) => prev + 0.2);
+  };
+
+  const handleZoomOut = () => {
+    setScale((prev) => Math.max(0.2, prev - 0.2));
+  };
+
+  const handleResetZoom = () => {
+    setScale(1.2);
+    setPan({ x: 0, y: 0 });
+  };
+
   return (
     <Container
-      // style={{
-      //   position: 'relative',
-      //   width: '100%',
-      //   height: '100vh',
-      //   overflow: 'auto',
-      //   border: '1px solid #ccc',
-      // }}
+      style={{
+        position: "relative",
+        height: "95vh",
+        maxHeight: "100vh",
+        overflow: "hidden",
+      }}
     >
-      <canvas 
-        ref={canvasRef}
-        className='border-2 border-gray-400 shadow-2xs'
-      />
-
-      <Stage
-        width={canvasSize.width}
-        height={canvasSize.height}
-        style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+      <div
+        style={{
+          overflow: "hidden",
+          height: "100%",
+          cursor: isDragging.current ? "grabbing" : "grab",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
       >
-        <Layer>
-          {/* {boundingBoxes
-            .filter((box) => box.pageNumber === currentPage)
-            .map((box, index) => (
-              <React.Fragment key={index}> */}
-                {/* <Rect
-                  x={box.topLeft.x * 1.5}
-                  y={box.topLeft.y * 1.5}
-                  width={(box.bottomRight.x - box.topLeft.x) * 1.5}
-                  height={(box.bottomRight.y - box.topLeft.y) * 1.5}
-                  fill={
-                    box.type === 'NAME'
-                      ? 'rgba(0, 255, 0, 0.2)'
-                      : box.type === 'STUDENTID'
-                      ? 'rgba(255, 0, 0, 0.2)'
-                      : 'rgba(0, 0, 255, 0.2)'
-                  }
-                  stroke={
-                    box.type === 'NAME'
-                      ? 'green'
-                      : box.type === 'STUDENTID'
-                      ? 'red'
-                      : 'blue'
-                  }
-                  strokeWidth={2}
-                />
-                <Text
-                  x={box.topLeft.x * 1.5}
-                  y={box.topLeft.y * 1.5 - 20}
-                  text={box.type === 'QUESTION' ? `${box.title} (${box.points} pts)` : box.title}
-                  fontSize={14}
-                  fontStyle="bold"
-                  fill={
-                    box.type === 'NAME'
-                      ? 'green'
-                      : box.type === 'STUDENTID'
-                      ? 'red'
-                      : 'blue'
-                  }
-                /> */}
-              {/* </React.Fragment>
-            ))} */}
-        </Layer>
-      </Stage>
+        <canvas
+          ref={canvasRef}
+          style={{
+            display: "block",
+            transform: `translate(${pan.x}px, ${pan.y}px)`,
+            transition: isDragging.current ? "none" : "transform 0.1s",
+            border: "2px solid #555",
+            borderRadius: "4px",
+            boxShadow: "0 0 10px rgba(0,0,0,0.3)",
+          }}
+        />
+      </div>
 
-      <Flex justify="space-between" align="center" mt="lg">
+      {/* ปุ่ม Zoom */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: "10px",
+          right: "10px",
+          display: "flex",
+          gap: "0.5rem",
+          background: "rgba(255,255,255,0.85)",
+          padding: "0.5rem",
+          borderRadius: "0.5rem",
+        }}
+      >
+        <Button onClick={handleZoomOut} variant="light" size="xs">
+          <AiOutlineZoomOut />
+        </Button>
+        <Button onClick={handleResetZoom} variant="light" size="xs">
+          <AiOutlineReload />
+        </Button>
+        <Button onClick={handleZoomIn} variant="light" size="xs">
+          <AiOutlineZoomIn />
+        </Button>
+      </div>
+
+      {/* ปุ่ม Previous */}
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "10px",
+          transform: "translateY(-50%)",
+        }}
+      >
         <Button
-          variant="transparent"
-          disabled={currentPage === 1 || isLoading} 
           onClick={handlePreviousPage}
+          variant="light"
+          size="xs"
+          disabled={currentPage === 1}
         >
-          Previous Page
+          <AiOutlineArrowLeft />
         </Button>
-        <Button 
-          variant="transparent"
-          disabled={currentPage === totalPages || isLoading} 
+      </div>
+
+      {/* ปุ่ม Next */}
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          right: "10px",
+          transform: "translateY(-50%)",
+        }}
+      >
+        <Button
           onClick={handleNextPage}
+          variant="light"
+          size="xs"
+          disabled={currentPage === totalPages}
         >
-          Next Page
+          <AiOutlineArrowRight />
         </Button>
-      </Flex>
+      </div>
+
+      {/* Page Indicator */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: "10px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          background: "rgba(255,255,255,0.85)",
+          padding: "0.2rem 0.5rem",
+          borderRadius: "0.3rem",
+          fontSize: "0.75rem",
+        }}
+      >
+        Page {currentPage}/{totalPages}
+      </div>
     </Container>
   );
 };
