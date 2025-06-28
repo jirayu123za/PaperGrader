@@ -2005,7 +2005,7 @@ func (h *HttpInstructorHandler) GetRubric(c *fiber.Ctx) error {
 	})
 }
 
-func (h *HttpInstructorHandler) MockGetData(c *fiber.Ctx) error {
+func (h *HttpInstructorHandler) GetQuestionsList(c *fiber.Ctx) error {
 	assignmentIDParam := c.Query("assignment_id")
 	assignmentID, err := uuid.Parse(assignmentIDParam)
 	if err != nil {
@@ -2015,15 +2015,7 @@ func (h *HttpInstructorHandler) MockGetData(c *fiber.Ctx) error {
 		})
 	}
 
-	boundingBoxes, err := h.services.GetBoundingBoxesByAssignmentTemplate(assignmentID)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to get bounding boxes",
-			"error":   err.Error(),
-		})
-	}
-
-	questions, err := h.services.GetQuestionsByAssignmentTemplate(assignmentID)
+	questions, err := h.services.GetQuestionsList(assignmentID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to get questions",
@@ -2032,9 +2024,8 @@ func (h *HttpInstructorHandler) MockGetData(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"bounding_boxes": boundingBoxes,
-		"questions":      questions,
-		"message":        "Assignment template data retrieved",
+		"questions": questions,
+		"message":   "questions list retrieved successfully",
 	})
 }
 
