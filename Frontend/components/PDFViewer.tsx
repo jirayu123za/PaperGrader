@@ -16,29 +16,36 @@ import { PageMetadata, usePageMetaStore } from '@/store/BoundingBox/usePageMetaS
 
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js`;
 
-const KonvaCanvas = dynamic(() => import('./client/KonvaCanvas').then((mod) => mod.default), { ssr: false });
-
-
+const KonvaCanvas = dynamic(
+  () => import('./client/KonvaCanvas').then((mod) => mod.default),
+  { ssr: false }
+);
 
 const PDFViewer: React.FC = () => {
+  const pdfContainerRef = useRef<HTMLDivElement>(null);
+  const innerContainerRef = useRef<HTMLDivElement>(null);
   const konvaOverlayRef = useRef<HTMLDivElement>(null);
+  const paperRef = useRef<HTMLDivElement>(null);
+
   const { pageMetas } = usePageMetaStore();
-  const setPageMetas     = usePageMetaStore((s) => s.setPageMetas);
+  const setPageMetas = usePageMetaStore((s) => s.setPageMetas);
+  const setCurrentPage = usePageMetaStore((s) => s.setCurrentPage);
+
   const params = useParams();
   const course_id = params.course_id as string;
   const assignment_id = params.assignment_id as string;
-  const pdfContainerRef = useRef<HTMLDivElement>(null);
-  const innerContainerRef = useRef<HTMLDivElement>(null);
-  const renderTaskRef = useRef<any>(null);
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { form: fileForm } = useFetchFile({ course_id, assignment_id });
   const [containerWidth, setContainerWidth] = useState<number>(0);
   const [containerHeight, setContainerHeight] = useState<number>(0);
+
   const isCreateCollapsed = useCreateSidebarStore((state) => state.isCollapsed);
   const isLeftCollapsed = useLeftProcessSidebarStore((state) => state.isCollapsed);
-  const { data: template } = useFetchTemplate(assignment_id);
-  const setCurrentPage = usePageMetaStore(s => s.setCurrentPage);
 
+  const { form: fileForm } = useFetchFile({ course_id, assignment_id });
+  const { data: template } = useFetchTemplate(assignment_id);
+
+  // ปรับขนาดตอน resize sidebar เปลี่ยน state
   useEffect(() => {
     const handleResize = () => {
       if (pdfContainerRef.current) {
@@ -47,12 +54,12 @@ const PDFViewer: React.FC = () => {
         setContainerHeight(rect.height);
       }
     };
-
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [isCreateCollapsed, isLeftCollapsed]);
 
+  // โหลดและ render PDF ทุกหน้า พร้อมเก็บ metadata
   useEffect(() => {
     const renderPDF = async () => {
       if (!fileForm.values.pdfUrl || containerWidth === 0 || !innerContainerRef.current) return;
@@ -63,62 +70,55 @@ const PDFViewer: React.FC = () => {
         const pdf = await loadingTask.promise;
         const numPages = pdf.numPages;
 
+        // ล้าง container เก่าก่อน
         innerContainerRef.current.innerHTML = '';
-        const pageMetas: PageMetadata[] = [];
+        const metas: PageMetadata[] = [];
         let cumulativeHeight = 0;
 
         for (let pageNum = 1; pageNum <= numPages; pageNum++) {
           const page = await pdf.getPage(pageNum);
-          const unscaledViewport = page.getViewport({ scale: 1.0 });
-          const layoutScale = containerWidth / unscaledViewport.width;
-          const layoutViewport = page.getViewport({ scale: layoutScale });
-          const pageHeight = layoutViewport.height;
+          // คำนวณ scale ให้เต็มความกว้าง container
+          const unscaled = page.getViewport({ scale: 1 });
+          const scale = containerWidth / unscaled.width;
+          const viewport = page.getViewport({ scale });
 
-          pageMetas.push({
+          metas.push({
             pageNumber: pageNum,
-            scale: layoutScale,
-            width: layoutViewport.width,
-            height: layoutViewport.height,
+            scale,
+            width: viewport.width,
+            height: viewport.height,
             offsetY: cumulativeHeight,
           });
-
-          cumulativeHeight += pageHeight;
+          cumulativeHeight += viewport.height;
 
           const canvas = document.createElement('canvas');
-          const context = canvas.getContext('2d');
-
-          canvas.width = Math.floor(layoutViewport.width);
-          canvas.height = Math.floor(layoutViewport.height);
+          const ctx = canvas.getContext('2d')!;
+          canvas.width = Math.floor(viewport.width);
+          canvas.height = Math.floor(viewport.height);
           canvas.style.width = '100%';
-          canvas.style.height = `${layoutViewport.height}px`;
+          canvas.style.height = `${viewport.height}px`;
           canvas.style.display = 'block';
 
-          innerContainerRef.current?.appendChild(canvas);
-
-          renderTaskRef.current = page.render({
-            canvasContext: context!,
-            viewport: layoutViewport,
-          });
-
+          innerContainerRef.current.appendChild(canvas);
+          const renderTask = page.render({ canvasContext: ctx, viewport });
           try {
-            await renderTaskRef.current.promise;
-          } catch (error) {
-            console.warn('Render task cancelled or failed:', error);
+            await renderTask.promise;
+          } catch (e) {
+            console.warn('PDF render cancelled:', e);
           }
         }
 
-        setPageMetas(pageMetas);
-        usePageMetaStore.getState().setPageMetas(pageMetas);
+        // เซ็ต metadata ลง store
+        setPageMetas(metas);
       } finally {
         setIsLoading(false);
       }
     };
+
     renderPDF();
   }, [fileForm.values.pdfUrl, containerWidth]);
 
-
-
-
+  // ปรับขนาด overlay ให้ครอบ inner container
   useEffect(() => {
     if (konvaOverlayRef.current && innerContainerRef.current) {
       konvaOverlayRef.current.style.height = `${innerContainerRef.current.scrollHeight}px`;
@@ -126,28 +126,34 @@ const PDFViewer: React.FC = () => {
     }
   }, [isLoading]);
 
+  // Scroll listener ผูกกับ <Paper> เพื่ออัปเดต currentPage
   useEffect(() => {
-  const container = pdfContainerRef.current;
-  if (!container) return;
-  const onScroll = () => {
-    const scrollTop = container.scrollTop;
-    const current = pageMetas.find(
-      (m) => scrollTop >= m.offsetY && scrollTop < m.offsetY + m.height
-    );
-    if (current) {
-      setCurrentPage(current.pageNumber);
-    }
-  };
-  container.addEventListener('scroll', onScroll);
-  return () => container.removeEventListener('scroll', onScroll);
-}, [pageMetas]);
+    const container = paperRef.current;
+    if (!container) return;
 
+    const onScroll = () => {
+      const scrollTop = container.scrollTop;
+      const current = pageMetas.find(
+        (m) => scrollTop >= m.offsetY && scrollTop < m.offsetY + m.height
+      );
+      if (current) setCurrentPage(current.pageNumber);
+    };
+
+    container.addEventListener('scroll', onScroll);
+    return () => container.removeEventListener('scroll', onScroll);
+  }, [pageMetas]);
 
   return (
     <Container
-      style={{ height: '100vh', position: 'relative', display: 'flex', flexDirection: 'column', overflow: 'hidden', flexGrow: 1 }}
       ref={pdfContainerRef}
       fluid
+      style={{
+        height: '100vh',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        flexGrow: 1,
+      }}
     >
       {isLoading && (
         <Box
@@ -157,7 +163,7 @@ const PDFViewer: React.FC = () => {
             left: 0,
             width: '100%',
             height: '100%',
-            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            backgroundColor: 'rgba(255,255,255,0.7)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -167,9 +173,27 @@ const PDFViewer: React.FC = () => {
           <Loader size="lg" />
         </Box>
       )}
-      <Paper style={{ flexGrow: 1, overflow: 'auto', position: 'relative' }}>
-        <div ref={innerContainerRef} style={{ position: 'relative', zIndex: 1 }} />
-        <div ref={konvaOverlayRef} style={{ position: 'absolute', top: 0, left: 0, zIndex: 2, width: '100%', height: '100%', pointerEvents: 'auto' }} />
+
+      <Paper
+        ref={paperRef}
+        style={{ flexGrow: 1, overflow: 'auto', position: 'relative' }}
+      >
+        <div
+          ref={innerContainerRef}
+          style={{ position: 'relative', zIndex: 1 }}
+        />
+
+        <div
+          ref={konvaOverlayRef}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            zIndex: 2,
+            pointerEvents: 'auto',
+          }}
+        />
+
         <KonvaCanvas innerContainerRef={konvaOverlayRef} />
       </Paper>
     </Container>

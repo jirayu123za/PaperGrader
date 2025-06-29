@@ -1,36 +1,43 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useParams } from 'next/navigation';
+import { useFetchTemplate } from '@/hooks/BoundingBox/useFetchBoundingBox';
 import Konva from 'konva';
 import useBoundingBoxStore from '@/store/BoundingBox/useBoundingBoxStore';
 import { createBoundingBoxGroup } from '@/components/INS/INSProcess/Right/Boundingbox/createBoundingBox';
 import { usePageMetaStore } from '@/store/BoundingBox/usePageMetaStore';
-
 
 interface KonvaCanvasProps {
   innerContainerRef: React.RefObject<HTMLDivElement>;
 }
 
 export default function KonvaCanvas({ innerContainerRef }: KonvaCanvasProps) {
+  // Fetch template data on mount to populate store
+  const params = useParams();
+  const assignment_id = params.assignment_id as string;
+  const { data: template, isSuccess: isTemplateSuccess } = useFetchTemplate(assignment_id);
+
+  // Store selectors
   const boundingBoxes = useBoundingBoxStore((state) => state.boundingBoxes);
   const rubricData = useBoundingBoxStore((state) => state.rubricData);
+  const pageMetas = usePageMetaStore((state) => state.pageMetas);
+  const updateBox = useBoundingBoxStore((state) => state.updateBoundingBox);
+
+  // Refs for Konva
   const stageRef = useRef<Konva.Stage | null>(null);
   const layerRef = useRef<Konva.Layer | null>(null);
   const groupMapRef = useRef<Map<string, Konva.Group>>(new Map());
-  const pageMetas = usePageMetaStore((state) => state.pageMetas);
 
+  // Initialize Konva Stage and Layer
   useEffect(() => {
     if (!innerContainerRef.current || stageRef.current) return;
 
-    const width = innerContainerRef.current.offsetWidth;
-    const height = innerContainerRef.current.scrollHeight;
-
     const stage = new Konva.Stage({
       container: innerContainerRef.current,
-      width,
-      height,
+      width: innerContainerRef.current.offsetWidth,
+      height: innerContainerRef.current.scrollHeight,
     });
-
     const layer = new Konva.Layer();
     stage.add(layer);
 
@@ -39,102 +46,101 @@ export default function KonvaCanvas({ innerContainerRef }: KonvaCanvasProps) {
 
     stage.on('click', (e) => {
       if (e.target === stage) {
-        layer.find('Transformer').forEach((tr) => (tr as Konva.Transformer).nodes([]));
+        layer.find('Transformer').forEach((tr) => tr.destroy());
       }
     });
   }, [innerContainerRef]);
 
+  // Draw and update bounding boxes
   useEffect(() => {
     const layer = layerRef.current;
     const groupMap = groupMapRef.current;
-    if (!layer || !pageMetas?.length) return;
+    if (!layer || !pageMetas.length || !isTemplateSuccess) return;
 
-    // ✅ Map bounding_box_id → { title, point } จาก rubric ทั้งหมด
+    // Map bounding_box_id to question info
     const questionMap = new Map<string, { title: string; point: number }>();
     rubricData.questions.forEach((q: any) => {
       if (q.bounding_box_id) {
-        questionMap.set(q.bounding_box_id, {
-          title: q.question_title,
-          point: q.question_point,
-        });
+        questionMap.set(q.bounding_box_id, { title: q.question_title, point: q.question_point });
       }
       q.subquestions?.forEach((sub: any) => {
         if (sub.bounding_box_id) {
-          questionMap.set(sub.bounding_box_id, {
-            title: sub.subquestion_title,
-            point: sub.subquestion_point,
-          });
+          questionMap.set(sub.bounding_box_id, { title: sub.subquestion_title, point: sub.subquestion_point });
         }
       });
     });
 
-    const currentIds = new Set(boundingBoxes.map(b => b.bounding_box_id));
-    for (const [id, group] of groupMap.entries()) {
+    // Remove deleted boxes
+    const currentIds = new Set(boundingBoxes.map((b) => b.bounding_box_id));
+    for (const [id, grp] of groupMap.entries()) {
       if (!currentIds.has(id)) {
-        group.destroy();
+        grp.destroy();
         groupMap.delete(id);
-        layer.batchDraw();
       }
     }
 
-    boundingBoxes.forEach((box: any) => {
-      const groupId = box.bounding_box_id;
-      const existingGroup = groupMap.get(groupId);
-      const meta = pageMetas.find(p => p.pageNumber === box.bounding_box_page);
+    // Render or update each bounding box
+    boundingBoxes.forEach((box) => {
+      const meta = pageMetas.find((m) => m.pageNumber === box.bounding_box_page);
       if (!meta) return;
 
-      const matched = questionMap.get(box.bounding_box_id);
-      const questionTitle = matched?.title || 'Question';
-      const questionPoint = matched?.point || 0;
-
-      const newText =
+      const info = questionMap.get(box.bounding_box_id);
+      const labelText =
         box.bounding_box_type === 'question'
-          ? `${questionTitle} (${questionPoint} pts)`
+          ? `${info?.title || 'Question'} (${info?.point || 0} pts)`
           : box.bounding_box_type === 'name'
-          ? 'Student Name'
-          : 'Student ID';
+            ? 'Student Name'
+            : 'Student ID';
 
-      const adjustedX = (box.bounding_box_point_x || 0) * meta.scale;
-      const adjustedY = (box.bounding_box_point_y || 0) * meta.scale + meta.offsetY;
-      const adjustedWidth = (box.bounding_box_width || 100) * meta.scale;
-      const adjustedHeight = (box.bounding_box_height || 100) * meta.scale;
+      // Transform raw coords to canvas coords
+      const x = box.point_x * meta.scale;
+      const y = box.point_y * meta.scale + meta.offsetY;
+      const w = box.width * meta.scale;
+      const h = box.height * meta.scale;
 
+      const existingGroup = groupMap.get(box.bounding_box_id);
       if (existingGroup) {
-        const titleTextNode = existingGroup.findOne((node: Konva.Node) => node.getClassName() === 'Text') as Konva.Text;
-        if (titleTextNode && titleTextNode.text() !== newText) {
-          titleTextNode.text(newText);
-          layer.batchDraw();
-        }
+        // update label, position, and size
+        const textNode = existingGroup.findOne('.titleText') as Konva.Text;
+        if (textNode.text() !== labelText) textNode.text(labelText);
+        existingGroup.position({ x, y });
+        existingGroup.findOne('.background')?.setAttrs({ width: w, height: h });
       } else {
+        // create new group
         const group = createBoundingBoxGroup(
-          {
-            ...box,
-            question_title: questionTitle,
-            question_point: questionPoint,
-          },
-          (shape) => {
-            const tr = new Konva.Transformer();
-            layer.add(tr);
-            tr.nodes([shape]);
-            layer.batchDraw();
-          }
+          { ...box, question_title: info?.title || '', question_point: info?.point || 0 },
+          () => { }
         );
-        group.position({ x: adjustedX, y: adjustedY });
-        group.findOne('.background')?.setAttrs({ width: adjustedWidth, height: adjustedHeight });
-
-        groupMap.set(groupId, group);
+        group.draggable(true);
+        group.on('dragend', () => {
+          // get position relative to stage
+          const { x: newX, y: newY } = group.position();
+          const origX = newX / meta.scale;
+          const origY = (newY - meta.offsetY) / meta.scale;
+          updateBox(box.bounding_box_id, { point_x: origX, point_y: origY });
+        });
+        group.on('click', (e) => {
+          e.cancelBubble = true;
+          layer.find('Transformer').forEach((tr) => tr.destroy());
+          const tr = new Konva.Transformer({ rotateEnabled: false });
+          layer.add(tr);
+          tr.nodes([group]);
+        });
+        group.position({ x, y });
+        group.findOne('.background')?.setAttrs({ width: w, height: h });
         layer.add(group);
-        layer.batchDraw();
+        groupMap.set(box.bounding_box_id, group);
       }
     });
-  }, [boundingBoxes, rubricData, pageMetas]);
 
+    layer.batchDraw();
+  }, [boundingBoxes, rubricData, pageMetas, updateBox, isTemplateSuccess]);
+
+  // adjust stage size on container resize
   useEffect(() => {
-    if (innerContainerRef.current && stageRef.current) {
-      const newWidth = innerContainerRef.current.offsetWidth;
-      const newHeight = innerContainerRef.current.scrollHeight;
-      stageRef.current.size({ width: newWidth, height: newHeight });
-    }
+    const stage = stageRef.current;
+    if (!stage || !innerContainerRef.current) return;
+    stage.size({ width: innerContainerRef.current.offsetWidth, height: innerContainerRef.current.scrollHeight });
   }, [innerContainerRef.current?.scrollHeight]);
 
   return null;
