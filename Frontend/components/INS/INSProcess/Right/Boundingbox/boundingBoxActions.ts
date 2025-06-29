@@ -1,12 +1,15 @@
 import { nanoid } from 'nanoid';
 import useBoundingBoxStore from '@/store/BoundingBox/useBoundingBoxStore';
+import { usePageMetaStore } from '@/store/BoundingBox/usePageMetaStore';
+
 
 export function handleAddNameBoundingBox() {
   const { addBoundingBox } = useBoundingBoxStore.getState();
+  const { currentPage } = usePageMetaStore.getState();
   addBoundingBox({
     bounding_box_id: nanoid(),
     bounding_box_type: 'name',
-    bounding_box_page: 1,
+    bounding_box_page: currentPage,
     point_x: 50,
     point_y: 100,
     width: 200,
@@ -16,10 +19,11 @@ export function handleAddNameBoundingBox() {
 
 export function handleAddIdBoundingBox() {
   const { addBoundingBox } = useBoundingBoxStore.getState();
+  const { currentPage } = usePageMetaStore.getState();
   addBoundingBox({
     bounding_box_id: nanoid(),
     bounding_box_type: 'id',
-    bounding_box_page: 1,
+    bounding_box_page: currentPage,
     point_x: 50,
     point_y: 160,
     width: 200,
@@ -29,13 +33,14 @@ export function handleAddIdBoundingBox() {
 
 export function handleAddQuestionAndBoundingBox() {
   const { addBoundingBox, addQuestion } = useBoundingBoxStore.getState();
+  const { currentPage } = usePageMetaStore.getState();
   const bounding_box_id = nanoid();
   const question_id = nanoid();
 
   addBoundingBox({
     bounding_box_id,
     bounding_box_type: 'question',
-    bounding_box_page: 1,
+     bounding_box_page: currentPage,
     point_x: 100,
     point_y: 200,
     width: 300,
@@ -55,11 +60,11 @@ export function handleAddQuestionAndBoundingBox() {
 
 export function handleAddBoundingBox(bounding_box_id: string, type: 'question' | 'name' | 'id') {
   const { addBoundingBox } = useBoundingBoxStore.getState();
-
+ const { currentPage } = usePageMetaStore.getState();
   addBoundingBox({
     bounding_box_id,
     bounding_box_type: type,
-    bounding_box_page: 1,
+    bounding_box_page: currentPage,
     point_x: 100,
     point_y: 200,
     width: 300,
