@@ -1181,12 +1181,25 @@ func (r *GormInstructorRepository) FindQuestionsList(AssignmentID uuid.UUID) (re
 		return response.QuestionsListResponse{}, nil
 	}
 
+	var ungradedID response.UngradedSubmissions
+	if err := r.db.
+		Raw(`
+			SELECT s.submission_id
+			FROM submissions s
+			WHERE s.assignment_id = ? AND NOT EXISTS (
+				SELECT 1 FROM grades g WHERE g.submission_id = s.submission_id
+			)
+		`, AssignmentID).Scan(&ungradedID).Error; err != nil {
+		return nil, err
+	}
+
 	var parsed response.RawRubricData
 	if err := json.Unmarshal(rubric.RubricData, &parsed); err != nil {
 		return nil, err
 	}
 
 	var result response.QuestionsListResponse
+	subIDx := 0
 	for _, q := range parsed.QuestionsData {
 		question := response.Question{
 			QuestionID:    q.QuestionID,
@@ -1194,14 +1207,23 @@ func (r *GormInstructorRepository) FindQuestionsList(AssignmentID uuid.UUID) (re
 			QuestionPoint: q.QuestionPoint,
 		}
 
-		for _, sq := range q.SubQuestions {
-			question.SubQuestions = append(question.SubQuestions, response.SubQuestion{
-				SubQuestionID:    sq.SubQuestionID,
-				SubQuestionTitle: sq.SubQuestionTitle,
-				SubQuestionPoint: sq.SubQuestionPoint,
-			})
+		if len(q.SubQuestions) > 0 {
+			for _, sq := range q.SubQuestions {
+				sub := response.SubQuestion{
+					SubQuestionID:    sq.SubQuestionID,
+					SubQuestionTitle: sq.SubQuestionTitle,
+					SubQuestionPoint: sq.SubQuestionPoint,
+					SubmissionID:     ungradedID[subIDx%len(ungradedID)].SubmissionID,
+				}
+				subIDx++
+				question.SubQuestions = append(question.SubQuestions, sub)
+			}
+		} else {
+			if subIDx < len(ungradedID) {
+				question.SubmissionID = &ungradedID[subIDx%len(ungradedID)].SubmissionID
+				subIDx++
+			}
 		}
-
 		result = append(result, question)
 	}
 	return result, nil
