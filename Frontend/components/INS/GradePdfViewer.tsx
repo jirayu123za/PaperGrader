@@ -171,9 +171,9 @@ const GradePdfViewer: React.FC = () => {
             display: "block",
             transform: `translate(${pan.x}px, ${pan.y}px)`,
             transition: isDragging.current ? "none" : "transform 0.1s",
-            border: "2px solid #555",
-            borderRadius: "4px",
-            boxShadow: "0 0 10px rgba(0,0,0,0.3)",
+            border: "1px solid rgba(0,0,0,0.2)", 
+            borderRadius: "0px", 
+            boxShadow: "0 0 4px rgba(0,0,0,0.1)", 
           }}
         />
       </div>
