@@ -7,7 +7,7 @@ export const SubmissionGrader = () => {
   return (
     <>
         <GradePdfViewer/>
-        <RubricGrader/>
+        {/* <RubricGrader/> */}
     </>
   );
 }
