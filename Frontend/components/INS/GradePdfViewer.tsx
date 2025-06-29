@@ -1,23 +1,23 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import { Button, Container } from "@mantine/core";
-import * as pdfjsLib from "pdfjs-dist";
 import "pdfjs-dist/web/pdf_viewer.css";
-// import { useFetchSubmissionFile } from "../../hooks/useFetchFile";
-// import { useSubmissionFileStore } from "../../store/useINS_SubmissionStore";
+import * as pdfjsLib from "pdfjs-dist";
+import React, { useEffect, useRef, useState } from "react";
+import { Button, Container, Loader } from "@mantine/core";
+import { useFetchSubmissionFile } from "@/hooks/useFetchFile";
+import { useSubmissionFileStore } from "@/store/useINS_SubmissionStore";
 import { useParams } from "next/navigation";
-import {
-  AiOutlineZoomIn,
-  AiOutlineZoomOut,
-  AiOutlineReload,
-  AiOutlineArrowLeft,
-  AiOutlineArrowRight,
-} from "react-icons/ai";
-
+import { AiOutlineZoomIn, AiOutlineZoomOut, AiOutlineReload, AiOutlineArrowLeft, AiOutlineArrowRight } from "react-icons/ai";
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js`;
 
 const GradePdfViewer: React.FC = () => {
+  const params = useParams() as Record<string, string>;
+  const assignment_id = params.assignment_id;
+  const course_id = params.course_id;
+  const submission_id = params.submission_id;
+  const { isLoading, error } = useFetchSubmissionFile(course_id, assignment_id, submission_id);
+  const { submissionFile } = useSubmissionFileStore();
+  // PDF func under here:
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -27,23 +27,9 @@ const GradePdfViewer: React.FC = () => {
   const lastPos = useRef({ x: 0, y: 0 });
   const renderTaskRef = useRef<any>(null);
 
-  const params = useParams() as Record<string, string | undefined>;
-  const assignment_id = params.assignment_id;
-  const course_id = params.course_id;
-  const submission_id = params.submission_id;
-
-  if (!assignment_id || !course_id || !submission_id) {
-    return <div>Missing required route parameters.</div>;
-  }
-
-  // const { isLoading, error } = useFetchSubmissionFile(course_id, assignment_id, submission_id);
-  // const { submissionFile } = useSubmissionFileStore();
-
-  const pdfUrl = "/pdf/test01.pdf";
-
   const renderPDF = async (pageNum: number, scaleValue: number) => {
     try {
-      const loadingTask = pdfjsLib.getDocument(pdfUrl);
+      const loadingTask = pdfjsLib.getDocument(submissionFile.submission_file_url);
       const pdf = await loadingTask.promise;
       const page = await pdf.getPage(pageNum);
 
