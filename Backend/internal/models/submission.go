@@ -15,6 +15,7 @@ type Submission struct {
 	SubmissionFileName string          `gorm:"not null" json:"submission_file_name"`
 	MatchedBy          *string         `gorm:"type:submission_matched_by" json:"matched_by"`
 	SubmissionBox      []SubmissionBox `gorm:"foreignKey:SubmissionID"`
+	Grades             []Grade         `gorm:"foreignKey:SubmissionID"`
 	SubmittedAt        time.Time       `gorm:"not null" json:"submitted_at"`
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
