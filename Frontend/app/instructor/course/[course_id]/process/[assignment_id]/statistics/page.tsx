@@ -11,10 +11,6 @@ export const metadata = {
 
 export default function InsStatistics() {
   return (
-    <div className="flex min-h-screen">
-      <div className="grow p-4">
         <ReviewSummary />
-      </div>
-    </div>
   );
 }
