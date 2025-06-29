@@ -12,23 +12,18 @@ import { useLeftProcessSidebarStore } from '@/store/process-outline/leftProcessS
 import { useFetchTemplate } from '@/hooks/BoundingBox/useFetchBoundingBox';
 import useBoundingBoxStore from '@/store/BoundingBox/useBoundingBoxStore';
 import { nanoid } from 'nanoid';
-import { usePageMetaStore } from '@/store/BoundingBox/usePageMetaStore';
+import { PageMetadata, usePageMetaStore } from '@/store/BoundingBox/usePageMetaStore';
 
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js`;
 
 const KonvaCanvas = dynamic(() => import('./client/KonvaCanvas').then((mod) => mod.default), { ssr: false });
 
-interface PageMetadata {
-  pageNumber: number;
-  scale: number;
-  width: number;
-  height: number;
-  offsetY: number;
-}
+
 
 const PDFViewer: React.FC = () => {
   const konvaOverlayRef = useRef<HTMLDivElement>(null);
-  const [pageMetas, setPageMetas] = useState<PageMetadata[]>([]);
+  const { pageMetas } = usePageMetaStore();
+  const setPageMetas     = usePageMetaStore((s) => s.setPageMetas);
   const params = useParams();
   const course_id = params.course_id as string;
   const assignment_id = params.assignment_id as string;
@@ -41,8 +36,8 @@ const PDFViewer: React.FC = () => {
   const [containerHeight, setContainerHeight] = useState<number>(0);
   const isCreateCollapsed = useCreateSidebarStore((state) => state.isCollapsed);
   const isLeftCollapsed = useLeftProcessSidebarStore((state) => state.isCollapsed);
-  const { setBoundingBoxesFromAPI, setRubricDataFromAPI } = useBoundingBoxStore();
   const { data: template } = useFetchTemplate(assignment_id);
+  const setCurrentPage = usePageMetaStore(s => s.setCurrentPage);
 
   useEffect(() => {
     const handleResize = () => {
@@ -121,31 +116,8 @@ const PDFViewer: React.FC = () => {
     renderPDF();
   }, [fileForm.values.pdfUrl, containerWidth]);
 
-  useEffect(() => {
-    if (template?.bounding_boxes) {
-      setBoundingBoxesFromAPI(template.bounding_boxes);
-    }
-  }, [template]);
 
-  useEffect(() => {
-    if (!template) return;
-    const rubricQuestions = template.questions?.questions_data;
-    if (Array.isArray(rubricQuestions)) {
-      const withBoxIds = rubricQuestions.map((q: any) => ({
-        question_id: q.question_id ?? nanoid(),
-        question_title: q.question_title,
-        question_point: q.question_point,
-        bounding_box_id: q.bounding_box_id ?? '',
-        subquestions: q.sub_questions?.map((sub: any) => ({
-          subquestion_id: sub.sub_question_id ?? nanoid(),
-          subquestion_title: sub.sub_question_title,
-          subquestion_point: sub.sub_question_point,
-          bounding_box_id: sub.bounding_box_id ?? '',
-        })) ?? [],
-      }));
-      setRubricDataFromAPI(withBoxIds);
-    }
-  }, [template]);
+
 
   useEffect(() => {
     if (konvaOverlayRef.current && innerContainerRef.current) {
@@ -153,6 +125,23 @@ const PDFViewer: React.FC = () => {
       konvaOverlayRef.current.style.width = `${innerContainerRef.current.scrollWidth}px`;
     }
   }, [isLoading]);
+
+  useEffect(() => {
+  const container = pdfContainerRef.current;
+  if (!container) return;
+  const onScroll = () => {
+    const scrollTop = container.scrollTop;
+    const current = pageMetas.find(
+      (m) => scrollTop >= m.offsetY && scrollTop < m.offsetY + m.height
+    );
+    if (current) {
+      setCurrentPage(current.pageNumber);
+    }
+  };
+  container.addEventListener('scroll', onScroll);
+  return () => container.removeEventListener('scroll', onScroll);
+}, [pageMetas]);
+
 
   return (
     <Container
