@@ -88,6 +88,7 @@ func ConnectPostgres(migrate bool) *gorm.DB {
 		// &models.Upload{},
 		// &models.BoundingBox{},
 		// &models.Rubric{},
+		// &models.Grade{},
 		)
 
 		err := db.AutoMigrate(
@@ -106,6 +107,7 @@ func ConnectPostgres(migrate bool) *gorm.DB {
 			&models.Upload{},
 			&models.BoundingBox{},
 			&models.Rubric{},
+			&models.Grade{},
 		)
 
 		if err != nil {
