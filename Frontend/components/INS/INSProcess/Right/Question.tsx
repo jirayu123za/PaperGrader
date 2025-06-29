@@ -29,38 +29,10 @@ export default function QuestionOutline() {
   const { mutate: createBoundingBoxes } = useCreateBoundingBoxes();
   const params = useParams();
   const assignment_id = params.assignment_id as string;
-  const { setBoundingBoxesFromAPI, setRubricDataFromAPI } = useBoundingBoxStore();
   const { data: template } = useFetchTemplate(assignment_id);
 
-  useEffect(() => {
-    if (template && template.bounding_boxes) {
-      setBoundingBoxesFromAPI(template.bounding_boxes);
-    }
-  }, [template]);
 
-  useEffect(() => {
-    if (!template) return;
 
-    const rubricQuestions = template.questions?.questions_data;
-
-    if (Array.isArray(rubricQuestions)) {
-      const withBoxIds = rubricQuestions.map((q: any) => ({
-        question_id: q.question_id ?? nanoid(),
-        question_title: q.question_title,
-        question_point: q.question_point,
-        bounding_box_id: q.bounding_box_id ?? '',
-        subquestions:
-          q.sub_questions?.map((sub: any) => ({
-            subquestion_id: sub.sub_question_id ?? nanoid(),
-            subquestion_title: sub.sub_question_title,
-            subquestion_point: sub.sub_question_point,
-            bounding_box_id: sub.bounding_box_id ?? '',
-          })) ?? [],
-      }));
-
-      setRubricDataFromAPI(withBoxIds);
-    }
-  }, [template]);
 
   const calculateTotalPoints = () =>
     rubricData.questions.reduce((acc, q) => acc + q.question_point, 0);
