@@ -6,19 +6,19 @@ import { INSSubmissionsQuestion } from '@/components/INS/INSProcess/ManageSubmis
 
 export const TabsGradeSubmissionsClient = () => {
   return (
-    <Tabs defaultValue="submissions">
-        <Tabs.List>
-            <Tabs.Tab value="submissions">Submissions list</Tabs.Tab>
-            <Tabs.Tab value="questions">Questions list</Tabs.Tab>
-        </Tabs.List>
+    <Tabs defaultValue="submissions" p="md">
+      <Tabs.List>
+        <Tabs.Tab value="submissions">Submissions list</Tabs.Tab>
+        <Tabs.Tab value="questions">Questions list</Tabs.Tab>
+      </Tabs.List>
 
-        <Tabs.Panel value="submissions" pt="md">
-            <INSSubmissions/>
-        </Tabs.Panel>
+      <Tabs.Panel value="submissions" pt="md">
+        <INSSubmissions/>
+      </Tabs.Panel>
 
-        <Tabs.Panel value="questions">
-            <INSSubmissionsQuestion />
-        </Tabs.Panel>
+      <Tabs.Panel value="questions">
+        <INSSubmissionsQuestion />
+      </Tabs.Panel>
     </Tabs>
   )
 }
