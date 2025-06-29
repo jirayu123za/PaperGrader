@@ -10,7 +10,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <footer
         className="fixed bottom-0 left-64 w-[calc(100%-16rem)] border-t border-gray-300 bg-white z-50"
         style={{
-          padding: "0.5rem",
+          padding: "0.1rem",
         }}
       >
         <ReviewGradeBottomBar />
