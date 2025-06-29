@@ -1,7 +1,7 @@
 //main question 
 import React, { Suspense } from 'react';
-import GradePdfViewer from '@/components/INS/GradePdfViewer';
 import { Loader } from '@mantine/core';
+import { SubmissionGrader } from '@/components/client/SubmissionGrader';
 
 export const metadata = {
   title: 'Grade submissions - main question',
@@ -11,7 +11,7 @@ export const metadata = {
 export default function MainGradeSubmissions() {
   return (
     <Suspense fallback={<Loader size="sm" />}>
-      <GradePdfViewer/>      
+      <SubmissionGrader />  
     </Suspense>
   );
 }
