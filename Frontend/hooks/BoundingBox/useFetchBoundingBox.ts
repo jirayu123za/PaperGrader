@@ -1,6 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { usePageMetaStore } from '@/store/BoundingBox/usePageMetaStore';
+import useBoundingBoxStore from '@/store/BoundingBox/useBoundingBoxStore';
+
+
 
 interface BoundingBox {
   bounding_box_id?: string;
@@ -61,30 +64,31 @@ export function mapBoundingBoxesToApiFormat(boundingBoxes: any[]): ApiBoundingBo
 }
 
 
-type TemplateResponse = {
+export type TemplateResponse = {
   bounding_boxes: Array<{
     bounding_box_id: string;
-    point_x: number;
-  point_y: number;
-  width: number;
-  height: number;
     bounding_box_type: string;
     bounding_box_page: number;
+    bounding_box_point_x: number;
+    bounding_box_point_y: number;
+    bounding_box_width: number;
+    bounding_box_height: number;
   }>;
   message: string;
   questions: {
-    [x: string]: any;
-    rubric_id: string; 
-    rubric_data: {
-      questions: Array<{
-        question_title: string;
-        question_point: number;
-        sub_questions: Array<{
-          sub_question_title: string;
-          sub_question_point: number;
-        }>;
+    rubric_id: string;
+    questions_data: Array<{
+      bounding_box_id?: string;
+      question_id: string;
+      question_point: number;
+      question_title: string;
+      sub_questions?: Array<{
+        bounding_box_id: string;
+        sub_question_id: string;
+        sub_question_point: number;
+        sub_question_title: string;
       }>;
-    };
+    }>;
   };
 };
 
@@ -92,12 +96,56 @@ type TemplateResponse = {
 
 // GET bounding boxes & GET questions
 export const useFetchTemplate = (assignment_id: string) => {
-  return useQuery<TemplateResponse>({
+  const setBoxes = useBoundingBoxStore((s) => s.setBoundingBoxesFromAPI);
+  const setRubric = useBoundingBoxStore((s) => s.setRubricDataFromAPI);
+
+  return useQuery<TemplateResponse, Error>({
     queryKey: ['template', assignment_id],
     queryFn: async () => {
-      const res = await axios.get(`/api/api/instructor/assignment/template?assignment_id=${assignment_id}`);
-      return res.data;
-    }
+      const response = await axios.get<TemplateResponse>(
+        '/api/api/instructor/assignment/template',
+        { params: { assignment_id } }
+      );
+
+      if (response.status !== 200) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = response.data;
+
+      // แปลงและเซฟ bounding boxes ลง store
+      setBoxes(
+        data.bounding_boxes.map((b) => ({
+          bounding_box_id: b.bounding_box_id,
+          point_x: b.bounding_box_point_x,
+          point_y: b.bounding_box_point_y,
+          width: b.bounding_box_width,
+          height: b.bounding_box_height,
+          bounding_box_type: b.bounding_box_type,
+          bounding_box_page: b.bounding_box_page,
+        }))
+      );
+
+      // แปลงและเซฟ rubric data ลง store
+      setRubric(
+        data.questions.questions_data.map((q) => ({
+          question_id: q.question_id,
+          question_title: q.question_title,
+          question_point: q.question_point,
+          // ถ้าไม่มี sub_questions ก็เซฟเป็น array ว่าง
+          subquestions: q.sub_questions?.map((sub) => ({
+            subquestion_id: sub.sub_question_id,
+            subquestion_title: sub.sub_question_title,
+            subquestion_point: sub.sub_question_point,
+            bounding_box_id: sub.bounding_box_id,
+          })) || [],
+        }))
+      );
+
+      return data;
+    },
+    enabled: !!assignment_id,
+    refetchOnWindowFocus: false,
   });
 };
 
