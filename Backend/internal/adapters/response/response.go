@@ -147,7 +147,7 @@ type QuestionsTemplateResponse struct {
 	QuestionsData []interface{} `json:"questions_data"`
 }
 
-// Get Questions List By Assignment Template
+// Part 1: Get Questions List By Assignment Template
 type RawRubricData struct {
 	QuestionsData []Questions `json:"questions_data"`
 }
@@ -165,16 +165,24 @@ type SubQuestions struct {
 	SubQuestionPoint int       `json:"sub_question_point"`
 }
 
+// Part 2: Get Questions List By Assignment Template
+type UngradedSubmissions []struct {
+	SubmissionID uuid.UUID
+}
+
+// Part 3: Get Questions List By Assignment Template
 type SubQuestion struct {
 	SubQuestionID    uuid.UUID `json:"sub_question_id"`
 	SubQuestionTitle string    `json:"sub_question_title"`
 	SubQuestionPoint int       `json:"sub_question_point"`
+	SubmissionID     uuid.UUID `json:"submission_id"`
 }
 
 type Question struct {
 	QuestionID    uuid.UUID     `json:"question_id"`
 	QuestionTitle string        `json:"question_title"`
 	QuestionPoint int           `json:"question_point"`
+	SubmissionID  *uuid.UUID    `json:"submission_id,omitempty"`
 	SubQuestions  []SubQuestion `json:"sub_questions,omitempty"`
 }
 
