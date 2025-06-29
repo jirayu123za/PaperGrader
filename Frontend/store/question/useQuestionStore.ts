@@ -4,12 +4,14 @@ interface SubQuestion {
     sub_question_id: string;
     sub_question_title: string;
     sub_question_point: number;
+    submission_id: string;
 }
 
 interface Question {
     question_id: string;
     question_title: string;
     question_point: number;
+    submission_id: string | null;
     sub_questions?: SubQuestion[];
 }
 
@@ -22,6 +24,8 @@ interface QuestionStore {
 
     defaultSelectedQuestion: SelectedQuestion | null;
     setDefaultSelectedQuestion: () => void;
+
+    // resetSelectedQuestion: () => void;
 }
 
 interface SelectedQuestion {
@@ -62,4 +66,6 @@ export const useQuestionStore = create<QuestionStore>((set, get) => ({
             });
         }
     },
+
+    // resetSelectedQuestion: () => set({ selectedQuestion: null, defaultSelectedQuestion: null }),
 }));

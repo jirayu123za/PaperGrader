@@ -6,12 +6,14 @@ interface SubQuestion {
     sub_question_id: string;
     sub_question_title: string;
     sub_question_point: number;
+    submission_id: string;
 }
 
 interface Question {
     question_id: string;
     question_title: string;
     question_point: number;
+    submission_id: string | null;
     sub_questions?: SubQuestion[];
 }
 
