@@ -165,7 +165,7 @@ export const RubricGrader = () => {
     }
 
   return (
-    <Flex direction="column" bg={"#6665AC"} w="100%" maw={500}>
+    <Flex direction="column" bg={"#6665AC"} w="100%" maw={460}>
         <Flex justify="flex-start" align="center" p="md" bg="#6665AC">
             <Burger
                 lineSize={4}
@@ -176,9 +176,7 @@ export const RubricGrader = () => {
                 aria-label="Toggle navigation"
             />
         </Flex> 
-        <Flex direction="column" className="flex-1 p-4" bg={"#f8f9fa"} w="100%" maw={500}>
-
-            
+        <Flex direction="column" className="flex-1 p-4" bg={"#f8f9fa"} w="100%" maw={500} pl="lg" pr="lg">
             {/* Header */}
             <Box className="flex-shrink-0">
                 <Flex className="group items-center pb-1 gap-1">
@@ -234,7 +232,6 @@ export const RubricGrader = () => {
                                             {...provided.dragHandleProps}
                                             p="sm"
                                             w="100%"
-                                            maw={456}
                                             bd={snapshot.isDragging ? '2px solid #827f7f' : '1px solid #827f7f'}
                                             bg={snapshot.isDragging ? '#f0f0f0' : '#f9f9f9'}
                                             radius={0}
@@ -394,7 +391,7 @@ export const RubricGrader = () => {
 
                 <Button
                     leftSection={<FaPlus size={12} />}
-                    w={456}
+                    w="100%"
                     variant="outline"
                     color="violet"
                     className="mt-2"
