@@ -5,7 +5,7 @@ import 'katex/dist/katex.min.css';
 import React, { useEffect, useState } from 'react'
 import { marked } from 'marked';
 import { ActionIcon, Box, Burger, Button, Checkbox, Divider, Flex, Group, NumberInput, Progress, ScrollArea, Text, Textarea } from '@mantine/core';
-import { NoRubric } from '@/components/INS/INSProcess/Right/Rubric/NoRubric';
+import { NoRubricParams } from '@/components/INS/INSProcess/Right/Rubric/NoRubricParams';
 import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea/dnd';
 import { AiTwotoneDelete } from 'react-icons/ai';
 import { FaPlus } from 'react-icons/fa';
@@ -33,7 +33,7 @@ export const RubricGrader = () => {
   const params = useParams();
   const assignment_id = params.assignment_id as string;
   const question_id = params.question_id as string;
-  const sub_question_id = params.sub_question_id as string;
+  const sub_question_id = params.sub_question_id as string | undefined;
   const { questions } = useQuestionStore();
   const { isLoading: isLoadingQuestions, data: questionsData } = useFetchQuestion(assignment_id);
   const { isLoading: isLoadingRubric, data: data } = useFetchRubricParams(assignment_id, question_id, sub_question_id);
@@ -42,15 +42,15 @@ export const RubricGrader = () => {
   const { mutate: updateRubric, isPending: isPendingUpdate } = useUpdateRubric(assignment_id);
   const { mutate: updateRubricsIndexes, isPending: isPendingUpdateIndexes } = useUpdateRubricsIndexes(assignment_id);
   const { rubricData, rubrics, setRubrics, editingRubricID, setEditingRubricID, editingDescriptionID, setEditingDescriptionID } = useRubricStore();
-    
+  
   const isCollapsed: boolean = useCreateSidebarStore((state: { isCollapsed: boolean }) => state.isCollapsed);
   const toggle: () => void = useCreateSidebarStore((state: { toggle: () => void }) => state.toggle);
 
   const handleCreateRubric = () => {
     createRubric({ 
         assignment_id, 
-        question_id,
-        sub_question_id,
+        question_id: question_id,
+        sub_question_id: sub_question_id,
         rubric: {
             rubric_setting: rubricData?.rubric_setting ?? "Negative scoring",
             rubric_details: [{
@@ -206,7 +206,7 @@ export const RubricGrader = () => {
             </Box>
 
             {rubrics.length === 0 ? (
-                <NoRubric assignment_id={assignment_id} />
+                <NoRubricParams />
             ) : (       
                 <ScrollArea type="auto" scrollbarSize={4} scrollbars="y" h="calc(100vh - 340px)" mah={600}>
                     <DragDropContext onDragEnd={handleDragEnd}>
@@ -399,7 +399,7 @@ export const RubricGrader = () => {
                     color="violet"
                     className="mt-2"
                     onClick={handleCreateRubric}
-                    loading={isPendingCreate}
+                    // loading={isPendingCreate}
                 >
                     Add Rubric Item
                 </Button>
