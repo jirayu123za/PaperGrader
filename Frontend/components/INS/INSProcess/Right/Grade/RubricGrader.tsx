@@ -81,24 +81,24 @@ export const RubricGrader = () => {
         console.log("Rubric description:", rubric_description);
     }
 
-    // const handleUpdateRubricsIndexes = (rubricItems: RubricItem[], rubric_id: string) => {
-    //     updateRubricsIndexes({
-    //         assignment_id,
-    //         question_id: question_id,
-    //         sub_question_id: sub_question_id,
-    //         rubric: {
-    //             rubric_id: rubric_id,
-    //             rubric_details: rubricItems.map((r) => ({
-    //                 rubric_detail_id: r.rubric_detail_id,
-    //                 rubric_point: r.rubric_point,
-    //                 rubric_description: r.rubric_description,
-    //                 has_selected: r.has_selected,
-    //             })),
-    //         },
-    //     });
-    //     console.log("Updating rubric indexes with ID:", rubric_id);
-    //     console.log("New rubric items after drag:", rubricItems);
-    // }
+    const handleUpdateRubricsIndexes = (rubricItems: RubricItem[], rubric_id: string) => {
+        updateRubricsIndexes({
+            assignment_id,
+            question_id: question_id,
+            sub_question_id: sub_question_id,
+            rubric: {
+                rubric_id: rubric_id,
+                rubric_details: rubricItems.map((r) => ({
+                    rubric_detail_id: r.rubric_detail_id,
+                    rubric_point: r.rubric_point,
+                    rubric_description: r.rubric_description,
+                    has_selected: r.has_selected,
+                })),
+            },
+        });
+        console.log("Updating rubric indexes with ID:", rubric_id);
+        console.log("New rubric items after drag:", rubricItems);
+    }
 
     const handleDeleteRubric = (rubric_id: string, rubric_detail_id: string) => {
         deleteRubric({
@@ -126,7 +126,7 @@ export const RubricGrader = () => {
         setTimeout(() => {
             console.log("newItems after drag:", newItems);
             console.log("rubric id:", moved.rubric_id);
-            // handleUpdateRubricsIndexes(newItems, moved.rubric_id);
+            handleUpdateRubricsIndexes(newItems, moved.rubric_id);
         }, 0);  
     };
 
@@ -399,7 +399,7 @@ export const RubricGrader = () => {
                     color="violet"
                     className="mt-2"
                     onClick={handleCreateRubric}
-                    // loading={isPendingCreate}
+                    loading={isPendingCreate}
                 >
                     Add Rubric Item
                 </Button>
