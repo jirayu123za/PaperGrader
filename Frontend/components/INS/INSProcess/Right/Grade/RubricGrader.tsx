@@ -5,8 +5,6 @@ import 'katex/dist/katex.min.css';
 import React, { useEffect, useState } from 'react'
 import { marked } from 'marked';
 import { ActionIcon, Box, Burger, Button, Checkbox, Divider, Flex, Group, NumberInput, Progress, ScrollArea, Text, Textarea } from '@mantine/core';
-import { QuestionSelector } from '@/components/INS/INSProcess/Right/Rubric/QuestionSelector';
-import { RubricSettings } from '@/components/INS/INSProcess/Right/Rubric/RubricSettings';
 import { NoRubric } from '@/components/INS/INSProcess/Right/Rubric/NoRubric';
 import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea/dnd';
 import { AiTwotoneDelete } from 'react-icons/ai';
@@ -14,7 +12,7 @@ import { FaPlus } from 'react-icons/fa';
 import { useParams } from 'next/navigation';
 import { useQuestionStore } from '@/store/question/useQuestionStore';
 import { useFetchQuestion } from '@/hooks/Question/useFetchQuestion';
-import { useFetchRubric } from '@/hooks/Rubric/useFetchRubric';
+import { useFetchRubricParams } from '@/hooks/Rubric/useFetchRubricParams';
 import { useCreateRubric } from '@/hooks/Rubric/useCreateRubric';
 import { useDeleteRubric } from '@/hooks/Rubric/useDeleteRubric';
 import { useUpdateRubric } from '@/hooks/Rubric/useUpdateRubric';
@@ -22,6 +20,8 @@ import { useUpdateRubricsIndexes } from '@/hooks/Rubric/useUpdateRubricsIndexes'
 import { RubricItem, useRubricStore } from '@/store/rubric/useRubricStore';
 import { NoQuestion } from '@/components/INS/INSProcess/Right/Rubric/NoQuestion';
 import { useCreateSidebarStore } from '@/store/process-outline/createSidebarStore';
+import { QuestionSelectorParams } from '@/components/INS/INSProcess/Right/Rubric/QuestionSelectorParams';
+import { RubricSettingsParams } from '@/components/INS/INSProcess/Right/Rubric/RubricSettingsParams';
 marked.use(markedKatex({ throwOnError: false }));
 
 interface Graded {
@@ -32,25 +32,25 @@ interface Graded {
 export const RubricGrader = () => {
   const params = useParams();
   const assignment_id = params.assignment_id as string;
-  const { questions, selectedQuestion, defaultSelectedQuestion } = useQuestionStore();
+  const question_id = params.question_id as string;
+  const sub_question_id = params.sub_question_id as string;
+  const { questions } = useQuestionStore();
   const { isLoading: isLoadingQuestions, data: questionsData } = useFetchQuestion(assignment_id);
-  const { isLoading: isLoadingRubric, data: data } = useFetchRubric(assignment_id);
+  const { isLoading: isLoadingRubric, data: data } = useFetchRubricParams(assignment_id, question_id, sub_question_id);
   const { mutate: createRubric, isPending: isPendingCreate } = useCreateRubric(assignment_id);
   const { mutate: deleteRubric, isPending: isPendingDelete } = useDeleteRubric(assignment_id);
   const { mutate: updateRubric, isPending: isPendingUpdate } = useUpdateRubric(assignment_id);
   const { mutate: updateRubricsIndexes, isPending: isPendingUpdateIndexes } = useUpdateRubricsIndexes(assignment_id);
-  const { rubricData, setRubricData, rubrics, setRubrics, editingRubricID, setEditingRubricID, editingDescriptionID, setEditingDescriptionID } = useRubricStore();
-  
-  const target = selectedQuestion ?? defaultSelectedQuestion;
-  
+  const { rubricData, rubrics, setRubrics, editingRubricID, setEditingRubricID, editingDescriptionID, setEditingDescriptionID } = useRubricStore();
+    
   const isCollapsed: boolean = useCreateSidebarStore((state: { isCollapsed: boolean }) => state.isCollapsed);
   const toggle: () => void = useCreateSidebarStore((state: { toggle: () => void }) => state.toggle);
 
   const handleCreateRubric = () => {
     createRubric({ 
         assignment_id, 
-        question_id: target?.question_id,
-        sub_question_id: target?.sub_question_id,
+        question_id,
+        sub_question_id,
         rubric: {
             rubric_setting: rubricData?.rubric_setting ?? "Negative scoring",
             rubric_details: [{
@@ -64,8 +64,8 @@ export const RubricGrader = () => {
     const handleUpdateRubric = (rubric_id: string, rubric_detail_id: string,  rubric_point: number, rubric_description: string) => {
         updateRubric({
             assignment_id,
-            question_id: target?.question_id,
-            sub_question_id: target?.sub_question_id,
+            question_id: question_id,
+            sub_question_id: sub_question_id,
             rubric: {
                 rubric_id: rubric_id,
                 rubric_details: [{
@@ -84,8 +84,8 @@ export const RubricGrader = () => {
     // const handleUpdateRubricsIndexes = (rubricItems: RubricItem[], rubric_id: string) => {
     //     updateRubricsIndexes({
     //         assignment_id,
-    //         question_id: target?.question_id,
-    //         sub_question_id: target?.sub_question_id,
+    //         question_id: question_id,
+    //         sub_question_id: sub_question_id,
     //         rubric: {
     //             rubric_id: rubric_id,
     //             rubric_details: rubricItems.map((r) => ({
@@ -103,8 +103,8 @@ export const RubricGrader = () => {
     const handleDeleteRubric = (rubric_id: string, rubric_detail_id: string) => {
         deleteRubric({
             assignment_id,
-            question_id: target?.question_id,
-            sub_question_id: target?.sub_question_id,
+            question_id: question_id,
+            sub_question_id: sub_question_id,
             rubric_id: rubric_id,
             rubric_detail_id: rubric_detail_id,
         });
@@ -148,14 +148,13 @@ export const RubricGrader = () => {
     }, [rubricData]);
 
     const getSelectedQuestionPoint = (): number | null => {
-        const target = selectedQuestion ?? defaultSelectedQuestion;
-        if (!target) return null;
+        if (!question_id) return null;
 
-        const question = questions.find(q => q.question_id === target.question_id);
+        const question = questions.find(q => q.question_id === question_id);
         if (!question) return null;
 
-        if (target.sub_question_id) {
-            const sub = question.sub_questions?.find(sq => sq.sub_question_id === target.sub_question_id);
+        if (sub_question_id) {
+            const sub = question.sub_questions?.find(sq => sq.sub_question_id === sub_question_id);
             return sub?.sub_question_point ?? null;
         }
         return question.question_point;
@@ -183,7 +182,7 @@ export const RubricGrader = () => {
             {/* Header */}
             <Box className="flex-shrink-0">
                 <Flex className="group items-center pb-1 gap-1">
-                    <QuestionSelector/>
+                    <QuestionSelectorParams />
                 </Flex>
 
                 <Progress color="violet" value={100} />
@@ -200,7 +199,7 @@ export const RubricGrader = () => {
                             </Text>
                         </Text>
                     </Box>
-                    <RubricSettings/>
+                    <RubricSettingsParams />
                 </Flex>
 
                 <Divider label="Collapse View" labelPosition="right" pb='xs' />
