@@ -436,3 +436,20 @@ type SubmissionsFromQuestionRaw struct {
 	Email        string    `json:"email"`
 	SectionName  string    `json:"section_name"`
 }
+
+// Query bounding boxes data
+type BoundingBoxesDataResponse struct {
+	BoundingBoxesData []BoundingBoxesDataRaw `json:"bounding_boxes_data"`
+}
+
+// Raw data for bounding boxes
+type BoundingBoxesDataRaw struct {
+	BoundingBoxID   uuid.UUID  `json:"bounding_box_id"`
+	BoundingBoxPage uint       `json:"bounding_box_page"`
+	PointX          float64    `json:"point_x"`
+	PointY          float64    `json:"point_y"`
+	Width           float64    `json:"width"`
+	Height          float64    `json:"height"`
+	QuestionID      *uuid.UUID `json:"question_id,omitempty"`
+	SubQuestionID   *uuid.UUID `json:"sub_question_id,omitempty"`
+}
