@@ -2093,3 +2093,28 @@ func (h *HttpInstructorHandler) GetSubmissionsFromQuestion(c *fiber.Ctx) error {
 		"submissions_list": submissions,
 	})
 }
+
+// Grade review handlers
+func (h *HttpInstructorHandler) GetBoundingBoxesData(c *fiber.Ctx) error {
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	boundingBoxes, err := h.services.GetBoundingBoxesData(assignmentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get bounding boxes",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":             "Bounding boxes data retrieved successfully",
+		"bounding_boxes_data": boundingBoxes,
+	})
+}
