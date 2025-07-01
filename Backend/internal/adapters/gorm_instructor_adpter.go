@@ -1598,3 +1598,105 @@ func (r *GormInstructorRepository) FindSubmissionsFromQuestion(courseID uuid.UUI
 	}
 	return results, nil
 }
+
+// R Bounding Boxes data
+func (r *GormInstructorRepository) FindBoundingBoxesData(AssignmentID uuid.UUID) (response.BoundingBoxesDataResponse, error) {
+	// STEP 1: Load bounding_boxes (type=question)
+	var rows []struct {
+		BoundingBoxID uuid.UUID      `gorm:"column:bounding_box_id"`
+		Data          datatypes.JSON `gorm:"column:bounding_box_data"`
+	}
+	if err := r.db.
+		Table("bounding_boxes").
+		Select("bounding_box_id, bounding_box_data").
+		Where("assignment_id = ? AND deleted_at IS NULL AND bounding_box_data ->> 'bounding_box_type' = ?", AssignmentID, "question").
+		Find(&rows).Error; err != nil {
+		return response.BoundingBoxesDataResponse{}, err
+	}
+
+	// STEP 2: Load rubric_data JSON from rubrics table
+	var rubric struct {
+		RubricData datatypes.JSON
+	}
+	if err := r.db.
+		Table("rubrics").
+		Select("rubric_data").
+		Where("assignment_id = ? AND deleted_at IS NULL", AssignmentID).
+		Take(&rubric).Error; err != nil {
+		return response.BoundingBoxesDataResponse{}, err
+	}
+
+	// STEP 3: Parse rubric_data → map[bounding_box_id] = (question_id, sub_question_id)
+	bboxMap := make(map[string]struct {
+		QuestionID    uuid.UUID
+		SubQuestionID *uuid.UUID
+	})
+	var rubricJSON struct {
+		QuestionsData []map[string]interface{} `json:"questions_data"`
+	}
+	if err := json.Unmarshal(rubric.RubricData, &rubricJSON); err != nil {
+		return response.BoundingBoxesDataResponse{}, err
+	}
+
+	for _, q := range rubricJSON.QuestionsData {
+		questionIDStr, _ := q["question_id"].(string)
+		questionID, err := uuid.Parse(questionIDStr)
+		if err != nil {
+			continue
+		}
+
+		// Case: with sub-questions
+		if subs, ok := q["sub_questions"].([]interface{}); ok {
+			for _, s := range subs {
+				sqMap := s.(map[string]interface{})
+				boxIDStr, _ := sqMap["bounding_box_id"].(string)
+				subQIDStr, _ := sqMap["sub_question_id"].(string)
+
+				subQID, err := uuid.Parse(subQIDStr)
+				if err != nil {
+					subQID = uuid.Nil
+				}
+
+				bboxMap[boxIDStr] = struct {
+					QuestionID    uuid.UUID
+					SubQuestionID *uuid.UUID
+				}{
+					QuestionID:    questionID,
+					SubQuestionID: &subQID,
+				}
+			}
+		} else {
+			// Case: no sub-questions
+			boxIDStr, _ := q["bounding_box_id"].(string)
+			bboxMap[boxIDStr] = struct {
+				QuestionID    uuid.UUID
+				SubQuestionID *uuid.UUID
+			}{
+				QuestionID:    questionID,
+				SubQuestionID: nil,
+			}
+		}
+	}
+
+	// STEP 4: Loop through bounding boxes and merge data
+	var result []response.BoundingBoxesDataRaw
+	for _, row := range rows {
+		var data response.BoundingBoxesDataRaw
+		data.BoundingBoxID = row.BoundingBoxID
+
+		if err := json.Unmarshal(row.Data, &data); err != nil {
+			return response.BoundingBoxesDataResponse{}, err
+		}
+
+		if ids, ok := bboxMap[data.BoundingBoxID.String()]; ok {
+			data.QuestionID = &ids.QuestionID
+			data.SubQuestionID = ids.SubQuestionID
+		}
+
+		result = append(result, data)
+	}
+
+	return response.BoundingBoxesDataResponse{
+		BoundingBoxesData: result,
+	}, nil
+}
