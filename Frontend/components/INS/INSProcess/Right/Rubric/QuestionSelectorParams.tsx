@@ -1,13 +1,16 @@
 "use client";
 
 import React from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { Anchor, Box, Flex, Popover, ScrollArea, Title } from "@mantine/core";
 import { MdExpandMore } from "react-icons/md";
 import { useQuestionStore } from "@/store/question/useQuestionStore";
 
+type Mode = "submissions" | "lists";
+
 export const QuestionSelectorParams = () => {
   const params = useParams();
+  const pathname = usePathname();
   const router = useRouter();
   const course_id = params.course_id as string;
   const assignment_id = params.assignment_id as string;
@@ -31,6 +34,17 @@ export const QuestionSelectorParams = () => {
         return `${questionIndex + 1}.${subIndex + 1}: ${sub.sub_question_title}`;
     }
     return `${questionIndex + 1}: ${question.question_title}`;
+  };
+
+  const mode: Mode = pathname.includes("/lists/") ? "lists" : "submissions";
+
+  const generateHref = (question_id: string, sub_question_id?: string): string => {
+    const base = `/instructor/course/${course_id}/process/${assignment_id}/grade-submissions/questions/${question_id}`;
+    const tail = mode === "lists" ? "lists" : "submissions";
+
+    return sub_question_id
+      ? `${base}/sub-questions/${sub_question_id}/${tail}/${submission_id}`
+      : `${base}/${tail}/${submission_id}`;
   };
 
   return (
@@ -61,12 +75,7 @@ export const QuestionSelectorParams = () => {
               <Anchor
                 component="button"
                 fw={500} fz="sm" pl="xs" pr="xs" underline="hover" lineClamp={1}
-                onClick={() => {
-                    if (q.sub_questions && q.sub_questions.length > 0) return;
-                    router.push(
-                        `/instructor/course/${course_id}/process/${assignment_id}/grade-submissions/questions/${q.question_id}/submissions/${submission_id}`
-                    );
-                }}
+                onClick={() => router.push(generateHref(q.question_id))}
                 c={
                     question_id === q.question_id && !sub_question_id
                     ? "blue" : "dark"
@@ -86,11 +95,7 @@ export const QuestionSelectorParams = () => {
                     key={sub.sub_question_id}
                     underline="hover"
                     lineClamp={1}
-                    onClick={() => {
-                        router.push(
-                            `/instructor/course/${course_id}/process/${assignment_id}/grade-submissions/questions/${q.question_id}/sub-questions/${sub.sub_question_id}/submissions/${submission_id}`
-                        );
-                    }}
+                    onClick={() => router.push(generateHref(q.question_id, sub.sub_question_id))}
                     c={
                         question_id === q.question_id && sub_question_id === sub.sub_question_id
                         ? "blue" : "dark"
