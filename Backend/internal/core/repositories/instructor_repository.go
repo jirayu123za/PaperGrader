@@ -93,4 +93,7 @@ type InstructorRepository interface {
 	FindRubricBySubQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID *uuid.UUID) (response.RubricResponse, error)
 	// R submissions from question
 	FindSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error)
+
+	// R Bounding Boxes data
+	FindBoundingBoxesData(AssignmentID uuid.UUID) (response.BoundingBoxesDataResponse, error)
 }
