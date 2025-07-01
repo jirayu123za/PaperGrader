@@ -239,7 +239,9 @@ export const RubricGrader = () => {
                                         >
                                             <Group wrap="nowrap" align="flex-start">
                                                 <Checkbox.Indicator
-                                                    icon={() => <Text size="sm" fw={500}>{index + 1}</Text>}
+                                                    icon={() => <Text size="sm" fw={500} c={rubric.has_selected ? 'white' : "#495057"}>{index + 1}</Text>}
+                                                    bg={rubric.has_selected ? '#1A5059' : 'transparent'}
+                                                    radius="0"
                                                 />
                                                 <Flex direction="column" className="flex-1">
                                                     {editingRubricID === rubric.rubric_detail_id ? (
