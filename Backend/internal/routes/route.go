@@ -130,6 +130,8 @@ func RegisterRoutes(
 
 	// Submissions from question
 	apiGroup.Get("/instructor/submissions/question", instructorHandler.GetSubmissionsFromQuestion)
+	// Bounding Boxes data
+	apiGroup.Get("/instructor/boundingBoxes/data", instructorHandler.GetBoundingBoxesData)
 
 	apiGroup.Get("/student/dashboard", studentHandler.GetCoursesAndAssignments)
 	// test api get pdf files name
