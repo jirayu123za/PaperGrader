@@ -91,6 +91,8 @@ type InstructorService interface {
 
 	// R Submission from question
 	GetSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error)
+	// R Bounding Boxes data
+	GetBoundingBoxesData(AssignmentID uuid.UUID) (response.BoundingBoxesDataResponse, error)
 }
 
 type InstructorServiceImpl struct {
@@ -961,4 +963,13 @@ func (s *InstructorServiceImpl) GetSubmissionsFromQuestion(courseID uuid.UUID, a
 		return nil, err
 	}
 	return submissions, nil
+}
+
+// Get Bounding Boxes data
+func (s *InstructorServiceImpl) GetBoundingBoxesData(AssignmentID uuid.UUID) (response.BoundingBoxesDataResponse, error) {
+	boundingBoxes, err := s.repo.FindBoundingBoxesData(AssignmentID)
+	if err != nil {
+		return response.BoundingBoxesDataResponse{}, err
+	}
+	return boundingBoxes, nil
 }
