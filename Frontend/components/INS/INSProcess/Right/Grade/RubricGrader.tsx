@@ -42,7 +42,7 @@ export const RubricGrader = () => {
   const { mutate: updateRubric, isPending: isPendingUpdate } = useUpdateRubric(assignment_id);
   const { mutate: updateRubricsIndexes, isPending: isPendingUpdateIndexes } = useUpdateRubricsIndexes(assignment_id);
   const { rubricData, rubrics, setRubrics, editingRubricID, setEditingRubricID, editingDescriptionID, setEditingDescriptionID } = useRubricStore();
-  const [opened, { toggle }] = useDisclosure();
+  const [opened, { toggle }] = useDisclosure(true);
 
   const handleCreateRubric = () => {
     createRubric({ 
