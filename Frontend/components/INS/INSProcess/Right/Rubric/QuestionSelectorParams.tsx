@@ -75,7 +75,10 @@ export const QuestionSelectorParams = () => {
               <Anchor
                 component="button"
                 fw={500} fz="sm" pl="xs" pr="xs" underline="hover" lineClamp={1}
-                onClick={() => router.push(generateHref(q.question_id))}
+                onClick={() => {
+                  if (q.sub_questions && q.sub_questions.length > 0) return;
+                  router.push(generateHref(q.question_id))
+                  }}
                 c={
                     question_id === q.question_id && !sub_question_id
                     ? "blue" : "dark"
