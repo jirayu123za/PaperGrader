@@ -2115,6 +2115,6 @@ func (h *HttpInstructorHandler) GetBoundingBoxesData(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":             "Bounding boxes data retrieved successfully",
-		"bounding_boxes_data": boundingBoxes,
+		"bounding_boxes_data": boundingBoxes.BoundingBoxesData,
 	})
 }
