@@ -1,0 +1,2850 @@
+[
+  {
+    "question_id": "fc63c47f-a2da-42b4-a88b-6b6b8f6ff65c",
+    "question_title": "What is concept number 1?",
+    "question_point": 1,
+    "rubric": {
+      "rubric_id": "3be7c42a-35e9-4634-92ab-b73b70fed1a1",
+      "rubric_details": [
+        {
+          "rubric_details_id": "b226231c-a2e2-4720-b0e0-b3f15f62a472",
+          "description": "Not attempted",
+          "points": -0.4,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "50b87b3d-9bbd-469f-ad0c-fccb409493b6",
+          "description": "Fully correct",
+          "points": 0.3,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "f55e9ae8-9a3a-47f2-bb92-18d3893be460",
+          "description": "Not attempted",
+          "points": -0.6,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "9cc8d1af-1e28-49c4-8d82-eaf013bf0742",
+          "description": "Correct answer",
+          "points": -1.9,
+          "has_selected": true
+        }
+      ]
+    },
+    "sub_questions": [
+      {
+        "sub_question_id": "1.1",
+        "sub_question_title": "What is sub-question 1.1?",
+        "sub_question_point": 5,
+        "rubric": {
+          "rubric_id": "dc168833-978f-4e04-8d5e-205a1b069c0d",
+          "rubric_details": [
+            {
+              "rubric_details_id": "1d52b9a8-ff16-4fff-8853-15101b88bec4",
+              "description": "Not attempted",
+              "points": 2.0,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "4b552b71-4582-41c7-a74a-8d86d0cc5a15",
+              "description": "Correct answer",
+              "points": 1.9,
+              "has_selected": true
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "1.2",
+        "sub_question_title": "What is sub-question 1.2?",
+        "sub_question_point": 6,
+        "rubric": {
+          "rubric_id": "ad8e3924-c04d-4bcc-baae-43cda35de1cc",
+          "rubric_details": [
+            {
+              "rubric_details_id": "ceb60bb9-ec06-407f-976d-41177e8df679",
+              "description": "Incorrect answer",
+              "points": -1.6,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "fd8bcc66-f812-4ec0-9984-ad9be6ea53bc",
+              "description": "Correct answer",
+              "points": 4.0,
+              "has_selected": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "question_id": "7d3dfd95-5ea8-47ca-8979-5a8b03caf76d",
+    "question_title": "What is concept number 2?",
+    "question_point": 10,
+    "rubric": {
+      "rubric_id": "89ab3ec8-580e-4c06-b9ab-34a6e7edd911",
+      "rubric_details": [
+        {
+          "rubric_details_id": "060e514b-51d6-403a-ab84-2791b1f34166",
+          "description": "Partially correct answer",
+          "points": -1.0,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "dd075132-3233-4705-8799-f1c8c6d21903",
+          "description": "Fully correct",
+          "points": 1.0,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "2fca3666-9a6d-4254-8f22-d49b2be8fc2d",
+          "description": "Fully correct",
+          "points": 4.8,
+          "has_selected": true
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "3d3ececc-1963-4589-afc9-e4350b8fdae4",
+    "question_title": "What is concept number 3?",
+    "question_point": 4,
+    "rubric": {
+      "rubric_id": "18b1a911-c98c-46ae-93b3-2592bcd8e80a",
+      "rubric_details": [
+        {
+          "rubric_details_id": "61d786a5-c4db-4e9f-b0b2-0d61b3db66f0",
+          "description": "Partially correct answer",
+          "points": 1.0,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "8bc877e6-93f6-4018-8a36-a7bdd0268095",
+          "description": "Minor mistake",
+          "points": 3.9,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "f47d0274-c2c8-4c2d-9d6f-460ec43eafd6",
+          "description": "Fully correct",
+          "points": 0.7,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "8fd12519-9876-494a-8638-b46dddffc8f7",
+          "description": "Not attempted",
+          "points": 2.2,
+          "has_selected": false
+        }
+      ]
+    },
+    "sub_questions": [
+      {
+        "sub_question_id": "3.1",
+        "sub_question_title": "What is sub-question 3.1?",
+        "sub_question_point": 5,
+        "rubric": {
+          "rubric_id": "2d03f9b2-94ca-4f6f-a7e8-c4882f631839",
+          "rubric_details": [
+            {
+              "rubric_details_id": "7d8b9f9e-0f91-4936-bc98-81b2730c2339",
+              "description": "Incorrect answer",
+              "points": 3.2,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "6db05b3d-9612-4a43-8c3b-339cf4b41aa0",
+              "description": "Fully correct",
+              "points": 3.9,
+              "has_selected": false
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "3.2",
+        "sub_question_title": "What is sub-question 3.2?",
+        "sub_question_point": 1,
+        "rubric": {
+          "rubric_id": "7df69e1f-8d64-4eb1-adcf-b32d2447c3d8",
+          "rubric_details": [
+            {
+              "rubric_details_id": "a757cf97-4c5c-42b5-929c-0b16c59035db",
+              "description": "Not attempted",
+              "points": 2.1,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "32614660-4dfe-41db-9015-d788a806f711",
+              "description": "Fully correct",
+              "points": 1.9,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "dc4d433b-98c9-439a-a415-ee84e6e486fd",
+              "description": "Not attempted",
+              "points": 4.5,
+              "has_selected": true
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "3.3",
+        "sub_question_title": "What is sub-question 3.3?",
+        "sub_question_point": 8,
+        "rubric": {
+          "rubric_id": "ca24b544-8394-4451-88c8-62c3e463aa68",
+          "rubric_details": [
+            {
+              "rubric_details_id": "e77cb1ce-378e-4214-9ada-f31a4ebdabbc",
+              "description": "Minor mistake",
+              "points": 0.4,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "a718d106-c092-4277-8e5d-2f65372b5dec",
+              "description": "Fully correct",
+              "points": 2.2,
+              "has_selected": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "question_id": "dbc26794-2227-42d1-a1e7-15fce2a19a7a",
+    "question_title": "What is concept number 4?",
+    "question_point": 15,
+    "rubric": {
+      "rubric_id": "043063b7-6f8d-4963-988d-d3ca9e9ec3fc",
+      "rubric_details": [
+        {
+          "rubric_details_id": "860a929d-8ff5-41d2-b6bf-ea91e6637183",
+          "description": "Not attempted",
+          "points": 2.5,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "6d08c1d4-2f99-4ffa-ab6e-5f7319b3dc45",
+          "description": "Incorrect answer",
+          "points": 5.0,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "06a17a90-b940-497f-84c4-f23476bcb040",
+          "description": "Not attempted",
+          "points": 4.5,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "2f591371-a1b0-496e-ab0d-68370ea919d1",
+          "description": "Correct answer",
+          "points": 2.2,
+          "has_selected": false
+        }
+      ]
+    },
+    "sub_questions": [
+      {
+        "sub_question_id": "4.1",
+        "sub_question_title": "What is sub-question 4.1?",
+        "sub_question_point": 5,
+        "rubric": {
+          "rubric_id": "5ff73af7-08db-4382-932a-e40c3a525cf8",
+          "rubric_details": [
+            {
+              "rubric_details_id": "c98a3ef1-53a9-4b76-becc-45350e6d7694",
+              "description": "Minor mistake",
+              "points": 4.1,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "cdf4e461-a236-4ab5-bfed-71dd5f8409c9",
+              "description": "Incorrect answer",
+              "points": 2.6,
+              "has_selected": false
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "4.2",
+        "sub_question_title": "What is sub-question 4.2?",
+        "sub_question_point": 5,
+        "rubric": {
+          "rubric_id": "6ca9572a-d568-43a5-96c9-62f6695952c4",
+          "rubric_details": [
+            {
+              "rubric_details_id": "c5d36a83-9f73-42fc-9acc-0faac87f9256",
+              "description": "Fully correct",
+              "points": 2.1,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "f49d2be0-cfb7-4a0c-a908-4db206521bb8",
+              "description": "Not attempted",
+              "points": 1.7,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "9e88708b-1a10-4d27-8acd-1fb509b8293f",
+              "description": "Partially correct answer",
+              "points": 4.4,
+              "has_selected": true
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "4.3",
+        "sub_question_title": "What is sub-question 4.3?",
+        "sub_question_point": 2,
+        "rubric": {
+          "rubric_id": "84728064-8ce7-4edd-8cce-2b54f547a12d",
+          "rubric_details": [
+            {
+              "rubric_details_id": "3a3942f4-0625-45f0-8e77-b20040c41247",
+              "description": "Incorrect answer",
+              "points": -1.0,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "087d4a20-f4e4-44b6-b34f-410bc911438f",
+              "description": "Incorrect answer",
+              "points": 2.7,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "86851209-95d2-4c88-a34f-a66993571de6",
+              "description": "Partially correct answer",
+              "points": 1.3,
+              "has_selected": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "question_id": "1c82fa7c-f201-4c6a-8b87-c8e8a41fdf79",
+    "question_title": "What is concept number 5?",
+    "question_point": 9,
+    "rubric": {
+      "rubric_id": "d8763667-eb0b-4d65-9c81-cbc1114b05d4",
+      "rubric_details": [
+        {
+          "rubric_details_id": "cece0b8a-f208-4bfa-b6ec-ec127d743465",
+          "description": "Correct answer",
+          "points": 4.4,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "3985ac14-0c1d-4c04-bb74-f8cbba47ea6a",
+          "description": "Minor mistake",
+          "points": -1.0,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "876196b7-cfe0-4906-a630-338d81a5f5a8",
+          "description": "Partially correct answer",
+          "points": 0.7,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "97c9503f-c274-402b-a20f-873f5aa44379",
+          "description": "Fully correct",
+          "points": -1.1,
+          "has_selected": true
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "ae0d7768-009c-403a-a60a-c802e8d90a5e",
+    "question_title": "What is concept number 6?",
+    "question_point": 7,
+    "rubric": {
+      "rubric_id": "cc6b4992-cff8-4fad-a97d-6b5664bb6f5e",
+      "rubric_details": [
+        {
+          "rubric_details_id": "81b02ecf-d70e-45cb-947b-4bedd38504dd",
+          "description": "Correct answer",
+          "points": 3.4,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "1695b27b-c106-4d05-a272-b2fc8a3cea6e",
+          "description": "Correct answer",
+          "points": 1.3,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "db95026a-d899-4cd3-a1dc-bd6c68218cd7",
+          "description": "Minor mistake",
+          "points": 0.1,
+          "has_selected": false
+        }
+      ]
+    },
+    "sub_questions": [
+      {
+        "sub_question_id": "6.1",
+        "sub_question_title": "What is sub-question 6.1?",
+        "sub_question_point": 3,
+        "rubric": {
+          "rubric_id": "dec6d73b-cfc2-45b5-b2a3-221c634382cc",
+          "rubric_details": [
+            {
+              "rubric_details_id": "0a3ac2fb-ab2d-405e-a71b-a572359ed5b1",
+              "description": "Partially correct answer",
+              "points": -1.7,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "898ae63a-0806-4ec3-8354-10fce7331ad2",
+              "description": "Partially correct answer",
+              "points": -1.9,
+              "has_selected": true
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "6.2",
+        "sub_question_title": "What is sub-question 6.2?",
+        "sub_question_point": 9,
+        "rubric": {
+          "rubric_id": "94a2d094-ea32-4626-b403-c94c7c566947",
+          "rubric_details": [
+            {
+              "rubric_details_id": "d22a3dd3-d5ea-4122-9304-d6f320e07643",
+              "description": "Incorrect answer",
+              "points": 0.2,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "29ebd82e-2c9f-4a47-8e67-b1a3819511b1",
+              "description": "Not attempted",
+              "points": 0.3,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "b62f3922-fec5-4771-a0c6-97c6d08df002",
+              "description": "Fully correct",
+              "points": -0.2,
+              "has_selected": true
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "6.3",
+        "sub_question_title": "What is sub-question 6.3?",
+        "sub_question_point": 6,
+        "rubric": {
+          "rubric_id": "e5df38a2-1f07-468d-bb68-68eac889af58",
+          "rubric_details": [
+            {
+              "rubric_details_id": "8b2013dd-88e9-4af0-bb35-a310ff228a45",
+              "description": "Incorrect answer",
+              "points": 3.0,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "a2dee77d-3599-4089-999b-2221a1c3ac78",
+              "description": "Partially correct answer",
+              "points": -0.5,
+              "has_selected": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "question_id": "1f79b0e3-0fe1-487e-8519-1fecb3bdf749",
+    "question_title": "What is concept number 7?",
+    "question_point": 6,
+    "rubric": {
+      "rubric_id": "42784355-5e13-4834-bbc5-c7c8cd8ca47c",
+      "rubric_details": [
+        {
+          "rubric_details_id": "2d1abaaa-9a2b-4fca-9d58-077015e978af",
+          "description": "Not attempted",
+          "points": 3.1,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "4ef8a857-8cfb-40d2-85a0-c0a6dd044ae1",
+          "description": "Partially correct answer",
+          "points": 1.3,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "ae3931ee-3bbe-43a6-970b-f3edf528e242",
+          "description": "Incorrect answer",
+          "points": 4.3,
+          "has_selected": true
+        }
+      ]
+    },
+    "sub_questions": [
+      {
+        "sub_question_id": "7.1",
+        "sub_question_title": "What is sub-question 7.1?",
+        "sub_question_point": 4,
+        "rubric": {
+          "rubric_id": "b1daaabd-cdbd-4ce7-b7cd-e6566fa078de",
+          "rubric_details": [
+            {
+              "rubric_details_id": "f7d2e08e-3cf1-4f38-b8f2-5d844c1d13f4",
+              "description": "Incorrect answer",
+              "points": -1.7,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "1d3a95b4-0e7b-4623-bd2b-08de956d1a49",
+              "description": "Correct answer",
+              "points": -1.9,
+              "has_selected": false
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "7.2",
+        "sub_question_title": "What is sub-question 7.2?",
+        "sub_question_point": 1,
+        "rubric": {
+          "rubric_id": "43067691-2d35-45b7-b88c-9dc661398e19",
+          "rubric_details": [
+            {
+              "rubric_details_id": "4a8fa824-30e9-4a6c-ac47-98771bef7994",
+              "description": "Incorrect answer",
+              "points": 1.6,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "226ae6cd-e1ee-4d50-b2e1-8fea0cdfe403",
+              "description": "Not attempted",
+              "points": 1.3,
+              "has_selected": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "question_id": "91f8886f-544b-44b9-93a3-3c7d42027338",
+    "question_title": "What is concept number 8?",
+    "question_point": 7,
+    "rubric": {
+      "rubric_id": "9f8cdb34-213a-46f0-9113-a3c369fe2971",
+      "rubric_details": [
+        {
+          "rubric_details_id": "56b68a9c-9c95-4e9f-a8a1-17fc29de9d29",
+          "description": "Correct answer",
+          "points": 4.4,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "96b86686-5f69-4ecb-8d1d-826543239afe",
+          "description": "Not attempted",
+          "points": 3.8,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "6f599b6a-5857-4487-bd61-e389b6106d87",
+          "description": "Fully correct",
+          "points": 0.5,
+          "has_selected": true
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "d98e1f4b-fd6c-4817-b17f-e3c4d2562fc2",
+    "question_title": "What is concept number 9?",
+    "question_point": 10,
+    "rubric": {
+      "rubric_id": "1f5563ce-f6ab-4142-9f90-542e124fc18a",
+      "rubric_details": [
+        {
+          "rubric_details_id": "0126da7c-9972-442b-ae0a-fbac12cefd70",
+          "description": "Correct answer",
+          "points": 0.6,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "8e125537-d6b4-42bf-84cb-55c26f06c1ef",
+          "description": "Partially correct answer",
+          "points": 2.3,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "890c5f4c-5260-43f9-b132-ce6eca7f0bb6",
+          "description": "Minor mistake",
+          "points": -1.2,
+          "has_selected": true
+        }
+      ]
+    },
+    "sub_questions": [
+      {
+        "sub_question_id": "9.1",
+        "sub_question_title": "What is sub-question 9.1?",
+        "sub_question_point": 9,
+        "rubric": {
+          "rubric_id": "c78d0e5c-e0e2-493b-a279-4ecddfac4241",
+          "rubric_details": [
+            {
+              "rubric_details_id": "d5bd76d8-1b05-48a8-84ec-33dca2fd2f12",
+              "description": "Fully correct",
+              "points": 1.0,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "68715342-e873-4f1c-a5ae-50f0994f3eac",
+              "description": "Correct answer",
+              "points": 4.7,
+              "has_selected": true
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "9.2",
+        "sub_question_title": "What is sub-question 9.2?",
+        "sub_question_point": 1,
+        "rubric": {
+          "rubric_id": "eb8310ef-ae22-44d9-96ad-fc35e62cf375",
+          "rubric_details": [
+            {
+              "rubric_details_id": "c74c6ee4-96ec-4a8e-8f57-018d649c2f9c",
+              "description": "Minor mistake",
+              "points": -1.6,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "5add0f72-a3a4-43f9-81ce-6717d57d3374",
+              "description": "Partially correct answer",
+              "points": 1.5,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "9b90e08f-8c2d-4e4f-af71-f78282050608",
+              "description": "Fully correct",
+              "points": -0.4,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "f608b0f8-ef82-454f-bd8b-47183f1401af",
+              "description": "Partially correct answer",
+              "points": 4.9,
+              "has_selected": true
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "9.3",
+        "sub_question_title": "What is sub-question 9.3?",
+        "sub_question_point": 9,
+        "rubric": {
+          "rubric_id": "63e71af5-b0fc-483c-ab1d-6ed877b9db1f",
+          "rubric_details": [
+            {
+              "rubric_details_id": "0451141e-87a6-4b51-8722-e8320e129504",
+              "description": "Minor mistake",
+              "points": 4.1,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "f77ee64d-3e6d-4182-85aa-a2e5d58c13ec",
+              "description": "Incorrect answer",
+              "points": -0.1,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "d7871d63-bb59-4817-88a2-53efbbc7f3fa",
+              "description": "Fully correct",
+              "points": 1.6,
+              "has_selected": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "question_id": "a99c3576-6058-4656-a735-40c229e9c31e",
+    "question_title": "What is concept number 10?",
+    "question_point": 15,
+    "rubric": {
+      "rubric_id": "e06b78b7-1d17-4a33-a150-486e9101e215",
+      "rubric_details": [
+        {
+          "rubric_details_id": "93f6c929-5191-4ae2-a44e-228a232c20bc",
+          "description": "Incorrect answer",
+          "points": 0.8,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "4914c232-b134-42aa-b0cc-b068d06ccc08",
+          "description": "Partially correct answer",
+          "points": 3.8,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "4e36fb00-41b7-434f-8d14-a2cbb447ff25",
+          "description": "Not attempted",
+          "points": -0.3,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "4b549943-3b27-4994-94b7-8e39cf03bbac",
+          "description": "Minor mistake",
+          "points": 3.1,
+          "has_selected": false
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "e77beb59-3d30-43d6-93cf-0e269fc36016",
+    "question_title": "What is concept number 11?",
+    "question_point": 7,
+    "rubric": {
+      "rubric_id": "89fd8a4e-9eb9-434c-9ac8-0941c46a7bb1",
+      "rubric_details": [
+        {
+          "rubric_details_id": "73ee40fd-4a5f-468c-a14c-39acccb177cd",
+          "description": "Partially correct answer",
+          "points": -0.7,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "ac20938f-6a34-49ce-b24d-e1b79723b1eb",
+          "description": "Correct answer",
+          "points": -0.6,
+          "has_selected": true
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "2791a88c-67a2-47fd-ac7d-5825372868f6",
+    "question_title": "What is concept number 12?",
+    "question_point": 11,
+    "rubric": {
+      "rubric_id": "d3a6d609-baed-4738-95b2-4af3ad51098c",
+      "rubric_details": [
+        {
+          "rubric_details_id": "eeafac94-b8ef-4d37-afa0-a9f85c7b3e34",
+          "description": "Correct answer",
+          "points": 2.3,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "537f0c17-1e70-4c9a-b9cb-78678e50d948",
+          "description": "Minor mistake",
+          "points": 1.9,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "5d0635a0-6962-48f1-a083-fb6b6bdfaf66",
+          "description": "Incorrect answer",
+          "points": 3.3,
+          "has_selected": false
+        }
+      ]
+    },
+    "sub_questions": [
+      {
+        "sub_question_id": "12.1",
+        "sub_question_title": "What is sub-question 12.1?",
+        "sub_question_point": 6,
+        "rubric": {
+          "rubric_id": "14adc78a-143f-4e17-b012-b5b6e2b6d3b9",
+          "rubric_details": [
+            {
+              "rubric_details_id": "1b3f5603-7559-4a8b-b59f-6bbc072f8e9a",
+              "description": "Minor mistake",
+              "points": 1.2,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "76cd2009-4c13-4431-90b9-77ceedb60314",
+              "description": "Minor mistake",
+              "points": 0.8,
+              "has_selected": true
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "12.2",
+        "sub_question_title": "What is sub-question 12.2?",
+        "sub_question_point": 5,
+        "rubric": {
+          "rubric_id": "480f1426-d210-4e53-940a-a5061e8d3669",
+          "rubric_details": [
+            {
+              "rubric_details_id": "00e71a06-f688-46ab-a3dd-b71ff7307c07",
+              "description": "Not attempted",
+              "points": -1.2,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "0362d966-9f8f-40f3-b9c4-6b16bd01ec85",
+              "description": "Fully correct",
+              "points": -0.3,
+              "has_selected": true
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "12.3",
+        "sub_question_title": "What is sub-question 12.3?",
+        "sub_question_point": 2,
+        "rubric": {
+          "rubric_id": "801a7085-0f09-4a3c-a316-b93f61c790c9",
+          "rubric_details": [
+            {
+              "rubric_details_id": "245ce8f6-8da5-4b1a-a920-ac5b88891d99",
+              "description": "Correct answer",
+              "points": 3.9,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "ae80d3ff-3819-4389-8336-e874a2421ee8",
+              "description": "Correct answer",
+              "points": 1.8,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "c6fd5384-d50d-436e-943c-e98e070a3cdd",
+              "description": "Correct answer",
+              "points": -1.8,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "42e65e70-34f5-4a57-a46e-f5224ccfb448",
+              "description": "Fully correct",
+              "points": -1.6,
+              "has_selected": true
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "question_id": "a8d58299-3929-4e94-a079-be85f2eb27d1",
+    "question_title": "What is concept number 13?",
+    "question_point": 2,
+    "rubric": {
+      "rubric_id": "2b5b0265-014d-40e1-beeb-35265a2fec0d",
+      "rubric_details": [
+        {
+          "rubric_details_id": "69c87eea-89cf-41b0-9766-588947d880f1",
+          "description": "Incorrect answer",
+          "points": 4.1,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "c63eac6e-98b9-42d1-a6b4-b5e0a810e253",
+          "description": "Incorrect answer",
+          "points": 1.7,
+          "has_selected": false
+        }
+      ]
+    },
+    "sub_questions": [
+      {
+        "sub_question_id": "13.1",
+        "sub_question_title": "What is sub-question 13.1?",
+        "sub_question_point": 5,
+        "rubric": {
+          "rubric_id": "19664155-c1d7-4b80-b4c1-ac053297b335",
+          "rubric_details": [
+            {
+              "rubric_details_id": "2a851cec-335d-486c-aeb1-d319f47f693a",
+              "description": "Correct answer",
+              "points": 3.1,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "19e94962-8608-4c30-96ca-880cbc937067",
+              "description": "Partially correct answer",
+              "points": 5.0,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "c311632e-0607-4ed6-82b3-f58d442c6588",
+              "description": "Not attempted",
+              "points": 0.7,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "80e5a184-309a-4efd-b4ab-cb400c8033b1",
+              "description": "Minor mistake",
+              "points": -1.9,
+              "has_selected": true
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "13.2",
+        "sub_question_title": "What is sub-question 13.2?",
+        "sub_question_point": 5,
+        "rubric": {
+          "rubric_id": "0a347b6b-608c-448f-8200-c7371068d7c2",
+          "rubric_details": [
+            {
+              "rubric_details_id": "8e601678-e5ac-4613-b39e-58d67b514361",
+              "description": "Not attempted",
+              "points": 3.0,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "db2f3546-6e70-4463-8aa9-565f8c8ebee7",
+              "description": "Correct answer",
+              "points": 1.5,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "39d9b7fb-5cdb-432f-980e-7342ceb2d78c",
+              "description": "Fully correct",
+              "points": -1.3,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "c965fdc1-384b-4478-a3f3-37b5ebac0e29",
+              "description": "Not attempted",
+              "points": 1.4,
+              "has_selected": true
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "13.3",
+        "sub_question_title": "What is sub-question 13.3?",
+        "sub_question_point": 1,
+        "rubric": {
+          "rubric_id": "b3aa1a17-6e40-4214-98f0-6a3a94083582",
+          "rubric_details": [
+            {
+              "rubric_details_id": "7e663c87-dfaf-4d71-9860-6915fc187dcb",
+              "description": "Not attempted",
+              "points": -1.4,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "f1b55ad0-42d5-4970-936b-153d9f8e5e77",
+              "description": "Minor mistake",
+              "points": -1.1,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "d0b65fa7-f228-4ef9-bd2b-55b50c419664",
+              "description": "Fully correct",
+              "points": 2.3,
+              "has_selected": true
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "question_id": "a41c8424-30f9-4a5e-87cf-b832cb242d1e",
+    "question_title": "What is concept number 14?",
+    "question_point": 7,
+    "rubric": {
+      "rubric_id": "dca6c6e4-e516-41f1-a5bd-05442fee980f",
+      "rubric_details": [
+        {
+          "rubric_details_id": "5381e45a-33ac-4f93-a4bb-1ca3ee390020",
+          "description": "Minor mistake",
+          "points": 3.9,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "d21e5b68-eaa5-428e-98bf-1cfb111e1cb7",
+          "description": "Fully correct",
+          "points": 1.9,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "725cf416-f61f-423e-b2a2-e05b32da989d",
+          "description": "Partially correct answer",
+          "points": 2.0,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "8b878b23-ef62-4d08-a9d5-6ebf02904253",
+          "description": "Partially correct answer",
+          "points": 4.5,
+          "has_selected": false
+        }
+      ]
+    },
+    "sub_questions": [
+      {
+        "sub_question_id": "14.1",
+        "sub_question_title": "What is sub-question 14.1?",
+        "sub_question_point": 6,
+        "rubric": {
+          "rubric_id": "33bd5561-9aa0-470f-a612-5f32b99a3d72",
+          "rubric_details": [
+            {
+              "rubric_details_id": "645c2b05-b093-4fec-9f81-f65dc12f092e",
+              "description": "Partially correct answer",
+              "points": 2.3,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "4e8a11fd-4274-440f-9984-6c3b6b916095",
+              "description": "Not attempted",
+              "points": -1.0,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "5505dd03-b23d-4cc0-ba74-bc6f60312293",
+              "description": "Partially correct answer",
+              "points": 0.9,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "571030f2-7622-4435-aea3-5c332c1b79bd",
+              "description": "Correct answer",
+              "points": 0.4,
+              "has_selected": true
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "14.2",
+        "sub_question_title": "What is sub-question 14.2?",
+        "sub_question_point": 9,
+        "rubric": {
+          "rubric_id": "2bb2adde-4088-4d23-9c0c-a8594dd9f1e7",
+          "rubric_details": [
+            {
+              "rubric_details_id": "be71aac3-0991-4e69-901e-ba78b2e74f1f",
+              "description": "Partially correct answer",
+              "points": 2.2,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "cf65f512-c6d1-4b4a-91ba-a181825581d1",
+              "description": "Incorrect answer",
+              "points": 2.5,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "33226b3b-7847-4b16-8676-1e39f19ae325",
+              "description": "Partially correct answer",
+              "points": -1.3,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "4b12ae2f-a5c8-4ca2-9e7f-2beb97fbebd7",
+              "description": "Correct answer",
+              "points": 3.9,
+              "has_selected": false
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "14.3",
+        "sub_question_title": "What is sub-question 14.3?",
+        "sub_question_point": 6,
+        "rubric": {
+          "rubric_id": "abf0209e-ae57-4530-a519-34b6cf338877",
+          "rubric_details": [
+            {
+              "rubric_details_id": "58c5c7c7-60f6-4310-bd6c-4968536950bc",
+              "description": "Not attempted",
+              "points": 3.0,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "6c21b90d-0050-4295-8816-61a5d975b047",
+              "description": "Correct answer",
+              "points": 2.6,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "2e3ab52f-602a-433f-ba38-d1db5ce8fa17",
+              "description": "Correct answer",
+              "points": 4.0,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "e5ca217f-ba95-43df-8614-669ab0a23cbd",
+              "description": "Correct answer",
+              "points": 0.2,
+              "has_selected": true
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "question_id": "dc7ec38e-369f-49cb-a662-36bbab305460",
+    "question_title": "What is concept number 15?",
+    "question_point": 5,
+    "rubric": {
+      "rubric_id": "f122691b-fa06-4b2c-8211-a3d8a072f993",
+      "rubric_details": [
+        {
+          "rubric_details_id": "63174584-ae3f-418c-89b0-02eac486f5af",
+          "description": "Fully correct",
+          "points": 3.5,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "9c527dc5-19fc-41ca-bd6a-3f45c1836bd8",
+          "description": "Fully correct",
+          "points": 3.2,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "95b30701-9ea6-498c-8ae5-a37f55c7b74e",
+          "description": "Not attempted",
+          "points": 2.4,
+          "has_selected": true
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "073174d5-bd09-42b5-969f-3bbf0e692ebb",
+    "question_title": "What is concept number 16?",
+    "question_point": 8,
+    "rubric": {
+      "rubric_id": "5a95ed55-84e1-4e74-8a3b-75c3bc5be743",
+      "rubric_details": [
+        {
+          "rubric_details_id": "7bf613b1-5c1e-4039-bdbc-1a3b14470889",
+          "description": "Not attempted",
+          "points": 2.6,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "6c887a02-38c3-402d-9b98-99e1280ecda5",
+          "description": "Fully correct",
+          "points": 3.5,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "af2c79cd-a4f5-41fb-9910-ad6000b4b46c",
+          "description": "Incorrect answer",
+          "points": -0.2,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "02327807-7e37-4990-b44a-8f9e16ca6370",
+          "description": "Incorrect answer",
+          "points": 1.5,
+          "has_selected": false
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "239b2892-223b-410e-bb7f-63bab586b2e1",
+    "question_title": "What is concept number 17?",
+    "question_point": 1,
+    "rubric": {
+      "rubric_id": "4f5427a7-a804-4d0f-a3fc-1cf8223c0dd6",
+      "rubric_details": [
+        {
+          "rubric_details_id": "11478715-9184-44b4-a779-69473d53a898",
+          "description": "Correct answer",
+          "points": 3.9,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "e0a7f397-3279-4296-8b1d-15023fb1d426",
+          "description": "Partially correct answer",
+          "points": 1.3,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "dc790028-9ca1-4365-b636-04b46f0a3b16",
+          "description": "Correct answer",
+          "points": 4.4,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "d14c6ccb-b465-4e0f-b208-a82610744a74",
+          "description": "Correct answer",
+          "points": 2.0,
+          "has_selected": true
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "2c999a56-b16d-436c-8bd2-7d7ecedd0201",
+    "question_title": "What is concept number 18?",
+    "question_point": 3,
+    "rubric": {
+      "rubric_id": "f91fd4a0-206b-468f-abda-b02ebc2bd73d",
+      "rubric_details": [
+        {
+          "rubric_details_id": "8d88040e-e43d-4355-85c5-205ff5f021e6",
+          "description": "Correct answer",
+          "points": 1.3,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "2e435895-510b-4dd8-9588-a6332b864972",
+          "description": "Partially correct answer",
+          "points": -0.4,
+          "has_selected": true
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "8a6b786d-a922-4bb1-b5d5-c90f58f306d1",
+    "question_title": "What is concept number 19?",
+    "question_point": 11,
+    "rubric": {
+      "rubric_id": "55bb7a93-8500-4bb1-938b-ea938cf24904",
+      "rubric_details": [
+        {
+          "rubric_details_id": "65585bd9-24bf-48a1-81e9-f681e7a3c761",
+          "description": "Correct answer",
+          "points": 4.4,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "710c1a9d-c2cc-429a-a66c-f9dd335b6449",
+          "description": "Correct answer",
+          "points": -1.5,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "4e223c8d-3e56-40cd-b47e-5aa0bbcb7e1c",
+          "description": "Incorrect answer",
+          "points": -0.8,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "fe429607-9e4d-462b-9b8c-266ccd48238f",
+          "description": "Minor mistake",
+          "points": 4.8,
+          "has_selected": false
+        }
+      ]
+    },
+    "sub_questions": [
+      {
+        "sub_question_id": "19.1",
+        "sub_question_title": "What is sub-question 19.1?",
+        "sub_question_point": 3,
+        "rubric": {
+          "rubric_id": "6557fda6-bfc3-4aba-b857-8d4aef7b1a45",
+          "rubric_details": [
+            {
+              "rubric_details_id": "5931cfec-b583-42b7-b4c9-dd35bee3ae4f",
+              "description": "Minor mistake",
+              "points": 1.8,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "bb0464cc-d1da-482a-bc4e-ce9eacf01a0f",
+              "description": "Correct answer",
+              "points": 0.3,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "b670188a-78f8-4f5e-bd72-b33274af32aa",
+              "description": "Not attempted",
+              "points": -0.0,
+              "has_selected": false
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "19.2",
+        "sub_question_title": "What is sub-question 19.2?",
+        "sub_question_point": 5,
+        "rubric": {
+          "rubric_id": "d914fa3a-2c1f-4522-9cf5-c63b4afd4fa4",
+          "rubric_details": [
+            {
+              "rubric_details_id": "587e5649-6955-4c47-bc79-4b70b8c222b8",
+              "description": "Not attempted",
+              "points": 2.2,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "2261a196-2680-4877-9089-9cea15eb8450",
+              "description": "Not attempted",
+              "points": 2.5,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "bf7e7ea8-41e2-4df1-88a8-b7523683f998",
+              "description": "Partially correct answer",
+              "points": -0.7,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "8e1d1181-9e8b-491a-9856-6f92ef4a5ff9",
+              "description": "Fully correct",
+              "points": 1.2,
+              "has_selected": true
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "19.3",
+        "sub_question_title": "What is sub-question 19.3?",
+        "sub_question_point": 10,
+        "rubric": {
+          "rubric_id": "a2037e23-ccc4-4895-8b23-83b0a1197b89",
+          "rubric_details": [
+            {
+              "rubric_details_id": "e2504ef1-7c5e-4afe-b0df-ad6ca16cfa18",
+              "description": "Incorrect answer",
+              "points": 1.2,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "fb44bc22-f283-486e-bcc6-5cfa1b5f3332",
+              "description": "Incorrect answer",
+              "points": 0.4,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "bd047517-383b-4cd0-869e-32c5ddae86ed",
+              "description": "Correct answer",
+              "points": 4.1,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "c3c647f1-dae1-4b9f-b56c-c3c74858e55f",
+              "description": "Fully correct",
+              "points": 3.9,
+              "has_selected": true
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "question_id": "cd84b5bb-e1a5-4424-b9fc-2a7a2a466a26",
+    "question_title": "What is concept number 20?",
+    "question_point": 12,
+    "rubric": {
+      "rubric_id": "db2dad32-7123-4cd1-85ba-e09b41423b49",
+      "rubric_details": [
+        {
+          "rubric_details_id": "914244b0-7deb-4cd4-98f4-34443e8b7ee1",
+          "description": "Partially correct answer",
+          "points": -1.3,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "d2641e59-c709-41b7-915a-251c0d8fcd3e",
+          "description": "Fully correct",
+          "points": 1.5,
+          "has_selected": true
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "3b84a9d6-09c0-4886-9052-7617509fdc0b",
+    "question_title": "What is concept number 21?",
+    "question_point": 9,
+    "rubric": {
+      "rubric_id": "fdacebb0-c2b6-461b-adf7-7f8beb62768d",
+      "rubric_details": [
+        {
+          "rubric_details_id": "6a308db9-48bc-442c-bde9-c26704d4194c",
+          "description": "Correct answer",
+          "points": 1.3,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "160223ac-f34b-49e3-a6d7-c56093ad6154",
+          "description": "Partially correct answer",
+          "points": 3.6,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "2de8e09a-44ed-47a4-880c-bf24702adfa3",
+          "description": "Fully correct",
+          "points": 5.0,
+          "has_selected": true
+        }
+      ]
+    },
+    "sub_questions": [
+      {
+        "sub_question_id": "21.1",
+        "sub_question_title": "What is sub-question 21.1?",
+        "sub_question_point": 7,
+        "rubric": {
+          "rubric_id": "f18cde4a-4ac0-490a-8750-73d1ac9e120e",
+          "rubric_details": [
+            {
+              "rubric_details_id": "8874f781-d643-4c4f-97f4-5dc65de64805",
+              "description": "Not attempted",
+              "points": 2.8,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "982c70e7-0777-44b5-bca4-027816a89e35",
+              "description": "Incorrect answer",
+              "points": -2.0,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "66a0bd84-4b42-4f2f-bccf-15dd3061ec00",
+              "description": "Not attempted",
+              "points": 3.0,
+              "has_selected": false
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "21.2",
+        "sub_question_title": "What is sub-question 21.2?",
+        "sub_question_point": 7,
+        "rubric": {
+          "rubric_id": "5bf756ec-d88e-410a-8097-fea8121748e0",
+          "rubric_details": [
+            {
+              "rubric_details_id": "34dd3b44-6b7f-4799-b98d-cad5c82d0106",
+              "description": "Minor mistake",
+              "points": 3.4,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "5a9fb744-3672-4784-92f7-921ab1dd007a",
+              "description": "Partially correct answer",
+              "points": 2.7,
+              "has_selected": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "question_id": "278267d9-983d-4d2b-aa5f-359c136b7c36",
+    "question_title": "What is concept number 22?",
+    "question_point": 7,
+    "rubric": {
+      "rubric_id": "7a8d26e1-b69c-4b97-a441-04477cab0836",
+      "rubric_details": [
+        {
+          "rubric_details_id": "88fc0790-e59d-42c2-a073-e536ec707715",
+          "description": "Fully correct",
+          "points": 1.9,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "0fac0f15-1bd2-46eb-9a54-184ee84e0f6b",
+          "description": "Partially correct answer",
+          "points": -1.3,
+          "has_selected": false
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "47e35a7c-bfc3-4e71-b6d6-6486366c1c9f",
+    "question_title": "What is concept number 23?",
+    "question_point": 1,
+    "rubric": {
+      "rubric_id": "2eba6d9e-45f7-4933-a29c-4124e2e3ae15",
+      "rubric_details": [
+        {
+          "rubric_details_id": "6e213eb1-a940-4f84-ac3a-e1c20c23398d",
+          "description": "Not attempted",
+          "points": 3.2,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "8bd04b55-93cc-4384-8725-cbc1dd89b721",
+          "description": "Correct answer",
+          "points": 4.9,
+          "has_selected": false
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "33e2d7c6-7c4e-43c1-97ec-80cf7b238538",
+    "question_title": "What is concept number 24?",
+    "question_point": 3,
+    "rubric": {
+      "rubric_id": "0aa57b7a-f64c-49a7-bf9c-0c1f80dd0337",
+      "rubric_details": [
+        {
+          "rubric_details_id": "54e12a8e-8808-4b2c-a91e-7a4443076a74",
+          "description": "Correct answer",
+          "points": 1.2,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "8f1de595-97e9-4a3c-8d3a-31018d155d3a",
+          "description": "Incorrect answer",
+          "points": -0.6,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "397eb0c6-0487-465e-870a-1c9e3cb10093",
+          "description": "Incorrect answer",
+          "points": 3.8,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "e7ac115d-e8e7-46de-89ca-a3e87854684c",
+          "description": "Incorrect answer",
+          "points": 4.4,
+          "has_selected": true
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "584bcf10-6d6c-4920-bc30-8d99121b9100",
+    "question_title": "What is concept number 25?",
+    "question_point": 9,
+    "rubric": {
+      "rubric_id": "303c3f4d-cc79-46db-a249-5b29e02126bd",
+      "rubric_details": [
+        {
+          "rubric_details_id": "3155dce9-8d32-4974-9379-9fa68dd38542",
+          "description": "Fully correct",
+          "points": -1.1,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "f1732821-89d3-46f9-a086-d79cac627f98",
+          "description": "Fully correct",
+          "points": 4.9,
+          "has_selected": true
+        }
+      ]
+    },
+    "sub_questions": [
+      {
+        "sub_question_id": "25.1",
+        "sub_question_title": "What is sub-question 25.1?",
+        "sub_question_point": 8,
+        "rubric": {
+          "rubric_id": "b10b5b30-07c3-4aeb-b19f-4209cb84b325",
+          "rubric_details": [
+            {
+              "rubric_details_id": "4a9e9ba6-df15-40c7-8231-fac8c13fbbea",
+              "description": "Not attempted",
+              "points": 4.0,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "b5244d45-5df6-41ca-8430-722c6fde9491",
+              "description": "Incorrect answer",
+              "points": 0.0,
+              "has_selected": false
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "25.2",
+        "sub_question_title": "What is sub-question 25.2?",
+        "sub_question_point": 4,
+        "rubric": {
+          "rubric_id": "7e4dfcfb-8367-4574-924a-ac43e1202dac",
+          "rubric_details": [
+            {
+              "rubric_details_id": "719c9ab0-643c-47ed-8810-15d376eedd76",
+              "description": "Correct answer",
+              "points": 1.1,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "f4b9db82-c956-4eba-921c-bd43eb4b575f",
+              "description": "Correct answer",
+              "points": -0.8,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "40e75e7f-351e-4c7e-b198-79a4b5fe5734",
+              "description": "Incorrect answer",
+              "points": 4.2,
+              "has_selected": true
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "question_id": "3a7730c3-ad1c-424b-896a-585043a7431d",
+    "question_title": "What is concept number 26?",
+    "question_point": 18,
+    "rubric": {
+      "rubric_id": "49fd299e-034f-4efd-b2c9-b6e816f364cc",
+      "rubric_details": [
+        {
+          "rubric_details_id": "a409029a-48ba-4444-aa2c-0e51b7aa07a4",
+          "description": "Fully correct",
+          "points": 3.2,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "2699703e-0650-409a-a02d-fd2a9d6a2153",
+          "description": "Fully correct",
+          "points": 1.2,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "b4db9b08-c378-41d9-829e-aa98345132a6",
+          "description": "Correct answer",
+          "points": -1.1,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "0bbae9fc-77e1-41be-aaf5-29d80a46eaa0",
+          "description": "Minor mistake",
+          "points": 3.0,
+          "has_selected": false
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "e283f545-cd3a-40d6-9f5d-73b1fd04f41e",
+    "question_title": "What is concept number 27?",
+    "question_point": 11,
+    "rubric": {
+      "rubric_id": "6223c00d-d8be-4b88-99fc-36874f15099a",
+      "rubric_details": [
+        {
+          "rubric_details_id": "5c6d83eb-adc4-4152-b1bd-81f5e7ac5a95",
+          "description": "Minor mistake",
+          "points": 3.9,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "4c81c0c6-10d2-46b7-a624-042bd53a59f5",
+          "description": "Minor mistake",
+          "points": -1.4,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "d22ef3e0-37a0-479e-98d0-4b0f595e688d",
+          "description": "Partially correct answer",
+          "points": 3.5,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "7d79a80a-552b-42b4-a99a-a4fcc72a8735",
+          "description": "Minor mistake",
+          "points": 0.7,
+          "has_selected": false
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "f02951d0-bdff-4bb3-9dcc-316f9055f7a7",
+    "question_title": "What is concept number 28?",
+    "question_point": 13,
+    "rubric": {
+      "rubric_id": "4c57dff8-358a-46ac-87c6-bb96d9a7bb6e",
+      "rubric_details": [
+        {
+          "rubric_details_id": "470986ea-aefa-4f00-9354-97370153b11a",
+          "description": "Minor mistake",
+          "points": 2.6,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "17a90a91-f8b7-4d77-ae5a-31e0a00844bc",
+          "description": "Minor mistake",
+          "points": 1.5,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "8b25dbed-3c90-44d5-aef0-be8a295c717f",
+          "description": "Incorrect answer",
+          "points": 2.5,
+          "has_selected": false
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "cfab14a0-38eb-4135-8ae7-5bd5731106b4",
+    "question_title": "What is concept number 29?",
+    "question_point": 1,
+    "rubric": {
+      "rubric_id": "ecebab2a-c101-48c9-a7cb-93fe2bcf6a31",
+      "rubric_details": [
+        {
+          "rubric_details_id": "4bea01f4-138e-4b6a-affa-580d79ba3a72",
+          "description": "Not attempted",
+          "points": 2.5,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "a010eb21-1522-4d3e-a60d-016a7990f6a3",
+          "description": "Not attempted",
+          "points": 3.0,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "acd35222-060a-44f1-ad37-23cb7ef5faeb",
+          "description": "Partially correct answer",
+          "points": 0.9,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "9e65690c-a97a-4026-81b0-600ec52e98f7",
+          "description": "Not attempted",
+          "points": -1.1,
+          "has_selected": true
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "5a832f5c-12b0-4f5d-8d90-aad83712c4b8",
+    "question_title": "What is concept number 30?",
+    "question_point": 16,
+    "rubric": {
+      "rubric_id": "a098bec0-3a6a-422d-800d-f6e0ac54e074",
+      "rubric_details": [
+        {
+          "rubric_details_id": "cb2ebb93-9157-4dca-bb46-6efca06e1895",
+          "description": "Correct answer",
+          "points": 2.0,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "1c9d5e1d-596e-474d-bf39-3cfd6c93be6c",
+          "description": "Incorrect answer",
+          "points": 1.4,
+          "has_selected": false
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "225153a8-d136-4379-adc3-83fa1a850614",
+    "question_title": "What is concept number 31?",
+    "question_point": 7,
+    "rubric": {
+      "rubric_id": "01434fbf-4db8-4444-826a-4b1fb853aa0f",
+      "rubric_details": [
+        {
+          "rubric_details_id": "123cd97e-1d34-40c5-b6a8-eece30ef9097",
+          "description": "Incorrect answer",
+          "points": 0.8,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "fd6c8b04-1425-4ba3-ae8d-2bbe6ce7cb33",
+          "description": "Fully correct",
+          "points": 4.6,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "4cc58992-2fbf-44e3-93c3-3e13f355e6e6",
+          "description": "Minor mistake",
+          "points": -1.2,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "3fe85832-8515-43c4-9184-a4544651cc5e",
+          "description": "Incorrect answer",
+          "points": 0.0,
+          "has_selected": false
+        }
+      ]
+    },
+    "sub_questions": [
+      {
+        "sub_question_id": "31.1",
+        "sub_question_title": "What is sub-question 31.1?",
+        "sub_question_point": 4,
+        "rubric": {
+          "rubric_id": "262ef7c3-54fe-4775-b833-69cfe2098fc2",
+          "rubric_details": [
+            {
+              "rubric_details_id": "ee8f2d4b-11ef-4d60-858c-0df6da3038b5",
+              "description": "Correct answer",
+              "points": 2.7,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "53ec1901-577a-4b59-a11e-d12caa167081",
+              "description": "Not attempted",
+              "points": 0.6,
+              "has_selected": false
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "31.2",
+        "sub_question_title": "What is sub-question 31.2?",
+        "sub_question_point": 2,
+        "rubric": {
+          "rubric_id": "ef0fa44a-8eb0-44bd-bc6f-a29e9cdbc3d1",
+          "rubric_details": [
+            {
+              "rubric_details_id": "955d15b7-f7f0-4439-9ef0-a82dd9d66fff",
+              "description": "Not attempted",
+              "points": 1.7,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "3a7a8c4e-36d1-4c34-87cc-11d2724d9173",
+              "description": "Not attempted",
+              "points": 2.8,
+              "has_selected": true
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "question_id": "af6f115b-d458-40c2-9013-868ed847c656",
+    "question_title": "What is concept number 32?",
+    "question_point": 9,
+    "rubric": {
+      "rubric_id": "0ca50c0e-0079-48ca-bd48-e0acb17514f4",
+      "rubric_details": [
+        {
+          "rubric_details_id": "a31fd647-69e2-4bfe-87dd-1fc179b95fc9",
+          "description": "Not attempted",
+          "points": 0.1,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "90eba123-089c-4890-b741-5bfe38587aca",
+          "description": "Incorrect answer",
+          "points": 4.9,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "7ab6099c-3ebe-4f73-ab08-76f9c74cfd46",
+          "description": "Correct answer",
+          "points": -1.2,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "fa9658f4-303e-41a7-a3b0-17dff655697a",
+          "description": "Not attempted",
+          "points": 4.8,
+          "has_selected": false
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "95f2ccb8-fef1-443e-87fc-32d5133bad6e",
+    "question_title": "What is concept number 33?",
+    "question_point": 16,
+    "rubric": {
+      "rubric_id": "978d30fe-6138-452f-9a4f-1f29c4674b96",
+      "rubric_details": [
+        {
+          "rubric_details_id": "80b965eb-8885-41b0-8149-8d44ea1083b5",
+          "description": "Fully correct",
+          "points": 0.2,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "9db8c9f7-2050-484c-a9ca-c0677cbe5be9",
+          "description": "Correct answer",
+          "points": 0.6,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "d53cab3b-aa57-4c88-ad15-01fae93a9aff",
+          "description": "Partially correct answer",
+          "points": -0.5,
+          "has_selected": false
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "9db684ea-fe71-46bd-8a91-83dc43bbc06a",
+    "question_title": "What is concept number 34?",
+    "question_point": 15,
+    "rubric": {
+      "rubric_id": "ca951fe4-7df5-4cc6-a03f-90cf38023ad6",
+      "rubric_details": [
+        {
+          "rubric_details_id": "0e1df982-5570-4a8d-8a77-3caadac272eb",
+          "description": "Minor mistake",
+          "points": 4.3,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "d76a5e8d-383e-49ca-9f88-a57468fbc12d",
+          "description": "Correct answer",
+          "points": -0.2,
+          "has_selected": true
+        }
+      ]
+    },
+    "sub_questions": [
+      {
+        "sub_question_id": "34.1",
+        "sub_question_title": "What is sub-question 34.1?",
+        "sub_question_point": 2,
+        "rubric": {
+          "rubric_id": "5e3dc9fc-8d0c-4e8e-a4c3-4137066b5996",
+          "rubric_details": [
+            {
+              "rubric_details_id": "6e7305a4-2a66-4b1a-b62d-93212294b0f4",
+              "description": "Incorrect answer",
+              "points": 0.5,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "b39958f5-012b-48d1-994a-a49a9cc65fcb",
+              "description": "Correct answer",
+              "points": 0.6,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "a0fb827f-7a2a-4210-95fe-79b8034134bb",
+              "description": "Fully correct",
+              "points": -0.3,
+              "has_selected": true
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "34.2",
+        "sub_question_title": "What is sub-question 34.2?",
+        "sub_question_point": 10,
+        "rubric": {
+          "rubric_id": "aeb1bc4e-29f4-4c57-9f11-26ce95ece8ac",
+          "rubric_details": [
+            {
+              "rubric_details_id": "de83d4f4-5e00-49a7-ace5-0c12627b72b7",
+              "description": "Correct answer",
+              "points": 1.3,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "01c3ce1e-90dc-4643-956e-c71c57cc98b9",
+              "description": "Correct answer",
+              "points": 4.5,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "8f0866f7-817d-4945-aa1c-babb814434f7",
+              "description": "Incorrect answer",
+              "points": -1.9,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "d4085a5e-6db6-44eb-8d6a-7275954a991f",
+              "description": "Correct answer",
+              "points": 1.5,
+              "has_selected": false
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "34.3",
+        "sub_question_title": "What is sub-question 34.3?",
+        "sub_question_point": 8,
+        "rubric": {
+          "rubric_id": "0efe1c5e-9437-481e-a227-6533d246d6aa",
+          "rubric_details": [
+            {
+              "rubric_details_id": "c700344d-3a00-4e41-a0b0-ddef8611a669",
+              "description": "Partially correct answer",
+              "points": 1.1,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "93cb7cf2-5947-47ee-978a-2a02cd9a74e9",
+              "description": "Fully correct",
+              "points": 1.4,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "e4998697-f0b3-49d4-bacb-d9904bbc48a5",
+              "description": "Incorrect answer",
+              "points": 2.6,
+              "has_selected": true
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "question_id": "65bbcad0-aed8-49f5-a9de-636de74e9b6f",
+    "question_title": "What is concept number 35?",
+    "question_point": 18,
+    "rubric": {
+      "rubric_id": "c85d52c7-fe4f-4b65-90a7-a1c8cb24569c",
+      "rubric_details": [
+        {
+          "rubric_details_id": "d5e0d9a2-b0ec-4d4e-a527-7c4bb0d81f80",
+          "description": "Correct answer",
+          "points": 4.3,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "b6b1c227-796a-418f-b91e-6826d96aef3e",
+          "description": "Not attempted",
+          "points": -0.4,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "c7046ddd-fc66-4f47-a769-21f0f0935457",
+          "description": "Not attempted",
+          "points": 1.5,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "3a1f874c-4079-4e1d-b468-b6b6dcb8d573",
+          "description": "Not attempted",
+          "points": -0.7,
+          "has_selected": false
+        }
+      ]
+    },
+    "sub_questions": [
+      {
+        "sub_question_id": "35.1",
+        "sub_question_title": "What is sub-question 35.1?",
+        "sub_question_point": 2,
+        "rubric": {
+          "rubric_id": "95157cdf-92ce-463d-8ca4-899e2d55ad16",
+          "rubric_details": [
+            {
+              "rubric_details_id": "17eb3a16-e8dc-4404-956c-ad483c44c9d2",
+              "description": "Not attempted",
+              "points": 4.1,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "119ce026-80cd-4332-9b1f-00df17867769",
+              "description": "Fully correct",
+              "points": -0.6,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "5b1043c9-bb16-4a0a-9d86-b5af16a0d3c8",
+              "description": "Partially correct answer",
+              "points": 3.9,
+              "has_selected": false
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "35.2",
+        "sub_question_title": "What is sub-question 35.2?",
+        "sub_question_point": 4,
+        "rubric": {
+          "rubric_id": "1d0d4713-ca12-4b05-9087-607ab7802729",
+          "rubric_details": [
+            {
+              "rubric_details_id": "0467353d-166e-44b8-94ae-9f868cf43ece",
+              "description": "Not attempted",
+              "points": 3.6,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "ff58d405-29f4-4c49-be34-b4d37b88fe06",
+              "description": "Fully correct",
+              "points": 3.7,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "fb6d0be4-31f6-4bc2-8a1b-8ed8689ac7a3",
+              "description": "Correct answer",
+              "points": 5.0,
+              "has_selected": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "question_id": "a16883bf-f76d-4781-a790-b0d4877b4b57",
+    "question_title": "What is concept number 36?",
+    "question_point": 9,
+    "rubric": {
+      "rubric_id": "234a0ad2-ebda-4541-94b1-354a9be017d3",
+      "rubric_details": [
+        {
+          "rubric_details_id": "11a3fb98-2d54-42e4-a25a-ef6245547c51",
+          "description": "Minor mistake",
+          "points": 3.6,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "70fde1dd-12db-45bc-9892-73ba01d5731c",
+          "description": "Fully correct",
+          "points": 4.3,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "040418dd-f2fb-4bcc-9e51-980972659ffa",
+          "description": "Fully correct",
+          "points": 4.7,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "536b7639-d215-4886-9602-0d412fdb7864",
+          "description": "Minor mistake",
+          "points": 2.1,
+          "has_selected": false
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "4a7c7ae0-8b72-4916-aac5-eefc10c05314",
+    "question_title": "What is concept number 37?",
+    "question_point": 10,
+    "rubric": {
+      "rubric_id": "16575f1b-0faa-44c7-b520-a25c97a67dd1",
+      "rubric_details": [
+        {
+          "rubric_details_id": "d2aaf060-e404-4474-9d53-ce09648859f6",
+          "description": "Partially correct answer",
+          "points": 2.7,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "6c5401ac-4204-405a-813e-a5a5d45ca52a",
+          "description": "Not attempted",
+          "points": 2.9,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "3ae14554-e378-4b7e-9cce-ddc57651388a",
+          "description": "Not attempted",
+          "points": 2.4,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "de34b3b2-cab4-4f26-96c7-b3ff97329f46",
+          "description": "Correct answer",
+          "points": 2.4,
+          "has_selected": true
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "2526c722-2c76-4427-a1a2-8a6ff77fc96f",
+    "question_title": "What is concept number 38?",
+    "question_point": 8,
+    "rubric": {
+      "rubric_id": "4ec61797-a3bb-468c-95b9-43fb2ce63dab",
+      "rubric_details": [
+        {
+          "rubric_details_id": "05cb40cf-b825-4fc7-8f5f-009271e8a594",
+          "description": "Partially correct answer",
+          "points": 4.5,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "440ca7ee-a41d-429d-9cc9-ff1ea994d4be",
+          "description": "Fully correct",
+          "points": 2.1,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "deb96512-6863-431a-8925-c015e7422ef4",
+          "description": "Incorrect answer",
+          "points": 4.0,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "36e63c5b-6dd1-46c3-9c15-2ad6ab74e929",
+          "description": "Not attempted",
+          "points": 1.0,
+          "has_selected": false
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "0277d49f-e36e-4198-9793-44e7a848318f",
+    "question_title": "What is concept number 39?",
+    "question_point": 13,
+    "rubric": {
+      "rubric_id": "61912153-26e6-4048-8cba-1c1c380a845e",
+      "rubric_details": [
+        {
+          "rubric_details_id": "1a303010-aa24-4d61-94d5-1d9b1dc8f922",
+          "description": "Partially correct answer",
+          "points": 3.2,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "b84ec3e0-6290-4916-8853-4910683e4f3c",
+          "description": "Partially correct answer",
+          "points": 3.0,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "72c39b73-4971-4b46-88c5-14d81a5beee7",
+          "description": "Not attempted",
+          "points": 2.6,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "3be424b0-85b3-473f-bf22-46008ce0b553",
+          "description": "Not attempted",
+          "points": 2.0,
+          "has_selected": false
+        }
+      ]
+    },
+    "sub_questions": [
+      {
+        "sub_question_id": "39.1",
+        "sub_question_title": "What is sub-question 39.1?",
+        "sub_question_point": 1,
+        "rubric": {
+          "rubric_id": "86b4328e-0875-4485-854f-aed7193fcb8a",
+          "rubric_details": [
+            {
+              "rubric_details_id": "8cfbeedd-6616-477e-a534-db7055e2aa80",
+              "description": "Fully correct",
+              "points": 0.1,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "ba31a481-c10d-4d92-bd90-a6dde1660f70",
+              "description": "Not attempted",
+              "points": 3.4,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "1da3795d-837a-47fa-b57a-206924bcd3c6",
+              "description": "Partially correct answer",
+              "points": 4.5,
+              "has_selected": false
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "39.2",
+        "sub_question_title": "What is sub-question 39.2?",
+        "sub_question_point": 4,
+        "rubric": {
+          "rubric_id": "f5b961ff-8db9-4f57-8b44-2c1d86cda09e",
+          "rubric_details": [
+            {
+              "rubric_details_id": "36fa36c0-8410-46b3-990e-26b5d862bb2b",
+              "description": "Minor mistake",
+              "points": 1.5,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "6e14d629-fe6a-43c3-be6d-22067fdd9f73",
+              "description": "Correct answer",
+              "points": 1.8,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "2bff8d38-e0e8-414b-b91c-a94734301f2e",
+              "description": "Incorrect answer",
+              "points": -0.6,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "f41318cc-bcee-4380-8648-50fd43dd027b",
+              "description": "Incorrect answer",
+              "points": 1.5,
+              "has_selected": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "question_id": "fd110566-9e7e-4dc6-9346-fade27aa8b68",
+    "question_title": "What is concept number 40?",
+    "question_point": 11,
+    "rubric": {
+      "rubric_id": "d374227b-ed39-4bb3-bad5-3f1d948bdc6b",
+      "rubric_details": [
+        {
+          "rubric_details_id": "dc0c5aa7-fac4-4aa9-a2a9-bbd936681bcc",
+          "description": "Partially correct answer",
+          "points": 0.6,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "0fc49d08-a5be-4519-acab-4580eb8abc88",
+          "description": "Minor mistake",
+          "points": -1.7,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "ccc3d7ff-91f5-4270-bcd2-d3f5eccafe5c",
+          "description": "Fully correct",
+          "points": 3.7,
+          "has_selected": false
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "65518053-dd7a-4f5d-9825-44ad55000927",
+    "question_title": "What is concept number 41?",
+    "question_point": 19,
+    "rubric": {
+      "rubric_id": "4acecd55-66fc-4a8c-812e-78e2fd7600ed",
+      "rubric_details": [
+        {
+          "rubric_details_id": "99a2441e-a511-4663-b349-eeca721dfe1c",
+          "description": "Not attempted",
+          "points": 1.7,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "45f16a51-f9cb-4bb5-bb60-af1a1f0f2ed4",
+          "description": "Correct answer",
+          "points": -1.8,
+          "has_selected": false
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "9867cbf0-d166-489f-9dcb-cc0a07be61e5",
+    "question_title": "What is concept number 42?",
+    "question_point": 10,
+    "rubric": {
+      "rubric_id": "ab9beb84-4721-4e5c-afcc-b1dbeb157a09",
+      "rubric_details": [
+        {
+          "rubric_details_id": "7484b8cc-c24f-46c1-940b-7953e9273644",
+          "description": "Minor mistake",
+          "points": 0.2,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "f8618249-9d8f-4314-afb5-a12e822939ad",
+          "description": "Partially correct answer",
+          "points": -0.2,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "7f64b8e5-2194-4a14-9abd-999d452f255f",
+          "description": "Fully correct",
+          "points": 3.3,
+          "has_selected": true
+        }
+      ]
+    },
+    "sub_questions": [
+      {
+        "sub_question_id": "42.1",
+        "sub_question_title": "What is sub-question 42.1?",
+        "sub_question_point": 4,
+        "rubric": {
+          "rubric_id": "51974781-aedb-41cb-aee1-9851358e52d5",
+          "rubric_details": [
+            {
+              "rubric_details_id": "5ce6c187-0a4d-491e-8cbe-2c3f8458e087",
+              "description": "Partially correct answer",
+              "points": 4.4,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "48f5101c-d171-4dc3-a08e-62f2bd1a7dcd",
+              "description": "Minor mistake",
+              "points": 3.6,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "d0c45d41-5194-4484-8909-1959a8fc47db",
+              "description": "Partially correct answer",
+              "points": 0.7,
+              "has_selected": true
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "42.2",
+        "sub_question_title": "What is sub-question 42.2?",
+        "sub_question_point": 3,
+        "rubric": {
+          "rubric_id": "f6f866fd-6798-4972-9acb-cb854157b550",
+          "rubric_details": [
+            {
+              "rubric_details_id": "1f024c16-2dba-4829-add0-27bc508f4425",
+              "description": "Fully correct",
+              "points": 1.6,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "2caf9dea-f6dc-4e50-8440-117743d5c5e1",
+              "description": "Correct answer",
+              "points": -1.2,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "6face42f-835f-484a-8a72-3535eaaca81a",
+              "description": "Partially correct answer",
+              "points": 1.3,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "637e62b8-9e79-4b3f-92f0-8184c2189243",
+              "description": "Partially correct answer",
+              "points": 0.7,
+              "has_selected": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "question_id": "77fd43c8-e2e9-4ee6-a1ba-e02d3973b039",
+    "question_title": "What is concept number 43?",
+    "question_point": 7,
+    "rubric": {
+      "rubric_id": "33268b42-41f0-44c5-bc4d-beebea0ff200",
+      "rubric_details": [
+        {
+          "rubric_details_id": "503e644d-b2c1-4633-a119-51a9d700542f",
+          "description": "Not attempted",
+          "points": 0.4,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "38fdba50-c8c6-434e-8d4e-33f0a751f761",
+          "description": "Fully correct",
+          "points": 2.1,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "3c01b37e-3590-436c-93a5-a51e1d184a67",
+          "description": "Fully correct",
+          "points": -0.4,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "aafc0b1c-7582-46b3-b322-f118a7d99e5a",
+          "description": "Correct answer",
+          "points": 0.9,
+          "has_selected": true
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "d54a365f-ca66-4c8c-8aec-90d83b65b7ec",
+    "question_title": "What is concept number 44?",
+    "question_point": 16,
+    "rubric": {
+      "rubric_id": "58a9ffaa-b4ec-4192-8d6d-81ab64bb2449",
+      "rubric_details": [
+        {
+          "rubric_details_id": "96e84a78-76e5-4e49-95b9-4e995752f633",
+          "description": "Minor mistake",
+          "points": 0.0,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "bb1cb999-9b00-4273-8492-bb62afe9fb11",
+          "description": "Fully correct",
+          "points": 3.5,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "0d501919-e826-4dfa-96ea-03c76bc446ff",
+          "description": "Incorrect answer",
+          "points": -0.5,
+          "has_selected": false
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "eb9b71dd-59bd-4390-bf16-ea1644f842c6",
+    "question_title": "What is concept number 45?",
+    "question_point": 7,
+    "rubric": {
+      "rubric_id": "96a03f9a-72a4-47e0-8928-2b9fa339b0f2",
+      "rubric_details": [
+        {
+          "rubric_details_id": "a8bb26ae-554a-4e3c-8455-f2aa14dfc63f",
+          "description": "Minor mistake",
+          "points": 0.9,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "b2ad863f-a9a0-403e-8ce6-d91354596279",
+          "description": "Incorrect answer",
+          "points": 4.6,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "45c3649a-18c6-459a-affe-4e4c28dc3f60",
+          "description": "Not attempted",
+          "points": 3.9,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "388593b6-dd6f-4593-aeae-dba30ab7432e",
+          "description": "Partially correct answer",
+          "points": 0.8,
+          "has_selected": false
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "60f9383f-7698-481f-8e58-76f25c1a076c",
+    "question_title": "What is concept number 46?",
+    "question_point": 2,
+    "rubric": {
+      "rubric_id": "dbaf2c9e-12f7-4ba8-92c1-097fc9513472",
+      "rubric_details": [
+        {
+          "rubric_details_id": "3f4bfc3f-56a9-46b9-9564-b5eb78ea8bae",
+          "description": "Minor mistake",
+          "points": 0.6,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "3bae0424-0c2b-45cd-90ce-b20f4daf1dca",
+          "description": "Incorrect answer",
+          "points": 0.1,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "beb4f480-877c-49fc-93bc-d4b16d5f82b2",
+          "description": "Correct answer",
+          "points": -1.1,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "96c474ec-c1c4-4edb-89a1-6d268b2fea60",
+          "description": "Partially correct answer",
+          "points": 4.6,
+          "has_selected": true
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "cce41b46-eb74-4b5f-a07b-6ce1884156da",
+    "question_title": "What is concept number 47?",
+    "question_point": 9,
+    "rubric": {
+      "rubric_id": "c2757573-8c44-42d9-9f4b-34011bd3adb1",
+      "rubric_details": [
+        {
+          "rubric_details_id": "ad7e2453-8f93-4bc8-9002-605b49fc087f",
+          "description": "Not attempted",
+          "points": -1.0,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "d4c80f38-2746-4cb3-8748-580b1a165f90",
+          "description": "Partially correct answer",
+          "points": 0.6,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "85c389b8-8098-46c2-82e0-d512265df4b2",
+          "description": "Partially correct answer",
+          "points": 1.8,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "a7a22b13-6113-420d-8bc9-2680a8eaf0e1",
+          "description": "Minor mistake",
+          "points": -1.1,
+          "has_selected": true
+        }
+      ]
+    }
+  },
+  {
+    "question_id": "cb0fbe58-52db-4496-b553-0d1081602468",
+    "question_title": "What is concept number 48?",
+    "question_point": 6,
+    "rubric": {
+      "rubric_id": "54f90d64-0016-41e7-a0ac-3aff3b9dadeb",
+      "rubric_details": [
+        {
+          "rubric_details_id": "a11930a9-7f11-4dd8-9d44-44178dadb5f4",
+          "description": "Correct answer",
+          "points": 1.2,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "6e12607a-3d1b-45bd-88e9-0e631504cb46",
+          "description": "Correct answer",
+          "points": 0.1,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "baa84d28-41ab-4dc9-bdc4-e0aea043ef97",
+          "description": "Correct answer",
+          "points": 1.9,
+          "has_selected": false
+        }
+      ]
+    },
+    "sub_questions": [
+      {
+        "sub_question_id": "48.1",
+        "sub_question_title": "What is sub-question 48.1?",
+        "sub_question_point": 2,
+        "rubric": {
+          "rubric_id": "48c24190-0e8c-43a8-a9bc-93163d9ababc",
+          "rubric_details": [
+            {
+              "rubric_details_id": "99f83999-1ded-4fc0-9be1-8770225bef6b",
+              "description": "Correct answer",
+              "points": 1.5,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "5e4d275f-da93-4940-b456-260bc6de2183",
+              "description": "Minor mistake",
+              "points": -0.8,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "0f3e833d-5c33-4e6e-a91d-73792f51b0f5",
+              "description": "Partially correct answer",
+              "points": -1.7,
+              "has_selected": false
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "48.2",
+        "sub_question_title": "What is sub-question 48.2?",
+        "sub_question_point": 2,
+        "rubric": {
+          "rubric_id": "0386152f-a9ac-4cde-8af4-67343001aba8",
+          "rubric_details": [
+            {
+              "rubric_details_id": "e4adf219-4a10-4892-a318-badc0812e853",
+              "description": "Fully correct",
+              "points": -0.4,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "bcfdce6f-3885-4d0d-b88f-3392dce9c958",
+              "description": "Correct answer",
+              "points": 1.8,
+              "has_selected": false
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "48.3",
+        "sub_question_title": "What is sub-question 48.3?",
+        "sub_question_point": 10,
+        "rubric": {
+          "rubric_id": "77625691-553f-4260-8052-769d9025ea8a",
+          "rubric_details": [
+            {
+              "rubric_details_id": "9e17f5f4-eb93-431e-9315-36bd49d5ef3b",
+              "description": "Partially correct answer",
+              "points": 0.8,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "fdc555b2-551d-4bfe-b9c1-bcab8676ae8c",
+              "description": "Partially correct answer",
+              "points": 0.5,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "9ff8f693-4bea-4db1-916c-800acff7c004",
+              "description": "Incorrect answer",
+              "points": 2.7,
+              "has_selected": true
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "question_id": "e785a2f0-dce4-4e5d-864d-33ccdbf91daf",
+    "question_title": "What is concept number 49?",
+    "question_point": 6,
+    "rubric": {
+      "rubric_id": "35b9c1ad-9cf2-43db-8469-1b58a94b5e73",
+      "rubric_details": [
+        {
+          "rubric_details_id": "47366ec4-7a84-4dbb-b583-20c2c356710a",
+          "description": "Correct answer",
+          "points": -1.0,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "d5d41d33-c46d-4d03-b6ad-abb4f2b92a27",
+          "description": "Correct answer",
+          "points": 4.6,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "f9a8a5b4-bdff-4923-b503-d3257954e046",
+          "description": "Minor mistake",
+          "points": -0.5,
+          "has_selected": true
+        }
+      ]
+    },
+    "sub_questions": [
+      {
+        "sub_question_id": "49.1",
+        "sub_question_title": "What is sub-question 49.1?",
+        "sub_question_point": 4,
+        "rubric": {
+          "rubric_id": "7e717e9d-7ffe-415a-a233-c17f448c77ee",
+          "rubric_details": [
+            {
+              "rubric_details_id": "6f940402-90c7-47dd-8f4e-0e6f0fba5a4e",
+              "description": "Incorrect answer",
+              "points": 2.8,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "35dc6f4c-1cc8-4afe-9ab0-9c8a79138bfd",
+              "description": "Correct answer",
+              "points": 4.2,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "abbd5c2e-cb78-42d9-a741-7fb751d6aa1e",
+              "description": "Incorrect answer",
+              "points": 0.4,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "69a03d99-6553-4e87-bef2-8aa66e273705",
+              "description": "Minor mistake",
+              "points": 4.1,
+              "has_selected": true
+            }
+          ]
+        }
+      },
+      {
+        "sub_question_id": "49.2",
+        "sub_question_title": "What is sub-question 49.2?",
+        "sub_question_point": 4,
+        "rubric": {
+          "rubric_id": "781b1c28-5f12-4b7e-91c8-dec33cb7c112",
+          "rubric_details": [
+            {
+              "rubric_details_id": "5e439835-309d-4619-b136-cc7d659f48e7",
+              "description": "Partially correct answer",
+              "points": 4.5,
+              "has_selected": true
+            },
+            {
+              "rubric_details_id": "53432dad-6d8e-4d46-8b17-3fd79c0b4e57",
+              "description": "Fully correct",
+              "points": 1.4,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "29531381-5bd6-498c-9e44-2613ec3be9a7",
+              "description": "Fully correct",
+              "points": 0.6,
+              "has_selected": false
+            },
+            {
+              "rubric_details_id": "b6f2846e-5c70-40a1-8932-cf79d9c7e288",
+              "description": "Correct answer",
+              "points": 3.7,
+              "has_selected": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "question_id": "6a11fd8b-de49-4a8a-8fa0-592ba4cdda05",
+    "question_title": "What is concept number 50?",
+    "question_point": 6,
+    "rubric": {
+      "rubric_id": "51b8cbb3-dc58-4dc6-94e9-6c93fb8950da",
+      "rubric_details": [
+        {
+          "rubric_details_id": "1a70e3b1-35b7-4e41-8246-b5d3cf6f5022",
+          "description": "Minor mistake",
+          "points": 4.3,
+          "has_selected": false
+        },
+        {
+          "rubric_details_id": "15583fe4-ff79-47dc-b2e4-8e19ebccecf2",
+          "description": "Not attempted",
+          "points": 4.6,
+          "has_selected": true
+        },
+        {
+          "rubric_details_id": "f5c5e290-2883-4dd3-a7cb-45f067567eda",
+          "description": "Fully correct",
+          "points": -1.6,
+          "has_selected": true
+        }
+      ]
+    }
+  }
+]
