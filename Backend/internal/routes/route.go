@@ -119,6 +119,7 @@ func RegisterRoutes(
 	// Template(outline)
 	apiGroup.Get("/instructor/assignment/template", instructorHandler.GetAssignmentTemplateData)
 	apiGroup.Get("/instructor/assignment/questions", instructorHandler.GetQuestionsList)
+	apiGroup.Get("/instructor/assignment/questions/noSubmitted", instructorHandler.GetNoSubmittedQuestionsList)
 	// Part:1 Rubric
 	apiGroup.Post("/instructor/rubric", instructorHandler.CreateRubric)
 	apiGroup.Put("/instructor/rubric", instructorHandler.UpdateRubric)
