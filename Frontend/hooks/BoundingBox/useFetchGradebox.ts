@@ -25,7 +25,7 @@ export const useFetchGradebox = (assignmentId: string) => {
   return useQuery<BoundingBox[], Error>({
     queryKey: ['gradeboxes', assignmentId] as const,
     queryFn: async () => {
-      const response = await axios.get('/api/instructor/boundingBoxes/data', {
+      const response = await axios.get('/api/api/instructor/boundingBoxes/data', {
         params: { assignment_id: assignmentId },
       });
       if (response.status !== 200) {
