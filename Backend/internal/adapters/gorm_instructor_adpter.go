@@ -1181,6 +1181,51 @@ func (r *GormInstructorRepository) FindQuestionsList(AssignmentID uuid.UUID) (re
 		return nil, tx.Error
 	}
 
+	var parsed response.RawRubricData
+	if err := json.Unmarshal(rubric.RubricData, &parsed); err != nil {
+		return nil, err
+	}
+
+	var result response.QuestionsListResponse
+	// subIDx := 0
+	for _, q := range parsed.QuestionsData {
+		question := response.Questions{
+			QuestionID:    q.QuestionID,
+			QuestionTitle: q.QuestionTitle,
+			QuestionPoint: q.QuestionPoint,
+		}
+
+		for _, sq := range q.SubQuestions {
+			question.SubQuestions = append(question.SubQuestions, response.SubQuestions{
+				SubQuestionID:    sq.SubQuestionID,
+				SubQuestionTitle: sq.SubQuestionTitle,
+				SubQuestionPoint: sq.SubQuestionPoint,
+			})
+		}
+		result = append(result, question)
+	}
+	return result, nil
+}
+
+func (r *GormInstructorRepository) FindNoSubmittedQuestionsList(AssignmentID uuid.UUID) (response.MixedQuestionsList, error) {
+	var rubric struct {
+		RubricID   uuid.UUID      `gorm:"column:rubric_id"`
+		RubricData datatypes.JSON `gorm:"column:rubric_data"`
+	}
+
+	tx := r.db.
+		Table("rubrics").
+		Select("rubric_id, rubric_data").
+		Where("assignment_id = ? AND deleted_at IS NULL", AssignmentID).
+		Take(&rubric)
+
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return response.MixedQuestionsList{}, nil
+	}
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
 	var ungradedID response.UngradedSubmissions
 	if err := r.db.
 		Raw(`
@@ -1198,33 +1243,54 @@ func (r *GormInstructorRepository) FindQuestionsList(AssignmentID uuid.UUID) (re
 		return nil, err
 	}
 
-	var result response.QuestionsListResponse
+	// var result response.NoSubmittedQuestionsList
+	var result response.MixedQuestionsList
 	subIDx := 0
 	for _, q := range parsed.QuestionsData {
-		question := response.Question{
-			QuestionID:    q.QuestionID,
-			QuestionTitle: q.QuestionTitle,
-			QuestionPoint: q.QuestionPoint,
-		}
-
 		if len(q.SubQuestions) > 0 {
+			// ✅ ใช้ QuestionNoSubmission
+			question := response.QuestionNoSubmission{
+				QuestionID:    q.QuestionID,
+				QuestionTitle: q.QuestionTitle,
+				QuestionPoint: q.QuestionPoint,
+			}
+
 			for _, sq := range q.SubQuestions {
 				sub := response.SubQuestion{
 					SubQuestionID:    sq.SubQuestionID,
 					SubQuestionTitle: sq.SubQuestionTitle,
 					SubQuestionPoint: sq.SubQuestionPoint,
-					SubmissionID:     ungradedID[subIDx%len(ungradedID)].SubmissionID,
 				}
-				subIDx++
+
+				if len(ungradedID) > 0 {
+					sub.SubmissionID = &ungradedID[subIDx%len(ungradedID)].SubmissionID
+					subIDx++
+				} else {
+					sub.SubmissionID = nil
+				}
+
 				question.SubQuestions = append(question.SubQuestions, sub)
 			}
+
+			result = append(result, question) // 👈 ใช้ struct ที่ไม่มี submission_id
+
 		} else {
-			if subIDx < len(ungradedID) {
+			// ✅ ใช้ Question struct (ที่มี submission_id)
+			question := response.Question{
+				QuestionID:    q.QuestionID,
+				QuestionTitle: q.QuestionTitle,
+				QuestionPoint: q.QuestionPoint,
+			}
+
+			if len(ungradedID) > 0 {
 				question.SubmissionID = &ungradedID[subIDx%len(ungradedID)].SubmissionID
 				subIDx++
+			} else {
+				question.SubmissionID = nil
 			}
+
+			result = append(result, question)
 		}
-		result = append(result, question)
 	}
 	return result, nil
 }
