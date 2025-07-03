@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Box, Text, ScrollArea, Title, Group, Flex, Burger } from "@mantine/core";
+import { Box, Text, ScrollArea, Title, Group, Flex, Burger, Divider } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { FaCircle } from "react-icons/fa";
 import questionsData from "@/mock/questionsData.json";
@@ -43,13 +43,25 @@ export const SidebarQuestions = () => {
           - / 24 pts
         </Text>
 
-        <ScrollArea type="never" scrollbarSize={4} scrollbars="y" mah={"calc(100vh - 300px)"}>
+        <ScrollArea type="hover" scrollbarSize={8} scrollbars="y" mah={"calc(100vh - 300px)"}>
           {questionsData.map((q, idx) => (
-            <Box key={q.question_id} mb="lg">
+            <Box key={q.question_id} mb="lg" pr="md">
               <Text size="sm" fw="500">Question {idx + 1}</Text>
-              <Group justify="space-between" mb="2px">
+              <Group justify="space-between" className="group">
                 {q.question_title && (
-                  <Text size="md">{q.question_title}</Text>
+                  <Title 
+                    order={5} 
+                    size="md"
+                    fw={400}
+                    lineClamp={1}
+                    className={
+                      !q.sub_questions
+                        ? "text-[#495057] group-hover:text-[#3B5BDB] group-hover:underline transition-colors duration-200 cursor-pointer"
+                        : "text-[#495057]"
+                    }
+                  >
+                    {q.question_title}
+                  </Title>
                 )}                
                 <Text size="sm">{q.question_point} pts</Text>
               </Group>
@@ -61,13 +73,15 @@ export const SidebarQuestions = () => {
                       <Text size="sm">
                         {`${idx + 1}.${subIdx + 1}`}
                       </Text>
-                      <Text
-                        span
+                      <Title
+                        order={6}
                         size="sm"
-                        className="cursor-pointer"
+                        fw={400}
+                        lineClamp={1}
+                        className="text-[#495057] group-hover:text-[#3B5BDB] group-hover:underline transition-colors duration-200 cursor-pointer"
                       >
                         {sub.sub_question_title}
-                      </Text>                 
+                      </Title>
                     </Flex>
                     <Text size="sm" w={60} ta="right">
                       {sub.sub_question_point} pts
