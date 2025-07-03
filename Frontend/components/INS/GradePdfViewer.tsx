@@ -37,7 +37,7 @@ const GradePdfViewer: React.FC = () => {
   const lastPos = useRef({ x: 0, y: 0 });
   const renderTaskRef = useRef<any>(null);
 
-  const renderPDF = async (pageNum: number, scaleValue: number) => {
+ const renderPDF = async (pageNum: number, scaleValue: number) => {
     try {
       const loadingTask = pdfjsLib.getDocument(submissionFile.submission_file_url);
       const pdf = await loadingTask.promise;
@@ -52,28 +52,36 @@ const GradePdfViewer: React.FC = () => {
 
       const viewport = page.getViewport({ scale: finalScale });
 
-      const canvas = canvasRef.current;
-      if (canvas) {
-        const context = canvas.getContext("2d");
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
+      const canvas = canvasRef.current!;
+      const context = canvas.getContext("2d")!;
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
 
-        if (renderTaskRef.current) {
-          renderTaskRef.current.cancel();
-        }
-
-        renderTaskRef.current = page.render({
-          canvasContext: context!,
-          viewport,
-        });
-
-        await renderTaskRef.current.promise;
+      // ยกเลิกงานเรนเดอร์เก่า (ถ้ามี)
+      if (renderTaskRef.current) {
+        renderTaskRef.current.cancel();
       }
-    } catch (error) {
-      console.error("Error rendering PDF:", error);
+
+      // เริ่มงานเรนเดอร์ใหม่
+      const renderTask = page.render({
+        canvasContext: context,
+        viewport,
+      });
+      renderTaskRef.current = renderTask;
+
+      // รอผล ถ้าโดนยกเลิก จะไปชน catch ข้างล่าง
+      try {
+        await renderTask.promise;
+      } catch (err: any) {
+        // ถ้าเป็นการยกเลิก ให้นิ่งไว้ ไม่ต้องทักท้วง
+        if (err.name !== "RenderingCancelledException") {
+          console.error("Error rendering PDF page:", err);
+        }
+      }
+    } catch (err) {
+      console.error("Error in renderPDF:", err);
     }
   };
-
 
   useEffect(() => {
     renderPDF(currentPage, scale);

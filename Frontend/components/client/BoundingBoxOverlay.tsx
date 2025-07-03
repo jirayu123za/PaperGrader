@@ -25,8 +25,9 @@ interface BoundingBoxOverlayProps {
 }
 
 /**
- * Client-only overlay using Konva imperative API,
- * displays only bounding box frames based on hook/store.
+ * Client-only overlay using Konva imperative API.
+ * Draws bounding boxes once per data/page change,
+ * then updates zoom via stage.scale separated from redraw.
  */
 const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
   canvasRef,
@@ -35,11 +36,11 @@ const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
   scale,
   pan,
 }) => {
-  const { data, isLoading, error } = useFetchGradebox(assignmentId);
-  const storedBoxes = useGradeboxStore(
-    (state) => state.bounding_boxes_data
-  );
+  // Fetch and sync to store
+  const { data: fetchedBoxes, isLoading, error } = useFetchGradebox(assignmentId);
+  const storedBoxes = useGradeboxStore((s) => s.bounding_boxes_data);
 
+  // Refs for Konva
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<Konva.Stage>();
   const layerRef = useRef<Konva.Layer>();
@@ -57,7 +58,6 @@ const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
     });
     const layer = new Konva.Layer();
     stage.add(layer);
-
     stageRef.current = stage;
     layerRef.current = layer;
 
@@ -66,34 +66,43 @@ const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
     };
   }, [canvasRef]);
 
-  // Draw/update bounding boxes when data or view changes
+  // Draw shapes when data or page change
   useEffect(() => {
     const stage = stageRef.current;
     const layer = layerRef.current;
     const canvas = canvasRef.current;
     if (!stage || !layer || !canvas || isLoading || error) return;
 
-    layer.clear();
-    const boxes = data?.bounding_boxes_data ?? storedBoxes;
-    const pageBoxes = boxes.filter(
-      (b) => b.bounding_box_page === currentPage
-    );
+    // Resize stage to match new canvas size
+    stage.width(canvas.width);
+    stage.height(canvas.height);
 
+    // Clear and draw new boxes
+    layer.removeChildren();
+    const boxes: BoundingBox[] = fetchedBoxes ?? storedBoxes;
+    const pageBoxes = boxes.filter((b) => b.bounding_box_page === currentPage);
     pageBoxes.forEach((b) => {
       const rect = new Konva.Rect({
-        x: b.point_x * scale,
-        y: b.point_y * scale,
-        width: b.width * scale,
-        height: b.height * scale,
+        x: b.point_x,
+        y: b.point_y,
+        width: b.width,
+        height: b.height,
         stroke: "red",
         strokeWidth: 2,
         listening: false,
       });
       layer.add(rect);
     });
-
     layer.batchDraw();
-  }, [data, storedBoxes, currentPage, scale, pan.x, pan.y, canvasRef]);
+  }, [fetchedBoxes, storedBoxes, currentPage]);
+
+  // Update zoom (scale) on stage
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    stage.scale({ x: scale, y: scale });
+    stage.batchDraw();
+  }, [scale]);
 
   const canvas = canvasRef.current;
   const width = canvas?.width ?? 0;
