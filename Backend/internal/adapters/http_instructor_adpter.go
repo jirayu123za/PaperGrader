@@ -2029,6 +2029,30 @@ func (h *HttpInstructorHandler) GetQuestionsList(c *fiber.Ctx) error {
 	})
 }
 
+func (h *HttpInstructorHandler) GetNoSubmittedQuestionsList(c *fiber.Ctx) error {
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	questions, err := h.services.GetNoSubmittedQuestionsList(assignmentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get questions",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"questions": questions,
+		"message":   "questions list retrieved successfully",
+	})
+}
+
 // Part: 2 Rubric Handlers
 func (h *HttpInstructorHandler) UpdateRubricSetting(c *fiber.Ctx) error {
 	assignmentIDParam := c.Query("assignment_id")
