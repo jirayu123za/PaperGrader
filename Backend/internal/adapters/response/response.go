@@ -172,21 +172,32 @@ type UngradedSubmissions []struct {
 
 // Part 3: Get Questions List By Assignment Template
 type SubQuestion struct {
-	SubQuestionID    uuid.UUID `json:"sub_question_id"`
-	SubQuestionTitle string    `json:"sub_question_title"`
-	SubQuestionPoint int       `json:"sub_question_point"`
-	SubmissionID     uuid.UUID `json:"submission_id"`
+	SubQuestionID    uuid.UUID  `json:"sub_question_id"`
+	SubQuestionTitle string     `json:"sub_question_title"`
+	SubQuestionPoint int        `json:"sub_question_point"`
+	SubmissionID     *uuid.UUID `json:"submission_id"`
 }
 
 type Question struct {
 	QuestionID    uuid.UUID     `json:"question_id"`
 	QuestionTitle string        `json:"question_title"`
 	QuestionPoint int           `json:"question_point"`
-	SubmissionID  *uuid.UUID    `json:"submission_id,omitempty"`
+	SubmissionID  *uuid.UUID    `json:"submission_id"`
 	SubQuestions  []SubQuestion `json:"sub_questions,omitempty"`
 }
 
-type QuestionsListResponse []Question
+type QuestionNoSubmission struct {
+	QuestionID    uuid.UUID     `json:"question_id"`
+	QuestionTitle string        `json:"question_title"`
+	QuestionPoint int           `json:"question_point"`
+	SubQuestions  []SubQuestion `json:"sub_questions,omitempty"`
+}
+
+type MixedQuestionsList []interface{}
+
+type QuestionsListResponse []Questions
+
+// type NoSubmittedQuestionsList []Question
 
 type PersonalDataIDResponse struct {
 	PersonalDataID uuid.UUID `json:"personal_data_id"`
