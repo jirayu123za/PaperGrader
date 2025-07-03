@@ -3,6 +3,7 @@ package adapters
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/rand"
 	"paperGrader/internal/adapters/response"
@@ -1173,12 +1174,11 @@ func (r *GormInstructorRepository) FindQuestionsList(AssignmentID uuid.UUID) (re
 		Where("assignment_id = ? AND deleted_at IS NULL", AssignmentID).
 		Take(&rubric)
 
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return response.QuestionsListResponse{}, nil
+	}
 	if tx.Error != nil {
 		return nil, tx.Error
-	}
-
-	if tx.RowsAffected == 0 {
-		return response.QuestionsListResponse{}, nil
 	}
 
 	var ungradedID response.UngradedSubmissions
