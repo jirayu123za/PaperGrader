@@ -21,7 +21,7 @@ import { RubricItem, useRubricStore } from '@/store/rubric/useRubricStore';
 import { NoQuestion } from '@/components/INS/INSProcess/Right/Rubric/NoQuestion';
 import { QuestionSelectorParams } from '@/components/INS/INSProcess/Right/Rubric/QuestionSelectorParams';
 import { RubricSettingsParams } from '@/components/INS/INSProcess/Right/Rubric/RubricSettingsParams';
-import { useDisclosure } from '@mantine/hooks';
+import { useDisclosure, useHotkeys } from '@mantine/hooks';
 marked.use(markedKatex({ throwOnError: false }));
 
 interface Graded {
@@ -158,6 +158,21 @@ export const RubricGrader = () => {
         return question.question_point;
     };
 
+    const toggleRubric = (index: number) => {
+        if (index >= rubrics.length) return;
+        const updated = rubrics.map((r, i) =>
+            i === index ? { ...r, has_selected: !r.has_selected } : r
+        );
+        setRubrics(updated);
+    };
+
+    const keys = Array.from({ length: 9 }, (_, i) => `${i + 1}`);
+
+    useHotkeys(
+        keys.map((key, i) => [key, () => toggleRubric(i)]),
+        ['INPUT', 'TEXTAREA', 'SELECT']
+    );
+
     if (questions.length === 0) {
         return <NoQuestion/>
     }
@@ -224,12 +239,23 @@ export const RubricGrader = () => {
                                         >
                                             {(provided, snapshot) => (
                                             <Checkbox.Card
-                                                checked={false}
+                                                checked={rubric.has_selected}
+                                                onChange={(checked) => {
+                                                    const updated = rubrics.map((r) =>
+                                                    r.rubric_detail_id === rubric.rubric_detail_id
+                                                        ? { ...r, has_selected: checked }
+                                                        : r
+                                                    );
+                                                    setRubrics(updated);
+                                                    // Update rubric selection state
+                                                }}
                                                 component="div"
                                                 ref={provided.innerRef}
                                                 {...provided.draggableProps}
                                                 {...provided.dragHandleProps}
-                                                p="sm"
+                                                pt="sm"
+                                                pr="sm"
+                                                pl="sm"
                                                 w="100%"
                                                 bd={snapshot.isDragging ? '2px solid #827f7f' : '1px solid #827f7f'}
                                                 bg={snapshot.isDragging ? '#f0f0f0' : '#f9f9f9'}
@@ -239,10 +265,11 @@ export const RubricGrader = () => {
                                                 <Group wrap="nowrap" align="flex-start">
                                                     <Checkbox.Indicator
                                                         icon={() => <Text size="sm" fw={500} c={rubric.has_selected ? 'white' : "#495057"}>{index + 1}</Text>}
-                                                        bg={rubric.has_selected ? '#1A5059' : 'transparent'}
+                                                        bg={rubric.has_selected ? '#7950F2' : 'transparent'}
+                                                        bd={rubric.has_selected ? 'none' : '1px solid #CED4DA'}
                                                         radius="0"
                                                     />
-                                                    <Flex direction="column" className="flex-1">
+                                                    <Flex direction="column" className="flex-1" onClick={(e) => e.stopPropagation()}>
                                                         {editingRubricID === rubric.rubric_detail_id ? (
                                                             <NumberInput
                                                                 hideControls
@@ -308,6 +335,8 @@ export const RubricGrader = () => {
                                                         {editingDescriptionID === rubric.rubric_detail_id ? (
                                                             <Textarea
                                                                 miw={360}
+                                                                pb="md"
+                                                                pt="xs"
                                                                 autoFocus
                                                                 autosize
                                                                 maxRows={6}
@@ -353,7 +382,6 @@ export const RubricGrader = () => {
                                                         ) : (
                                                             <Text
                                                                 size="sm"
-                                                                h={28} 
                                                                 c={rubric.rubric_description ? "#495057" : "dimmed"}
                                                                 fs={rubric.rubric_description ? undefined : "italic"}
                                                                 className="whitespace-pre-wrap"
@@ -401,8 +429,8 @@ export const RubricGrader = () => {
                     >
                         Add Rubric Item
                     </Button>
-                </ScrollArea>
-            )}
+                    </ScrollArea>
+                )}
             </Flex>
         )}
     </Flex>
