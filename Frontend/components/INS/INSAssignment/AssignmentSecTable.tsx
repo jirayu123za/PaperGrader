@@ -49,11 +49,11 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
       <Table.Thead className="bg-gray-100 h-14">
         <Table.Tr>
           <Table.Th w={50}></Table.Th>
-          <Table.Th w={100} ta="center">SECTIONS</Table.Th>
-          <Table.Th w={240} ta="center">RELEASE DATE</Table.Th>
-          <Table.Th w={240} ta="center">DUE DATE</Table.Th>
-          <Table.Th w={300} ta="center">TIME REMAINING</Table.Th>
-          <Table.Th w={100} ta="center">ACTIONS</Table.Th>
+          <Table.Th w={100} ta="center">Sections</Table.Th>
+          <Table.Th w={240} ta="center">Release date</Table.Th>
+          <Table.Th w={240} ta="center">Due date</Table.Th>
+          <Table.Th w={300} ta="center">Time Remaining</Table.Th>
+          <Table.Th w={100} ta="center">Actions</Table.Th>
         </Table.Tr> 
       </Table.Thead>
       <Table.Tbody>
