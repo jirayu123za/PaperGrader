@@ -1,12 +1,19 @@
 "use client";
-import React from "react";
-import { Box, Text, ScrollArea, Title, Group, Flex, Burger, Divider } from "@mantine/core";
+import React, { useState } from "react";
+import questionsData from "@/mock/questionsData.json";
+import { Box, Text, ScrollArea, Title, Group, Flex, Burger } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { FaCircle } from "react-icons/fa";
-import questionsData from "@/mock/questionsData.json";
+import { RubricDetails } from "@/components/INS/INSProcess/Right/Grade/RubricDetails";
 
 export const SidebarQuestions = () => {
   const [opened, { toggle }] = useDisclosure(true);
+  
+  // Note: need to replace with zustand store
+  const [selectedRubricID, setSelectedRubricID] = useState<string | null>(null);
+  const handleRubricSelect = (id: string) => {
+    setSelectedRubricID(prev => (prev === id ? null : id));
+  };
 
   return (
     <Flex direction="column" bg="#F9F9F9" w={opened ? "100%" : 60} maw={460} className="border-l 1px solid #ddd">
@@ -49,28 +56,34 @@ export const SidebarQuestions = () => {
               <Text size="sm" fw="500">Question {idx + 1}</Text>
               <Group justify="space-between" className="group">
                 {q.question_title && (
-                  <Title 
-                    order={5} 
-                    size="md"
-                    fw={400}
-                    lineClamp={1}
-                    className={
-                      !q.sub_questions
-                        ? "text-[#495057] group-hover:text-[#3B5BDB] group-hover:underline transition-colors duration-200 cursor-pointer"
-                        : "text-[#495057]"
-                    }
-                  >
-                    {q.question_title}
-                  </Title>
+                  <>
+                    <Title 
+                      order={5} 
+                      size="md"
+                      fw={400}
+                      lineClamp={1}
+                      className={
+                        !q.sub_questions
+                          ? "text-[#495057] group-hover:text-[#3B5BDB] group-hover:underline transition-colors duration-200 cursor-pointer"
+                          : "text-[#495057]"
+                      }
+                      onClick={() => handleRubricSelect(q.question_id)}
+                    >
+                      {q.question_title}
+                    </Title>
+                  </>
                 )}                
-                <Text size="sm">{q.question_point} pts</Text>
+                <Text size="sm" c="#495057">{q.question_point} pts</Text>
               </Group>
+              {selectedRubricID === q.question_id && (
+                <RubricDetails rubric={q.rubric} />
+              )}
 
               {q.sub_questions?.map((sub, subIdx) => (
                 <Box key={sub.sub_question_id} pl="md" mt="xs" className="group">
                   <Group justify="space-between" w="100%" wrap="nowrap">
                     <Flex gap="md">
-                      <Text size="sm">
+                      <Text size="sm" c="#495057">
                         {`${idx + 1}.${subIdx + 1}`}
                       </Text>
                       <Title
@@ -79,14 +92,19 @@ export const SidebarQuestions = () => {
                         fw={400}
                         lineClamp={1}
                         className="text-[#495057] group-hover:text-[#3B5BDB] group-hover:underline transition-colors duration-200 cursor-pointer"
+                        onClick={() => handleRubricSelect(sub.sub_question_id)}
                       >
                         {sub.sub_question_title}
                       </Title>
                     </Flex>
-                    <Text size="sm" w={60} ta="right">
+                    <Text size="sm" w={60} c="#495057" ta="right">
                       {sub.sub_question_point} pts
                     </Text>
                   </Group>
+
+                  {selectedRubricID === sub.sub_question_id && (
+                    <RubricDetails rubric={sub.rubric} />
+                  )}
                 </Box>
               ))}
             </Box>
