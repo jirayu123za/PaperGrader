@@ -79,6 +79,7 @@ type InstructorService interface {
 	// CRUD Questions
 	GetQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (response.QuestionsTemplateResponse, error)
 	GetQuestionsList(AssignmentID uuid.UUID) (response.QuestionsListResponse, error)
+	GetNoSubmittedQuestionsList(AssignmentID uuid.UUID) (response.MixedQuestionsList, error)
 
 	// Part:1 CRUD Rubric
 	CreateRubricData(assignment_id uuid.UUID, rubricData response.CreateRubricRequest) error
@@ -604,6 +605,14 @@ func (s *InstructorServiceImpl) GetQuestionsList(AssignmentID uuid.UUID) (respon
 		return nil, err
 	}
 	return questions, nil
+}
+
+func (s *InstructorServiceImpl) GetNoSubmittedQuestionsList(AssignmentID uuid.UUID) (response.MixedQuestionsList, error) {
+	noSubmittedQuestions, err := s.repo.FindNoSubmittedQuestionsList(AssignmentID)
+	if err != nil {
+		return nil, err
+	}
+	return noSubmittedQuestions, nil
 }
 
 func (s *InstructorServiceImpl) CreateRubricData(assignmentID uuid.UUID, rubricData response.CreateRubricRequest) error {
