@@ -2,11 +2,11 @@
 
 import React from 'react';
 import { Table, Progress, Text, Flex, Paper, Anchor, Box } from '@mantine/core';
-import { useQuestionStore } from '@/store/question/useQuestionStore';
-import { useFetchQuestion } from '@/hooks/Question/useFetchQuestion';
 import { useParams, useRouter } from 'next/navigation';
-import { NoQuestionsList } from './NoQuestionsList';
 import { VscListUnordered } from "react-icons/vsc";
+import { useQuestionsListStore } from '@/store/question/useQuestionsList';
+import { useFetchQuestionsList } from '@/hooks/Question/useFetchQuestsList';
+import { NoSubmissions } from '@/components/INS/INSProcess/ManageSubmissions/NoSubmissions';
 
 export const INSSubmissionsQuestion: React.FC = () => {
   const params = useParams();
@@ -14,15 +14,22 @@ export const INSSubmissionsQuestion: React.FC = () => {
   const assignment_id = params.assignment_id as string;
   const course_id = params.course_id as string;
   
-  const { isLoading: isLoadingQuestions, data: questionsData } = useFetchQuestion(assignment_id);
-  const { questions } = useQuestionStore();
+  const { isLoading: isLoadingQuestions, data: questionsData } = useFetchQuestionsList(assignment_id);
+  const { questions } = useQuestionsListStore();
 
   // Mock data for progress bars
   const mockProgressMain = Math.floor(Math.random() * 100);
   const mockProgressSub = Math.floor(Math.random() * 100);
 
-  if (questions.length === 0) {
-    return <NoQuestionsList />;
+  const allSubmissionsEmpty = questions.every((q) => {
+    if (q.sub_questions && q.sub_questions.length > 0) {
+      return q.sub_questions.every((sub) => sub.submission_id === null);
+    }
+    return q.submission_id === null;
+  });
+
+  if (allSubmissionsEmpty) {
+    return <NoSubmissions />;
   }
 
   return (
