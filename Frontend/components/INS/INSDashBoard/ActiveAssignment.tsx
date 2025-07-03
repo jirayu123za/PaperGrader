@@ -112,7 +112,7 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
                   <Table.Td
                     className="cursor-pointer hover:underline"
                     onClick={() =>
-                      router.push(`/courses/${course_id}/process/${assignment.assignment_id}/CreateOutline`)
+                      router.push(`/instructor/course/${course_id}/process/${assignment.assignment_id}/create-outline`)
                     }
                   >
                     {assignment.assignment_name}
