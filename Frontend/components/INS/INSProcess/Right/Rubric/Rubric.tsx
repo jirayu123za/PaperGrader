@@ -33,6 +33,7 @@ export const Rubric = () => {
     const params = useParams();
     const assignment_id = params.assignment_id as string;
     const { questions, selectedQuestion, defaultSelectedQuestion } = useQuestionStore();
+    // const { questions, selectedQuestion, defaultSelectedQuestion, resetSelectedQuestion } = useQuestionStore();
     const { isLoading: isLoadingQuestions, data: questionsData } = useFetchQuestion(assignment_id);
     const { isLoading: isLoadingRubric, data: data } = useFetchRubric(assignment_id);
     const { mutate: createRubric, isPending: isPendingCreate } = useCreateRubric(assignment_id);
@@ -144,6 +145,15 @@ export const Rubric = () => {
         }     
     }, [rubricData]);
 
+    // useEffect(() => {
+    //     if (!questionsData || questionsData.length === 0) {
+    //         resetSelectedQuestion();
+    //         console.log("resetSelectedQuestion called due to empty questionsData");
+    //     }
+    //     console.log("call useEffect for questionsData", questionsData, "assignment_id:", assignment_id);
+        
+    // }, [assignment_id]);
+
     const getSelectedQuestionPoint = (): number | null => {
         const target = selectedQuestion ?? defaultSelectedQuestion;
         if (!target) return null;
@@ -218,7 +228,9 @@ export const Rubric = () => {
                                             ref={provided.innerRef}
                                             {...provided.draggableProps}
                                             {...provided.dragHandleProps}
-                                            p="sm"
+                                            pt="sm"
+                                            pr="sm"
+                                            pl="sm"
                                             w="456px"
                                             bd={snapshot.isDragging ? '2px solid #827f7f' : '1px solid #827f7f'}
                                             bg={snapshot.isDragging ? '#f0f0f0' : '#f9f9f9'}
@@ -226,8 +238,8 @@ export const Rubric = () => {
                                             className="hover:shadow-sm group"
                                         >
                                             <Group wrap="nowrap" align="flex-start">
-                                                <Checkbox.Indicator
-                                                    icon={() => <Text size="sm" fw={500}>{index + 1}</Text>}
+                                                <Checkbox.Indicator radius="0"
+                                                    icon={() => <Text size="sm" fw={500} >{index + 1}</Text>}
                                                 />
                                                 <Flex direction="column" className="flex-1">
                                                     {editingRubricID === rubric.rubric_detail_id ? (
@@ -296,6 +308,8 @@ export const Rubric = () => {
                                                         <Textarea
                                                             miw={360}
                                                             autoFocus
+                                                            pb="md"
+                                                            pt="xs"
                                                             autosize
                                                             radius="none"
                                                             defaultValue={rubric.rubric_description}
@@ -339,7 +353,6 @@ export const Rubric = () => {
                                                     ) : (
                                                         <Text
                                                             size="sm"
-                                                            h={28} 
                                                             c={rubric.rubric_description ? "#495057" : "dimmed"}
                                                             fs={rubric.rubric_description ? undefined : "italic"}
                                                             className="whitespace-pre-wrap"
