@@ -20,12 +20,10 @@ const UploadFiles: React.FC<Props> = ({ course_id, assignment_id }) => {
       <SubmissionsListTable assignment_id={assignment_id} />
 
       {/* Bottom: Drop zone and alert aligned vertically */}
-      {submissionsList.length !== 0 && (
-        <Flex direction="row" gap="md">
-          <DropFilesBox course_id={course_id} assignment_id={assignment_id} />
-          <AlertForSubmission />
-        </Flex>
-      )}
+      <Flex direction="row" gap="md">
+        <DropFilesBox course_id={course_id} assignment_id={assignment_id} />
+        <AlertForSubmission />
+      </Flex>
     </Flex>
   );
 };
