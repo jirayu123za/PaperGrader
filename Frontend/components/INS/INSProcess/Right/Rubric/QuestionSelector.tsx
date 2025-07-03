@@ -32,7 +32,6 @@ export function QuestionSelector() {
       position="bottom-start"
       withArrow
       arrowSize={10}
-      arrowOffset={100}
       offset={-1}
       shadow="xs"
     >
