@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import "pdfjs-dist/web/pdf_viewer.css";
 import * as pdfjsLib from "pdfjs-dist";
 import React, { useEffect, useRef, useState } from "react";
@@ -8,7 +9,16 @@ import { useFetchSubmissionFile } from "@/hooks/useFetchFile";
 import { useSubmissionFileStore } from "@/store/useINS_SubmissionStore";
 import { useParams } from "next/navigation";
 import { AiOutlineZoomIn, AiOutlineZoomOut, AiOutlineReload, AiOutlineArrowLeft, AiOutlineArrowRight } from "react-icons/ai";
-(pdfjsLib as any).GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js`;
+
+
+
+(pdfjsLib as any).GlobalWorkerOptions.workerSrc ="https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js";
+
+const BoundingBoxOverlay = dynamic(
+  () => import("@/components/client/BoundingBoxOverlay"),
+  { ssr: false }
+);
+
 
 const GradePdfViewer: React.FC = () => {
   const params = useParams() as Record<string, string>;
@@ -171,10 +181,17 @@ const GradePdfViewer: React.FC = () => {
             display: "block",
             transform: `translate(${pan.x}px, ${pan.y}px)`,
             transition: isDragging.current ? "none" : "transform 0.1s",
-            border: "1px solid rgba(0,0,0,0.2)", 
-            borderRadius: "0px", 
-            boxShadow: "0 0 4px rgba(0,0,0,0.1)", 
+            border: "1px solid rgba(0,0,0,0.2)",
+            borderRadius: "0px",
+            boxShadow: "0 0 4px rgba(0,0,0,0.1)",
           }}
+        />
+        <BoundingBoxOverlay
+          canvasRef={canvasRef}
+          assignmentId={assignment_id}
+          currentPage={currentPage}
+          scale={scale}
+          pan={pan}
         />
       </div>
 
