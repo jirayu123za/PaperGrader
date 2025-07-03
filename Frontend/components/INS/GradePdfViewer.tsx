@@ -12,7 +12,7 @@ import { AiOutlineZoomIn, AiOutlineZoomOut, AiOutlineReload, AiOutlineArrowLeft,
 
 
 
-(pdfjsLib as any).GlobalWorkerOptions.workerSrc ="https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js";
+(pdfjsLib as any).GlobalWorkerOptions.workerSrc = "https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js";
 
 const BoundingBoxOverlay = dynamic(
   () => import("@/components/client/BoundingBoxOverlay"),
@@ -37,45 +37,46 @@ const GradePdfViewer: React.FC = () => {
   const lastPos = useRef({ x: 0, y: 0 });
   const renderTaskRef = useRef<any>(null);
 
- const renderPDF = async (pageNum: number, scaleValue: number) => {
+  const [finalScale, setFinalScale] = useState(1);
+
+    const renderPDF = async (pageNum: number, baseScale: number) => {
     try {
-      const loadingTask = pdfjsLib.getDocument(submissionFile.submission_file_url);
+      const loadingTask = pdfjsLib.getDocument(
+        submissionFile.submission_file_url
+      );
       const pdf = await loadingTask.promise;
       const page = await pdf.getPage(pageNum);
-
       setTotalPages(pdf.numPages);
 
+      // คำนวณ scale ให้พอดีกับความสูงหน้าจอ
       const containerHeight = window.innerHeight;
-      const unscaledViewport = page.getViewport({ scale: 1 });
-      const scaleForHeight = containerHeight / unscaledViewport.height;
-      const finalScale = scaleValue * scaleForHeight;
+      const unscaledVP = page.getViewport({ scale: 1 });
+      const heightScale = containerHeight / unscaledVP.height;
+      const computedScale = baseScale * heightScale;
 
-      const viewport = page.getViewport({ scale: finalScale });
+      // ส่งค่า scale ไปยัง overlay
+      setFinalScale(computedScale);
 
+      const viewport = page.getViewport({ scale: computedScale });
       const canvas = canvasRef.current!;
-      const context = canvas.getContext("2d")!;
+      const ctx = canvas.getContext("2d")!;
       canvas.width = viewport.width;
       canvas.height = viewport.height;
 
       // ยกเลิกงานเรนเดอร์เก่า (ถ้ามี)
-      if (renderTaskRef.current) {
-        renderTaskRef.current.cancel();
-      }
+      renderTaskRef.current?.cancel();
 
-      // เริ่มงานเรนเดอร์ใหม่
       const renderTask = page.render({
-        canvasContext: context,
+        canvasContext: ctx,
         viewport,
       });
       renderTaskRef.current = renderTask;
 
-      // รอผล ถ้าโดนยกเลิก จะไปชน catch ข้างล่าง
       try {
         await renderTask.promise;
       } catch (err: any) {
-        // ถ้าเป็นการยกเลิก ให้นิ่งไว้ ไม่ต้องทักท้วง
         if (err.name !== "RenderingCancelledException") {
-          console.error("Error rendering PDF page:", err);
+          console.error("Error rendering PDF:", err);
         }
       }
     } catch (err) {
@@ -198,7 +199,7 @@ const GradePdfViewer: React.FC = () => {
           canvasRef={canvasRef}
           assignmentId={assignment_id}
           currentPage={currentPage}
-          scale={scale}
+          scale={finalScale}
           pan={pan}
         />
       </div>

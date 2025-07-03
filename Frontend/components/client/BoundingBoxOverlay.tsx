@@ -20,14 +20,13 @@ interface BoundingBoxOverlayProps {
   canvasRef: React.RefObject<HTMLCanvasElement>;
   assignmentId: string;
   currentPage: number;
-  scale: number;
+  scale: number; // finalScale used to render PDF
   pan: { x: number; y: number };
 }
 
 /**
- * Client-only overlay using Konva imperative API.
- * Draws bounding boxes once per data/page change,
- * then updates zoom via stage.scale separated from redraw.
+ * Overlay using Konva imperative API.
+ * Draws bounding boxes based on PDF canvas size and final scale.
  */
 const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
   canvasRef,
@@ -36,21 +35,19 @@ const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
   scale,
   pan,
 }) => {
-  // Fetch and sync to store
   const { data: fetchedBoxes, isLoading, error } = useFetchGradebox(assignmentId);
   const storedBoxes = useGradeboxStore((s) => s.bounding_boxes_data);
-
-  // Refs for Konva
   const containerRef = useRef<HTMLDivElement>(null);
-  const stageRef = useRef<Konva.Stage>();
-  const layerRef = useRef<Konva.Layer>();
+  const stageRef = useRef<Konva.Stage | null>(null);
+  const layerRef = useRef<Konva.Layer | null>(null);
 
-  // Initialize Konva stage and layer once
+  // Initialize stage and layer once
   useEffect(() => {
     const container = containerRef.current;
     const canvas = canvasRef.current;
     if (!container || !canvas) return;
 
+    // Create stage matching canvas internal resolution
     const stage = new Konva.Stage({
       container,
       width: canvas.width,
@@ -66,27 +63,30 @@ const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
     };
   }, [canvasRef]);
 
-  // Draw shapes when data or page change
+  // Draw boxes when data or page change
   useEffect(() => {
     const stage = stageRef.current;
     const layer = layerRef.current;
     const canvas = canvasRef.current;
     if (!stage || !layer || !canvas || isLoading || error) return;
 
-    // Resize stage to match new canvas size
+    // Sync stage size to canvas resolution
     stage.width(canvas.width);
     stage.height(canvas.height);
 
-    // Clear and draw new boxes
-    layer.removeChildren();
-    const boxes: BoundingBox[] = fetchedBoxes ?? storedBoxes;
-    const pageBoxes = boxes.filter((b) => b.bounding_box_page === currentPage);
+    // Clear previous shapes
+    layer.clear();
+
+    const boxesToUse = fetchedBoxes ?? storedBoxes;
+    const pageBoxes = boxesToUse.filter((b) => b.bounding_box_page === currentPage);
+
+    // Draw rectangles
     pageBoxes.forEach((b) => {
       const rect = new Konva.Rect({
-        x: b.point_x,
-        y: b.point_y,
-        width: b.width,
-        height: b.height,
+        x: b.point_x * scale,
+        y: b.point_y * scale,
+        width: b.width * scale,
+        height: b.height * scale,
         stroke: "red",
         strokeWidth: 2,
         listening: false,
@@ -96,17 +96,16 @@ const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
     layer.batchDraw();
   }, [fetchedBoxes, storedBoxes, currentPage]);
 
-  // Update zoom (scale) on stage
+  // Update zoom by CSS transform on container
   useEffect(() => {
-    const stage = stageRef.current;
-    if (!stage) return;
-    stage.scale({ x: scale, y: scale });
-    stage.batchDraw();
-  }, [scale]);
+    const container = containerRef.current;
+    if (!container) return;
+    container.style.transform = `translate(${pan.x}px, ${pan.y}px) scale(${scale})`;
+  }, [scale, pan.x, pan.y]);
 
   const canvas = canvasRef.current;
-  const width = canvas?.width ?? 0;
-  const height = canvas?.height ?? 0;
+  const width = canvas?.clientWidth ?? 0;
+  const height = canvas?.clientHeight ?? 0;
 
   return (
     <div
@@ -118,7 +117,7 @@ const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
         width,
         height,
         pointerEvents: "none",
-        transform: `translate(${pan.x}px, ${pan.y}px)`,
+        transformOrigin: "0 0",
       }}
     />
   );
