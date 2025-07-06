@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from 'react';
-import { FaUser, FaCog, FaFileAlt, FaUsers, FaHome, FaRegArrowAltCircleRight} from 'react-icons/fa';
+import { FaUser, FaCog, FaFileAlt, FaUsers, FaHome, FaRegArrowAltCircleRight } from 'react-icons/fa';
 import { IoStatsChart } from 'react-icons/io5';
 import { FaFileExport } from "react-icons/fa";
 import { Button, Divider, Flex, Skeleton, Image, Stack, Title, Text } from '@mantine/core';
@@ -9,10 +9,13 @@ import { useInsCourseStore } from '../../store/useCourseStore';
 import { useFetchInstructorList } from '../../hooks/useFetchInstructorList';
 import { useInstructorListStore } from '../../store/useInstructorListStore';
 import { useLeftMainStore } from '@/store/useLeftMainStore';
-import { useRouter , useParams, usePathname } from 'next/navigation';
+import { useRouter, useParams, usePathname } from 'next/navigation';
 import { useFetchCourse } from '../../hooks/useFetchCourse';
 import { useDisclosure } from '@mantine/hooks';
 import AccountMenu from '../Account';
+import Exportmodal from '@/components/INS/ExportModal';
+import { useExportModalStore } from '@/store/modal/useExportModalStore';
+
 
 export default function LeftMain() {
   const router = useRouter();
@@ -27,6 +30,9 @@ export default function LeftMain() {
   const { } = useFetchCourse(course_id as string);
   const { isLoading, error } = useFetchInstructorList(course_id as string);
   const instructorList = useInstructorListStore((state) => state.instructorList);
+  const openModal = useExportModalStore((s) => s.openModal);
+
+
   const icons = {
     home: <FaHome />,
     fileAlt: <FaFileAlt />,
@@ -54,19 +60,24 @@ export default function LeftMain() {
     else if (pathname.includes('dataexports')) setActiveOption('dataexports');
     else if (pathname.includes('coursesettings')) setActiveOption('coursesettings');
   }, [pathname]);
-  
+
+
+  const handleExport = (selected: string[], fileType: 'csv' | 'pdf') => {
+    console.log('Export selected assignments:', selected, 'as', fileType);
+    // TODO: เรียก API จริง หรือดาวน์โหลดไฟล์
+  };
   return (
     <div className={`relative flex flex-col justify-between border-r transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} h-screen`}>
       <Flex justify="space-between" align="center" p={12}
         style={{
-        backgroundColor: '#f1f3f8',
+          backgroundColor: '#f1f3f8',
         }}
       >
         {/* Header and Course Name */}
         {!isCollapsed && (
           <Image
             src="/Image/logo-ppgd.png"
-            alt="logo" w={200} h={60} p={2} 
+            alt="logo" w={200} h={60} p={2}
             style={{ cursor: 'pointer' }}
             onClick={() => router.push('/INSCourseOverview')}
           />
@@ -78,7 +89,7 @@ export default function LeftMain() {
           styles={() => ({
             root: {
               border: 'none',
-              padding: isCollapsed ? "0 0 0 8px" : "0", 
+              padding: isCollapsed ? "0 0 0 8px" : "0",
               height: 'auto',
             },
           })}
@@ -86,11 +97,10 @@ export default function LeftMain() {
           <FaRegArrowAltCircleRight
             size={24}
             style={{
-              color: isCollapsed ? '#000000': '#000000',
+              color: isCollapsed ? '#000000' : '#000000',
             }}
-            className={`transition-transform duration-300 ${
-              isCollapsed ? '' : 'transform rotate-180'
-            }`}
+            className={`transition-transform duration-300 ${isCollapsed ? '' : 'transform rotate-180'
+              }`}
           />
         </Button>
       </Flex>
@@ -106,8 +116,8 @@ export default function LeftMain() {
             <>
               <Title
                 textWrap="balance"
-                order={2} 
-                style={{ color: "#F9F9F9",  cursor: "pointer"}}
+                order={2}
+                style={{ color: "#F9F9F9", cursor: "pointer" }}
                 lineClamp={expandedName ? undefined : 1}
                 onClick={toggleExpandName}
               >
@@ -125,7 +135,7 @@ export default function LeftMain() {
           )
         ) : (
           <>
-            <Title 
+            <Title
               order={2}
               style={{ color: '#F9F9F9' }}
               className={`${isCollapsed ? 'hidden' : 'block'}`}
@@ -134,7 +144,7 @@ export default function LeftMain() {
             </Title>
             <Text
               size="sm"
-              style={{ color: '#E9E9E9'}}
+              style={{ color: '#E9E9E9' }}
               className={`${isCollapsed ? 'hidden' : 'block'}`}
             >
               Please select a course
@@ -185,18 +195,20 @@ export default function LeftMain() {
             }}
             onClick={() => {
               setActiveOption(item.key);
-              if (item.href !== '#') {
+              if (item.key === 'dataexports') {
+                openModal(handleExport, course_id);
+              } else if (item.href && item.href !== '#') {
                 router.push(item.href);
-              } else {
-                console.log(item.label);
               }
             }}
           >
+
             {!isCollapsed && (
               <Text size="sm" fw={500}>
                 {item.label}
               </Text>
             )}
+
           </Button>
         ))}
 
@@ -217,20 +229,20 @@ export default function LeftMain() {
             <div className="flex flex-col">
               {isLoading
                 ? Array.from({ length: 10 }).map((_, index) => (
-                    <Skeleton key={index} visible height={3} width="100%" />
-                  ))
+                  <Skeleton key={index} visible height={3} width="100%" />
+                ))
                 : instructorList &&
-                  instructorList.map((instructor) => (
-                    <Button
-                      variant="transparent"
-                      leftSection={icons.user}
-                      display="flex"
-                      key={instructor.personalData_id}
-                      style={{ color: "#F9F9F9" }}
-                    >
-                      <span>{instructor.instructor_name}</span>
-                    </Button>
-                  ))}
+                instructorList.map((instructor) => (
+                  <Button
+                    variant="transparent"
+                    leftSection={icons.user}
+                    display="flex"
+                    key={instructor.personalData_id}
+                    style={{ color: "#F9F9F9" }}
+                  >
+                    <span>{instructor.instructor_name}</span>
+                  </Button>
+                ))}
             </div>
           </>
         )}
@@ -248,6 +260,8 @@ export default function LeftMain() {
       <Stack pb={0.75}>
         <AccountMenu isCollapsed={isCollapsed} />
       </Stack>
+
+      <Exportmodal />
     </div>
   );
 }
