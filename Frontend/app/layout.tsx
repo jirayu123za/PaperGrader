@@ -7,6 +7,9 @@ import ClientProviders from "@/components/ClientProviders";
 export const metadata = {
   title: "PaperGrader",
   description: "A project using Next.js 15 with Tailwind + Mantine",
+  icons: {
+    icon: '/icon/favicon.ico',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode}) {
