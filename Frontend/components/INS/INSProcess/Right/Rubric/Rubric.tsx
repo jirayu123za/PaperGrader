@@ -291,15 +291,14 @@ export const Rubric = () => {
                                                             c={
                                                                 rubric.rubric_point > 0 ? 'green'
                                                                 : rubric.rubric_point < 0 ? 'red'
-                                                                : rubric.rubric_setting === 'Positive scoring'? 'green'
-                                                                : 'red'
+                                                                : 'green'
                                                             }
                                                             onClick={() => setEditingRubricID(rubric.rubric_detail_id)}
                                                         >
-                                                            {rubric.rubric_point > 0 ? '+'
-                                                                : rubric.rubric_point < 0 ? '-'
-                                                                : rubric.rubric_setting === 'Positive scoring' ? '+'
-                                                                : '-'
+                                                            {   
+                                                                rubric.rubric_point > 0 ? '+' :
+                                                                rubric.rubric_point < 0 ? '-' :
+                                                                '+'
                                                             }
                                                             {new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 }).format(Math.abs(rubric.rubric_point))}
                                                         </Text>

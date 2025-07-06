@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useParams } from 'next/navigation';
-import { Popover, Button, Radio, Text, Alert, Loader, Flex } from '@mantine/core';
+import { Popover, Button, Radio, Text, Alert, Loader, Flex, Group, Checkbox } from '@mantine/core';
 import { IconInfoCircle } from '@tabler/icons-react';
 import { IoIosSettings } from "react-icons/io";
 import { useRubricStore } from '@/store/rubric/useRubricStore';
@@ -45,8 +45,8 @@ export function RubricSettings() {
   
   return (
     <Popover
-      width={380}
-      position="bottom"
+      width={400}
+      position="bottom-end"
       withArrow
       arrowSize={14}
       shadow="xs"
@@ -96,9 +96,7 @@ export function RubricSettings() {
               <Radio
                 value="Negative scoring"
                 label={
-                  getSelectedQuestionPoint() !== null
-                    ? `Negative scoring (${getSelectedQuestionPoint()?.toFixed(1)} pts)`
-                    : '0 pts'
+                  `Negative scoring (points are subtracted from ${getSelectedQuestionPoint()?.toFixed(1) ?? '0.0'})`
                 }
                 classNames={{
                   root: 'mb-2 ml-2 hover:text-blue-600 transition-colors',
@@ -111,7 +109,29 @@ export function RubricSettings() {
                   root: 'mb-2 ml-2 hover:text-blue-600 transition-colors',
                 }}
               />
-            </Radio.Group>          
+            </Radio.Group> 
+
+            <Text size="sm" fw={500} pl={16} pr={16} pb={8}>Score bounds:</Text>
+            <Group className="pl-4 pr-4 pb-4" gap="4px" align="center">
+              <Checkbox
+                w="100%"
+                size='sm' 
+                value="Ceiling"
+                label="Ceiling (maximum score is 5.0)"
+                classNames={{
+                  root: 'ml-2 hover:text-blue-600 transition-colors',
+                }}
+              />
+              <Checkbox
+                w="100%"
+                size='sm'
+                value="Floor"
+                label="Floor (minimum score is 0)"
+                classNames={{
+                  root: 'ml-2 hover:text-blue-600 transition-colors',
+                }}
+              />
+            </Group>        
           </>
         )}
       </Popover.Dropdown>
