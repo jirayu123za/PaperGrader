@@ -1,8 +1,8 @@
 import React from 'react';
-import { Modal, MultiSelect, Radio, Text, Button, Flex, Loader, Group} from '@mantine/core';
+import { Modal, MultiSelect, Radio, Text, Button, Flex, Loader, Group } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useExportModalStore } from '@/store/modal/useExportModalStore';
-import { useFetchExportModal } from '@/hooks/useFetchExportModal';
+import { useFetchAssignments, useExportAssignments } from '@/hooks/useFetchExportModal';
 
 const mockAssignmentOptions = [
   { value: 'mock-1', label: 'Mock Assignment A' },
@@ -15,13 +15,21 @@ const ExportModal: React.FC = () => {
   const onExportCallback = useExportModalStore((s) => s.onExportCallback);
   const course_id = useExportModalStore((s) => s.course_id);
 
+
   const {
-    assignments,
-    isLoadingAssignments,
-    fetchError,
+    data: assignments = [],
+    isLoading: isLoadingAssignments,
+    error: fetchError,
+  } = useFetchAssignments(course_id);
+
+
+
+  const {
     exportAssignments,
     isExporting,
-  } = useFetchExportModal(course_id);
+    exportError,
+  } = useExportAssignments(course_id);
+
 
   const form = useForm({
     initialValues: {
@@ -76,7 +84,7 @@ const ExportModal: React.FC = () => {
           description="Select the file type you want to export"
           mb="md"
         >
-          <Group  mt="xs">
+          <Group mt="xs">
             <Radio value="csv" label="CSV" />
             <Radio value="pdf" label="PDF" />
           </Group>
