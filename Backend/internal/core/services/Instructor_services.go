@@ -89,6 +89,7 @@ type InstructorService interface {
 	GetRubricData(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID *uuid.UUID) (response.RubricResponse, error)
 	// Part:2 U Rubric
 	UpdateRubricSetting(assignmentID uuid.UUID, rubricData response.UpdateRubricSettingRequest) error
+	UpdateRubricScoreBounds(assignmentID uuid.UUID, rubricData response.UpdateRubricScoreBoundsRequest) error
 
 	// Part:1 Grade
 	CreateGrade(assignmentID uuid.UUID, submissionID uuid.UUID, request response.CreateGradeRequest) error
@@ -956,6 +957,58 @@ func (s *InstructorServiceImpl) UpdateRubricSetting(assignmentID uuid.UUID, rubr
 				if rubrics, ok := qMap["rubrics"].(map[string]interface{}); ok {
 					if rubrics["rubric_id"] == rubricData.Rubric.RubricID {
 						rubrics["rubric_setting"] = rubricData.Rubric.RubricSetting
+					}
+				}
+			}
+		}
+	}
+
+	// Marshal and update to DB
+	updatedJSON, err := json.Marshal(rubricMap)
+	if err != nil {
+		return err
+	}
+	return s.repo.ModifyRubricData(assignmentID, updatedJSON)
+}
+
+// Update rubric score bounds (Ceiling and Floor)
+func (s *InstructorServiceImpl) UpdateRubricScoreBounds(assignmentID uuid.UUID, rubricData response.UpdateRubricScoreBoundsRequest) error {
+	// First: call repo get rubric data by assignmentID and questionID
+	rubricMap, err := s.repo.FindRubricDataByAssignmentID(assignmentID)
+	if err != nil {
+		return err
+	}
+
+	questionsData, ok := rubricMap["questions_data"].([]interface{})
+	if !ok {
+		return err
+	}
+
+	for _, q := range questionsData {
+		qMap := q.(map[string]interface{})
+		if qMap["question_id"] == rubricData.QuestionID.String() {
+			if rubricData.SubQuestionID != nil {
+				subQs, ok := qMap["sub_questions"].([]interface{})
+				if !ok {
+					return err
+				}
+
+				for _, sq := range subQs {
+					sqMap := sq.(map[string]interface{})
+					if sqMap["sub_question_id"] == rubricData.SubQuestionID.String() {
+						if rubrics, ok := sqMap["rubrics"].(map[string]interface{}); ok {
+							if rubrics["rubric_id"] == rubricData.Rubric.RubricID {
+								rubrics["has_ceiling"] = rubricData.Rubric.HasCeiling
+								rubrics["has_floor"] = rubricData.Rubric.HasFloor
+							}
+						}
+					}
+				}
+			} else {
+				if rubrics, ok := qMap["rubrics"].(map[string]interface{}); ok {
+					if rubrics["rubric_id"] == rubricData.Rubric.RubricID {
+						rubrics["has_ceiling"] = rubricData.Rubric.HasCeiling
+						rubrics["has_floor"] = rubricData.Rubric.HasFloor
 					}
 				}
 			}
