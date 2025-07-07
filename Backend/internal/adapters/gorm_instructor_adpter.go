@@ -1766,3 +1766,52 @@ func (r *GormInstructorRepository) FindBoundingBoxesData(AssignmentID uuid.UUID)
 		BoundingBoxesData: result,
 	}, nil
 }
+
+// CRUD Grade
+func (r *GormInstructorRepository) AddGradeData(assignmentID uuid.UUID, submissionID uuid.UUID, gradeData json.RawMessage) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		return tx.Create(&models.Grade{
+			GradeID:      uuid.New(),
+			SubmissionID: submissionID,
+			GradeData:    datatypes.JSON(gradeData),
+		}).Error
+	})
+}
+
+func (r *GormInstructorRepository) FindExistingGradeData(assignmentID uuid.UUID, submissionID uuid.UUID) (bool, error) {
+	var count int64
+
+	err := r.db.Model(&models.Grade{}).
+		Where("submission_id = ?", submissionID).
+		Count(&count).Error
+	return count > 0, err
+}
+
+func (r *GormInstructorRepository) FindGradeData(assignmentID uuid.UUID, submissionID uuid.UUID) (map[string]interface{}, error) {
+	var grade models.Grade
+	if err := r.db.Where("submission_id = ?", submissionID).First(&grade).Error; err != nil {
+		return nil, err
+	}
+
+	var data map[string]interface{}
+	if err := json.Unmarshal(grade.GradeData, &data); err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func (r *GormInstructorRepository) ModifyGradeData(assignmentID uuid.UUID, submissionID uuid.UUID, gradeData json.RawMessage) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		var grade models.Grade
+		if err := tx.Where("submission_id = ?", submissionID).First(&grade).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Model(&grade).Update("grade_data", datatypes.JSON(gradeData)).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+}

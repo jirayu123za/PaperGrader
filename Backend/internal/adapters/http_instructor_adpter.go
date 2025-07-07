@@ -2142,3 +2142,42 @@ func (h *HttpInstructorHandler) GetBoundingBoxesData(c *fiber.Ctx) error {
 		"bounding_boxes_data": boundingBoxes.BoundingBoxesData,
 	})
 }
+
+func (h *HttpInstructorHandler) CreateGrade(c *fiber.Ctx) error {
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	submissionIDParam := c.Query("submission_id")
+	submissionID, err := uuid.Parse(submissionIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid submission_id",
+			"error":   err.Error(),
+		})
+	}
+
+	var request response.CreateGradeRequest
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request body",
+			"error":   err.Error(),
+		})
+	}
+
+	if err := h.services.CreateGrade(assignmentID, submissionID, request); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to create grade",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message": "Grade created successfully",
+	})
+}

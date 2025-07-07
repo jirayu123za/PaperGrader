@@ -129,6 +129,9 @@ func RegisterRoutes(
 	// Part:2 Rubric
 	apiGroup.Put("/instructor/rubric/setting", instructorHandler.UpdateRubricSetting)
 
+	// Part:1 Grade
+	apiGroup.Post("/instructor/grade", instructorHandler.CreateGrade)
+
 	// Submissions from question
 	apiGroup.Get("/instructor/submissions/question", instructorHandler.GetSubmissionsFromQuestion)
 	// Bounding Boxes data

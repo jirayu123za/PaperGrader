@@ -97,4 +97,10 @@ type InstructorRepository interface {
 
 	// R Bounding Boxes data
 	FindBoundingBoxesData(AssignmentID uuid.UUID) (response.BoundingBoxesDataResponse, error)
+
+	// CRUD Grade
+	AddGradeData(assignmentID uuid.UUID, submissionID uuid.UUID, gradeData json.RawMessage) error
+	FindExistingGradeData(assignmentID uuid.UUID, submissionID uuid.UUID) (bool, error)
+	FindGradeData(assignmentID uuid.UUID, submissionID uuid.UUID) (map[string]interface{}, error)
+	ModifyGradeData(assignmentID uuid.UUID, submissionID uuid.UUID, updateGradeData json.RawMessage) error
 }

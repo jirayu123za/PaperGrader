@@ -90,6 +90,9 @@ type InstructorService interface {
 	// Part:2 U Rubric
 	UpdateRubricSetting(assignmentID uuid.UUID, rubricData response.UpdateRubricSettingRequest) error
 
+	// Part:1 Grade
+	CreateGrade(assignmentID uuid.UUID, submissionID uuid.UUID, request response.CreateGradeRequest) error
+
 	// R Submission from question
 	GetSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error)
 	// R Bounding Boxes data
@@ -981,4 +984,49 @@ func (s *InstructorServiceImpl) GetBoundingBoxesData(AssignmentID uuid.UUID) (re
 		return response.BoundingBoxesDataResponse{}, err
 	}
 	return boundingBoxes, nil
+}
+
+// Create Grade
+func (s *InstructorServiceImpl) CreateGrade(assignmentID uuid.UUID, submissionID uuid.UUID, request response.CreateGradeRequest) error {
+	// 1. Check if grade_data already exists
+	exists, err := s.repo.FindExistingGradeData(assignmentID, submissionID)
+	if err != nil {
+		return err
+	}
+
+	var gradeData map[string]interface{}
+	if exists {
+		// 2. If grade_data exists, fetch it
+		gradeData, err = s.repo.FindGradeData(assignmentID, submissionID)
+		if err != nil {
+			return err
+		}
+	} else {
+		// 3. If not exists, load rubric_data
+		rubricData, err := s.repo.FindRubricDataByAssignmentID(assignmentID)
+		if err != nil {
+			return err
+		}
+		// 4. Use rubric_data as template for grade_data
+		gradeData = rubricData
+	}
+
+	// Helper function to update rubric selection
+	// 5. Update gradeData (select the rubric_detail by id and set has_selected = true)
+	if err := utils.UpdateRubricSelection(gradeData, request); err != nil {
+		return err
+	}
+
+	// 6. Marshal to JSON
+	jsonData, err := json.Marshal(gradeData)
+	if err != nil {
+		return err
+	}
+
+	// 7. Save to DB
+	if exists {
+		return s.repo.ModifyGradeData(assignmentID, submissionID, json.RawMessage(jsonData))
+	} else {
+		return s.repo.AddGradeData(assignmentID, submissionID, json.RawMessage(jsonData))
+	}
 }

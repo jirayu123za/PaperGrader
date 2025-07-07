@@ -464,3 +464,12 @@ type BoundingBoxesDataRaw struct {
 	QuestionID      *uuid.UUID `json:"question_id,omitempty"`
 	SubQuestionID   *uuid.UUID `json:"sub_question_id,omitempty"`
 }
+
+// Part:1 Grade
+type CreateGradeRequest struct {
+	QuestionID     uuid.UUID  `json:"question_id"`
+	SubQuestionID  *uuid.UUID `json:"sub_question_id,omitempty"`
+	RubricID       uuid.UUID  `json:"rubric_id"`
+	RubricDetailID uuid.UUID  `json:"rubric_detail_id"`
+	HasSelected    bool       `json:"has_selected"`
+}
