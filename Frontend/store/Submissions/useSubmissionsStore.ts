@@ -20,9 +20,15 @@ interface Submissions {
 interface SubmissionsStore {
     submissions: Submissions | null;
     setSubmissions: (submissions: Submissions) => void;
+
+    searchTerm: string;
+    setSearchTerm: (term: string) => void;
 }
 
 export const useSubmissionsStore = create<SubmissionsStore>((set) => ({
     submissions: null,
     setSubmissions: (submissions) => set({ submissions }),
+
+    searchTerm: '',
+    setSearchTerm: (term) => set({ searchTerm: term }),
 }));
