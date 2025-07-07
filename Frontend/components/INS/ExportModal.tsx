@@ -64,6 +64,7 @@ const ExportModal: React.FC = () => {
         title: 'Export Success',
         message: 'Your assignments have been exported.',
         color: 'green',
+        position: 'bottom-right',
       });
 
       setHasExported(true);
@@ -73,6 +74,7 @@ const ExportModal: React.FC = () => {
         title: 'Export Failed',
         message: 'Something went wrong. Please try again.',
         color: 'red',
+        position: 'bottom-right',
       });
     }
   });
