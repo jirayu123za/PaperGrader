@@ -138,6 +138,8 @@ export const RubricGrader = () => {
                 rubric_description: r.rubric_description,
                 has_selected: r.has_selected,
                 rubric_setting: setting,
+                has_ceiling: rubricData.has_ceiling,
+                has_floor: rubricData.has_floor,
             }));
             setRubrics(mapped);
         } else {

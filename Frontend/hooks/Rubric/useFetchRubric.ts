@@ -12,6 +12,8 @@ interface RubricDetail {
 
 interface Rubric {
     rubric_id: string | null;
+    has_ceiling: boolean;
+    has_floor: boolean;
     rubric_setting: string | null;
     rubric_details: RubricDetail[] | null;
 }
