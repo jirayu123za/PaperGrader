@@ -7,7 +7,7 @@ import { IconInfoCircle } from '@tabler/icons-react';
 import { IoIosSettings } from "react-icons/io";
 import { useRubricStore } from '@/store/rubric/useRubricStore';
 import { useQuestionStore } from '@/store/question/useQuestionStore';
-import { useUpdateRubricScoringMethod } from '@/hooks/Rubric/useUpdateRubricSetting';
+import { useUpdateRubricScoreBounds, useUpdateRubricScoringMethod } from '@/hooks/Rubric/useUpdateRubricSetting';
 
 export const RubricSettingsParams = () => {
   const params = useParams();
@@ -16,7 +16,8 @@ export const RubricSettingsParams = () => {
   const assignment_id = params.assignment_id as string;
   const { rubricData, setRubricData } = useRubricStore();
   const { questions } = useQuestionStore();
-  const { mutate: updateRubricScoringMethod, isPending } = useUpdateRubricScoringMethod(assignment_id);
+  const { mutate: updateRubricScoringMethod, isPending: isPendingScoringMethod } = useUpdateRubricScoringMethod(assignment_id);
+  const { mutate: updateRubricScoreBounds, isPending: isPendingScoreBounds } = useUpdateRubricScoreBounds(assignment_id);
 
   const getSelectedQuestionPoint = (): number | null => {
     if (!question_id) return null;
@@ -40,6 +41,19 @@ export const RubricSettingsParams = () => {
           rubric_id: rubric_id,
           rubric_setting: rubric_setting,
         },
+    });
+  }
+
+  const handleUpdateRubricScoreBounds = (has_ceiling: boolean, has_floor: boolean) => {
+    updateRubricScoreBounds({
+      assignment_id,
+      question_id: question_id,
+      sub_question_id: sub_question_id,
+      rubric: {
+        rubric_id: rubricData?.rubric_id ?? '',
+        has_ceiling: has_ceiling,
+        has_floor: has_floor,
+      },
     });
   }
   
@@ -73,9 +87,9 @@ export const RubricSettingsParams = () => {
           <Text size="sm" c="gray" px="46" py="sm" fs="italic">
             No rubric data found for this question. Please create rubric first.
           </Text>
-        ) : isPending ? (
-          <Flex justify="center" align="center">
-            <Loader size="sm" variant="bars" mx="auto" my="md" type="bars"/>
+        ) : isPendingScoringMethod || isPendingScoreBounds ? (
+          <Flex justify="center" align="center" w="100%" h="100%">
+            <Loader size="sm" variant="bars" mx="auto" my="80px" type="bars"/>
           </Flex>
         ) : (
           <>
@@ -121,6 +135,7 @@ export const RubricSettingsParams = () => {
                     ...rubricData,
                     has_ceiling: e.currentTarget.checked,
                   });
+                  handleUpdateRubricScoreBounds(e.currentTarget.checked, rubricData?.has_floor ?? false);
                 }}
                 label={`Ceiling (maximum score is ${getSelectedQuestionPoint()?.toFixed(1) ?? '0.0'})`}
                 classNames={{
@@ -136,6 +151,7 @@ export const RubricSettingsParams = () => {
                     ...rubricData,
                     has_floor: e.currentTarget.checked,
                   });
+                  handleUpdateRubricScoreBounds(rubricData?.has_ceiling ?? false, e.currentTarget.checked);
                 }}
                 label="Floor (minimum score is 0)"
                 classNames={{
