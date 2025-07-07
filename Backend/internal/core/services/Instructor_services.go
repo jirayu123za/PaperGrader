@@ -98,6 +98,9 @@ type InstructorService interface {
 	GetSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error)
 	// R Bounding Boxes data
 	GetBoundingBoxesData(AssignmentID uuid.UUID) (response.BoundingBoxesDataResponse, error)
+
+	// Part:1 Export data
+	GetAssignmentsListForExport(CourseID uuid.UUID) ([]response.AssignmentsListResponse, error)
 }
 
 type InstructorServiceImpl struct {
@@ -1084,4 +1087,13 @@ func (s *InstructorServiceImpl) CreateGrade(assignmentID uuid.UUID, submissionID
 	} else {
 		return s.repo.AddGradeData(assignmentID, submissionID, json.RawMessage(jsonData))
 	}
+}
+
+// Part:1 Export data
+func (s *InstructorServiceImpl) GetAssignmentsListForExport(CourseID uuid.UUID) ([]response.AssignmentsListResponse, error) {
+	assignments, err := s.repo.FindAssignmentsListForExport(CourseID)
+	if err != nil {
+		return nil, err
+	}
+	return assignments, nil
 }
