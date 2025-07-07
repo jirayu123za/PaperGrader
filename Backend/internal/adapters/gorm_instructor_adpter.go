@@ -1311,6 +1311,8 @@ func (r *GormInstructorRepository) AddRubricToMainQuestion(AssignmentID uuid.UUI
 	initRubrics := map[string]interface{}{
 		"rubric_id":      rubricMap["rubric_id"],
 		"rubric_setting": rubricMap["rubric_setting"],
+		"has_ceiling":    rubricMap["has_ceiling"],
+		"has_floor":      rubricMap["has_floor"],
 		"rubric_details": []interface{}{},
 	}
 
@@ -1395,6 +1397,8 @@ func (r *GormInstructorRepository) AddRubricToSubQuestion(AssignmentID uuid.UUID
 	initRubrics := map[string]interface{}{
 		"rubric_id":      rubricMap["rubric_id"],
 		"rubric_setting": rubricMap["rubric_setting"],
+		"has_ceiling":    rubricMap["has_ceiling"],
+		"has_floor":      rubricMap["has_floor"],
 		"rubric_details": []interface{}{},
 	}
 
@@ -1539,6 +1543,8 @@ func (r *GormInstructorRepository) FindRubricByQuestionID(AssignmentID uuid.UUID
 				rubricIDStr, _ := rubricMap["rubric_id"].(string)
 				rubricID, _ := uuid.Parse(rubricIDStr)
 				rubricSetting, _ := rubricMap["rubric_setting"].(string)
+				hasCeiling, _ := rubricMap["has_ceiling"].(bool)
+				hasFloor, _ := rubricMap["has_floor"].(bool)
 
 				details := make([]response.RubricDetailWithHasSelect, 0)
 				if rubricItems, ok := rubricMap["rubric_details"].([]interface{}); ok {
@@ -1556,6 +1562,8 @@ func (r *GormInstructorRepository) FindRubricByQuestionID(AssignmentID uuid.UUID
 				return response.RubricResponse{
 					RubricID:      &rubricID,
 					RubricSetting: rubricSetting,
+					HasCeiling:    hasCeiling,
+					HasFloor:      hasFloor,
 					RubricData:    details,
 				}, nil
 			}
@@ -1563,8 +1571,11 @@ func (r *GormInstructorRepository) FindRubricByQuestionID(AssignmentID uuid.UUID
 	}
 
 	return response.RubricResponse{
-		RubricID:   nil,
-		RubricData: nil,
+		RubricID:      nil,
+		RubricSetting: "",
+		HasCeiling:    false,
+		HasFloor:      false,
+		RubricData:    nil,
 	}, nil
 }
 
@@ -1599,6 +1610,8 @@ func (r *GormInstructorRepository) FindRubricBySubQuestionID(AssignmentID uuid.U
 							rubricIDStr, _ := rubricMap["rubric_id"].(string)
 							rubricID, _ := uuid.Parse(rubricIDStr)
 							rubricSetting, _ := rubricMap["rubric_setting"].(string)
+							hasCeiling, _ := rubricMap["has_ceiling"].(bool)
+							hasFloor, _ := rubricMap["has_floor"].(bool)
 
 							details := make([]response.RubricDetailWithHasSelect, 0)
 							if rubricItems, ok := rubricMap["rubric_details"].([]interface{}); ok {
@@ -1616,6 +1629,8 @@ func (r *GormInstructorRepository) FindRubricBySubQuestionID(AssignmentID uuid.U
 							return response.RubricResponse{
 								RubricID:      &rubricID,
 								RubricSetting: rubricSetting,
+								HasCeiling:    hasCeiling,
+								HasFloor:      hasFloor,
 								RubricData:    details,
 							}, nil
 						}
@@ -1626,8 +1641,11 @@ func (r *GormInstructorRepository) FindRubricBySubQuestionID(AssignmentID uuid.U
 	}
 
 	return response.RubricResponse{
-		RubricID:   nil,
-		RubricData: nil,
+		RubricID:      nil,
+		RubricSetting: "",
+		HasCeiling:    false,
+		HasFloor:      false,
+		RubricData:    nil,
 	}, nil
 }
 

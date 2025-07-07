@@ -399,6 +399,8 @@ type DeleteRubricRequest struct {
 type RubricResponse struct {
 	RubricID      *uuid.UUID                  `json:"rubric_id"`
 	RubricSetting string                      `json:"rubric_setting"`
+	HasCeiling    bool                        `json:"has_ceiling"`
+	HasFloor      bool                        `json:"has_floor"`
 	RubricData    []RubricDetailWithHasSelect `json:"rubric_details"`
 }
 

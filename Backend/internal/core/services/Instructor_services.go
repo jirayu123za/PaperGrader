@@ -644,6 +644,8 @@ func (s *InstructorServiceImpl) CreateRubricData(assignmentID uuid.UUID, rubricD
 	rubricObject := map[string]interface{}{
 		"rubric_id":      rubricID,
 		"rubric_setting": rubricData.Rubric.RubricSetting,
+		"has_ceiling":    false,
+		"has_floor":      false,
 		"rubric_details": details,
 	}
 
