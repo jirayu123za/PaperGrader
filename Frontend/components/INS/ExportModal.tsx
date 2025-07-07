@@ -141,17 +141,6 @@ const ExportModal: React.FC = () => {
           </Button>
         </Flex>
 
-        {Boolean(exportError) && (
-          <Text color="red" size="sm" mt="xs">
-            Failed to export assignments
-          </Text>
-        )}
-
-        {hasExported && (
-          <Text size="sm" color="blue" mt="sm">
-            Export completed successfully!
-          </Text>
-        )}
       </form>
     </Modal>
   );

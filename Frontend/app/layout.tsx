@@ -23,7 +23,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <ClientProviders>
-          {/* Notifications container for toast messages */}
           <Notifications position="bottom-right" limit={3} />
           {children}
         </ClientProviders>
