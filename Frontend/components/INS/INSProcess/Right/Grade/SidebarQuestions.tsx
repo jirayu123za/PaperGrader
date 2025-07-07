@@ -67,7 +67,10 @@ export const SidebarQuestions = () => {
                           ? "text-[#495057] group-hover:text-[#3B5BDB] group-hover:underline transition-colors duration-200 cursor-pointer"
                           : "text-[#495057]"
                       }
-                      onClick={() => handleRubricSelect(q.question_id)}
+                      onClick={() => {
+                        if (q.sub_questions && q.sub_questions.length > 0) return;
+                        handleRubricSelect(q.question_id);
+                      }}
                     >
                       {q.question_title}
                     </Title>

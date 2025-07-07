@@ -3,35 +3,6 @@
     "question_id": "fc63c47f-a2da-42b4-a88b-6b6b8f6ff65c",
     "question_title": "What is concept number 1?",
     "question_point": 1,
-    "rubric": {
-      "rubric_id": "3be7c42a-35e9-4634-92ab-b73b70fed1a1",
-      "rubric_details": [
-        {
-          "rubric_details_id": "b226231c-a2e2-4720-b0e0-b3f15f62a472",
-          "description": "Not attempted",
-          "points": -0.4,
-          "has_selected": false
-        },
-        {
-          "rubric_details_id": "50b87b3d-9bbd-469f-ad0c-fccb409493b6",
-          "description": "Fully correct",
-          "points": 0.3,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "f55e9ae8-9a3a-47f2-bb92-18d3893be460",
-          "description": "Not attempted",
-          "points": -0.6,
-          "has_selected": false
-        },
-        {
-          "rubric_details_id": "9cc8d1af-1e28-49c4-8d82-eaf013bf0742",
-          "description": "Correct answer",
-          "points": -1.9,
-          "has_selected": true
-        }
-      ]
-    },
     "sub_questions": [
       {
         "sub_question_id": "1.1",
@@ -111,35 +82,6 @@
     "question_id": "3d3ececc-1963-4589-afc9-e4350b8fdae4",
     "question_title": "What is concept number 3?",
     "question_point": 4,
-    "rubric": {
-      "rubric_id": "18b1a911-c98c-46ae-93b3-2592bcd8e80a",
-      "rubric_details": [
-        {
-          "rubric_details_id": "61d786a5-c4db-4e9f-b0b2-0d61b3db66f0",
-          "description": "Partially correct answer",
-          "points": 1.0,
-          "has_selected": false
-        },
-        {
-          "rubric_details_id": "8bc877e6-93f6-4018-8a36-a7bdd0268095",
-          "description": "Minor mistake",
-          "points": 3.9,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "f47d0274-c2c8-4c2d-9d6f-460ec43eafd6",
-          "description": "Fully correct",
-          "points": 0.7,
-          "has_selected": false
-        },
-        {
-          "rubric_details_id": "8fd12519-9876-494a-8638-b46dddffc8f7",
-          "description": "Not attempted",
-          "points": 2.2,
-          "has_selected": false
-        }
-      ]
-    },
     "sub_questions": [
       {
         "sub_question_id": "3.1",
@@ -219,35 +161,6 @@
     "question_id": "dbc26794-2227-42d1-a1e7-15fce2a19a7a",
     "question_title": "What is concept number 4?",
     "question_point": 15,
-    "rubric": {
-      "rubric_id": "043063b7-6f8d-4963-988d-d3ca9e9ec3fc",
-      "rubric_details": [
-        {
-          "rubric_details_id": "860a929d-8ff5-41d2-b6bf-ea91e6637183",
-          "description": "Not attempted",
-          "points": 2.5,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "6d08c1d4-2f99-4ffa-ab6e-5f7319b3dc45",
-          "description": "Incorrect answer",
-          "points": 5.0,
-          "has_selected": false
-        },
-        {
-          "rubric_details_id": "06a17a90-b940-497f-84c4-f23476bcb040",
-          "description": "Not attempted",
-          "points": 4.5,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "2f591371-a1b0-496e-ab0d-68370ea919d1",
-          "description": "Correct answer",
-          "points": 2.2,
-          "has_selected": false
-        }
-      ]
-    },
     "sub_questions": [
       {
         "sub_question_id": "4.1",
@@ -367,29 +280,6 @@
     "question_id": "ae0d7768-009c-403a-a60a-c802e8d90a5e",
     "question_title": "What is concept number 6?",
     "question_point": 7,
-    "rubric": {
-      "rubric_id": "cc6b4992-cff8-4fad-a97d-6b5664bb6f5e",
-      "rubric_details": [
-        {
-          "rubric_details_id": "81b02ecf-d70e-45cb-947b-4bedd38504dd",
-          "description": "Correct answer",
-          "points": 3.4,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "1695b27b-c106-4d05-a272-b2fc8a3cea6e",
-          "description": "Correct answer",
-          "points": 1.3,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "db95026a-d899-4cd3-a1dc-bd6c68218cd7",
-          "description": "Minor mistake",
-          "points": 0.1,
-          "has_selected": false
-        }
-      ]
-    },
     "sub_questions": [
       {
         "sub_question_id": "6.1",
@@ -469,29 +359,6 @@
     "question_id": "1f79b0e3-0fe1-487e-8519-1fecb3bdf749",
     "question_title": "What is concept number 7?",
     "question_point": 6,
-    "rubric": {
-      "rubric_id": "42784355-5e13-4834-bbc5-c7c8cd8ca47c",
-      "rubric_details": [
-        {
-          "rubric_details_id": "2d1abaaa-9a2b-4fca-9d58-077015e978af",
-          "description": "Not attempted",
-          "points": 3.1,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "4ef8a857-8cfb-40d2-85a0-c0a6dd044ae1",
-          "description": "Partially correct answer",
-          "points": 1.3,
-          "has_selected": false
-        },
-        {
-          "rubric_details_id": "ae3931ee-3bbe-43a6-970b-f3edf528e242",
-          "description": "Incorrect answer",
-          "points": 4.3,
-          "has_selected": true
-        }
-      ]
-    },
     "sub_questions": [
       {
         "sub_question_id": "7.1",
@@ -571,29 +438,6 @@
     "question_id": "d98e1f4b-fd6c-4817-b17f-e3c4d2562fc2",
     "question_title": "What is concept number 9?",
     "question_point": 10,
-    "rubric": {
-      "rubric_id": "1f5563ce-f6ab-4142-9f90-542e124fc18a",
-      "rubric_details": [
-        {
-          "rubric_details_id": "0126da7c-9972-442b-ae0a-fbac12cefd70",
-          "description": "Correct answer",
-          "points": 0.6,
-          "has_selected": false
-        },
-        {
-          "rubric_details_id": "8e125537-d6b4-42bf-84cb-55c26f06c1ef",
-          "description": "Partially correct answer",
-          "points": 2.3,
-          "has_selected": false
-        },
-        {
-          "rubric_details_id": "890c5f4c-5260-43f9-b132-ce6eca7f0bb6",
-          "description": "Minor mistake",
-          "points": -1.2,
-          "has_selected": true
-        }
-      ]
-    },
     "sub_questions": [
       {
         "sub_question_id": "9.1",
@@ -741,29 +585,6 @@
     "question_id": "2791a88c-67a2-47fd-ac7d-5825372868f6",
     "question_title": "What is concept number 12?",
     "question_point": 11,
-    "rubric": {
-      "rubric_id": "d3a6d609-baed-4738-95b2-4af3ad51098c",
-      "rubric_details": [
-        {
-          "rubric_details_id": "eeafac94-b8ef-4d37-afa0-a9f85c7b3e34",
-          "description": "Correct answer",
-          "points": 2.3,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "537f0c17-1e70-4c9a-b9cb-78678e50d948",
-          "description": "Minor mistake",
-          "points": 1.9,
-          "has_selected": false
-        },
-        {
-          "rubric_details_id": "5d0635a0-6962-48f1-a083-fb6b6bdfaf66",
-          "description": "Incorrect answer",
-          "points": 3.3,
-          "has_selected": false
-        }
-      ]
-    },
     "sub_questions": [
       {
         "sub_question_id": "12.1",
@@ -849,23 +670,6 @@
     "question_id": "a8d58299-3929-4e94-a079-be85f2eb27d1",
     "question_title": "What is concept number 13?",
     "question_point": 2,
-    "rubric": {
-      "rubric_id": "2b5b0265-014d-40e1-beeb-35265a2fec0d",
-      "rubric_details": [
-        {
-          "rubric_details_id": "69c87eea-89cf-41b0-9766-588947d880f1",
-          "description": "Incorrect answer",
-          "points": 4.1,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "c63eac6e-98b9-42d1-a6b4-b5e0a810e253",
-          "description": "Incorrect answer",
-          "points": 1.7,
-          "has_selected": false
-        }
-      ]
-    },
     "sub_questions": [
       {
         "sub_question_id": "13.1",
@@ -969,35 +773,6 @@
     "question_id": "a41c8424-30f9-4a5e-87cf-b832cb242d1e",
     "question_title": "What is concept number 14?",
     "question_point": 7,
-    "rubric": {
-      "rubric_id": "dca6c6e4-e516-41f1-a5bd-05442fee980f",
-      "rubric_details": [
-        {
-          "rubric_details_id": "5381e45a-33ac-4f93-a4bb-1ca3ee390020",
-          "description": "Minor mistake",
-          "points": 3.9,
-          "has_selected": false
-        },
-        {
-          "rubric_details_id": "d21e5b68-eaa5-428e-98bf-1cfb111e1cb7",
-          "description": "Fully correct",
-          "points": 1.9,
-          "has_selected": false
-        },
-        {
-          "rubric_details_id": "725cf416-f61f-423e-b2a2-e05b32da989d",
-          "description": "Partially correct answer",
-          "points": 2.0,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "8b878b23-ef62-4d08-a9d5-6ebf02904253",
-          "description": "Partially correct answer",
-          "points": 4.5,
-          "has_selected": false
-        }
-      ]
-    },
     "sub_questions": [
       {
         "sub_question_id": "14.1",
@@ -1225,35 +1000,6 @@
     "question_id": "8a6b786d-a922-4bb1-b5d5-c90f58f306d1",
     "question_title": "What is concept number 19?",
     "question_point": 11,
-    "rubric": {
-      "rubric_id": "55bb7a93-8500-4bb1-938b-ea938cf24904",
-      "rubric_details": [
-        {
-          "rubric_details_id": "65585bd9-24bf-48a1-81e9-f681e7a3c761",
-          "description": "Correct answer",
-          "points": 4.4,
-          "has_selected": false
-        },
-        {
-          "rubric_details_id": "710c1a9d-c2cc-429a-a66c-f9dd335b6449",
-          "description": "Correct answer",
-          "points": -1.5,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "4e223c8d-3e56-40cd-b47e-5aa0bbcb7e1c",
-          "description": "Incorrect answer",
-          "points": -0.8,
-          "has_selected": false
-        },
-        {
-          "rubric_details_id": "fe429607-9e4d-462b-9b8c-266ccd48238f",
-          "description": "Minor mistake",
-          "points": 4.8,
-          "has_selected": false
-        }
-      ]
-    },
     "sub_questions": [
       {
         "sub_question_id": "19.1",
@@ -1379,29 +1125,6 @@
     "question_id": "3b84a9d6-09c0-4886-9052-7617509fdc0b",
     "question_title": "What is concept number 21?",
     "question_point": 9,
-    "rubric": {
-      "rubric_id": "fdacebb0-c2b6-461b-adf7-7f8beb62768d",
-      "rubric_details": [
-        {
-          "rubric_details_id": "6a308db9-48bc-442c-bde9-c26704d4194c",
-          "description": "Correct answer",
-          "points": 1.3,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "160223ac-f34b-49e3-a6d7-c56093ad6154",
-          "description": "Partially correct answer",
-          "points": 3.6,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "2de8e09a-44ed-47a4-880c-bf24702adfa3",
-          "description": "Fully correct",
-          "points": 5.0,
-          "has_selected": true
-        }
-      ]
-    },
     "sub_questions": [
       {
         "sub_question_id": "21.1",
@@ -1537,23 +1260,6 @@
     "question_id": "584bcf10-6d6c-4920-bc30-8d99121b9100",
     "question_title": "What is concept number 25?",
     "question_point": 9,
-    "rubric": {
-      "rubric_id": "303c3f4d-cc79-46db-a249-5b29e02126bd",
-      "rubric_details": [
-        {
-          "rubric_details_id": "3155dce9-8d32-4974-9379-9fa68dd38542",
-          "description": "Fully correct",
-          "points": -1.1,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "f1732821-89d3-46f9-a086-d79cac627f98",
-          "description": "Fully correct",
-          "points": 4.9,
-          "has_selected": true
-        }
-      ]
-    },
     "sub_questions": [
       {
         "sub_question_id": "25.1",
@@ -1763,35 +1469,6 @@
     "question_id": "225153a8-d136-4379-adc3-83fa1a850614",
     "question_title": "What is concept number 31?",
     "question_point": 7,
-    "rubric": {
-      "rubric_id": "01434fbf-4db8-4444-826a-4b1fb853aa0f",
-      "rubric_details": [
-        {
-          "rubric_details_id": "123cd97e-1d34-40c5-b6a8-eece30ef9097",
-          "description": "Incorrect answer",
-          "points": 0.8,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "fd6c8b04-1425-4ba3-ae8d-2bbe6ce7cb33",
-          "description": "Fully correct",
-          "points": 4.6,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "4cc58992-2fbf-44e3-93c3-3e13f355e6e6",
-          "description": "Minor mistake",
-          "points": -1.2,
-          "has_selected": false
-        },
-        {
-          "rubric_details_id": "3fe85832-8515-43c4-9184-a4544651cc5e",
-          "description": "Incorrect answer",
-          "points": 0.0,
-          "has_selected": false
-        }
-      ]
-    },
     "sub_questions": [
       {
         "sub_question_id": "31.1",
@@ -1905,23 +1582,6 @@
     "question_id": "9db684ea-fe71-46bd-8a91-83dc43bbc06a",
     "question_title": "What is concept number 34?",
     "question_point": 15,
-    "rubric": {
-      "rubric_id": "ca951fe4-7df5-4cc6-a03f-90cf38023ad6",
-      "rubric_details": [
-        {
-          "rubric_details_id": "0e1df982-5570-4a8d-8a77-3caadac272eb",
-          "description": "Minor mistake",
-          "points": 4.3,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "d76a5e8d-383e-49ca-9f88-a57468fbc12d",
-          "description": "Correct answer",
-          "points": -0.2,
-          "has_selected": true
-        }
-      ]
-    },
     "sub_questions": [
       {
         "sub_question_id": "34.1",
@@ -2019,35 +1679,6 @@
     "question_id": "65bbcad0-aed8-49f5-a9de-636de74e9b6f",
     "question_title": "What is concept number 35?",
     "question_point": 18,
-    "rubric": {
-      "rubric_id": "c85d52c7-fe4f-4b65-90a7-a1c8cb24569c",
-      "rubric_details": [
-        {
-          "rubric_details_id": "d5e0d9a2-b0ec-4d4e-a527-7c4bb0d81f80",
-          "description": "Correct answer",
-          "points": 4.3,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "b6b1c227-796a-418f-b91e-6826d96aef3e",
-          "description": "Not attempted",
-          "points": -0.4,
-          "has_selected": false
-        },
-        {
-          "rubric_details_id": "c7046ddd-fc66-4f47-a769-21f0f0935457",
-          "description": "Not attempted",
-          "points": 1.5,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "3a1f874c-4079-4e1d-b468-b6b6dcb8d573",
-          "description": "Not attempted",
-          "points": -0.7,
-          "has_selected": false
-        }
-      ]
-    },
     "sub_questions": [
       {
         "sub_question_id": "35.1",
@@ -2213,35 +1844,6 @@
     "question_id": "0277d49f-e36e-4198-9793-44e7a848318f",
     "question_title": "What is concept number 39?",
     "question_point": 13,
-    "rubric": {
-      "rubric_id": "61912153-26e6-4048-8cba-1c1c380a845e",
-      "rubric_details": [
-        {
-          "rubric_details_id": "1a303010-aa24-4d61-94d5-1d9b1dc8f922",
-          "description": "Partially correct answer",
-          "points": 3.2,
-          "has_selected": false
-        },
-        {
-          "rubric_details_id": "b84ec3e0-6290-4916-8853-4910683e4f3c",
-          "description": "Partially correct answer",
-          "points": 3.0,
-          "has_selected": false
-        },
-        {
-          "rubric_details_id": "72c39b73-4971-4b46-88c5-14d81a5beee7",
-          "description": "Not attempted",
-          "points": 2.6,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "3be424b0-85b3-473f-bf22-46008ce0b553",
-          "description": "Not attempted",
-          "points": 2.0,
-          "has_selected": false
-        }
-      ]
-    },
     "sub_questions": [
       {
         "sub_question_id": "39.1",
@@ -2361,29 +1963,6 @@
     "question_id": "9867cbf0-d166-489f-9dcb-cc0a07be61e5",
     "question_title": "What is concept number 42?",
     "question_point": 10,
-    "rubric": {
-      "rubric_id": "ab9beb84-4721-4e5c-afcc-b1dbeb157a09",
-      "rubric_details": [
-        {
-          "rubric_details_id": "7484b8cc-c24f-46c1-940b-7953e9273644",
-          "description": "Minor mistake",
-          "points": 0.2,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "f8618249-9d8f-4314-afb5-a12e822939ad",
-          "description": "Partially correct answer",
-          "points": -0.2,
-          "has_selected": false
-        },
-        {
-          "rubric_details_id": "7f64b8e5-2194-4a14-9abd-999d452f255f",
-          "description": "Fully correct",
-          "points": 3.3,
-          "has_selected": true
-        }
-      ]
-    },
     "sub_questions": [
       {
         "sub_question_id": "42.1",
@@ -2617,29 +2196,6 @@
     "question_id": "cb0fbe58-52db-4496-b553-0d1081602468",
     "question_title": "What is concept number 48?",
     "question_point": 6,
-    "rubric": {
-      "rubric_id": "54f90d64-0016-41e7-a0ac-3aff3b9dadeb",
-      "rubric_details": [
-        {
-          "rubric_details_id": "a11930a9-7f11-4dd8-9d44-44178dadb5f4",
-          "description": "Correct answer",
-          "points": 1.2,
-          "has_selected": false
-        },
-        {
-          "rubric_details_id": "6e12607a-3d1b-45bd-88e9-0e631504cb46",
-          "description": "Correct answer",
-          "points": 0.1,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "baa84d28-41ab-4dc9-bdc4-e0aea043ef97",
-          "description": "Correct answer",
-          "points": 1.9,
-          "has_selected": false
-        }
-      ]
-    },
     "sub_questions": [
       {
         "sub_question_id": "48.1",
@@ -2725,29 +2281,6 @@
     "question_id": "e785a2f0-dce4-4e5d-864d-33ccdbf91daf",
     "question_title": "What is concept number 49?",
     "question_point": 6,
-    "rubric": {
-      "rubric_id": "35b9c1ad-9cf2-43db-8469-1b58a94b5e73",
-      "rubric_details": [
-        {
-          "rubric_details_id": "47366ec4-7a84-4dbb-b583-20c2c356710a",
-          "description": "Correct answer",
-          "points": -1.0,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "d5d41d33-c46d-4d03-b6ad-abb4f2b92a27",
-          "description": "Correct answer",
-          "points": 4.6,
-          "has_selected": true
-        },
-        {
-          "rubric_details_id": "f9a8a5b4-bdff-4923-b503-d3257954e046",
-          "description": "Minor mistake",
-          "points": -0.5,
-          "has_selected": true
-        }
-      ]
-    },
     "sub_questions": [
       {
         "sub_question_id": "49.1",
