@@ -2211,3 +2211,27 @@ func (h *HttpInstructorHandler) CreateGrade(c *fiber.Ctx) error {
 		"message": "Grade created successfully",
 	})
 }
+
+func (h *HttpInstructorHandler) GetAssignmentsListForExport(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	assignments, err := h.services.GetAssignmentsListForExport(courseID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get assignments list for export",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":     "Assignments list for export is retrieved",
+		"assignments": assignments,
+	})
+}
