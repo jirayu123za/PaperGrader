@@ -1833,3 +1833,22 @@ func (r *GormInstructorRepository) ModifyGradeData(assignmentID uuid.UUID, submi
 		return nil
 	})
 }
+
+// Part:1 Export data
+func (r *GormInstructorRepository) FindAssignmentsListForExport(CourseID uuid.UUID) ([]response.AssignmentsListResponse, error) {
+	var assignments []response.AssignmentsListResponse
+
+	if err := r.db.
+		Table("assignments").
+		Select(`
+			assignment_id,
+			assignment_name
+		`).
+		Where("course_id = ? AND deleted_at IS NULL", CourseID).
+		Order("created_at ASC").
+		Find(&assignments).Error; err != nil {
+		return nil, err
+	}
+
+	return assignments, nil
+}
