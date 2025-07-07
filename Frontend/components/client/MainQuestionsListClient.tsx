@@ -8,16 +8,27 @@ import { useFetchSubmissionsFromQuestion } from "@/hooks/Submissions/useFetchSub
 import { useSubmissionsStore } from "@/store/Submissions/useSubmissionsStore";
 import { useRouter } from 'next/navigation';
 import { IconArrowBigDown, IconArrowBigUp, IconFilter, IconSearch } from "@tabler/icons-react";
+import { useDebouncedValue } from "@mantine/hooks";
 
 export default function MainQuestionsListClient({ course_id, assignment_id, question_id }: { course_id: string; assignment_id: string; question_id: string; }) {
   const router = useRouter();
   const viewPort = useRef<HTMLDivElement>(null);
   const { isLoading, data: submissionsData } = useFetchSubmissionsFromQuestion(course_id, assignment_id);
-  const { submissions } = useSubmissionsStore();
+  const { submissions, searchTerm, setSearchTerm } = useSubmissionsStore();
   const scrollToBottom = () => viewPort.current!.scrollTo({ top: viewPort.current!.scrollHeight, behavior: 'smooth' });
   const scrollToTop = () => viewPort.current!.scrollTo({ top: 0, behavior: 'smooth' });
-  // const [searchQuery, setSearchQuery] = useState("");
+  
+  const [debouncedSearch] = useDebouncedValue(searchTerm, 100);
 
+  const searchSubmissions = submissions?.submissions.filter(submission => {
+    const matchesSearch = debouncedSearch
+      ? submission.user_name?.first_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        submission.user_name?.last_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        submission.user_name?.email.toLowerCase().includes(debouncedSearch.toLowerCase())
+      : true;
+    return matchesSearch;
+  });
+  
   return (
     <Flex direction="column" gap="xs" p="16px">
       <Flex justify="space-between" align="flex-end" mb="xs">
@@ -38,12 +49,12 @@ export default function MainQuestionsListClient({ course_id, assignment_id, ques
             <IconSearch size={18} color="#868e96" />
             <TextInput
               variant="unstyled"
-              placeholder="Search"
+              placeholder="Search submissions by name or email"
               size="xs"
               radius="md"
               w={300}
-              // value={searchQuery}
-              // onChange={(e) => setSearchQuery(e.currentTarget.value)}
+              onChange={(e) => setSearchTerm(e.currentTarget.value)}
+              value={searchTerm}
             />
           </Group>
 
@@ -62,62 +73,66 @@ export default function MainQuestionsListClient({ course_id, assignment_id, ques
 
       {submissions?.submissions.length === 0 ? (
         <NoSubmissionsList />
-      ) : (
-        <Paper withBorder>
-          <ScrollArea viewportRef={viewPort} h={870} miw={800} className="no-scroll-padding">
-            <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
-              <Table.Thead className='bg-gray-100'>
-                <Table.Tr>
-                  <Table.Th>No.</Table.Th>
-                  <Table.Th>Name</Table.Th>
-                  <Table.Th>Email</Table.Th>
-                  <Table.Th ta='center'>Graded by</Table.Th>
-                  <Table.Th ta='center'>Section</Table.Th>
-                  <Table.Th ta='center'>Score</Table.Th>
-                  <Table.Th ta='center'>Graded?</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              
-              <Table.Tbody>
-                {submissions?.submissions.map((submission, index) => (
-                  <Table.Tr key={submission.submission_id}>
-                    <Table.Td>{index + 1}</Table.Td>
-                    <Table.Td
-                      onClick={() =>
-                        router.push(`/instructor/course/${course_id}/process/${assignment_id}/grade-submissions/questions/${question_id}/lists/${submission.submission_id}`)
-                      }
-                      className="hover:underline hover:text-blue-500 hover:cursor-pointer"
-                    >
-                      {submission.user_name?.first_name ? (
-                        `${submission.user_name.first_name}${submission.user_name.last_name ? ` ${submission.user_name.last_name}` : ''}`
-                      ) : (
-                        <Text size="sm" c="gray" fs="italic">Not assigned student to this submission</Text>
-                      )}
-                    </Table.Td>
-                    <Table.Td>{submission.user_name?.email || null}</Table.Td>
-                    <Table.Td ta='center'>{submission.graded_by}</Table.Td>
-                    <Table.Td ta='center'>{submission.section_name}</Table.Td>
-                    <Table.Td ta='center'>{submission.score.toFixed(2)}</Table.Td>
-                    <Table.Td ta='center' align="center">
-                      {submission.grade_status ? (
-                        <Flex justify="center" align="center">
-                          <IoCheckmarkSharp color="green" />
-                        </Flex>
-                      ) : null}
-                    </Table.Td>
+        ) : (
+          searchSubmissions?.length === 0 ? (
+            <Text c="dimmed" ta="center" py="md">No submissions found</Text>
+        ) : (
+          <Paper withBorder>
+            <ScrollArea viewportRef={viewPort} h={600} miw={800} className="no-scroll-padding">
+              <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
+                <Table.Thead className='bg-gray-100'>
+                  <Table.Tr>
+                    <Table.Th>No.</Table.Th>
+                    <Table.Th>Name</Table.Th>
+                    <Table.Th>Email</Table.Th>
+                    <Table.Th ta='center'>Graded by</Table.Th>
+                    <Table.Th ta='center'>Section</Table.Th>
+                    <Table.Th ta='center'>Score</Table.Th>
+                    <Table.Th ta='center'>Graded?</Table.Th>
                   </Table.Tr>
-                ))}
-              </Table.Tbody>
-              <Table.Caption mt={0} className="border-t border-gray-200">
-                <Flex justify="end" align="center" p="md">
-                  <Text size="sm" c="dimmed">
-                    Total Submissions: {submissions?.submissions.length}
-                  </Text>                 
-                </Flex>
-              </Table.Caption>
-            </Table>
-          </ScrollArea>
-        </Paper>
+                </Table.Thead>
+                
+                <Table.Tbody>
+                  {searchSubmissions?.map((submission, index) => (
+                    <Table.Tr key={submission.submission_id}>
+                      <Table.Td>{index + 1}</Table.Td>
+                      <Table.Td
+                        onClick={() =>
+                          router.push(`/instructor/course/${course_id}/process/${assignment_id}/grade-submissions/questions/${question_id}/lists/${submission.submission_id}`)
+                        }
+                        className="hover:underline hover:text-blue-500 hover:cursor-pointer"
+                      >
+                        {submission.user_name?.first_name ? (
+                          `${submission.user_name.first_name}${submission.user_name.last_name ? ` ${submission.user_name.last_name}` : ''}`
+                        ) : (
+                          <Text size="sm" c="gray" fs="italic">Not assigned student to this submission</Text>
+                        )}
+                      </Table.Td>
+                      <Table.Td>{submission.user_name?.email || null}</Table.Td>
+                      <Table.Td ta='center'>{submission.graded_by}</Table.Td>
+                      <Table.Td ta='center'>{submission.section_name}</Table.Td>
+                      <Table.Td ta='center'>{submission.score.toFixed(2)}</Table.Td>
+                      <Table.Td ta='center' align="center">
+                        {submission.grade_status ? (
+                          <Flex justify="center" align="center">
+                            <IoCheckmarkSharp color="green" />
+                          </Flex>
+                        ) : null}
+                      </Table.Td>
+                    </Table.Tr>
+                  ))}
+                </Table.Tbody>
+                <Table.Caption mt={0} className="border-t border-gray-200">
+                  <Flex justify="end" align="center" p="md">
+                    <Text size="sm" c="dimmed">
+                      Total Submissions: {searchSubmissions?.length}
+                    </Text>                 
+                  </Flex>
+                </Table.Caption>
+              </Table>
+            </ScrollArea>
+          </Paper>
+        )
       )}
     </Flex>
   );
