@@ -2084,6 +2084,36 @@ func (h *HttpInstructorHandler) UpdateRubricSetting(c *fiber.Ctx) error {
 	})
 }
 
+func (h *HttpInstructorHandler) UpdateRubricScoreBounds(c *fiber.Ctx) error {
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	var req response.UpdateRubricScoreBoundsRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request body",
+			"error":   err.Error(),
+		})
+	}
+
+	if err := h.services.UpdateRubricScoreBounds(assignmentID, req); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to update rubric score bounds",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Rubric score bounds updated successfully",
+	})
+}
+
 // Question Handlers
 func (h *HttpInstructorHandler) GetSubmissionsFromQuestion(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
