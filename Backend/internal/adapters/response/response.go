@@ -487,3 +487,8 @@ type CreateGradeRequest struct {
 	RubricDetailID uuid.UUID  `json:"rubric_detail_id"`
 	HasSelected    bool       `json:"has_selected"`
 }
+
+type AssignmentsListResponse struct {
+	AssignmentID   uuid.UUID `json:"assignment_id"`
+	AssignmentName string    `json:"assignment_name"`
+}
