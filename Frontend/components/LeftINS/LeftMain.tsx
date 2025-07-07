@@ -62,10 +62,6 @@ export default function LeftMain() {
   }, [pathname]);
 
 
-  const handleExport = (selected: string[], fileType: 'csv' | 'pdf') => {
-    console.log('Export selected assignments:', selected, 'as', fileType);
-    // TODO: เรียก API จริง หรือดาวน์โหลดไฟล์
-  };
   return (
     <div className={`relative flex flex-col justify-between border-r transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} h-screen`}>
       <Flex justify="space-between" align="center" p={12}
@@ -196,7 +192,7 @@ export default function LeftMain() {
             onClick={() => {
               setActiveOption(item.key);
               if (item.key === 'dataexports') {
-                openModal(handleExport, course_id);
+                openModal(() => {}, course_id);
               } else if (item.href && item.href !== '#') {
                 router.push(item.href);
               }
