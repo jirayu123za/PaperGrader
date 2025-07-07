@@ -103,4 +103,7 @@ type InstructorRepository interface {
 	FindExistingGradeData(assignmentID uuid.UUID, submissionID uuid.UUID) (bool, error)
 	FindGradeData(assignmentID uuid.UUID, submissionID uuid.UUID) (map[string]interface{}, error)
 	ModifyGradeData(assignmentID uuid.UUID, submissionID uuid.UUID, updateGradeData json.RawMessage) error
+
+	// Part:1 Export data
+	FindAssignmentsListForExport(CourseID uuid.UUID) ([]response.AssignmentsListResponse, error)
 }
