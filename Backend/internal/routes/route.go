@@ -129,8 +129,12 @@ func RegisterRoutes(
 	// Part:2 Rubric
 	apiGroup.Put("/instructor/rubric/setting", instructorHandler.UpdateRubricSetting)
 	apiGroup.Put("/instructor/rubric/scoreBounds", instructorHandler.UpdateRubricScoreBounds)
+
 	// Part:1 Grade
 	apiGroup.Post("/instructor/grade", instructorHandler.CreateGrade)
+
+	// Part:1 Export data
+	apiGroup.Get("/instructor/assignments/export", instructorHandler.GetAssignmentsListForExport)
 
 	// Submissions from question
 	apiGroup.Get("/instructor/submissions/question", instructorHandler.GetSubmissionsFromQuestion)
