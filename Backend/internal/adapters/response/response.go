@@ -425,6 +425,18 @@ type RubricDetailWithSetting struct {
 	// RubricData    []RubricDetails `json:"rubric_details"`
 }
 
+type UpdateRubricScoreBoundsRequest struct {
+	QuestionID    uuid.UUID                   `json:"question_id"`
+	SubQuestionID *uuid.UUID                  `json:"sub_question_id,omitempty"`
+	Rubric        RubricDetailWithScoreBounds `json:"rubric"`
+}
+
+type RubricDetailWithScoreBounds struct {
+	RubricID   string `json:"rubric_id"`
+	HasCeiling bool   `json:"has_ceiling"`
+	HasFloor   bool   `json:"has_floor"`
+}
+
 // Query submissions from question
 type SubmissionsFromQuestionResponse struct {
 	SubmissionID uuid.UUID        `json:"submission_id"`
