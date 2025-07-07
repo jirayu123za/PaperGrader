@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, MultiSelect, Radio, Text, Button, Flex, Loader } from '@mantine/core';
+import { Modal, MultiSelect, Radio, Text, Button, Flex, Loader, Group} from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useExportModalStore } from '@/store/modal/useExportModalStore';
 import { useFetchExportModal } from '@/hooks/useFetchExportModal';
@@ -70,23 +70,23 @@ const ExportModal: React.FC = () => {
           </Text>
         )}
 
-        <Text size="sm" color="dimmed" mb="xs">
-          Choose file type
-        </Text>
-        <Radio.Group {...form.getInputProps('fileType')} withAsterisk>
-          <Flex gap="md" align="center" wrap="wrap" mb="md">
+        <Radio.Group
+          {...form.getInputProps('fileType')}
+          label="Choose file type"
+          description="Select the file type you want to export"
+          mb="md"
+        >
+          <Group  mt="xs">
             <Radio value="csv" label="CSV" />
             <Radio value="pdf" label="PDF" />
-          </Flex>
+          </Group>
         </Radio.Group>
 
-        <Text size="sm" color="dimmed" mb="xs">
-          Select the assignments you want to export
-        </Text>
         <MultiSelect
           {...form.getInputProps('assignments')}
           data={options}
-          label="Select Assignments"
+          label="Select assignments"
+          description="Select the assignments you want to export grades (you can choose multiple)"
           placeholder="Select assignments"
           searchable
           clearable
