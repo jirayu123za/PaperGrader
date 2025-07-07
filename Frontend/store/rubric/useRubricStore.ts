@@ -9,6 +9,8 @@ interface RubricDetail {
 
 interface Rubric {
     rubric_id: string | null;
+    has_ceiling: boolean;
+    has_floor: boolean;
     rubric_setting: string | null;
     rubric_details: RubricDetail[] | null;
 }
@@ -36,6 +38,8 @@ export interface RubricItem {
     rubric_point: number;
     rubric_description: string;
     has_selected: boolean;
+    has_ceiling: boolean;
+    has_floor: boolean;
     rubric_setting: 'Positive scoring' | 'Negative scoring' | null;
 }
 

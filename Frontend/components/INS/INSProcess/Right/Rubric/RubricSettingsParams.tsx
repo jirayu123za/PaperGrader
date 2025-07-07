@@ -85,8 +85,7 @@ export const RubricSettingsParams = () => {
               value={(rubricData?.rubric_setting || 'Positive scoring') as "Positive scoring" | "Negative scoring"}
               onChange={(value) => {
                 setRubricData({
-                  rubric_id: rubricData?.rubric_id ?? null,
-                  rubric_details: rubricData?.rubric_details ?? null,
+                  ...rubricData,
                   rubric_setting: value,
                 });
                 handleUpdateRubricSetting(rubricData?.rubric_id ?? '', value as "Positive scoring" | "Negative scoring");
@@ -116,8 +115,14 @@ export const RubricSettingsParams = () => {
               <Checkbox
                 w="100%"
                 size='sm' 
-                value="Ceiling"
-                label="Ceiling (maximum score is 5.0)"
+                checked={rubricData?.has_ceiling ?? false}
+                onChange={(e) => {
+                  setRubricData({
+                    ...rubricData,
+                    has_ceiling: e.currentTarget.checked,
+                  });
+                }}
+                label={`Ceiling (maximum score is ${getSelectedQuestionPoint()?.toFixed(1) ?? '0.0'})`}
                 classNames={{
                   root: 'ml-2 hover:text-blue-600 transition-colors',
                 }}
@@ -125,7 +130,13 @@ export const RubricSettingsParams = () => {
               <Checkbox
                 w="100%"
                 size='sm'
-                value="Floor"
+                checked={rubricData?.has_floor ?? false}
+                onChange={(e) => {
+                  setRubricData({
+                    ...rubricData,
+                    has_floor: e.currentTarget.checked,
+                  });
+                }}
                 label="Floor (minimum score is 0)"
                 classNames={{
                   root: 'ml-2 hover:text-blue-600 transition-colors',
