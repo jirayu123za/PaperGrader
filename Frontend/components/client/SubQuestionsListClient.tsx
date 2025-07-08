@@ -1,37 +1,54 @@
 'use client';
 
 import { useRef } from "react";
-import { Flex, Paper, Table, Text, Group, TextInput, ActionIcon, Divider, ScrollArea } from "@mantine/core";
+import { Flex, Paper, Table, Text, Group, TextInput, ActionIcon, Divider, ScrollArea, MultiSelect, Transition } from "@mantine/core";
 import { NoSubmissionsList } from "@/components/INS/INSProcess/ManageSubmissions/NoSubmissionsList";
 import { IoCheckmarkSharp } from "react-icons/io5";
 import { useFetchSubmissionsFromQuestion } from "@/hooks/Submissions/useFetchSubmissions";
 import { useSubmissionsStore } from "@/store/Submissions/useSubmissionsStore";
 import { useRouter } from 'next/navigation';
 import { IconArrowBigDown, IconArrowBigUp, IconFilter, IconSearch } from "@tabler/icons-react";
-import { useDebouncedValue } from "@mantine/hooks";
+import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
 
 export default function SubQuestionsListClient({ course_id, assignment_id, question_id, sub_question_id }: { course_id: string; assignment_id: string; question_id: string; sub_question_id: string; }) {
   const router = useRouter();
   const viewPort = useRef<HTMLDivElement>(null);
   const { isLoading, data: submissionsData } = useFetchSubmissionsFromQuestion(course_id, assignment_id);
-  const { submissions, searchTerm, setSearchTerm } = useSubmissionsStore();
+  const { submissions, searchTerm, setSearchTerm, selectedSections, setSelectedSections, selectedGradeStatuses, setSelectedGradeStatuses } = useSubmissionsStore();
   const scrollToBottom = () => viewPort.current!.scrollTo({ top: viewPort.current!.scrollHeight, behavior: 'smooth' });
   const scrollToTop = () => viewPort.current!.scrollTo({ top: 0, behavior: 'smooth' });
-  
-  const [debouncedSearch] = useDebouncedValue(searchTerm, 100);
 
-  const searchSubmissions = submissions?.submissions.filter(submission => {
+  const [opened, { open, close, toggle }] = useDisclosure(false);
+  const sectionOptions = Array.from(new Set(submissions?.submissions
+    .map((s) => s.section_name).filter(Boolean)))
+    .map((section) => ({
+      value: section,
+      label: section,
+    })
+  );
+  const hasGraded = submissions?.submissions.some(s => s.grade_status === true);
+  const hasUngraded = submissions?.submissions.some(s => s.grade_status === false);
+  const gradeStatusOptions = [
+    ...(hasGraded ? [{ value: "graded", label: "Graded" }] : []),
+    ...(hasUngraded ? [{ value: "ungraded", label: "Ungraded" }] : []),
+  ];
+
+  const [debouncedSearch] = useDebouncedValue(searchTerm, 100);
+  const filteredSubmissions = submissions?.submissions.filter((submission) => {
     const matchesSearch = debouncedSearch
       ? submission.user_name?.first_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         submission.user_name?.last_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         submission.user_name?.email.toLowerCase().includes(debouncedSearch.toLowerCase())
       : true;
-    return matchesSearch;
+    const matchesSection = selectedSections.length === 0 || selectedSections.includes(submission.section_name);
+    const statusString = submission.grade_status ? "graded" : "ungraded";
+    const matchesStatus = selectedGradeStatuses.length === 0 || selectedGradeStatuses.includes(statusString);
+    return matchesSearch && matchesSection && matchesStatus;
   });
 
   return (
-    <Flex direction="column" gap="xs" p="16px">
-      <Flex justify="space-between" align="flex-end" mb="xs">
+    <Flex direction="column" gap="sm" p="16px">
+      <Flex justify="space-between" align="flex-end">
         <Flex direction="column">
           <Text size="lg" fw={500}>
             Submissions list
@@ -58,7 +75,17 @@ export default function SubQuestionsListClient({ course_id, assignment_id, quest
             />
           </Group>
 
-          <ActionIcon variant="subtle" size="md" color="gray" aria-label="Filter">
+          <ActionIcon
+            variant="subtle"
+            size="md"
+            color="gray"
+            aria-label="Filter"
+            onClick={() => {
+              toggle();
+              setSelectedSections([]);
+              setSelectedGradeStatuses([]);
+            }}
+          >
             <IconFilter size={20} color="#868e96"/>
           </ActionIcon>
           <Divider orientation="vertical" />
@@ -70,11 +97,44 @@ export default function SubQuestionsListClient({ course_id, assignment_id, quest
           </ActionIcon>
         </Flex>
       </Flex>
+
+      <Transition mounted={opened} transition="slide-down" duration={200} timingFunction="ease">
+        {(styles) => (
+          <Flex direction="row" align="center" justify="end" gap="xs" style={styles}>
+            <MultiSelect 
+              placeholder="Filter by section"
+              searchable
+              clearable
+              hidePickedOptions
+              limit={5}
+              data={sectionOptions}
+              w="auto"
+              comboboxProps={{ transitionProps: { transition: 'pop', duration: 200 }}}
+              value={selectedSections}
+              onChange={(value) => setSelectedSections(value)}
+              onClear={() => setSelectedSections([])}
+            />
+            <MultiSelect
+              placeholder="Filter by grade status"
+              searchable
+              clearable
+              hidePickedOptions
+              limit={5}
+              data={gradeStatusOptions}
+              w="auto"
+              comboboxProps={{ transitionProps: { transition: 'pop', duration: 200 }}}
+              value={selectedGradeStatuses}
+              onChange={(value) => setSelectedGradeStatuses(value)}
+              onClear={() => setSelectedGradeStatuses([])}
+            />
+          </Flex>
+        )}
+      </Transition>
       
       {submissions?.submissions.length === 0 ? (
         <NoSubmissionsList />
         ) : (
-          searchSubmissions?.length === 0 ? (
+          filteredSubmissions?.length === 0 ? (
             <Text c="dimmed" ta="center" py="md">No submissions found</Text>
         ) : (
           <Paper withBorder>
@@ -92,7 +152,7 @@ export default function SubQuestionsListClient({ course_id, assignment_id, quest
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                  {searchSubmissions?.map((submission, index) => (
+                  {filteredSubmissions?.map((submission, index) => (
                     <Table.Tr key={submission.submission_id}>
                       <Table.Td>{index + 1}</Table.Td>
                       <Table.Td 
@@ -124,7 +184,7 @@ export default function SubQuestionsListClient({ course_id, assignment_id, quest
                 <Table.Caption mt={0} className="border-t border-gray-200">
                   <Flex justify="end" align="center" p="md">
                     <Text size="sm" c="dimmed">
-                      Total Submissions: {searchSubmissions?.length}
+                      Total Submissions: {filteredSubmissions?.length}
                     </Text>                 
                   </Flex>
                 </Table.Caption>
