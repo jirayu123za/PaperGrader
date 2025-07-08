@@ -23,6 +23,12 @@ interface SubmissionsStore {
 
     searchTerm: string;
     setSearchTerm: (term: string) => void;
+
+    selectedSections: string[];
+    setSelectedSections: (sections: string[]) => void;
+
+    selectedGradeStatuses: string[];
+    setSelectedGradeStatuses: (statuses: string[]) => void;
 }
 
 export const useSubmissionsStore = create<SubmissionsStore>((set) => ({
@@ -31,4 +37,10 @@ export const useSubmissionsStore = create<SubmissionsStore>((set) => ({
 
     searchTerm: '',
     setSearchTerm: (term) => set({ searchTerm: term }),
+
+    selectedSections: [],
+    setSelectedSections: (sections) => set({ selectedSections: sections }),
+
+    selectedGradeStatuses: [],
+    setSelectedGradeStatuses: (statuses) => set({ selectedGradeStatuses: statuses }),
 }));
