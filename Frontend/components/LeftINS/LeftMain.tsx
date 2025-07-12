@@ -13,8 +13,8 @@ import { useRouter, useParams, usePathname } from 'next/navigation';
 import { useFetchCourse } from '../../hooks/useFetchCourse';
 import { useDisclosure } from '@mantine/hooks';
 import AccountMenu from '../Account';
-import Exportmodal from '@/components/INS/ExportModal';
-import { useExportModalStore } from '@/store/modal/useExportModalStore';
+
+
 
 
 export default function LeftMain() {
@@ -30,7 +30,7 @@ export default function LeftMain() {
   const { } = useFetchCourse(course_id as string);
   const { isLoading, error } = useFetchInstructorList(course_id as string);
   const instructorList = useInstructorListStore((state) => state.instructorList);
-  const openModal = useExportModalStore((s) => s.openModal);
+
 
 
   const icons = {
@@ -48,7 +48,7 @@ export default function LeftMain() {
     { key: 'assignment', label: 'Assignments', icon: icons.fileAlt, href: `/instructor/course/${course?.course_id}/assignment` },
     { key: 'manageroster', label: 'Roster', icon: icons.users, href: `/instructor/course/${course?.course_id}/manageroster` },
     { key: 'statistics', label: 'Statistics', icon: icons.stats, href: '#' },
-    { key: 'dataexports', label: 'Data Exports', icon: icons.export, href: '#' },
+    { key: 'dataexports', label: 'Data Exports', icon: icons.export, href: `/instructor/course/${course?.course_id}/dataexport` },
     { key: 'coursesettings', label: 'Course Settings', icon: icons.cog, href: '#' },
   ];
 
@@ -191,9 +191,7 @@ export default function LeftMain() {
             }}
             onClick={() => {
               setActiveOption(item.key);
-              if (item.key === 'dataexports') {
-                openModal(() => {}, course_id);
-              } else if (item.href && item.href !== '#') {
+              if (item.href && item.href !== '#') {
                 router.push(item.href);
               }
             }}
@@ -257,7 +255,7 @@ export default function LeftMain() {
         <AccountMenu isCollapsed={isCollapsed} />
       </Stack>
 
-      <Exportmodal />
+
     </div>
   );
 }
