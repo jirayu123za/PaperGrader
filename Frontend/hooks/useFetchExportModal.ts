@@ -7,7 +7,7 @@ export interface Assignment {
   assignment_name: string;
 }
 
-export type FileType = 'csv' | 'pdf';
+export type FileType = 'excel' | 'pdf';
 
 /**
  * Hook #1: fetch list of assignments for export
