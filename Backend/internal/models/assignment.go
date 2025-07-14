@@ -23,6 +23,7 @@ type Assignment struct {
 	AssignmentSections    []AssignmentSection `gorm:"foreignKey:AssignmentID"`
 	BoundingBoxes         []BoundingBox       `gorm:"foreignKey:AssignmentID"`
 	Rubrics               []Rubric            `gorm:"foreignKey:AssignmentID"`
+	ExportGrades          []ExportGrade       `gorm:"foreignKey:AssignmentID"`
 	CreatedAt             time.Time
 	UpdatedAt             time.Time
 	DeletedAt             gorm.DeletedAt `gorm:"index"`
