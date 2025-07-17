@@ -27,17 +27,7 @@ const INSDashBoard = () => {
   const iconInfoCircler = <BsFillInfoCircleFill size={15} color='teal' />;
 
   return (
-    <div className="bg-white-50 p-8">
-      <div className="flex mb-8">
-        <Title order={2} fw={600}>
-          {course ? `${course.course_name}` : 'No Course Selected'}
-        </Title>
-        <Divider orientation="vertical" className="mx-4" size="sm" />
-        <Title order={2} fw={600}>
-          {course ? `${course.semester}/${course.academic_year}` : 'No Course ID'}
-        </Title>
-      </div>
-
+    <div >
       <Flex gap="xl" pb="lg">
         <div className="w-1/2">
           <Title order={5} fw={600} pb={4}>DESCRIPTION</Title>
