@@ -174,11 +174,13 @@ const GradePdfViewer: React.FC = () => {
 
   return (
     <Container
+      fluid
+      p={0}
       style={{
         position: "relative",
-        height: "95vh",
-        maxHeight: "100vh",
+        height: "100vh",
         overflow: "hidden",
+        padding: 0,
       }}
     >
       <div
