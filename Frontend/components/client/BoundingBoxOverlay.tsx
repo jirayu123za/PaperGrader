@@ -75,7 +75,7 @@ const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
     stage.height(canvas.height);
 
     // Clear previous shapes
-    layer.clear();
+    layer.removeChildren();
 
     const boxesToUse = fetchedBoxes ?? storedBoxes;
     const pageBoxes = boxesToUse.filter((b) => b.bounding_box_page === currentPage);
