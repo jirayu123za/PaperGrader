@@ -1,10 +1,16 @@
 import LeftMain from '@/components/LeftINS/LeftMain';
+import HeaderCourse from '@/components/INS/Header/HeaderCourse';
 
 export default function ProcessLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
       <LeftMain />
-      <main className="grow">{children}</main>
+      <div className="flex flex-col flex-1 px-6">
+        <HeaderCourse />
+        <main className="flex-1">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
