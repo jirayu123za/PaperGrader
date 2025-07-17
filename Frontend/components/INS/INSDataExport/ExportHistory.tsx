@@ -55,7 +55,7 @@ export default function ExportHistory() {
       <Divider my="sm" />
 
       <Paper shadow="sm" radius="md" withBorder p="xl" mt="md">
-        <div style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
+        <div style={{ maxHeight: 'calc(100vh - 280px)', overflowY: 'auto' }}>
           <Table highlightOnHover verticalSpacing="sm">
             <Table.Thead>
               <Table.Tr>
