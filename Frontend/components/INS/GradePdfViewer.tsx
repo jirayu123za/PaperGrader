@@ -39,7 +39,7 @@ const GradePdfViewer: React.FC = () => {
 
   const [finalScale, setFinalScale] = useState(1);
 
-    const renderPDF = async (pageNum: number, baseScale: number) => {
+  const renderPDF = async (pageNum: number, baseScale: number) => {
     try {
       const loadingTask = pdfjsLib.getDocument(
         submissionFile.submission_file_url
@@ -85,8 +85,15 @@ const GradePdfViewer: React.FC = () => {
   };
 
   useEffect(() => {
-    renderPDF(currentPage, scale);
-  }, [currentPage, scale]);
+
+    if (submissionFile.submission_file_url) {
+      renderPDF(currentPage, scale);
+    }
+  }, [
+    submissionFile.submission_file_url, 
+    currentPage,
+    scale,
+  ]);
 
   // Mouse wheel zoom
   useEffect(() => {
