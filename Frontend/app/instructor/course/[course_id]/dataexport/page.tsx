@@ -11,7 +11,7 @@ export const metadata = {
 
 export default async function ExportHistoryPage() {
     return (
-        <div className="p-6 w-full h-screen overflow-hidden">
+        <div className="w-full">
             <Suspense fallback={<Loader size="sm" />}>
                 <ExportHistory />
             </Suspense>
