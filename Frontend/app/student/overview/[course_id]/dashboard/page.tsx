@@ -1,11 +1,14 @@
 import React from 'react';
-import STD_LeftAss from '@/components/STD/STD_LeftAss';
 import STD_CourseDashboard from '@/components/STD/STD_CourseDashboard';
 
-const CourseDashboard: React.FC = () => {
+export const metadata = {
+  title: 'Student course dashboard',
+  description: 'Student course dashboard for PaperGrader',
+};
+
+const STDCourseDashboard: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <STD_LeftAss/>
       <div className="grow p-6">
         <div>
           <STD_CourseDashboard/>
@@ -15,4 +18,4 @@ const CourseDashboard: React.FC = () => {
   );
 };
 
-export default CourseDashboard;
+export default STDCourseDashboard;

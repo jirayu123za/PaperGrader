@@ -1,25 +1,26 @@
 "use client";
 
 import react from 'react';
-import AccountMenu from '../../components/Account';
-import Link from 'next/link';
+import { useRouter, useParams } from 'next/navigation';
+import AccountMenu from '../../Account';
 import { FaBars, FaUser, FaHome, FaClipboardList } from 'react-icons/fa';
-import { useFetchInstructorList } from '../../hooks/useFetchInstructorList';
-import { useStdCourseDashboardStore } from '../../store/useCourseStore';
-import { useRouter } from 'next/router';
-import { useInstructorListStore } from '../../store/useInstructorListStore';
-import { useFetchStdCourse } from '../../hooks/useFetchCourse';
+import { useFetchInstructorList } from '../../../hooks/useFetchInstructorList';
+import { useStdCourseDashboardStore } from '../../../store/useCourseStore';
+import { useInstructorListStore } from '../../../store/useInstructorListStore';
+import { useFetchStdCourse } from '../../../hooks/useFetchCourse';
 import { useDisclosure } from '@mantine/hooks';
 import { Button, Divider, Flex, Image, Skeleton, Stack, Text, Title } from '@mantine/core';
 
-export default function STD_LeftMain() {
+export default function LeftAssignment() {
   const router = useRouter();  
-  const { course_id } = router.query;
+  const params = useParams();
+  const course_id = params?.course_id as string;
   const { isLoading, error } = useFetchInstructorList(course_id as string);
   const { instructorList } = useInstructorListStore();
   const { isLoading: isCourseLoading, error: errorCourse } = useFetchStdCourse(course_id as string);
   const { course } = useStdCourseDashboardStore();
   const [isCollapsed, { toggle }] = useDisclosure(false);
+
   const icons = {
     home: <FaHome />,
     user: <FaUser />,
@@ -39,7 +40,9 @@ export default function STD_LeftMain() {
             src="/Image/logo-ppgd.png"
             alt="logo" w={200} h={60} p={2} 
             style={{ cursor: 'pointer' }}
-            onClick={() => router.push('/STDCourseOverview/CourseOverview')}
+            onClick={() => {
+              router.push(`/student/overview`);
+            }}
           />
         )}
         <Button
@@ -111,8 +114,6 @@ export default function STD_LeftMain() {
         )}
       </Flex>
 
-      {/* <Divider className="mb-4" size="sm" /> */}
-
       {/* Main Content */}
       <Stack
         p={16} gap="xs"
@@ -140,7 +141,7 @@ export default function STD_LeftMain() {
             justifyContent: isCollapsed ? "center" : "flex-start",
           })}
           onClick={() => {
-            router.push(`/STDCourseOverview/${course_id}/CourseDashboard`);
+            router.push(`/student/overview/${course_id}/dashboard`);
           }}
         >
           {!isCollapsed && <span>Dashboard</span>}

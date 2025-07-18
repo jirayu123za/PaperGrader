@@ -1,19 +1,20 @@
 "use client";
 
 import React from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
 import { useFetchAssignments } from '../../hooks/useFetchAssignments';
 import { useAssignmentStore } from '../../store/useAssignmentStore';
 import { useStdCourseDashboardStore } from '../../store/useCourseStore';
-import { useRouter } from 'next/router';
+import { useRouter , useParams } from 'next/navigation';
 import { Badge, Divider, Table, Title } from '@mantine/core';
 import { useFetchStdCourse } from '../../hooks/useFetchCourse';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
 
 const STD_CourseDashboard: React.FC = () => {
   const router = useRouter();
-  dayjs.extend(utc);
-  const { course_id } = router.query;
+  const params = useParams();
+  const { course_id } = params as { course_id: string };
   const { isLoading, error } = useFetchAssignments(course_id as string);
   const { assignments: assignmentList } = useAssignmentStore();
   const { isLoading: isCourseLoading, error: errorCourse } = useFetchStdCourse(course_id as string);
@@ -56,7 +57,7 @@ const STD_CourseDashboard: React.FC = () => {
                   <Table.Tr className="border-b">
                     <Table.Td 
                       className="py-2 px-4 cursor-pointer hover:underline"
-                      onClick={() => router.push(`/assignment/${assignment.assignment_id}`)}
+                      onClick={() => router.push(`/student/overview/assignment/${assignment.assignment_id}`)}
                     >
                       {assignment.assignment_name}
                     </Table.Td>
