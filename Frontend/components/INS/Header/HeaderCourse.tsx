@@ -54,7 +54,7 @@ const HeaderCourse: React.FC = () => {
       </Flex>
 
       <Text size="sm" color="dimmed" className="mt-0">
-        Course Code: {course?.course_code ?? '-'}
+        Course code: {course?.course_code ?? '-'}
       </Text>
     </div>
   );
