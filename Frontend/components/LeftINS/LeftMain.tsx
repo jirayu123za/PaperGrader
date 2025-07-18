@@ -10,7 +10,7 @@ import { useFetchInstructorList } from '../../hooks/useFetchInstructorList';
 import { useInstructorListStore } from '../../store/useInstructorListStore';
 import { useLeftMainStore } from '@/store/useLeftMainStore';
 import { useRouter, useParams, usePathname } from 'next/navigation';
-import { useFetchCourse } from '../../hooks/useFetchCourse';
+
 import { useDisclosure } from '@mantine/hooks';
 import AccountMenu from '../Account';
 
@@ -23,15 +23,12 @@ export default function LeftMain() {
   const pathname = usePathname();
   const course_id = params?.course_id as string;
   const [isCollapsed, { toggle: toggleCollapse }] = useDisclosure(false);
-  const [expandedName, { toggle: toggleExpandName }] = useDisclosure(false);
-  const [expandedDesc, { toggle: toggleExpandCourseDesc }] = useDisclosure(false);
   const { activeOption, setActiveOption } = useLeftMainStore();
   const { course } = useInsCourseStore();
-  const { } = useFetchCourse(course_id as string);
   const { isLoading, error } = useFetchInstructorList(course_id as string);
   const instructorList = useInstructorListStore((state) => state.instructorList);
-
-
+  const [expandedCode, { toggle: toggleExpandCode }] = useDisclosure(false);
+  const [expandedName, { toggle: toggleExpandName }] = useDisclosure(false);
 
   const icons = {
     home: <FaHome />,
@@ -102,8 +99,7 @@ export default function LeftMain() {
       </Flex>
       <Divider />
 
-      <Flex
-        direction="column" align="start" p={16}
+      <Flex direction="column" align="start" p={16}
         style={{
           backgroundColor: '#6665AC',
         }}>
@@ -113,19 +109,20 @@ export default function LeftMain() {
               <Title
                 textWrap="balance"
                 order={2}
+                 size={20} 
                 style={{ color: "#F9F9F9", cursor: "pointer" }}
-                lineClamp={expandedName ? undefined : 1}
-                onClick={toggleExpandName}
+                lineClamp={expandedCode ? undefined : 1}
+                onClick={toggleExpandCode}
               >
-                {course.course_name}
+                {`${course.course_code} (${course.semester}/${course.academic_year})`}
               </Title>
               <Text
                 size="sm"
                 style={{ color: "#E9E9E9", cursor: "pointer" }}
-                lineClamp={expandedDesc ? undefined : 2}
-                onClick={toggleExpandCourseDesc}
+                lineClamp={expandedName ? undefined : 1}
+                onClick={toggleExpandName}
               >
-                Introduction to {course.course_name}
+                {course.course_name}
               </Text>
             </>
           )
