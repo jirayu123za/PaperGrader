@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { useAssignmentStore } from '../store/useSTD_AssignmentStore';
 import axios from 'axios';
+import { useQuery } from '@tanstack/react-query';
+import { useAssignmentStore } from '@/store/Student/useSTD_AssignmentStore';
 
 interface StudentAssignment {
   course_id: string;

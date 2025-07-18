@@ -1,14 +1,14 @@
 "use client";
 
 import React from 'react';
-import { Tabs, ScrollArea, Card, Progress, Text, Checkbox, Skeleton, Flex } from '@mantine/core';
 import Link from 'next/link';
 import dayjs from 'dayjs';
-import STDSubmit from '../STD/STD_submit';
-import { useFetchStdAssignments } from '../../hooks/useFetchSTD_Assignment';
-import { useAssignmentStore } from '../../store/useSTD_AssignmentStore';
-import { useSubmitAndDownloadModalStore } from '../../store/modal/useSubmitAndDownloadModal';
+import { Tabs, ScrollArea, Card, Progress, Text, Skeleton, Flex } from '@mantine/core';
+import { useFetchStdAssignments } from '@/hooks/Student/useFetchSTD_Assignment';
+import { useAssignmentStore } from '@/store/Student/useSTD_AssignmentStore';
+import { useSubmitAndDownloadModalStore } from '@/store/modal/useSubmitAndDownloadModal';
 import LeftMain from '@/components/STD/SideBar/LeftMain';
+import STDSubmit from '@/components/STD/STD_submit';
 
 interface ActiveAssignments {
   course_id: string;

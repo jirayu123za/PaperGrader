@@ -4,16 +4,16 @@ import React from 'react';
 import { Modal, Button, FileInput, Alert, Text as MantineText } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconDownload, IconFileText } from '@tabler/icons-react';
-import { useFetchInstructorFile } from '../../hooks/useFetchInstructorFile';
-import { useUploadStudentFile } from '../../hooks/useUploadStudentFile';
-import { useFileStore } from '../../store/useSTDFileStore';
-import { useSubmitAndDownloadModalStore } from '../../store/modal/useSubmitAndDownloadModal';
+import { useFetchInstructorFile } from '@/hooks/Student/useFetchInstructorFile';
+import { useUploadStudentFile } from '@/hooks/useUploadStudentFile';
+import { useReceiveFileStore } from '@/store/Student/useReceiveFileStore';
+import { useSubmitAndDownloadModalStore } from '@/store/modal/useSubmitAndDownloadModal';
 
 const STDSubmit: React.FC = () => {
   const { assignment_id, course_id, opened, closeModal, files, fileNames } = useSubmitAndDownloadModalStore();
   const { isLoading } = useFetchInstructorFile();
   const { mutate: uploadStudentFile } = useUploadStudentFile();
-  const { studentFile, setStudentFile } = useFileStore();
+  const { studentFile, setStudentFile } = useReceiveFileStore();
 
   const form = useForm({
     initialValues: { file: null },
