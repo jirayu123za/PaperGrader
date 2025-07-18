@@ -90,7 +90,7 @@ const GradePdfViewer: React.FC = () => {
       renderPDF(currentPage, scale);
     }
   }, [
-    submissionFile.submission_file_url, 
+    submissionFile.submission_file_url,
     currentPage,
     scale,
   ]);
@@ -179,7 +179,6 @@ const GradePdfViewer: React.FC = () => {
       style={{
         position: "relative",
         height: "100vh",
-        overflow: "hidden",
         padding: 0,
       }}
     >
@@ -189,8 +188,9 @@ const GradePdfViewer: React.FC = () => {
           height: "100%",
           cursor: isDragging.current ? "grabbing" : "grab",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          alignItems: "flex-start",    
+          justifyContent: "flex-start",
+          position: "relative",         
         }}
       >
         <canvas
@@ -204,14 +204,14 @@ const GradePdfViewer: React.FC = () => {
             boxShadow: "0 0 4px rgba(0,0,0,0.1)",
           }}
         />
-        <BoundingBoxOverlay
+      </div>
+              <BoundingBoxOverlay
           canvasRef={canvasRef}
           assignmentId={assignment_id}
           currentPage={currentPage}
           scale={finalScale}
           pan={pan}
         />
-      </div>
 
       {/* ปุ่ม Zoom */}
       <div

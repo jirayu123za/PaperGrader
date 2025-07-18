@@ -74,6 +74,7 @@ const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
     stage.width(canvas.width);
     stage.height(canvas.height);
 
+
     // Clear previous shapes
     layer.removeChildren();
 
@@ -83,10 +84,10 @@ const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
     // Draw rectangles
     pageBoxes.forEach((b) => {
       const rect = new Konva.Rect({
-        x: b.point_x * scale,
-        y: b.point_y * scale,
-        width: b.width * scale,
-        height: b.height * scale,
+        x: b.point_x,
+        y: b.point_y,
+        width: b.width,
+        height: b.height,
         stroke: "red",
         strokeWidth: 2,
         listening: false,
@@ -96,16 +97,29 @@ const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
     layer.batchDraw();
   }, [fetchedBoxes, storedBoxes, currentPage]);
 
-  // Update zoom by CSS transform on container
+  // Sync stage & container size to PDF canvas แล้วจัดการ zoom/pan ด้วย Konva API
   useEffect(() => {
+    const stage = stageRef.current;
+    const canvas = canvasRef.current;
     const container = containerRef.current;
-    if (!container) return;
-    container.style.transform = `translate(${pan.x}px, ${pan.y}px) scale(${scale})`;
-  }, [scale, pan.x, pan.y]);
+    if (!stage || !canvas || !container) return;
 
-  const canvas = canvasRef.current;
-  const width = canvas?.clientWidth ?? 0;
-  const height = canvas?.clientHeight ?? 0;
+    // 1) ให้อินพุต container div มีขนาดเท่ากับ PDF canvas
+    container.style.width = `${canvas.clientWidth}px`;
+    container.style.height = `${canvas.clientHeight}px`;
+    container.style.overflow = "visible";
+
+    // 2) ปรับขนาด resolution ของ Konva stage ให้ตรงกับ canvas จริง
+    stage.width(canvas.width);
+    stage.height(canvas.height);
+
+    // 3) ซูมและเลื่อนกล่องทั้งหมดผ่าน Konva API
+    stage.scale({ x: scale, y: scale });
+    stage.position({ x: pan.x, y: pan.y });
+    stage.batchDraw();
+  }, [scale, pan.x, pan.y, currentPage]);
+
+
 
   return (
     <div
@@ -114,10 +128,9 @@ const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
         position: "absolute",
         top: 0,
         left: 0,
-        width,
-        height,
         pointerEvents: "none",
         transformOrigin: "0 0",
+        overflow: "visible", 
       }}
     />
   );
