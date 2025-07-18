@@ -104,14 +104,19 @@ const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
     const container = containerRef.current;
     if (!stage || !canvas || !container) return;
 
-    // 1) ให้อินพุต container div มีขนาดเท่ากับ PDF canvas
-    container.style.width = `${canvas.clientWidth}px`;
-    container.style.height = `${canvas.clientHeight}px`;
+    // → เรียกขนาดของ wrapper (parent ของ canvas) แทน
+    const wrapper = canvas.parentElement;
+    const rect = wrapper?.getBoundingClientRect();
+    if (!rect) return;
+
+    // 1) ขยาย container ของ overlay ให้ครอบเต็มพื้นที่ของ wrapper
+    container.style.width = `${rect.width}px`;
+    container.style.height = `${rect.height}px`;
     container.style.overflow = "visible";
 
-    // 2) ปรับขนาด resolution ของ Konva stage ให้ตรงกับ canvas จริง
-    stage.width(canvas.width);
-    stage.height(canvas.height);
+    // 2) ปรับขนาด Konva stage ให้ตรงกับตัว container ใหม่
+    stage.width(rect.width);
+    stage.height(rect.height);
 
     // 3) ซูมและเลื่อนกล่องทั้งหมดผ่าน Konva API
     stage.scale({ x: scale, y: scale });
@@ -130,7 +135,7 @@ const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
         left: 0,
         pointerEvents: "none",
         transformOrigin: "0 0",
-        overflow: "visible", 
+        overflow: "visible",
       }}
     />
   );

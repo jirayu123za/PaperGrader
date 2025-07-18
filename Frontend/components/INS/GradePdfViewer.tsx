@@ -184,7 +184,7 @@ const GradePdfViewer: React.FC = () => {
     >
       <div
         style={{
-          overflow: "hidden",
+          overflow: "visible",
           height: "100%",
           cursor: isDragging.current ? "grabbing" : "grab",
           display: "flex",
@@ -205,7 +205,8 @@ const GradePdfViewer: React.FC = () => {
           }}
         />
       </div>
-              <BoundingBoxOverlay
+
+        <BoundingBoxOverlay
           canvasRef={canvasRef}
           assignmentId={assignment_id}
           currentPage={currentPage}
