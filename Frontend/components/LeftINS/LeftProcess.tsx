@@ -62,12 +62,12 @@ export default function LeftProcess() {
       {/* Top: Logo and Collapse Button */}
       <Flex justify="space-between" align="center" p={12}
         style={{
-          backgroundColor: '#f1f3f8',
+          backgroundColor: '#6665AC',
         }}
       >
         {!isCollapsed && (
           <Image
-            src="/Image/logo-ppgd.png"
+            src="/Image/logo-ppgd2.png"
             alt="logo" w={200} h={60} p={2}
             style={{ cursor: 'pointer' }}
             onClick={() => router.push('/INSCourseOverview')}
@@ -89,14 +89,13 @@ export default function LeftProcess() {
           <FaRegArrowAltCircleRight
             size={24}
             style={{
-              color: isCollapsed ? '#000000' : '#000000',
+              color: isCollapsed ? '#f1f3f8' : '#f1f3f8',
             }}
             className={`transition-transform duration-300 ${isCollapsed ? '' : 'transform rotate-180'}`}
           />
         </Button>
       </Flex>
 
-      <Divider />
 
       <Stack
         p={16} gap="xs"

@@ -12,11 +12,11 @@ export default function LeftOverview() {
     <div className={`relative flex flex-col justify-between border-r transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} h-screen`}>
       <Flex justify="space-between" align="center" p={12}
         style={{
-          backgroundColor: '#f1f3f8',
+          backgroundColor: '#6665AC',
         }}
       >
         {!isCollapsed && (
-          <Image src="/Image/logo-ppgd.png" alt="logo" w={200} h={60} p={2} />
+          <Image src="/Image/logo-ppgd2.png" alt="logo" w={200} h={60} p={2} />
         )}
         <Button
           onClick={toggle}
@@ -33,7 +33,7 @@ export default function LeftOverview() {
           <FaRegArrowAltCircleRight
             size={24}
             style={{
-              color: isCollapsed ? '#000000': '#000000',
+              color: isCollapsed ? '#f1f3f8': '#f1f3f8',
             }}
             className={`transition-transform duration-300 ${
               isCollapsed ? '' : 'transform rotate-180'
@@ -41,7 +41,7 @@ export default function LeftOverview() {
           />
         </Button>
       </Flex>
-      <Divider />
+
 
       <Stack
         className={`grow p-4 ${isCollapsed ? 'items-center' : ''}`}
