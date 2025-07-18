@@ -51,7 +51,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
   const handleSelectCourse = (course: Course) => {
     setSelectedCourseId(course.course_id);
     if (studentMode) {
-      router.push(`/STDCourseOverview/${course.course_id}/CourseDashboard`);
+      router.push(`/student/overview/${course.course_id}/dashboard`);
     } else {
       router.push(`/instructor/course/${course.course_id}/dashboard`);
     }
