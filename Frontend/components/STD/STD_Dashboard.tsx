@@ -75,8 +75,8 @@ const STD_Dashboard = () => {
                   >
                     {assignment.assignment_name}
                   </Text>
-                  <Link href={`/STDCourseOverview/${assignment.course_id}/CourseDashboard`} passHref>
-                    <Text size="sm" color="dimmed" className="cursor-pointer hover:underline">
+                  <Link href={`/student/overview/${assignment.course_id}/dashboard`} passHref>
+                    <Text size="sm" c="dimmed" className="cursor-pointer hover:underline">
                       {assignment.course_code} - {assignment.course_name}
                     </Text>
                   </Link>
