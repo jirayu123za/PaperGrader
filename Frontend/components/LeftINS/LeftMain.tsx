@@ -63,13 +63,13 @@ export default function LeftMain() {
     <div className={`relative flex flex-col justify-between border-r transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} h-screen`}>
       <Flex justify="space-between" align="center" p={12}
         style={{
-          backgroundColor: '#f1f3f8',
+          backgroundColor: '#6665AC',
         }}
       >
         {/* Header and Course Name */}
         {!isCollapsed && (
           <Image
-            src="/Image/logo-ppgd.png"
+            src="/Image/logo-ppgd2.png"
             alt="logo" w={200} h={60} p={2}
             style={{ cursor: 'pointer' }}
             onClick={() => router.push('/INSCourseOverview')}
@@ -90,14 +90,14 @@ export default function LeftMain() {
           <FaRegArrowAltCircleRight
             size={24}
             style={{
-              color: isCollapsed ? '#000000' : '#000000',
+              color: isCollapsed ? '#f1f3f8' : '#f1f3f8',
             }}
             className={`transition-transform duration-300 ${isCollapsed ? '' : 'transform rotate-180'
               }`}
           />
         </Button>
       </Flex>
-      <Divider />
+
 
       <Flex direction="column" align="start" p={16}
         style={{
@@ -109,7 +109,7 @@ export default function LeftMain() {
               <Title
                 textWrap="balance"
                 order={2}
-                 size={20} 
+                size={20} 
                 style={{ color: "#F9F9F9", cursor: "pointer" }}
                 lineClamp={expandedCode ? undefined : 1}
                 onClick={toggleExpandCode}
