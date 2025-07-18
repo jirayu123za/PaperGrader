@@ -1,64 +1,29 @@
+"use client";
+
 import React from 'react';
-import { Tabs, ScrollArea, Card, Progress, Text, Checkbox, Skeleton } from '@mantine/core';
+import { Tabs, ScrollArea, Card, Progress, Text, Checkbox, Skeleton, Flex } from '@mantine/core';
 import Link from 'next/link';
 import dayjs from 'dayjs';
 import STDSubmit from '../STD/STD_submit';
 import { useFetchStdAssignments } from '../../hooks/useFetchSTD_Assignment';
 import { useAssignmentStore } from '../../store/useSTD_AssignmentStore';
 import { useSubmitAndDownloadModalStore } from '../../store/modal/useSubmitAndDownloadModal';
+import LeftMain from '@/components/STD/SideBar/LeftMain';
 
-const mockAssignmentList = [
-  {
-    assignment_id: '1',
-    course_id: 'CSE101',
-    course_code: 'CSE101',
-    course_name: 'Introduction to Computer Science',
-    section_name: 'A',
-    assignment_name: 'Assignment 1',
-    release_Date: dayjs().subtract(2, 'days').toISOString(),
-    due_date: dayjs().add(3, 'days').toISOString(),
-  },
-  {
-    assignment_id: '2',
-    course_id: 'CSE101',
-    course_code: 'CSE101',
-    course_name: 'Introduction to Computer Science',
-    section_name: 'B',
-    assignment_name: 'Assignment 2',
-    release_Date: dayjs().subtract(5, 'days').toISOString(),
-    due_date: dayjs().add(1, 'days').toISOString(),
-  },
-  {
-    assignment_id: '3',
-    course_id: 'CSE102',
-    course_code: 'CSE102',
-    course_name: 'Data Structures',
-    section_name: 'A',
-    assignment_name: 'Assignment 3',
-    release_Date: dayjs().subtract(10, 'days').toISOString(),
-    due_date: dayjs().subtract(2, 'days').toISOString(),
-  },
-  {
-    assignment_id: '4',
-    course_id: 'CSE103',
-    course_code: 'CSE103',
-    course_name: 'Algorithms',
-    section_name: 'A',
-    assignment_name: 'Assignment 4',
-    release_Date: dayjs().subtract(3, 'days').toISOString(),
-    due_date: dayjs().add(5, 'days').toISOString(),
-  },
-  {
-    assignment_id: '5',
-    course_id: 'CSE104',
-    course_code: 'CSE104',
-    course_name: 'Database Systems',
-    section_name: 'B',
-    assignment_name: 'Assignment 5',
-    release_Date: dayjs().subtract(7, 'days').toISOString(),
-    due_date: dayjs().subtract(1, 'days').toISOString(),
-  },
-];
+interface ActiveAssignments {
+  course_id: string;
+  assignment_id: string;
+  course_code: string;
+  course_name?: string;
+  assignment_name: string;
+  assignment_description: string;
+  cut_off_date: string;
+  due_date: string;
+  release_Date: string;
+  section_name: string;
+}
+
+const mockAssignmentList: ActiveAssignments[] = [];
 
 const STD_Dashboard = () => {
   const { isLoading, error } = useFetchStdAssignments();
@@ -141,28 +106,32 @@ const STD_Dashboard = () => {
   );
 
   return (
-    <div className="h-full">
-      <Tabs defaultValue="active" className="h-full">
-        <Tabs.List>
-          <Tabs.Tab value="active">Active Assignments</Tabs.Tab>
-          <Tabs.Tab value="overdue">Overdue Assignments</Tabs.Tab>
-        </Tabs.List>
+    <Flex>
+      <LeftMain />
 
-        <Tabs.Panel value="active" pt="md">
-          <ScrollArea style={{ height: 'calc(100vh - 128px)' }}>
-            {renderAssignments(activeAssignments, 'active')}
-          </ScrollArea>
-        </Tabs.Panel>
+      <Flex direction="column" className="flex-1 px-6 py-6">
+        <Tabs defaultValue="active">
+          <Tabs.List>
+            <Tabs.Tab value="active">Active Assignments</Tabs.Tab>
+            <Tabs.Tab value="overdue">Overdue Assignments</Tabs.Tab>
+          </Tabs.List>
 
-        <Tabs.Panel value="overdue" pt="md">
-          <ScrollArea style={{ height: 'calc(100vh - 128px)' }}>
-            {renderAssignments(overdueAssignments, 'overdue')}
-          </ScrollArea>
-        </Tabs.Panel>
-      </Tabs>
+          <Tabs.Panel value="active" pt="md">
+            <ScrollArea style={{ height: 'calc(100vh - 128px)' }}>
+              {renderAssignments(activeAssignments, 'active')}
+            </ScrollArea>
+          </Tabs.Panel>
 
+          <Tabs.Panel value="overdue" pt="md">
+            <ScrollArea style={{ height: 'calc(100vh - 128px)' }}>
+              {renderAssignments(overdueAssignments, 'overdue')}
+            </ScrollArea>
+          </Tabs.Panel>
+        </Tabs>
+      </Flex>
+      
       <STDSubmit />
-    </div>
+    </Flex>
   );
 };
 
