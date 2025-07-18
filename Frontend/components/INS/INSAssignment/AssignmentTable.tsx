@@ -57,10 +57,6 @@ const AssignmentTable: React.FC = () => {
 
   return (
     <Flex direction="column" gap="md">
-      <Text fw={600} size="xl" mb="md">
-        {assignmentList.length} Assignments
-      </Text>
-
       <Paper withBorder mb="md">
         <Table.ScrollContainer minWidth="100%" maxHeight={905} className='no-scroll-padding'>
           <Table verticalSpacing="xs" horizontalSpacing="xs">
@@ -161,7 +157,10 @@ const AssignmentTable: React.FC = () => {
             <Table.Tfoot>
               <Table.Tr>
                 <Table.Td colSpan={7} className="border-t border-gray-300">
-                  <Flex justify="end">
+                  <Flex align="center" w="100%" justify="space-between">
+                    <Text size="sm" c="dimmed">
+                      Total assignments: {assignmentList.length}
+                    </Text>                    
                     <Pagination
                       total={totalPages}
                       siblings={1}
