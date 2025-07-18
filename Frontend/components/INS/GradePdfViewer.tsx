@@ -9,7 +9,8 @@ import { useFetchSubmissionFile } from "@/hooks/useFetchFile";
 import { useSubmissionFileStore } from "@/store/useINS_SubmissionStore";
 import { useParams } from "next/navigation";
 import { AiOutlineZoomIn, AiOutlineZoomOut, AiOutlineReload, AiOutlineArrowLeft, AiOutlineArrowRight } from "react-icons/ai";
-
+import { useFetchGradebox } from "@/hooks/BoundingBox/useFetchGradebox";
+import { useGradeboxStore } from "@/store/BoundingBox/useGradeboxStore";
 
 
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = "https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js";
@@ -21,13 +22,13 @@ const BoundingBoxOverlay = dynamic(
 
 
 const GradePdfViewer: React.FC = () => {
-  const params = useParams() as Record<string, string>;
-  const assignment_id = params.assignment_id;
-  const course_id = params.course_id;
-  const submission_id = params.submission_id;
+  const params = useParams() as Record<string, string | undefined>;
+  const course_id = params.course_id!;
+  const assignment_id = params.assignment_id!;
+  const submission_id = params.submission_id!;
+  const { question_id, sub_question_id, } = params;
   const { isLoading, error } = useFetchSubmissionFile(course_id, assignment_id, submission_id);
   const { submissionFile } = useSubmissionFileStore();
-  // PDF func under here:
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -36,6 +37,10 @@ const GradePdfViewer: React.FC = () => {
   const isDragging = useRef(false);
   const lastPos = useRef({ x: 0, y: 0 });
   const renderTaskRef = useRef<any>(null);
+
+  const { data: fetchedBoxes } = useFetchGradebox(assignment_id);
+  const storedBoxes = useGradeboxStore(s => s.bounding_boxes_data);
+  const boxes = fetchedBoxes ?? storedBoxes;
 
   const [finalScale, setFinalScale] = useState(1);
 
@@ -172,6 +177,53 @@ const GradePdfViewer: React.FC = () => {
     setPan({ x: 0, y: 0 });
   };
 
+
+
+  const zoomToBox = (b: {
+    point_x: number; point_y: number;
+    width: number; height: number;
+  }) => {
+    const wrapper = canvasRef.current?.parentElement;
+    if (!wrapper) return;
+    const vw = wrapper.clientWidth;
+    const vh = wrapper.clientHeight;
+
+
+    // เลื่อน pan ให้กึ่งกลางกล่อง
+    const centerX = b.point_x + b.width / 2;
+    const centerY = b.point_y + b.height / 2;
+    setPan({
+      x: vw / 2 - centerX * scale,
+      y: vh / 2 - centerY * scale,
+    });
+  };
+
+
+  useEffect(() => {
+    if (!question_id) {
+      return;
+    }
+    // 1) หา bounding box ไม่สนหน้า
+    const targetBox = boxes.find(
+      (b) =>
+        b.question_id === question_id &&
+        (b.sub_question_id ?? "") === (sub_question_id ?? "")
+    );
+    if (!targetBox) {
+      return;
+    }
+
+    // 2) ถ้ากล่องอยู่คนละหน้า → เปลี่ยนหน้า PDF ก่อน แล้ว return รอ renderPDF ใหม่
+    if (currentPage !== targetBox.bounding_box_page) {
+      setCurrentPage(targetBox.bounding_box_page);
+      return;
+    }
+
+    // 3) ถ้าอยู่หน้าเดียวกันแล้ว → ซูม+เลื่อนไปที่กล่อง
+    zoomToBox(targetBox);
+  }, [question_id, sub_question_id, currentPage, boxes]);
+
+
   return (
     <Container
       fluid
@@ -188,9 +240,9 @@ const GradePdfViewer: React.FC = () => {
           height: "100%",
           cursor: isDragging.current ? "grabbing" : "grab",
           display: "flex",
-          alignItems: "flex-start",    
+          alignItems: "flex-start",
           justifyContent: "flex-start",
-          position: "relative",         
+          position: "relative",
         }}
       >
         <canvas
@@ -206,13 +258,15 @@ const GradePdfViewer: React.FC = () => {
         />
       </div>
 
-        <BoundingBoxOverlay
-          canvasRef={canvasRef}
-          assignmentId={assignment_id}
-          currentPage={currentPage}
-          scale={finalScale}
-          pan={pan}
-        />
+      <BoundingBoxOverlay
+        canvasRef={canvasRef}
+        assignmentId={assignment_id}
+        currentPage={currentPage}
+        scale={finalScale}
+        pan={pan}
+        selectedQuestionId={question_id}
+        selectedSubQuestionId={sub_question_id}
+      />
 
       {/* ปุ่ม Zoom */}
       <div

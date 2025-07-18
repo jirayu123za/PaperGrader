@@ -22,6 +22,8 @@ interface BoundingBoxOverlayProps {
   currentPage: number;
   scale: number; // finalScale used to render PDF
   pan: { x: number; y: number };
+  selectedQuestionId?: string;
+  selectedSubQuestionId?: string;
 }
 
 /**
@@ -34,6 +36,8 @@ const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
   currentPage,
   scale,
   pan,
+  selectedQuestionId,
+  selectedSubQuestionId,
 }) => {
   const { data: fetchedBoxes, isLoading, error } = useFetchGradebox(assignmentId);
   const storedBoxes = useGradeboxStore((s) => s.bounding_boxes_data);
@@ -77,11 +81,17 @@ const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
 
     // Clear previous shapes
     layer.removeChildren();
+   const boxesToUse = fetchedBoxes ?? storedBoxes;
+    let pageBoxes = boxesToUse.filter((b) => b.bounding_box_page === currentPage);
 
-    const boxesToUse = fetchedBoxes ?? storedBoxes;
-    const pageBoxes = boxesToUse.filter((b) => b.bounding_box_page === currentPage);
+    if (selectedQuestionId) {
+      pageBoxes = pageBoxes.filter(
+        (b) =>
+          b.question_id === selectedQuestionId &&
+          (b.sub_question_id ?? "") === (selectedSubQuestionId ?? "")
+      );
+    }
 
-    // Draw rectangles
     pageBoxes.forEach((b) => {
       const rect = new Konva.Rect({
         x: b.point_x,
@@ -95,7 +105,7 @@ const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
       layer.add(rect);
     });
     layer.batchDraw();
-  }, [fetchedBoxes, storedBoxes, currentPage]);
+  }, [fetchedBoxes,storedBoxes,currentPage,selectedQuestionId,selectedSubQuestionId,]);
 
   // Sync stage & container size to PDF canvas แล้วจัดการ zoom/pan ด้วย Konva API
   useEffect(() => {
