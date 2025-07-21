@@ -44,6 +44,12 @@ const GradePdfViewer: React.FC = () => {
 
   const [finalScale, setFinalScale] = useState(1);
 
+
+  const applyZoom = (delta: number) => {
+    setScale(prev => Math.max(0.2, prev + delta));
+  };
+
+
   const renderPDF = async (pageNum: number, baseScale: number) => {
     try {
       const loadingTask = pdfjsLib.getDocument(
@@ -70,6 +76,8 @@ const GradePdfViewer: React.FC = () => {
 
       // ยกเลิกงานเรนเดอร์เก่า (ถ้ามี)
       renderTaskRef.current?.cancel();
+
+
 
       const renderTask = page.render({
         canvasContext: ctx,
@@ -104,11 +112,7 @@ const GradePdfViewer: React.FC = () => {
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      if (e.deltaY < 0) {
-        setScale((prev) => prev + 0.1);
-      } else {
-        setScale((prev) => Math.max(0.2, prev - 0.1));
-      }
+      applyZoom(e.deltaY < 0 ? 0.1 : -0.1);
     };
     const canvas = canvasRef.current;
     canvas?.addEventListener("wheel", handleWheel, { passive: false });
@@ -164,13 +168,9 @@ const GradePdfViewer: React.FC = () => {
     }
   };
 
-  const handleZoomIn = () => {
-    setScale((prev) => prev + 0.2);
-  };
+  const handleZoomIn = () => applyZoom(0.2);
 
-  const handleZoomOut = () => {
-    setScale((prev) => Math.max(0.2, prev - 0.2));
-  };
+  const handleZoomOut = () => applyZoom(-0.2);
 
   const handleResetZoom = () => {
     setScale(1.2);
