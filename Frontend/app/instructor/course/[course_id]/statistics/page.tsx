@@ -1,0 +1,20 @@
+import React from 'react';
+import { Loader } from '@mantine/core';
+import { Suspense } from 'react';
+import StatisticsSunmary from '@/components/INS/INSStatistics/StatisticsSunmary';
+
+export const metadata = {
+    title: ' Statistics ',
+    description: ' Statistics ',
+};
+
+
+export default async function StatisticsPage() {
+    return (
+        <div className="w-full">
+            <Suspense fallback={<Loader size="sm" />}>
+                <StatisticsSunmary  />
+            </Suspense>
+        </div>
+    );
+}
