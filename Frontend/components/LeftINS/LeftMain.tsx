@@ -44,7 +44,7 @@ export default function LeftMain() {
     { key: 'dashboard', label: 'Dashboard', icon: icons.home, href: `/instructor/course/${course?.course_id}/dashboard` },
     { key: 'assignment', label: 'Assignments', icon: icons.fileAlt, href: `/instructor/course/${course?.course_id}/assignment` },
     { key: 'manageroster', label: 'Roster', icon: icons.users, href: `/instructor/course/${course?.course_id}/manageroster` },
-    { key: 'statistics', label: 'Statistics', icon: icons.stats, href: '#' },
+    { key: 'statistics', label: 'Statistics', icon: icons.stats, href: `/instructor/course/${course?.course_id}/statistics` },
     { key: 'dataexports', label: 'Data Exports', icon: icons.export, href: `/instructor/course/${course?.course_id}/dataexport` },
     { key: 'coursesettings', label: 'Course Settings', icon: icons.cog, href: '#' },
   ];
