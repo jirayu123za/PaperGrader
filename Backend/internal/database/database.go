@@ -13,6 +13,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+// CreateEnumsBoundingBoxType creates the enum type for BoundingBoxType if it does not exist
 func CreateEnumsBoundingBoxType(db *gorm.DB) {
 	err := db.Exec(`
 		DO $$
@@ -28,6 +29,7 @@ func CreateEnumsBoundingBoxType(db *gorm.DB) {
 	}
 }
 
+// CreateEnumsSubmissionMatchedBy creates the enum type for SubmissionMatchedBy if it does not exist
 func CreateEnumsSubmissionMatchedBy(db *gorm.DB) {
 	err := db.Exec(`
 		DO $$
@@ -40,6 +42,22 @@ func CreateEnumsSubmissionMatchedBy(db *gorm.DB) {
 
 	if err != nil {
 		log.Fatalf("Failed to create enum: %v", err)
+	}
+}
+
+// CreateEnumFileStatusType creates the enum type for FileStatus if it does not exist
+func CreateEnumFileStatusType(db *gorm.DB) {
+	err := db.Exec(`
+		DO $$ 
+		BEGIN
+			IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'file_status_enum') THEN
+				CREATE TYPE file_status_enum AS ENUM ('pending', 'completed', 'failed');
+			END IF;
+		END $$;
+	`).Error
+
+	if err != nil {
+		log.Fatalf("Failed to create enum file_status_enum: %v", err)
 	}
 }
 
@@ -69,6 +87,7 @@ func ConnectPostgres(migrate bool) *gorm.DB {
 	if migrate {
 		CreateEnumsBoundingBoxType(db)
 		CreateEnumsSubmissionMatchedBy(db)
+		CreateEnumFileStatusType(db)
 
 		db.Migrator().DropTable(
 		// &models.AssignmentSection{},
