@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Table, Progress, Text, ScrollArea, Center, Group } from '@mantine/core';
+import { Table, Progress, Text, ScrollArea, Center, Flex } from '@mantine/core';
 
 interface RubricRow {
   id: string;
@@ -67,21 +67,28 @@ export function RubricTable() {
       const rowElement = (
         <Table.Tr key={row.id}>
           <Table.Td>
-            <Group spacing="sm" style={{ marginLeft: indent * 24, alignItems: 'flex-start' }}>
+            <Flex
+              gap="sm"
+              align="flex-start"
+              style={{ marginLeft: indent * 24 }}
+            >
               <Text fw={indent === 0 ? 700 : 500}>{number}</Text>
-              <Text fw={indent === 0 ? 500 : 400} style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+              <Text
+                fw={indent === 0 ? 500 : 400}
+                style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}
+              >
                 {row.question}
               </Text>
-            </Group>
+            </Flex>
           </Table.Td>
           <Table.Td>
             <Text>{row.points} point</Text>
           </Table.Td>
           <Table.Td>
-            <Group position="apart" style={{ width: '100%' }}>
+            <Flex justify="space-between" align="center" style={{ width: '100%' }}>
               <Progress value={percentage} style={{ flex: 1, marginRight: 8 }} />
               <Text>{percentage}%</Text>
-            </Group>
+            </Flex>
           </Table.Td>
         </Table.Tr>
       );
@@ -95,6 +102,7 @@ export function RubricTable() {
       <Table verticalSpacing="lg" striped highlightOnHover>
         <Table.Thead>
           <Table.Tr>
+            {/* ปรับความกว้างคอลัมน์ */}
             <Table.Th style={{ textAlign: 'left', width: '40%' }}>Question</Table.Th>
             <Table.Th style={{ textAlign: 'left', width: '20%' }}>Points</Table.Th>
             <Table.Th style={{ textAlign: 'left', width: '40%' }}>Mean</Table.Th>
