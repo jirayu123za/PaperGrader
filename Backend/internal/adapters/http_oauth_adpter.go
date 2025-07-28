@@ -172,7 +172,7 @@ func (h *HttpOAuthHandler) VerifyGoogleCallback(c *fiber.Ctx) error {
 	case 1:
 		return c.Redirect("http://localhost:5173/INSCourseOverview", fiber.StatusTemporaryRedirect)
 	case 2:
-		return c.Redirect("http://localhost:5173/student/overview", fiber.StatusTemporaryRedirect)
+		return c.Redirect("http://localhost:5173/student/overview/course", fiber.StatusTemporaryRedirect)
 	default:
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Invalid group ID",
