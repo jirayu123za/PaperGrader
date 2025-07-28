@@ -99,8 +99,8 @@ func ConnectPostgres(migrate bool) *gorm.DB {
 		// // &models.Section{},       // uncomment if you want to drop the Section table
 		// &models.Assignment{},
 		// // &models.Course{}, // uncomment if you want to drop the Course table
-		// // &models.ExportGrade{},
-		// // &models.User{},
+		// // &models.ExportGrade{}, // uncomment if you want to drop the ExportGrade table
+		// // &models.User{}, // uncomment if you want to drop the User table
 		// // &models.UserGroup{},
 		// // &models.University{},
 		// &models.Upload{},
