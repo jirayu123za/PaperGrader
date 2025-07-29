@@ -40,7 +40,7 @@ export function handleAddQuestionAndBoundingBox() {
   addBoundingBox({
     bounding_box_id,
     bounding_box_type: 'question',
-     bounding_box_page: currentPage,
+    bounding_box_page: currentPage,
     point_x: 100,
     point_y: 200,
     width: 300,
