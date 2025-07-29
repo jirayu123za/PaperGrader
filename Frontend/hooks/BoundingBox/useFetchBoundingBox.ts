@@ -53,10 +53,10 @@ export function mapBoundingBoxesToApiFormat(boundingBoxes: any[]): ApiBoundingBo
     if (!meta) return null;
 
     return {
-      bounding_box_point_x: box.point_x / meta.scale,
-      bounding_box_point_y: box.point_y / meta.scale - meta.offsetY,
-      bounding_box_width: box.width / meta.scale,
-      bounding_box_height: box.height / meta.scale,
+      bounding_box_point_x: box.point_x ,
+      bounding_box_point_y: box.point_y ,
+      bounding_box_width: box.width ,
+      bounding_box_height: box.height ,
       bounding_box_type: box.bounding_box_type,
       bounding_box_page: box.bounding_box_page,
     };
