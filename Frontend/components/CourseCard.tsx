@@ -34,89 +34,95 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
     },
   });
 
-  const groupedCourses = courses.reduce((acc: Record<string, Course[]>, course) => {
-    const key = `${course.academic_year} / ${course.semester}`;
+
+  const grouped = courses.reduce((acc: Record<string, Course[]>, c) => {
+    const key = `${c.academic_year}-${c.semester}`;
     if (!acc[key]) acc[key] = [];
-    acc[key].push(course);
+    acc[key].push(c);
     return acc;
-  }, {} as Record<string, Course[]>);
+  }, {});
 
-  const sortedKeys = Object.keys(groupedCourses).sort().reverse();
-  const latestKeys = sortedKeys.slice(0, 2);
-  const olderKeys = sortedKeys.slice(2);
+  // เรียงลำดับ: ปีล่าสุดก่อน แล้วเทอม 3→2→1
+  const allKeys = Object.keys(grouped).sort((a, b) => {
+    const [yearA, semA] = a.split('-').map(Number);
+    const [yearB, semB] = b.split('-').map(Number);
+    if (yearA !== yearB) {
+      return yearB - yearA; 
+    }
+    return semB - semA; 
+  });
+  const latestKeys = allKeys.slice(0, 2);
+  const olderKeys = allKeys.slice(2);
 
-  const handleSelectCourse = (course: Course) => {
-    setSelectedCourseId(course.course_id);
+  const selectCourse = (c: Course) => {
+    setSelectedCourseId(c.course_id);
     const base = studentMode ? '/student/overview/' : '/instructor/course/';
-    router.push(`${base}${course.course_id}/dashboard`);
+    router.push(`${base}${c.course_id}/dashboard`);
   };
 
-  const handleCreateCourseClick = () => {
-    form.setFieldValue('isModalOpen', true);
-  };
-
-  const EmptyCourseCard = (
+  const EmptyCard = (
     <Card
       withBorder
       radius="lg"
       shadow="xs"
-      onClick={handleCreateCourseClick}
       className="w-[380px] h-[180px] flex items-center justify-center cursor-pointer border-2 border-dashed"
       style={{ borderColor: theme.colors.teal[6] }}
+      onClick={() => form.setFieldValue('isModalOpen', true)}
     >
       <div className="text-center" style={{ color: theme.colors.teal[6] }}>
-        <Text size="xl" fw={700} style={{ marginBottom: theme.spacing.xs }}>
-          +
-        </Text>
+        <Text size="xl" fw={700} className="mb-1">+</Text>
         <Text size="md">Create a new course</Text>
       </div>
     </Card>
   );
 
+  const renderOne = (course: Course) => (
+    <Card
+      key={course.course_id}
+      withBorder
+      radius="md"
+      shadow="sm"
+      className="w-[380px] h-[180px] flex flex-col cursor-pointer transition-transform duration-150 hover:scale-105"
+      onClick={() => selectCourse(course)}
+    >
+      <Text size="sm" color="gray" className="mb-1">{course.course_code}</Text>
+      <Text size="lg" fw={500} className="mb-1">{course.course_name}</Text>
+      <Text size="sm" color="gray" className="flex-grow mb-1">
+        {course.course_description}
+      </Text>
+      <div
+        className="text-white text-center"
+        style={{ backgroundColor: theme.colors.violet[9], padding: theme.spacing.xs }}
+      >
+        {course.total_assignments ? `${course.total_assignments} assignments` : 'No assignments'}
+      </div>
+    </Card>
+  );
+
+  const renderGroup = (key: string) => {
+    const [year, semester] = key.split('-');
+    const displayYear = (parseInt(year, 10) + 543).toString(); // แปลงเป็น พ.ศ.
+    return (
+      <div key={key} className="mb-6">
+        <Text size="lg" fw={600} className="mb-2">
+          {semester} / {displayYear}
+        </Text>
+        {/* เปลี่ยนเป็น grid 3 คอลัมน์ ให้คอร์ด์ขึ้นบรรทัดใหม่เมื่อเกิน 3 */}
+        <div className="grid grid-cols-3 gap-4">
+          {grouped[key].map(renderOne)}
+          {latestKeys[0] === key && !studentMode && EmptyCard}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <ScrollArea style={{ height: 600 }} type="auto">
       {courses.length === 0 && !studentMode ? (
-        EmptyCourseCard
+        EmptyCard
       ) : (
         <>
-          {latestKeys.map((key) => (
-            <div key={key} className="mb-6">
-              <Text size="lg" fw={600} style={{ marginBottom: theme.spacing.sm }}>
-                {key}
-              </Text>
-              <div className="flex gap-4 items-stretch">
-                {groupedCourses[key].map((course) => (
-                  <Card
-                    key={course.course_id}
-                    withBorder
-                    radius="md"
-                    shadow="sm"
-                    onClick={() => handleSelectCourse(course)}
-                    className="w-[380px] h-[180px] flex flex-col cursor-pointer transition-transform duration-150 hover:scale-105"
-                  >
-                    <Text size="sm" color="gray" className="mb-2">
-                      {course.course_code}
-                    </Text>
-                    <Text size="lg" fw={500} className="mb-2">
-                      {course.course_name}
-                    </Text>
-                    <Text size="sm" color="gray" className="flex-grow mb-2">
-                      {course.course_description}
-                    </Text>
-                    <div
-                      className="text-white text-center"
-                      style={{ backgroundColor: theme.colors.violet[9], padding: theme.spacing.xs }}
-                    >
-                      {course.total_assignments
-                        ? `${course.total_assignments} assignments`
-                        : 'No assignments'}
-                    </div>
-                  </Card>
-                ))}
-                {key === latestKeys[0] && !studentMode && EmptyCourseCard}
-              </div>
-            </div>
-          ))}
+          {latestKeys.map(renderGroup)}
 
           {olderKeys.length > 0 && (
             <div className="mt-4 mb-4">
@@ -130,44 +136,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
             </div>
           )}
 
-          {form.values.showOlderCourses &&
-            olderKeys.map((key) => (
-              <div key={key} className="mb-6">
-                <Text size="lg" fw={600} style={{ marginBottom: theme.spacing.sm }}>
-                  {key}
-                </Text>
-                <div className="flex gap-4 items-stretch">
-                  {groupedCourses[key].map((course) => (
-                    <Card
-                      key={course.course_id}
-                      withBorder
-                      radius="md"
-                      shadow="sm"
-                      onClick={() => handleSelectCourse(course)}
-                      className="w-[380px] h-[180px] flex flex-col cursor-pointer transition-transform duration-150 hover:scale-105"
-                    >
-                      <Text size="sm" color="gray" className="mb-2">
-                        {course.course_code}
-                      </Text>
-                      <Text size="lg" fw={500} className="mb-2">
-                        {course.course_name}
-                      </Text>
-                      <Text size="sm" color="gray" className="flex-grow mb-2">
-                        {course.course_description}
-                      </Text>
-                      <div
-                        className="text-white text-center"
-                        style={{ backgroundColor: theme.colors.purple[9], padding: theme.spacing.xs }}
-                      >
-                        {course.total_assignments
-                          ? `${course.total_assignments} assignments`
-                          : 'No assignments'}
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            ))}
+          {form.values.showOlderCourses && olderKeys.map(renderGroup)}
         </>
       )}
 
