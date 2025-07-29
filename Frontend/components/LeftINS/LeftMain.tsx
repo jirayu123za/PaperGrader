@@ -110,6 +110,7 @@ export default function LeftMain() {
                 textWrap="balance"
                 order={2}
                 size={20} 
+                px="xs"
                 style={{ color: "#F9F9F9", cursor: "pointer" }}
                 lineClamp={expandedCode ? undefined : 1}
                 onClick={toggleExpandCode}
@@ -118,6 +119,7 @@ export default function LeftMain() {
               </Title>
               <Text
                 size="sm"
+                px="xs"
                 style={{ color: "#E9E9E9", cursor: "pointer" }}
                 lineClamp={expandedName ? undefined : 1}
                 onClick={toggleExpandName}
