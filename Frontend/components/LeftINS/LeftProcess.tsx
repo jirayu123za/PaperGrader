@@ -13,6 +13,7 @@ import { useRouter, usePathname, useParams } from 'next/navigation';
 import { useFetchAssignmentLeft } from '../../hooks/SideBar/useFetchAssignmentLeft';
 import { useAssignmentLeftProcessStore, useLeftProcessStore } from '../../store/useLeftProcessStore';
 import { useLeftProcessSidebarStore } from '@/store/process-outline/leftProcessSidebarStore';
+import { useInsCourseStore } from '../../store/useCourseStore';
 
 export default function LeftProcess() {
   const pathname = usePathname();
@@ -22,7 +23,7 @@ export default function LeftProcess() {
   const ioStatsChart = <IoStatsChart size={18} />;
   const ioMdSettings = <IoMdSettings size={18} />;
   const iconEditOutline = <MdEditSquare size={18} />;
-  const iconManageSubmissions= <RiFolderUploadFill size={18} />;
+  const iconManageSubmissions = <RiFolderUploadFill size={18} />;
   const iconGradeSubmissions = <IoIosListBox size={18} />;
   const iconReviewGrade = <MdRateReview size={18} />;
   const params = useParams();
@@ -32,13 +33,14 @@ export default function LeftProcess() {
   const toggle: () => void = useLeftProcessSidebarStore((state: { toggle: () => void }) => state.toggle);
   const { isLoading, isSuccess } = useFetchAssignmentLeft(course_id as string, assignment_id as string);
   const { assignmentLeftProcess } = useAssignmentLeftProcessStore();
+  const { course } = useInsCourseStore();
   const { activeOption, setActiveOption } = useLeftProcessStore();
-  
+
   useEffect(() => {
     const activeKey = options.find((opt) => pathname.startsWith(opt.href))?.key || '';
     setActiveOption(activeKey);
   }, [pathname])
-  
+
   const options = [
     { key: 'editOutline', label: 'Edit Outline and Rubric', href: `/instructor/course/${course_id}/process/${assignment_id}/create-outline` },
     { key: 'manageSubmissions', label: 'Manage Submissions', href: `/instructor/course/${course_id}/process/${assignment_id}/manage-submissions` },
@@ -58,7 +60,7 @@ export default function LeftProcess() {
   };
 
   return (
-    <Container className={`relative flex flex-col justify-between border-r transition-all duration-300 ease-in-out ${isCollapsed ? 'w-[64px] min-w-[64px]' : 'w-[256px] min-w-[256px]'} flex-shrink-0 h-screen p-0`}> 
+    <Container className={`relative flex flex-col justify-between border-r transition-all duration-300 ease-in-out ${isCollapsed ? 'w-[64px] min-w-[64px]' : 'w-[256px] min-w-[256px]'} flex-shrink-0 h-screen p-0`}>
       {/* Top: Logo and Collapse Button */}
       <Flex justify="space-between" align="center" p={12}
         style={{
@@ -139,6 +141,26 @@ export default function LeftProcess() {
           )}
         </Button>
 
+
+        {course && !isCollapsed && (
+          <>
+            <Title
+              order={5}
+              className="pl-2 mb-0"
+              lineClamp={1}
+              style={{
+                paddingLeft: 16,
+                color: '#E9E9E9',
+                cursor: 'default',
+              }}
+            >
+              {`${course.course_code} (${course.semester}/${course.academic_year})`}
+            </Title>
+
+          </>
+        )}
+
+
         {/* Assignment Name */}
         <Title
           size="h4"
@@ -206,9 +228,9 @@ export default function LeftProcess() {
         />
 
         {/* Footer */}
-        <Button 
-          variant="subtle" 
-          leftSection={giClockwiseRotation} 
+        <Button
+          variant="subtle"
+          leftSection={giClockwiseRotation}
           fullWidth
           styles={{
             root: {
@@ -220,7 +242,7 @@ export default function LeftProcess() {
               paddingRight: isCollapsed ? 0 : 16,
             },
             section: {
-              marginRight: isCollapsed ? 0 : 8, 
+              marginRight: isCollapsed ? 0 : 8,
             }
           }}
         >
