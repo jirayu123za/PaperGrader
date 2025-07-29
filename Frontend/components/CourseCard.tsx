@@ -42,7 +42,6 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
     return acc;
   }, {});
 
-  // เรียงลำดับ: ปีล่าสุดก่อน แล้วเทอม 3→2→1
   const allKeys = Object.keys(grouped).sort((a, b) => {
     const [yearA, semA] = a.split('-').map(Number);
     const [yearB, semB] = b.split('-').map(Number);
@@ -90,24 +89,27 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
       <Text size="sm" color="gray" className="flex-grow mb-1">
         {course.course_description}
       </Text>
-      <div
-        className="text-white text-center"
-        style={{ backgroundColor: theme.colors.violet[9], padding: theme.spacing.xs }}
+
+      <Card.Section
+        className="mt-auto"
+        style={{ backgroundColor: theme.colors.violet[9] }}
       >
-        {course.total_assignments ? `${course.total_assignments} assignments` : 'No assignments'}
-      </div>
+        <Text ta="center" c="white" py="xs">
+          {course.total_assignments ? `${course.total_assignments} assignments` : 'No assignments'}
+        </Text>
+      </Card.Section>
     </Card>
   );
 
   const renderGroup = (key: string) => {
     const [year, semester] = key.split('-');
-    const displayYear = (parseInt(year, 10) + 543).toString(); // แปลงเป็น พ.ศ.
+    const displayYear = (parseInt(year, 10) + 543).toString(); 
     return (
       <div key={key} className="mb-6">
         <Text size="lg" fw={600} className="mb-2">
           {semester} / {displayYear}
         </Text>
-        {/* เปลี่ยนเป็น grid 3 คอลัมน์ ให้คอร์ด์ขึ้นบรรทัดใหม่เมื่อเกิน 3 */}
+ 
         <div className="grid grid-cols-3 gap-4">
           {grouped[key].map(renderOne)}
           {latestKeys[0] === key && !studentMode && EmptyCard}
