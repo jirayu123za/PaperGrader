@@ -1473,8 +1473,7 @@ func (h *HttpInstructorHandler) CreateSubmissionFileByInstructor(c *fiber.Ctx) e
 
 			submissionFileName := fmt.Sprintf("%s_submission_%d%s", fileNameWithoutExt, i+1, filepath.Ext(fileHeader.Filename))
 
-			err = h.minioServices.CreateFileToMinIO(mergedFile, courseID.String(), assignmentID.String(), submissionFileName)
-			if err != nil {
+			if err := h.minioServices.CreateFileToMinIO(mergedFile, courseID.String(), assignmentID.String(), submissionFileName); err != nil {
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"message": "Failed to upload merged PDF file",
 					"error":   err.Error(),
@@ -1514,8 +1513,7 @@ func (h *HttpInstructorHandler) CreateSubmissionFileByInstructor(c *fiber.Ctx) e
 					})
 				}
 
-				err = h.minioServices.CreateCroppedImage(courseID.String(), assignmentID.String(), filepath.Base(croppedFilePath), croppedFileData)
-				if err != nil {
+				if err := h.minioServices.CreateCroppedImage(courseID.String(), assignmentID.String(), filepath.Base(croppedFilePath), croppedFileData); err != nil {
 					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 						"message": "Failed to upload cropped file",
 						"error":   err.Error(),
