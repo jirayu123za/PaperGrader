@@ -98,6 +98,7 @@ export type TemplateResponse = {
 export const useFetchTemplate = (assignment_id: string) => {
   const setBoxes = useBoundingBoxStore((s) => s.setBoundingBoxesFromAPI);
   const setRubric = useBoundingBoxStore((s) => s.setRubricDataFromAPI);
+  const pageMetas = usePageMetaStore((s) => s.pageMetas);
 
   return useQuery<TemplateResponse, Error>({
     queryKey: ['template', assignment_id],
@@ -144,7 +145,7 @@ export const useFetchTemplate = (assignment_id: string) => {
 
       return data;
     },
-    enabled: !!assignment_id,
+    enabled: !!assignment_id && pageMetas.length > 0,
     refetchOnWindowFocus: false,
   });
 };
