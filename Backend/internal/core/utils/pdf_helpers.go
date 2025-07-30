@@ -110,14 +110,18 @@ func CropPDFWithBoundingBox(inputPath, submissionFileName, bboxType string, bbox
 		return "", fmt.Errorf("cropped PDF file does not exist")
 	}
 
-	outputPrefix := filepath.Join(os.TempDir(), fmt.Sprintf("%s_%s_tmp", strings.TrimSuffix(submissionFileName, ".pdf"), bboxType))
-	cmd := exec.Command("pdftoppm", "-cropbox", "-png", croppedPDFPath, outputPrefix)
+	outputPrefix := filepath.Join(os.TempDir(), fmt.Sprintf("%s_%s", strings.TrimSuffix(submissionFileName, ".pdf"), bboxType))
+	cmd := exec.Command("pdftoppm", "-cropbox", "-f", strconv.Itoa(int(bboxPage)), "-l", strconv.Itoa(int(bboxPage)), "-png", croppedPDFPath, outputPrefix)
 	err = cmd.Run()
 	if err != nil {
 		return "", fmt.Errorf("failed to convert PDF to image using pdftoppm: %v", err)
 	}
 
-	originalOutputPath := fmt.Sprintf("%s-1.png", outputPrefix)
+	matches, err := filepath.Glob(fmt.Sprintf("%s-*.png", outputPrefix))
+	if err != nil || len(matches) == 0 {
+		return "", fmt.Errorf("converted image not found (glob): %s-*.png", outputPrefix)
+	}
+	originalOutputPath := matches[0]
 	desiredImagePath := filepath.Join(os.TempDir(), fmt.Sprintf("%s_%s_cropped_%d.png", strings.TrimSuffix(submissionFileName, ".pdf"), bboxType, bboxPage))
 
 	if _, err := os.Stat(originalOutputPath); os.IsNotExist(err) {
