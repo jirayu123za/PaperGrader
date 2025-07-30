@@ -64,7 +64,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
       withBorder
       radius="lg"
       shadow="xs"
-      className="w-[380px] h-[180px] flex items-center justify-center cursor-pointer border-2 border-dashed"
+      className="w-full h-[180px] flex items-center justify-center cursor-pointer border-2 border-dashed"
       style={{ borderColor: theme.colors.teal[6] }}
       onClick={() => form.setFieldValue('isModalOpen', true)}
     >
@@ -81,7 +81,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
       withBorder
       radius="md"
       shadow="sm"
-      className="w-[380px] h-[180px] flex flex-col cursor-pointer transition-transform duration-150 hover:scale-105"
+      className="w-full h-[180px] flex flex-col cursor-pointer transition-transform duration-150 hover:scale-105"
       onClick={() => selectCourse(course)}
     >
       <Text size="sm" color="gray" className="mb-1">{course.course_code}</Text>
@@ -110,7 +110,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
           {semester} / {displayYear}
         </Text>
  
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
           {grouped[key].map(renderOne)}
           {latestKeys[0] === key && !studentMode && EmptyCard}
         </div>
@@ -119,7 +119,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
   };
 
   return (
-    <ScrollArea style={{ height: 600 }} type="auto">
+    <ScrollArea style={{ height: 'calc(100vh - 150px)' }} type="auto">
       {courses.length === 0 && !studentMode ? (
         EmptyCard
       ) : (
