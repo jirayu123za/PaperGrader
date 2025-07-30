@@ -29,7 +29,7 @@ export default function LeftMain() {
   const instructorList = useInstructorListStore((state) => state.instructorList);
   const [expandedCode, { toggle: toggleExpandCode }] = useDisclosure(false);
   const [expandedName, { toggle: toggleExpandName }] = useDisclosure(false);
-
+  
   const icons = {
     home: <FaHome />,
     fileAlt: <FaFileAlt />,
@@ -115,7 +115,7 @@ export default function LeftMain() {
                 lineClamp={expandedCode ? undefined : 1}
                 onClick={toggleExpandCode}
               >
-                {`${course.course_code} (${course.semester}/${course.academic_year})`}
+                {`${course.course_code} (${course.semester}/${Number(course.academic_year) + 543})`}
               </Title>
               <Text
                 size="sm"

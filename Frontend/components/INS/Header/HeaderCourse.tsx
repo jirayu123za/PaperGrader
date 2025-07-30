@@ -49,7 +49,7 @@ const HeaderCourse: React.FC = () => {
         </Text>
 
         <Title order={2} fw={600}>
-          {course ? `${course.semester}/${course.academic_year}` : 'No Course Info'}
+          {course  ? `(${course.semester}/${Number(course.academic_year) + 543})` : 'No Course Info'}
         </Title>
       </Flex>
 
