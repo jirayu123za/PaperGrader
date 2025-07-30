@@ -17,7 +17,7 @@ const INSCourseOverview = () => {
   }, [courses, setCourses]);
 
   return (
-    <div className="flex max-h-[calc(100vh-20px)] bg-gray-50 overflow-hidden">
+    <div className="flex max-h-[calc(100vh-20px)]  overflow-hidden">
       <div className="grow p-8">
         <h1 className="text-3xl font-bold mb-8">Courses Overview</h1>
 
