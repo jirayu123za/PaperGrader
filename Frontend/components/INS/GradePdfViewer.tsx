@@ -179,24 +179,7 @@ const GradePdfViewer: React.FC = () => {
 
 
 
-  const zoomToBox = (b: {
-    point_x: number; point_y: number;
-    width: number; height: number;
-  }) => {
-    const wrapper = canvasRef.current?.parentElement;
-    if (!wrapper) return;
-    const vw = wrapper.clientWidth;
-    const vh = wrapper.clientHeight;
 
-
-    // เลื่อน pan ให้กึ่งกลางกล่อง
-    const centerX = b.point_x + b.width / 2;
-    const centerY = b.point_y + b.height / 2;
-    setPan({
-      x: vw / 2 - centerX * scale,
-      y: vh / 2 - centerY * scale,
-    });
-  };
 
 
   useEffect(() => {
@@ -219,8 +202,7 @@ const GradePdfViewer: React.FC = () => {
       return;
     }
 
-    // 3) ถ้าอยู่หน้าเดียวกันแล้ว → ซูม+เลื่อนไปที่กล่อง
-    zoomToBox(targetBox);
+
   }, [question_id, sub_question_id, currentPage, boxes]);
 
 
