@@ -1226,15 +1226,12 @@ func (r *GormInstructorRepository) FindNoSubmittedQuestionsList(AssignmentID uui
 		return nil, tx.Error
 	}
 
-	var ungradedID response.UngradedSubmissions
+	var submissionIDs response.UngradedSubmissions
 	if err := r.db.
-		Raw(`
-			SELECT s.submission_id
-			FROM submissions s
-			WHERE s.assignment_id = ? AND NOT EXISTS (
-				SELECT 1 FROM grades g WHERE g.submission_id = s.submission_id
-			)
-		`, AssignmentID).Scan(&ungradedID).Error; err != nil {
+		Table("submissions").
+		Select("submission_id").
+		Where("assignment_id = ? AND deleted_at IS NULL", AssignmentID).
+		Scan(&submissionIDs).Error; err != nil {
 		return nil, err
 	}
 
@@ -1243,12 +1240,10 @@ func (r *GormInstructorRepository) FindNoSubmittedQuestionsList(AssignmentID uui
 		return nil, err
 	}
 
-	// var result response.NoSubmittedQuestionsList
 	var result response.MixedQuestionsList
 	subIDx := 0
 	for _, q := range parsed.QuestionsData {
 		if len(q.SubQuestions) > 0 {
-			// ✅ ใช้ QuestionNoSubmission
 			question := response.QuestionNoSubmission{
 				QuestionID:    q.QuestionID,
 				QuestionTitle: q.QuestionTitle,
@@ -1262,8 +1257,8 @@ func (r *GormInstructorRepository) FindNoSubmittedQuestionsList(AssignmentID uui
 					SubQuestionPoint: sq.SubQuestionPoint,
 				}
 
-				if len(ungradedID) > 0 {
-					sub.SubmissionID = &ungradedID[subIDx%len(ungradedID)].SubmissionID
+				if len(submissionIDs) > 0 {
+					sub.SubmissionID = &submissionIDs[subIDx%len(submissionIDs)].SubmissionID
 					subIDx++
 				} else {
 					sub.SubmissionID = nil
@@ -1271,24 +1266,21 @@ func (r *GormInstructorRepository) FindNoSubmittedQuestionsList(AssignmentID uui
 
 				question.SubQuestions = append(question.SubQuestions, sub)
 			}
-
-			result = append(result, question) // 👈 ใช้ struct ที่ไม่มี submission_id
+			result = append(result, question)
 
 		} else {
-			// ✅ ใช้ Question struct (ที่มี submission_id)
 			question := response.Question{
 				QuestionID:    q.QuestionID,
 				QuestionTitle: q.QuestionTitle,
 				QuestionPoint: q.QuestionPoint,
 			}
 
-			if len(ungradedID) > 0 {
-				question.SubmissionID = &ungradedID[subIDx%len(ungradedID)].SubmissionID
+			if len(submissionIDs) > 0 {
+				question.SubmissionID = &submissionIDs[subIDx%len(submissionIDs)].SubmissionID
 				subIDx++
 			} else {
 				question.SubmissionID = nil
 			}
-
 			result = append(result, question)
 		}
 	}
