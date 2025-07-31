@@ -37,13 +37,16 @@ export default function QuestionOutline() {
   const calculateTotalPoints = () =>
     rubricData.questions.reduce((acc, q) => acc + q.question_point, 0);
 
-const handleSave = () => {
-  createBoundingBoxes({
-    assignment_id,
-    bounding_boxes: mapBoundingBoxesToApiFormat(boundingBoxes), 
-    questions_data: mapRubricToQuestionsData(rubricData),
-  });
-};
+
+
+  const handleSave = () => {
+    createBoundingBoxes({
+      assignment_id,
+      bounding_boxes: mapBoundingBoxesToApiFormat(boundingBoxes),
+      questions_data: mapRubricToQuestionsData(rubricData),
+    });
+  };
+
 
 
   return (
@@ -95,6 +98,7 @@ const handleSave = () => {
                         })
                       }
                       min={0}
+                      disabled={!!question.subquestions?.length}
                     />
                   </Table.Td>
                   <Table.Td>

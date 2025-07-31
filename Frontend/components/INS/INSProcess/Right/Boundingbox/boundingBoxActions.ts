@@ -109,18 +109,24 @@ export function handleAddSubquestion(question: any) {
 /**
  * เปลี่ยนแปลงข้อมูลของ subquestion (title หรือ point) โดยไม่ให้รวม point เกิน question หลัก
  */
-export function handleSubChange(question: any, subIdx: number, field: string, value: any) {
+// ก่อน: file “boundingBoxActions.ts”
+export function handleSubChange(question: any,subIdx: number,field: string,value: any) {
   const { updateQuestion } = useBoundingBoxStore.getState();
-  const newSubs = [...(question.subquestions || [])];
+  const newSubs = [...(question.subquestions || [])];                                  
 
-  const total = newSubs.reduce(
-    (sum, s, i) => (i === subIdx ? sum + Number(value) : sum + s.subquestion_point),
+  newSubs[subIdx] = { ...newSubs[subIdx], [field]: value };                             
+
+
+  const newTotal = newSubs.reduce(
+    (sum, s) => sum + Number(s.subquestion_point),
     0
   );
-  if (total > question.question_point) return;
 
-  newSubs[subIdx] = { ...newSubs[subIdx], [field]: value };
-  updateQuestion(question.question_id, { subquestions: newSubs });
+
+  updateQuestion(question.question_id, {
+    subquestions: newSubs,
+    question_point: newTotal,
+  });
 }
 
 /**
