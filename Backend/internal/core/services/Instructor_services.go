@@ -92,7 +92,7 @@ type InstructorService interface {
 	UpdateRubricScoreBounds(assignmentID uuid.UUID, rubricData response.UpdateRubricScoreBoundsRequest) error
 
 	// Part:1 Grade
-	CreateGrade(assignmentID uuid.UUID, submissionID uuid.UUID, request response.CreateGradeRequest) error
+	CreateGrade(assignmentID uuid.UUID, submissionID uuid.UUID, request response.CreateGradeRequest, userID uuid.UUID) error
 
 	// R Submission from question
 	GetSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error)
@@ -1045,7 +1045,7 @@ func (s *InstructorServiceImpl) GetBoundingBoxesData(AssignmentID uuid.UUID) (re
 }
 
 // Create Grade
-func (s *InstructorServiceImpl) CreateGrade(assignmentID uuid.UUID, submissionID uuid.UUID, request response.CreateGradeRequest) error {
+func (s *InstructorServiceImpl) CreateGrade(assignmentID uuid.UUID, submissionID uuid.UUID, request response.CreateGradeRequest, userID uuid.UUID) error {
 	// 1. Check if grade_data already exists
 	exists, err := s.repo.FindExistingGradeData(assignmentID, submissionID)
 	if err != nil {
@@ -1071,7 +1071,7 @@ func (s *InstructorServiceImpl) CreateGrade(assignmentID uuid.UUID, submissionID
 
 	// Helper function to update rubric selection
 	// 5. Update gradeData (select the rubric_detail by id and set has_selected = true)
-	if err := utils.UpdateRubricSelection(gradeData, request); err != nil {
+	if err := utils.UpdateRubricSelection(gradeData, request, userID); err != nil {
 		return err
 	}
 

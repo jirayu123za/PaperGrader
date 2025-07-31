@@ -3,9 +3,12 @@ package utils
 import (
 	"errors"
 	"paperGrader/internal/adapters/response"
+	"time"
+
+	"github.com/google/uuid"
 )
 
-func UpdateRubricSelection(gradeData map[string]interface{}, req response.CreateGradeRequest) error {
+func UpdateRubricSelection(gradeData map[string]interface{}, req response.CreateGradeRequest, gradedBy uuid.UUID) error {
 	questions, ok := gradeData["questions_data"].([]interface{})
 	if !ok {
 		return errors.New("invalid questions_data structure")
@@ -19,10 +22,12 @@ func UpdateRubricSelection(gradeData map[string]interface{}, req response.Create
 				for _, s := range subQs {
 					subQ := s.(map[string]interface{})
 					if subQ["sub_question_id"] == req.SubQuestionID.String() {
+						setGrades(subQ, gradedBy)
 						return setSelectedRubric(subQ, req)
 					}
 				}
 			} else {
+				setGrades(question, gradedBy)
 				return setSelectedRubric(question, req)
 			}
 		}
@@ -51,4 +56,12 @@ func setSelectedRubric(item map[string]interface{}, req response.CreateGradeRequ
 	}
 
 	return errors.New("rubric_detail_id not found")
+}
+
+func setGrades(target map[string]interface{}, gradedBy uuid.UUID) {
+	target["grades"] = map[string]interface{}{
+		"graded_by":  gradedBy.String(),
+		"has_graded": true,
+		"graded_at":  time.Now(),
+	}
 }

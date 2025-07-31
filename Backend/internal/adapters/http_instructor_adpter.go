@@ -2190,6 +2190,14 @@ func (h *HttpInstructorHandler) CreateGrade(c *fiber.Ctx) error {
 		})
 	}
 
+	userID, err := utils.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid user_id in JWT",
+			"error":   err.Error(),
+		})
+	}
+
 	var request response.CreateGradeRequest
 	if err := c.BodyParser(&request); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -2198,7 +2206,7 @@ func (h *HttpInstructorHandler) CreateGrade(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := h.services.CreateGrade(assignmentID, submissionID, request); err != nil {
+	if err := h.services.CreateGrade(assignmentID, submissionID, request, userID); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to create grade",
 			"error":   err.Error(),
