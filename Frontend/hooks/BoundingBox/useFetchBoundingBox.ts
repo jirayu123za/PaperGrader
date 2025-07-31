@@ -16,6 +16,7 @@ interface BoundingBox {
 }
 
 export interface ApiBoundingBox {
+  bounding_box_id?: string;           
   bounding_box_point_x: number;
   bounding_box_point_y: number;
   bounding_box_width: number;
@@ -23,7 +24,6 @@ export interface ApiBoundingBox {
   bounding_box_type: 'question' | 'name' | 'id';
   bounding_box_page: number;
 }
-
 interface sub_Question {
   subquestion_title: string;
   subquestion_point: number;
@@ -41,6 +41,32 @@ export interface CreateBoundingBoxPayload {
   assignment_id: string;
   bounding_boxes: ApiBoundingBox[]; 
   questions_data: Question[];
+}
+
+
+interface BoundingBoxPayload {
+  bounding_box_id?: string;
+  bounding_box_point_x: number;
+  bounding_box_point_y: number;
+  bounding_box_width: number;
+  bounding_box_height: number;
+  bounding_box_type: string;
+  bounding_box_page: number;
+}
+
+interface SubQuestionPayload {
+  sub_question_id?: string;
+  bounding_box_id: string;
+  sub_question_point: number;
+  sub_question_title: string;
+}
+
+interface QuestionPayload {
+  question_id?: string;
+  bounding_box_id?: string;
+  question_point: number;
+  question_title: string;
+  sub_questions?: SubQuestionPayload[];
 }
 
 
@@ -150,35 +176,23 @@ export const useFetchTemplate = (assignment_id: string) => {
   });
 };
 
-// CREATE bounding boxes and questions
-export function useCreateBoundingBoxes() {
+export function useUpsertBoundingBoxesAndQuestions(assignment_id: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationKey: ['createBoundingBoxes'],
-    mutationFn: async ({ assignment_id, bounding_boxes, questions_data }: CreateBoundingBoxPayload) => {
-      const res = await axios.post(`/api/api/instructor/boundingBoxes?assignment_id=${assignment_id}`, {
-        bounding_boxes,
-        ...(questions_data ? { questions_data } : {}),
-      });
-      return res.data;
-    },
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['boundingBoxes', variables.assignment_id] });
-      queryClient.invalidateQueries({ queryKey: ['questions', variables.assignment_id] });
-    },
-  });
-}
-
-// UPDATE bounding box
-export function useUpdateBoundingBox(assignment_id: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ bounding_box_id, update }: { bounding_box_id: string; update: Partial<BoundingBox> }) => {
-      const res = await axios.put(`/api/api/instructor/boundingBoxes/${bounding_box_id}`, update);
+    mutationKey: ['upsertBBAndQ', assignment_id],
+    mutationFn: async (payload: {
+      bounding_boxes?: BoundingBoxPayload[];
+      questions_data?: QuestionPayload[];
+    }) => {
+      const res = await axios.post(
+        `/api/api/instructor/boundingBoxes?assignment_id=${assignment_id}`,
+        payload
+      );
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['boundingBoxes', assignment_id] });
+      queryClient.invalidateQueries({ queryKey:['boundingBoxes', assignment_id] });
+      queryClient.invalidateQueries({ queryKey:['questions', assignment_id] });
     },
   });
 }
