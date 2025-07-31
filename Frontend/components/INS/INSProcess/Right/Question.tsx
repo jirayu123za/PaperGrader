@@ -15,7 +15,7 @@ import {
   handleSubDelete,
 } from '@/components/INS/INSProcess/Right/Boundingbox/boundingBoxActions';
 import {
-  useCreateBoundingBoxes,
+  useUpsertBoundingBoxesAndQuestions,
   mapRubricToQuestionsData,
   useFetchTemplate,
 } from '@/hooks/BoundingBox/useFetchBoundingBox';
@@ -25,10 +25,11 @@ import { useEffect } from 'react';
 import React from 'react';
 
 export default function QuestionOutline() {
-  const { rubricData, boundingBoxes, updateQuestion, removeQuestion } = useBoundingBoxStore();
-  const { mutate: createBoundingBoxes } = useCreateBoundingBoxes();
   const params = useParams();
   const assignment_id = params.assignment_id as string;
+  const { rubricData, boundingBoxes, updateQuestion, removeQuestion } = useBoundingBoxStore();
+  const { mutate: upsertAll } = useUpsertBoundingBoxesAndQuestions(assignment_id);
+
   const { data: template } = useFetchTemplate(assignment_id);
 
 
@@ -40,12 +41,13 @@ export default function QuestionOutline() {
 
 
   const handleSave = () => {
-    createBoundingBoxes({
-      assignment_id,
+    const payload = {
       bounding_boxes: mapBoundingBoxesToApiFormat(boundingBoxes),
       questions_data: mapRubricToQuestionsData(rubricData),
-    });
+    };
+    upsertAll(payload);
   };
+
 
 
 
