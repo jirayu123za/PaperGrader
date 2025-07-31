@@ -65,3 +65,28 @@ func setGrades(target map[string]interface{}, gradedBy uuid.UUID) {
 		"graded_at":  time.Now(),
 	}
 }
+
+// For rubric
+func SetSelectedRubricInTemplate(rubricData map[string]interface{}, req response.CreateGradeRequest) error {
+	questions, ok := rubricData["questions_data"].([]interface{})
+	if !ok {
+		return errors.New("invalid questions_data structure")
+	}
+
+	for _, q := range questions {
+		question := q.(map[string]interface{})
+		if question["question_id"] == req.QuestionID.String() {
+			if subQs, ok := question["sub_questions"].([]interface{}); ok && req.SubQuestionID != nil {
+				for _, s := range subQs {
+					subQ := s.(map[string]interface{})
+					if subQ["sub_question_id"] == req.SubQuestionID.String() {
+						return setSelectedRubric(subQ, req)
+					}
+				}
+			}
+			return setSelectedRubric(question, req)
+		}
+	}
+
+	return errors.New("question not found in rubric template")
+}
