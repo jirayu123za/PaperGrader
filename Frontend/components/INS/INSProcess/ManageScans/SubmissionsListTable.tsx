@@ -31,24 +31,25 @@ export const SubmissionsListTable: React.FC<Props> = ({ assignment_id }) => {
   const paginatedSubmissionsTable = submissionsList.slice(startIndex, endIndex);
 
   if (!isLoadingSubmissions && submissionsList.length === 0) {
-    return (
-      <Flex direction="column" align="center" justify="center" gap="sm" py="xl" w='100%'>
-        <Image
-          src="/Image/table/no_data.svg"
-          alt="No submissions found"
-          w="auto"
-          h={150}
-          fit="contain"
-          fallbackSrc="https://placehold.co/200x200?text=Placeholder"
-        />
-        <Text size="lg" fw={500} mt="md">
-          No submissions found
-        </Text>
-        <Text size="sm" c="dimmed">
-          You haven’t uploaded any submissions yet.
-        </Text>
-      </Flex>
-    );
+    // return (
+    //   <Flex direction="column" align="center" justify="center" gap="sm" py="xl" w='100%'>
+    //     <Image
+    //       src="/Image/table/no_data.svg"
+    //       alt="No submissions found"
+    //       w="auto"
+    //       h={150}
+    //       fit="contain"
+    //       fallbackSrc="https://placehold.co/200x200?text=Placeholder"
+    //     />
+    //     <Text size="lg" fw={500} mt="md">
+    //       No submissions found
+    //     </Text>
+    //     <Text size="sm" c="dimmed">
+    //       You haven’t uploaded any submissions yet.
+    //     </Text>
+    //   </Flex>
+    // );
+    return null; 
   }
 
   return (

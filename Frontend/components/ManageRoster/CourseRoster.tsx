@@ -53,7 +53,7 @@ const CourseRoster: React.FC = () => {
 
   return (
     <>
-      <Paper shadow="sm" radius="md" withBorder p="xl" mt="md">
+      <Paper shadow="sm" radius="md" withBorder pl="xl" pr="xl" pt="xl" pb="lg" mt="xs">
         <Flex align="center" gap="xs" mb="md" justify="space-between">
           <TextInput
             placeholder="Search by name, email, or student ID"
@@ -148,9 +148,10 @@ const CourseRoster: React.FC = () => {
           </Table.Tbody>
         </Table>
 
-        <Flex justify="space-between" align="center" mt="lg">
+        <Flex justify="space-between" align="center" >
           <Flex justify="center" style={{ flex: 1 }}>
             <Pagination
+              size="sm"
               total={totalPages}
               siblings={1}
               boundaries={1}
