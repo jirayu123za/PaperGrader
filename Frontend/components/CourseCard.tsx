@@ -4,7 +4,7 @@ import React from 'react';
 import CreateCourse from './Create/CreateCourse';
 import { useRouter } from 'next/navigation';
 import { useCourseStore } from '../store/useCourseStore';
-import { Anchor, ScrollArea, Card, Text, useMantineTheme } from '@mantine/core';
+import { Anchor, ScrollArea, Card, Text, Tooltip, useMantineTheme } from '@mantine/core';
 import { useForm } from '@mantine/form';
 
 interface Course {
@@ -46,9 +46,9 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
     const [yearA, semA] = a.split('-').map(Number);
     const [yearB, semB] = b.split('-').map(Number);
     if (yearA !== yearB) {
-      return yearB - yearA; 
+      return yearB - yearA;
     }
-    return semB - semA; 
+    return semB - semA;
   });
   const latestKeys = allKeys.slice(0, 2);
   const olderKeys = allKeys.slice(2);
@@ -86,30 +86,33 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
     >
       <Text size="sm" color="gray" className="mb-1">{course.course_code}</Text>
       <Text size="lg" fw={500} className="mb-1">{course.course_name}</Text>
-      <Text size="sm" color="gray" className="flex-grow mb-1">
-        {course.course_description}
-      </Text>
+      <div className="mt-auto flex flex-col gap-1">
+        <Tooltip label={course.course_description} withArrow position="top">
+          <Text size="sm" color="gray" lineClamp={2}>
+            {course.course_description}
+          </Text>
+        </Tooltip>
 
-      <Card.Section
-        className="mt-auto"
-        style={{ backgroundColor: theme.colors.violet[9] }}
-      >
-        <Text ta="center" c="white" py="xs">
-          {course.total_assignments ? `${course.total_assignments} assignments` : 'No assignments'}
-        </Text>
-      </Card.Section>
+        <Card.Section style={{ backgroundColor: theme.colors.violet[9] }}>
+          <Text ta="center" c="white" py="xs">
+            {course.total_assignments
+              ? `${course.total_assignments} assignments`
+              : 'No assignments'}
+          </Text>
+        </Card.Section>
+      </div>
     </Card>
   );
 
   const renderGroup = (key: string) => {
     const [year, semester] = key.split('-');
-    const displayYear = (parseInt(year, 10) + 543).toString(); 
+    const displayYear = (parseInt(year, 10) + 543).toString();
     return (
       <div key={key} className="mb-6 pl-3 ">
         <Text size="lg" fw={600} className="mb-2">
           {semester} / {displayYear}
         </Text>
- 
+
         <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
           {grouped[key].map(renderOne)}
           {latestKeys[0] === key && !studentMode && EmptyCard}
