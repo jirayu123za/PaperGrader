@@ -5,16 +5,15 @@ import { useAssignmentLeftProcessStore } from '../../store/useLeftProcessStore';
 interface AssignmentLeftProcess {
     assignment_id: string;
     assignment_name: string;
-    submiss_by: string;
 }
 
 export const useFetchAssignmentLeft = (course_id: string, assignment_id: string) => {
     const setAssignmentLeftProcess = useAssignmentLeftProcessStore((state) => state.setAssignmentLeftProcess);
 
     return useQuery<AssignmentLeftProcess, Error>({
-        queryKey: ['assignment_details', course_id, assignment_id],
+        queryKey: ['process_left_sidebar', course_id, assignment_id],
         queryFn: async () => {
-            const response = await axios.get('/api/api/instructor/assignment/process', {
+            const response = await axios.get('/api/api/instructor/leftSidebar/process', {
                 params: { course_id: course_id, assignment_id: assignment_id },
             });
 
@@ -22,7 +21,7 @@ export const useFetchAssignmentLeft = (course_id: string, assignment_id: string)
                 throw new Error('Network response was not ok');
             }
 
-            const data = response.data.assignment_details;
+            const data = response.data.process_left_sidebar;
             setAssignmentLeftProcess(data);
             return data;
         },
