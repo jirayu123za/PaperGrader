@@ -126,15 +126,6 @@ func (h *HttpStudentHandler) GetCoursesAndAssignments(c *fiber.Ctx) error {
 		})
 	}
 
-	for i := range result {
-		if dueDate, ok := result[i]["due_date"].(time.Time); ok {
-			result[i]["due_date"] = dueDate.Format("01-02-2006")
-		}
-		if releaseDate, ok := result[i]["release_date"].(time.Time); ok {
-			result[i]["release_date"] = releaseDate.Format("01-02-2006")
-		}
-	}
-
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":     "Successfully fetched courses and assignments",
 		"assignments": result,
