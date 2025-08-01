@@ -224,16 +224,23 @@ func (r *GormInstructorRepository) AddAssignmentFile(file *models.AssignmentFile
 	return nil
 }
 
-func (r *GormInstructorRepository) FindAssignmentDetails(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error) {
-	var assignmentDetails map[string]interface{}
+func (r *GormInstructorRepository) FindProcessLeftSideBarData(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error) {
+	var leftSidebarData map[string]interface{}
 
 	if err := r.db.Table("assignments").
-		Select(`assignments.assignment_id, assignments.assignment_name, assignments.submitted_by`).
-		Where("assignments.course_id = ? AND assignments.assignment_id = ? AND assignments.deleted_at IS NULL", CourseID, AssignmentID).
-		Find(&assignmentDetails).Error; err != nil {
+		Select(`
+			assignments.assignment_id, 
+			assignments.assignment_name,
+			courses.course_code,
+			courses.semester,
+			courses.academic_year
+		`).
+		Joins("JOIN courses ON assignments.course_id = courses.course_id").
+		Where("assignments.course_id = ? AND assignments.assignment_id = ? AND assignments.deleted_at IS NULL AND courses.deleted_at IS NULL", CourseID, AssignmentID).
+		Take(&leftSidebarData).Error; err != nil {
 		return nil, err
 	}
-	return assignmentDetails, nil
+	return leftSidebarData, nil
 }
 
 // Find instructors and students by course id

@@ -14,7 +14,6 @@ type InstructorRepository interface {
 	AddAssignmentWithFiles(CourseID uuid.UUID, assignment *models.Assignment, files []models.AssignmentFile, uploads []models.Upload, assignmentSections []models.AssignmentSection) error
 	FindAssignmentNameTemplate(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileName string, err error)
 	FindFileFormSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, err error)
-	FindAssignmentDetails(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error)
 
 	AddAssignmentFile(file *models.AssignmentFile) error
 	ModifyAssignmentAndAssignmentSection(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment, sections []models.AssignmentSection) error
@@ -41,6 +40,9 @@ type InstructorRepository interface {
 	FindAssignmentSettingsDetail(CourseID uuid.UUID, AssignmentID uuid.UUID) (*response.AssignmentSettingsResponse, error)
 
 	FindInstructorsNameByCourseID(courseID uuid.UUID) ([]response.InstructorListResponse, error)
+
+	// CRUD operations for Left side bar
+	FindProcessLeftSideBarData(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error)
 
 	// CRUD operations for Submissions
 	AddSubmissionFiles(submission []models.Submission) error

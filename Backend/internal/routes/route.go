@@ -86,11 +86,13 @@ func RegisterRoutes(
 	apiGroup.Get("/instructor/assignments/active", instructorHandler.GetActiveAssignmentsByCourseID)
 	apiGroup.Get("/instructor/assignment", instructorHandler.GetAssignmentSettingsDetail)
 
-	apiGroup.Get("/instructor/assignment/process", instructorHandler.GetAssignmentDetails)
 	apiGroup.Put("/instructor/assignment", instructorHandler.UpdateAssignmentAndAssignmentSection)
 
 	apiGroup.Get("/instructor/courses", instructorHandler.GetCoursesByUserID)
 	apiGroup.Get("/instructor/course", instructorHandler.GetCourseByCourseID)
+
+	// Left side bar data
+	apiGroup.Get("/instructor/leftSidebar/process", instructorHandler.GetProcessLeftSideBarData)
 
 	// Assignment template url
 	apiGroup.Get("/instructor/template/url", instructorHandler.GetPDFTemplateWithURL)

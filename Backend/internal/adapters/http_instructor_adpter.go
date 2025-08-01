@@ -408,7 +408,7 @@ func (h *HttpInstructorHandler) GetFileFormSubmission(c *fiber.Ctx) error {
 	})
 }
 
-func (h *HttpInstructorHandler) GetAssignmentDetails(c *fiber.Ctx) error {
+func (h *HttpInstructorHandler) GetProcessLeftSideBarData(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
 	if err != nil {
@@ -427,17 +427,17 @@ func (h *HttpInstructorHandler) GetAssignmentDetails(c *fiber.Ctx) error {
 		})
 	}
 
-	assignment_details, err := h.services.GetAssignmentDetails(courseID, assignmentID)
+	assignment_details, err := h.services.GetProcessLeftSideBarData(courseID, assignmentID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to get assignment details",
+			"message": "Failed to get process left sidebar data",
 			"error":   err.Error(),
 		})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message":            "Assignment details are retrieved",
-		"assignment_details": assignment_details,
+		"message":              "Process left sidebar data is retrieved",
+		"process_left_sidebar": assignment_details,
 	})
 }
 

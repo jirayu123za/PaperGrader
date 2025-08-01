@@ -23,7 +23,6 @@ type InstructorService interface {
 	GetAssignmentNameTemplate(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileName string, err error)
 	GetPDFTemplateWithURL(CourseID uuid.UUID, AssignmentID uuid.UUID) (templateURL string, err error)
 	GetFileFormSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, fileURLs []string, err error)
-	GetAssignmentDetails(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error)
 
 	CreateAssignmentFile(file *models.AssignmentFile) error
 	UpdateAssignmentAndAssignmentSection(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment, sections []models.AssignmentSection) error
@@ -60,6 +59,9 @@ type InstructorService interface {
 	GetMapSubmissionFileURLs(submissionBoxFiles map[uuid.UUID][]string, courseID, assignmentID uuid.UUID) map[uuid.UUID][]string
 	GetStudentListForSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) (response.StudentSubmissionSplitResponse, error)
 	GetAssignmentTemplateCount(CourseID uuid.UUID, AssignmentID uuid.UUID) (int, error)
+
+	// Left side bar Services
+	GetProcessLeftSideBarData(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error)
 
 	//!
 	CreateCroppedSubmissionBox(submission models.SubmissionBox) error
@@ -178,8 +180,8 @@ func (s *InstructorServiceImpl) GetFileFormSubmission(CourseID uuid.UUID, Assign
 	return returnFileNames, returnFileURLs, nil
 }
 
-func (s *InstructorServiceImpl) GetAssignmentDetails(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error) {
-	assignment, err := s.repo.FindAssignmentDetails(CourseID, AssignmentID)
+func (s *InstructorServiceImpl) GetProcessLeftSideBarData(CourseID uuid.UUID, AssignmentID uuid.UUID) (map[string]interface{}, error) {
+	assignment, err := s.repo.FindProcessLeftSideBarData(CourseID, AssignmentID)
 	if err != nil {
 		return nil, err
 	}
