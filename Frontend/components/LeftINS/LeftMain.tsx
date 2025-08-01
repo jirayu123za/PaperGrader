@@ -10,12 +10,8 @@ import { useFetchInstructorList } from '../../hooks/useFetchInstructorList';
 import { useInstructorListStore } from '../../store/useInstructorListStore';
 import { useLeftMainStore } from '@/store/useLeftMainStore';
 import { useRouter, useParams, usePathname } from 'next/navigation';
-
 import { useDisclosure } from '@mantine/hooks';
 import AccountMenu from '../Account';
-
-
-
 
 export default function LeftMain() {
   const router = useRouter();
