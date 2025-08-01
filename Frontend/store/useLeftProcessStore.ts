@@ -1,9 +1,12 @@
 import { create } from 'zustand';
 
+// Part: 1
 interface AssignmentLeftProcess {
     assignment_id: string;
     assignment_name: string;
-    submiss_by: string;
+    course_code: string;
+    semester: string;
+    academic_year: string;
 }
 
 interface AssignmentLeftProcessStore {
@@ -15,20 +18,21 @@ export const useAssignmentLeftProcessStore = create<AssignmentLeftProcessStore>(
     assignmentLeftProcess: {
         assignment_id: '',
         assignment_name: '',
-        submiss_by: ''
+        course_code: '',
+        semester: '',
+        academic_year: '',
     },
     setAssignmentLeftProcess: (assignmentLeftProcess) => set({ assignmentLeftProcess }),
 }));
 
 
-
-
+// Part: 2
 interface LeftProcessStore {
-    activeOption: string | null; 
-    setActiveOption: (key: string | null) => void; 
-  }
+    activeOption: string | null;
+    setActiveOption: (key: string | null) => void;
+}
 
 export const useLeftProcessStore = create<LeftProcessStore>((set) => ({
-  activeOption: null,
-  setActiveOption: (option) => set({ activeOption: option }),
+    activeOption: null,
+    setActiveOption: (option) => set({ activeOption: option }),
 }));

@@ -13,11 +13,13 @@ import { useRouter, usePathname, useParams } from 'next/navigation';
 import { useFetchAssignmentLeft } from '../../hooks/SideBar/useFetchAssignmentLeft';
 import { useAssignmentLeftProcessStore, useLeftProcessStore } from '../../store/useLeftProcessStore';
 import { useLeftProcessSidebarStore } from '@/store/process-outline/leftProcessSidebarStore';
-import { useInsCourseStore } from '../../store/useCourseStore';
 
 export default function LeftProcess() {
   const pathname = usePathname();
   const router = useRouter();
+  const params = useParams();
+  const course_id = params.course_id as string;
+  const assignment_id = params.assignment_id as string;
   const faArrowLeft = <FaArrowLeft size={18} />;
   const giClockwiseRotation = <GiClockwiseRotation size={18} />;
   const ioStatsChart = <IoStatsChart size={18} />;
@@ -26,14 +28,10 @@ export default function LeftProcess() {
   const iconManageSubmissions = <RiFolderUploadFill size={18} />;
   const iconGradeSubmissions = <IoIosListBox size={18} />;
   const iconReviewGrade = <MdRateReview size={18} />;
-  const params = useParams();
-  const course_id = params.course_id as string;
-  const assignment_id = params.assignment_id as string;
   const isCollapsed: boolean = useLeftProcessSidebarStore((state: { isCollapsed: boolean }) => state.isCollapsed);
   const toggle: () => void = useLeftProcessSidebarStore((state: { toggle: () => void }) => state.toggle);
   const { isLoading, isSuccess } = useFetchAssignmentLeft(course_id as string, assignment_id as string);
   const { assignmentLeftProcess } = useAssignmentLeftProcessStore();
-  const { course } = useInsCourseStore();
   const { activeOption, setActiveOption } = useLeftProcessStore();
 
   useEffect(() => {
@@ -142,7 +140,7 @@ export default function LeftProcess() {
         </Button>
 
 
-        {course && !isCollapsed && (
+        {!isCollapsed && (
           <>
             <Title
               order={5}
@@ -154,7 +152,7 @@ export default function LeftProcess() {
                 cursor: 'default',
               }}
             >
-              {`${course.course_code} (${course.semester}/${course.academic_year})`}
+              {`${assignmentLeftProcess.course_code} (${assignmentLeftProcess.semester}/${Number(assignmentLeftProcess.academic_year) + 543})`}
             </Title>
 
           </>
