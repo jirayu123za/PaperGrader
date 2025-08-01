@@ -105,7 +105,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
     const [year, semester] = key.split('-');
     const displayYear = (parseInt(year, 10) + 543).toString(); 
     return (
-      <div key={key} className="mb-6">
+      <div key={key} className="mb-6 pl-3 ">
         <Text size="lg" fw={600} className="mb-2">
           {semester} / {displayYear}
         </Text>
@@ -119,7 +119,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
   };
 
   return (
-    <ScrollArea style={{ height: 'calc(100vh - 150px)' }} type="auto">
+    <ScrollArea style={{ height: 'calc(100vh - 150px)' }} type="auto" >
       {courses.length === 0 && !studentMode ? (
         EmptyCard
       ) : (
