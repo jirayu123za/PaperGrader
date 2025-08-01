@@ -121,14 +121,14 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
 };
 
 function calculateProgress(release: string | null, due: string | null): number {
-  const now = dayjs();
+  const now = dayjs().add(7, 'hour');
   const releaseTime = dayjs.utc(release);
   const dueTime = dayjs.utc(due);
   const total = dueTime.diff(releaseTime);
-  const remaining = dueTime.diff(now)
+  const remaining = dueTime.diff(now);
   if (!release || !due) return 0;
   if (now.isBefore(releaseTime)) return 100;
-  if (now.isAfter(dueTime)) return 0;;
+  if (now.isAfter(dueTime)) return 0;
   return Math.max(0, Math.min(100, (remaining / total) * 100));
 }
 
@@ -140,7 +140,7 @@ const getProgressColor = (releaseDate: string | null, dueDate: string | null): s
 };
 
 function getRemainingTimeText(due: string | null): string {
-  const now = dayjs();
+  const now = dayjs().add(7, 'hour');
   const dueTime = dayjs.utc(due);
   const duration = dueTime.diff(now, 'minute');
   const days = Math.floor(duration / (60 * 24));
