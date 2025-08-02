@@ -1,15 +1,18 @@
 "use client";
 
-import React from 'react';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
+import React from "react";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
-import { useFetchAssignments } from '../../hooks/useFetchAssignments';
-import { useAssignmentStore } from '../../store/useAssignmentStore';
-import { useStdCourseDashboardStore } from '../../store/useCourseStore';
-import { useRouter , useParams } from 'next/navigation';
-import { Badge, Divider, Table, Title } from '@mantine/core';
-import { useFetchStdCourse } from '../../hooks/useFetchCourse';
+dayjs.extend(timezone);
+dayjs.tz.setDefault("Asia/Bangkok");
+import timezone from "dayjs/plugin/timezone";
+import { useFetchAssignments } from "../../hooks/useFetchAssignments";
+import { useAssignmentStore } from "../../store/useAssignmentStore";
+import { useStdCourseDashboardStore } from "../../store/useCourseStore";
+import { useRouter, useParams } from "next/navigation";
+import { Badge, Divider, Table, Title } from "@mantine/core";
+import { useFetchStdCourse } from "../../hooks/useFetchCourse";
 
 const STD_CourseDashboard: React.FC = () => {
   const router = useRouter();
@@ -17,7 +20,9 @@ const STD_CourseDashboard: React.FC = () => {
   const { course_id } = params as { course_id: string };
   const { isLoading, error } = useFetchAssignments(course_id as string);
   const { assignments: assignmentList } = useAssignmentStore();
-  const { isLoading: isCourseLoading, error: errorCourse } = useFetchStdCourse(course_id as string);
+  const { isLoading: isCourseLoading, error: errorCourse } = useFetchStdCourse(
+    course_id as string
+  );
   const { course: courseData } = useStdCourseDashboardStore();
 
   if (isLoading) return <div>Loading assignments...</div>;
@@ -27,13 +32,16 @@ const STD_CourseDashboard: React.FC = () => {
     <div className="course-dashboard">
       <div className="header mb-6">
         <Title order={2}>
-          {courseData?.course_name} | {courseData?.semester} / {courseData?.academic_year}
+          {courseData?.course_name} | {courseData?.semester} /{" "}
+          {courseData?.academic_year}
         </Title>
         <p className="text-gray-500">Course Code: {courseData?.course_code}</p>
         <Divider my="md" />
       </div>
 
-      {(!assignmentList || assignmentList.length === 0 || assignmentList === null) ? (
+      {!assignmentList ||
+      assignmentList.length === 0 ||
+      assignmentList === null ? (
         <div className="text-center text-gray-500">
           This course has no assignments assigned yet.
         </div>
@@ -42,45 +50,56 @@ const STD_CourseDashboard: React.FC = () => {
           <Table.Thead>
             <Table.Tr className="border-b">
               <Table.Th>NAME</Table.Th>
-              <Table.Th style={{ textAlign: 'center' }}>RELEASED</Table.Th>
-              <Table.Th style={{ textAlign: 'center' }}>DUE</Table.Th>
-              <Table.Th style={{ textAlign: 'center' }}>LAST DUE</Table.Th>
-              <Table.Th style={{ textAlign: 'center' }}>STATUS</Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>RELEASED</Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>DUE</Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>LAST DUE</Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>STATUS</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {assignmentList.map((assignment) => 
-             
-             
+            {assignmentList.map((assignment) =>
               assignment ? (
                 <React.Fragment key={assignment.assignment_id}>
                   <Table.Tr className="border-b">
-                    <Table.Td 
+                    <Table.Td
                       className="py-2 px-4 cursor-pointer hover:underline"
-                      onClick={() => router.push(`/student/overview/assignment/${assignment.assignment_id}`)}
+                      onClick={() =>
+                        router.push(
+                          `/student/overview/assignment/${assignment.assignment_id}`
+                        )
+                      }
                     >
                       {assignment.assignment_name}
                     </Table.Td>
-                    <Table.Td style={{ textAlign: 'center' }}>
-                      {assignment.release_date 
-                        ? dayjs(assignment.release_date).utc().format('MMM D, YYYY h:mm A'): 'N/A'}
+                    <Table.Td style={{ textAlign: "center" }}>
+                      {assignment.release_date
+                        ? dayjs(assignment.release_date)
+                
+                            .format("MMM D, YYYY h:mm A")
+                        : "N/A"}
                     </Table.Td>
-                    <Table.Td style={{ textAlign: 'center' }}>
+                    <Table.Td style={{ textAlign: "center" }}>
                       {assignment.due_date
-                        ? dayjs(assignment.due_date).utc().format('MMM D, YYYY h:mm A'): 'N/A'}
+                        ? dayjs(assignment.due_date)
+                            
+                            .format("MMM D, YYYY h:mm A")
+                        : "N/A"}
                     </Table.Td>
-                    <Table.Td style={{ textAlign: 'center' }}>
+                    <Table.Td style={{ textAlign: "center" }}>
                       {assignment.cut_off_date
-                        ? dayjs(assignment.cut_off_date).utc().format('MMM D, YYYY h:mm A'): 'N/A'}
+                        ? dayjs(assignment.cut_off_date)
+                          
+                            .format("MMM D, YYYY h:mm A")
+                        : "N/A"}
                     </Table.Td>
-                    <Table.Td style={{ textAlign: 'center' }}>
-                      <Badge color={ 'blue'} variant="filled">
+                    <Table.Td style={{ textAlign: "center" }}>
+                      <Badge color={"blue"} variant="filled">
                         No submitted
                       </Badge>
                     </Table.Td>
                   </Table.Tr>
                 </React.Fragment>
-              ):null
+              ) : null
             )}
           </Table.Tbody>
         </Table>
