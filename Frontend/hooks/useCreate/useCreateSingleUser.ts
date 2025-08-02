@@ -21,9 +21,9 @@ export const useCreateSingleUser = () => {
     mutationFn: createSingleUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roster'] });
+      queryClient.invalidateQueries({ queryKey: ['instructors'] });
     },
     onError: (error: any) => {
-      console.error("Error creating assignment:", error);
     },
   });
 };

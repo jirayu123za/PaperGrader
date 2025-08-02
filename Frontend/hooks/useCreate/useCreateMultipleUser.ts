@@ -18,10 +18,9 @@ export const useCreateMultipleUser = () => {
     return useMutation({
         mutationFn: createMultipleUser,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['rosters'] });
+            queryClient.invalidateQueries({ queryKey: ['roster'] });
         },
         onError: (error: any) => {
-            console.error("Error creating assignment:", error);
         },
     });
 };

@@ -1,7 +1,7 @@
-import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import useCSVdataStore from '../store/add member/useCSVdataStore';
 import useTemplateStore from '../store/BoundingBox/useTemplateStore';
+import { useMutation } from '@tanstack/react-query';
 
 interface FileUploadParams {
     file: File;
@@ -12,8 +12,6 @@ export const useUploadFile = () => {
     const { selectedTemplate } = useTemplateStore();
 
     const uploadFile = async ({ file }: FileUploadParams) => {
-        console.log('Uploading file:', file);
-
         const formData = new FormData();
         formData.append('file', file);
 
@@ -39,13 +37,9 @@ export const useUploadFile = () => {
     return useMutation({
         mutationFn: uploadFile,
         onSuccess: (data) => {
-            console.log('Upload successful:', data);
             setCsvData(data);
-            alert('File uploaded successfully!');
         },
-        onError: (error) => {
-            console.error('Upload failed:', error);
-            alert('Failed to upload the file. Please try again.');
+        onError: (error: any) => {
         },
     });
 };
