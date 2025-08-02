@@ -3,50 +3,59 @@
 import React from 'react';
 import Link from 'next/link';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { Tabs, ScrollArea, Card, Progress, Text, Skeleton, Flex } from '@mantine/core';
 import { useFetchStdAssignments } from '@/hooks/Student/useFetchSTD_Assignment';
 import { useAssignmentStore } from '@/store/Student/useSTD_AssignmentStore';
 import { useSubmitAndDownloadModalStore } from '@/store/modal/useSubmitAndDownloadModal';
 import LeftMain from '@/components/STD/SideBar/LeftMain';
 import STDSubmit from '@/components/STD/STD_submit';
+import Assignment from '@/app/instructor/course/[course_id]/assignment/page';
+import { log } from 'console';
+dayjs.extend(utc);
 
-interface ActiveAssignments {
-  course_id: string;
-  assignment_id: string;
-  course_code: string;
-  course_name?: string;
-  assignment_name: string;
-  assignment_description: string;
-  cut_off_date: string;
-  due_date: string;
-  release_Date: string;
-  section_name: string;
+function calculateProgress(release: string | null, due: string | null): number {
+  const now = dayjs();
+  const releaseTime = dayjs.utc(release);
+  const dueTime = dayjs.utc(due);
+  const total = dueTime.diff(releaseTime);
+  const remaining = dueTime.diff(now)
+  if (!release || !due) return 0;
+  if (now.isBefore(releaseTime)) return 100;
+  if (now.isAfter(dueTime)) return 0;;
+  return Math.max(0, Math.min(100, (remaining / total) * 100));
 }
 
-const mockAssignmentList: ActiveAssignments[] = [];
+const getProgressColor = (releaseDate: string | null, dueDate: string | null): string => {
+  const remainingPercentage = calculateProgress(releaseDate, dueDate);
+  if (remainingPercentage > 70) return 'green';
+  if (remainingPercentage > 40) return 'orange';
+  return 'red';
+};
+
+
+function getRemainingTimeText(due: string | null): string {
+  const now = dayjs();
+  const dueTime = dayjs.utc(due);
+  const duration = dueTime.diff(now, 'minute');
+  const days = Math.floor(duration / (60 * 24));
+  const hours = Math.floor((duration % (60 * 24)) / 60);
+  const minutes = duration % 60;
+  if (!due) return 'N/A';
+  if (now.isAfter(dueTime)) return 'Past Due';
+  return [days && `${days}d`, hours && `${hours}h`, minutes && `${minutes}m`].filter(Boolean).join(' ') || 'Less than a minute';
+}
+
 
 const STD_Dashboard = () => {
   const { isLoading, error } = useFetchStdAssignments();
   const { assignments: assignmentList } = useAssignmentStore();
   const { openModal } = useSubmitAndDownloadModalStore();
 
-  const combinedAssignmentList = [...(assignmentList || []), ...mockAssignmentList];
+  const combinedAssignmentList = [...(assignmentList || [])];
 
   if (error) return <div>Error loading assignments: {error.message}</div>;
-
-  const calculateTimeRemaining = (releaseDate: string, dueDate: string) => {
-    const now = dayjs();
-    const release = dayjs(releaseDate);
-    const due = dayjs(dueDate);
-
-    if (now.isBefore(release)) return 100;
-    if (now.isAfter(due)) return 0;
-
-    const totalDuration = due.diff(release);
-    const remainingDuration = due.diff(now);
-
-    return (remainingDuration / totalDuration) * 100;
-  };
+  
 
   const activeAssignments = combinedAssignmentList.filter((assignment) =>
     dayjs(assignment.due_date).isAfter(dayjs())
@@ -55,8 +64,9 @@ const STD_Dashboard = () => {
   const overdueAssignments = combinedAssignmentList.filter((assignment) =>
     dayjs(assignment.due_date).isBefore(dayjs())
   );
-
+  
   const renderAssignments = (assignments: any[], type: string) => (
+    
     <div className="space-y-4">
       {isLoading
         ? Array.from({ length: 5 }).map((_, index) => (
@@ -64,7 +74,11 @@ const STD_Dashboard = () => {
               <Skeleton height={20} width="70%" />
             </Card>
           ))
-        : assignments.map((assignment) => (
+        : assignments.map((assignment) => {
+
+          const progress = calculateProgress(assignment.release_date,assignment.due_date);
+           console.log('Progress for assignment', assignment.assignment_name, ':', progress);
+          return(
             <Card key={assignment.assignment_id} shadow="sm" padding="lg" radius="md" withBorder>
               <div className="flex justify-between items-center">
                 <div className="w-1/4">
@@ -83,27 +97,24 @@ const STD_Dashboard = () => {
                 </div>
                 <div className="w-1/4">
                   <Text size="sm" className="text-center">
-                    {type === 'active'
-                      ? `Time Remaining: ${dayjs(assignment.due_date).diff(dayjs(), 'day')} Days`
-                      : 'Overdue'}
+                    {getRemainingTimeText(assignment.due_date)}
                   </Text>
                   <Progress
-                    value={type === 'active'
-                      ? calculateTimeRemaining(
-                          assignment.release_Date ?? 'N/A',
-                          assignment.due_date ?? 'N/A'
-                        )
-                      : 0}
-                    color={type === 'active' ? 'green' : 'red'}
+                  
+                    color={getProgressColor(assignment.release_date,assignment.due_date)} 
+                    value={progress}
                     size="md"
                     radius="lg"
                   />
                 </div>
               </div>
             </Card>
-          ))}
-    </div>
-  );
+          );
+        } 
+      )
+    }
+  </div>
+);
 
   return (
     <Flex>
