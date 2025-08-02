@@ -3,6 +3,7 @@
 import React from 'react'
 import useCSVdataStore from '../../store/add member/useCSVdataStore';
 import useTemplateStore from '../../store/BoundingBox/useTemplateStore';
+import { useParams } from 'next/navigation';
 import { Box, Modal, Stepper, Flex, Button } from '@mantine/core'
 import { FaRegCheckCircle } from 'react-icons/fa';
 import { GrTemplate } from 'react-icons/gr';
@@ -14,15 +15,14 @@ import { ThirdStep } from './ThirdStep';
 import { useSetState } from '@mantine/hooks';
 import { useUploadFile } from '../../hooks/useFetchDataFormFile';
 import { useCreateMultipleUser } from '../../hooks/useCreate/useCreateMultipleUser';
-import { useRouter , useParams } from 'next/navigation';
+import { notifications } from '@mantine/notifications';
 
 interface SelectMethodsProps {  
     isOpen: boolean;
     onClose: () => void;
 }  
 
-export const SelectMethods = ({ isOpen, onClose }: SelectMethodsProps) => {
-    const router = useRouter();
+const SelectMethods: React.FC<SelectMethodsProps> = ({ isOpen, onClose }) => {
     const params = useParams();
     const course_id = params?.course_id as string;
     const uploadFileMutation = useUploadFile();
@@ -31,7 +31,6 @@ export const SelectMethods = ({ isOpen, onClose }: SelectMethodsProps) => {
     const { selectedTemplate } = useTemplateStore();    
     const { selectedFile, clearCsvData, setSelectedFile, setCsvData, formValues } = useCSVdataStore();
     
-
     const handleNext = () => {
         if (state.active === 1) {
             if (selectedFile) {
@@ -39,13 +38,26 @@ export const SelectMethods = ({ isOpen, onClose }: SelectMethodsProps) => {
                     onSuccess: (data) => {
                         setCsvData(data);
                         setState({ active: state.active + 1 });
+                        notifications.show({
+                            title: 'File Uploaded',
+                            message: 'Your file has been successfully uploaded.',
+                            color: 'green',
+                        });
                     },
-                    onError: () => {
-                        console.log('Failed to upload the file. Please try again.');
+                    onError: (error) => {
+                        notifications.show({
+                            title: 'Upload Failed',
+                            message: `${error.response?.data?.error}`,
+                            color: 'red',
+                        });
                     },
                 });
             } else {
-                console.log('No file selected. Please upload a file.');
+                notifications.show({
+                    title: 'No File Selected',
+                    message: 'Please upload a file.',
+                    color: 'yellow',
+                });
             }
         } else if (state.active === 2) {
             if (formValues) {
@@ -55,13 +67,19 @@ export const SelectMethods = ({ isOpen, onClose }: SelectMethodsProps) => {
                     { formData, course_id: course_id as string },
                     {
                         onSuccess: () => {
-                            console.log('Users imported successfully.');
+                            notifications.show({
+                                title: 'Users Imported',
+                                message: 'The users have been successfully imported.',
+                                color: 'green',
+                            });
                             handleClose();
                         },
                         onError: (error) => {
-                            console.log(formValues);
-                            
-                            console.error('Error importing users:', error);
+                            notifications.show({
+                                title: 'Import Failed',
+                                message: `${error.response?.data?.error}`,
+                                color: 'red',
+                            });
                         },
                     }
                 );
@@ -164,3 +182,5 @@ export const SelectMethods = ({ isOpen, onClose }: SelectMethodsProps) => {
         </Modal>
     )
 }
+
+export default SelectMethods;

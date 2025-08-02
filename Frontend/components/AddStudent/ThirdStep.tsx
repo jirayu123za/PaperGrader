@@ -38,7 +38,6 @@ export const ThirdStep = () => {
         role_type: form.values.role,
       };
       setFormValues(columnData);
-      // console.log(columnData);
     }
   }, [form.values, csvData, setFormValues]);
 

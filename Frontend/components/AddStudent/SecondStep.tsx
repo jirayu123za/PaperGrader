@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useRef } from "react";
 import { Box, Text, Group, Paper, Center, Flex, FileInput, Image } from "@mantine/core";
 import { IconUpload, IconFileSpreadsheet } from "@tabler/icons-react";

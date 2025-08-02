@@ -2,10 +2,10 @@
 
 import React from 'react';
 import SingleUser from './SingleUser';
+import SelectMethods from './SelectMethods';
 import { Menu, Button } from '@mantine/core';
 import { FaUser, FaUsers } from "react-icons/fa";
 import { MdOutlineGroupAdd } from 'react-icons/md';
-import { SelectMethods } from './SelectMethods';
 import { useDisclosure } from '@mantine/hooks';
 
 const AddMemberDropdown: React.FC = () => {

@@ -1,12 +1,12 @@
 "use client";
 
 import React from 'react';
+import { useParams } from 'next/navigation';
 import { Modal, Button, TextInput, RadioGroup, Radio } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { useForm } from '@mantine/form';
 import { useCreateSingleUser } from '../../hooks/useCreate/useCreateSingleUser';
-import { useRouter , useParams } from 'next/navigation';
 import { useSelectSectionStore } from '../../store/useSectionStore';
-import { useInstructorListStore } from '../../store/useInstructorListStore'; 
 import SectionSelector from '../Create/Sections/SectionSelector';
 
 interface SingleUserModalProps {
@@ -15,12 +15,10 @@ interface SingleUserModalProps {
 }
 
 const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
-  const router = useRouter();
   const params = useParams();
   const course_id = params?.course_id as string;
-  const { mutate } = useCreateSingleUser();
+  const { mutate, isPending } = useCreateSingleUser();
   const { resetSelectedSections, selectedSections } = useSelectSectionStore();
-  const { addInstructor } = useInstructorListStore();
 
   const capitalizeFirstLetter = (value: string) => {
     return value
@@ -42,8 +40,8 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
       name: (value) => (value.length < 2 ? 'Name must have at least 2 characters' : null),
       email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email format'),
       role_type: (value) => (value ? null : 'Please select a role'),
-      // sections: (value, values) =>
-      //   values.role_type === 'STUDENT' && value.length === 0 ? 'Please select at least one section' : null,
+      student_code: (value, values) => values.role_type === 'STUDENT' && value.length < 1 ? 'Student ID is required for students' : null,
+      sections: (value, values) => values.role_type === 'STUDENT' && value.length === 0 ? 'Please select at least one section' : null,
     },
   });
 
@@ -53,7 +51,7 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
     form.setFieldValue('sections', selectedSections); 
 
     const formData = new FormData();
-    formData.append('course_id', Array.isArray(course_id) ? course_id[0] : course_id || '');
+    formData.append('course_id', course_id as string);
     formData.append('first_name', first_name || '');
     formData.append('last_name', last_name || '');
     formData.append('email', values.email);
@@ -63,22 +61,21 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
 
     mutate(formData, {
       onSuccess: () => {
-        console.log('User created successfully');
-
-        if (values.role_type === 'INSTRUCTOR') {
-          addInstructor({
-            personalData_id: Date.now().toString(),
-            instructor_name: name,
-            CourseId: Array.isArray(course_id) ? course_id[0] : course_id || '',
-          });
-        }
-
         resetSelectedSections();
         form.reset();
         onClose();
+        notifications.show({
+          title: 'Success',
+          message: 'User has been successfully added to the course.',
+          color: 'green',
+        });
       },
       onError: (error) => {
-        console.error('Error creating user:', error);
+        notifications.show({
+          title: 'Failed',
+          message: `${error.response?.data?.error}`,
+          color: 'red',
+        });
       },
     });
   };
@@ -93,12 +90,12 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
     <Modal
       opened={isOpen}
       onClose={handleClose}
-      title="Add a User"
+      title="Add a user to the course"
     >
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <TextInput
-          label="Name"
-          placeholder="Kamisato Ayaka"
+          label="Full name"
+          placeholder="Example Fullname"
           required
           {...form.getInputProps('name')}
           onBlur={(e) => {
@@ -107,15 +104,16 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
           }}
         />
         <TextInput
-          label="Email Address"
-          placeholder="Ayaka@example.com"
+          label="Email address"
+          placeholder="ExampleUserEmail@gmail.com"
           required
           className="mt-4"
           {...form.getInputProps('email')}
         />
         <TextInput
-          label="Student ID # (Optional)"
-          placeholder="7855423"
+          label="Student ID"
+          description="This field is optional and can be used to identify students."
+          placeholder="640610123"
           className="mt-4"
           {...form.getInputProps('student_code')}
           disabled={form.values.role_type !== 'STUDENT'}
@@ -129,7 +127,7 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
           <div className="flex gap-4">
             <Radio value="INSTRUCTOR" label="Instructor" />
             <Radio value="STUDENT" label="Student" />
-            <Radio value="TA" label="TA" />
+            <Radio value="TA" label="TA" disabled/>
           </div>
         </RadioGroup>
         {(form.values.role_type === 'STUDENT' ) && (
@@ -150,7 +148,7 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
           >
             Cancel
           </Button>
-          <Button type="submit" className="ml-2">
+          <Button type="submit" className="ml-2" loading={isPending}>
             Submit
           </Button>
         </div>

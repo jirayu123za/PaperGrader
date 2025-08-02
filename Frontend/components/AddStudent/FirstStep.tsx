@@ -1,6 +1,8 @@
-import { Card, Group, Text, Flex, Image } from "@mantine/core";
+"use client";
+
 import React from "react";
 import useTemplateStore from "../../store/BoundingBox/useTemplateStore";
+import { Card, Group, Text, Flex, Image } from "@mantine/core";
 
 export const FirstStep = () => {
   const cardData = [
@@ -16,18 +18,6 @@ export const FirstStep = () => {
       title: "PAPER GRADER",
       description: "template as specified by PAPER GRADER",
     },
-    // {
-    //     id: 3,
-    //     imageSrc: "/Image/selectTemplate/PPGD_3_logo_removebg.png",
-    //     title: "PAPER GRADER",
-    //     description: "template as specified by PAPER GRADER",
-    // },
-    // {
-    //     id: 4,
-    //     imageSrc: "https://placehold.co/140x50",
-    //     title: "PAPER GRADER",
-    //     description: "template as specified by PAPER GRADER",
-    // }
   ];
 
   const { selectedTemplate, setSelectedTemplate } = useTemplateStore();
