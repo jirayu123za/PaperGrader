@@ -2,13 +2,15 @@
 
 import React from 'react';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import { useRouter , useParams } from 'next/navigation';
 import { Progress, Table, Paper, Button, Pagination, Flex } from '@mantine/core';
 import { MdOutlineAssignmentTurnedIn } from "react-icons/md";
 import { useActiveAssignmentStore } from '../../../store/useActiveAssignmentStore';
 import { useFetchActiveAssignments } from '../../../hooks/useFetchActiveAssignment';
 import { usePagination } from '@mantine/hooks';
+dayjs.extend(timezone);
+dayjs.tz.setDefault("Asia/Bangkok"); 
 
 interface ActiveAssignmentsProps {
   openModal: () => void;
@@ -21,7 +23,6 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
   const { isLoading, error } = useFetchActiveAssignments(course_id as string);
   const { activeAssignments } = useActiveAssignmentStore();
   const iconAssignmentTurnedIn = <MdOutlineAssignmentTurnedIn size={24} />;
-  dayjs.extend(utc);
 
   const pageSize = 10;
   const totalPages = Math.ceil(activeAssignments.length / pageSize);
@@ -39,9 +40,9 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
   );
 
   const calculateTimeRemaining = (releaseDate: string | null, dueDate: string | null): number => {
-    const now = dayjs();
-    const release = dayjs(releaseDate);
-    const due = dayjs(dueDate);
+    const now = dayjs().tz('Asia/Bangkok');
+    const release = dayjs(releaseDate).tz('Asia/Bangkok');
+    const due = dayjs(dueDate).tz('Asia/Bangkok');
     const totalDuration = due.diff(release);
     const remainingDuration = due.diff(now);
 
@@ -62,7 +63,7 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
   if (error) {
     return <div>Error loading assignments: {error.message}</div>;
   }
-
+  
   return (
     <Paper shadow="sm" radius="md" withBorder p="xl">
       <Flex
@@ -119,7 +120,7 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
                   </Table.Td>
                   <Table.Td ta="center">
                     {assignment.assignment_release_date
-                      ? dayjs(assignment.assignment_release_date).utc().format('MMM D, YYYY h:mm A')
+                      ? dayjs(assignment.assignment_release_date).format('MMM D, YYYY h:mm A')
                       : 'N/A'}
                   </Table.Td>
                   <Table.Td ta="center">
@@ -138,12 +139,12 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
                   </Table.Td>
                   <Table.Td ta="center">
                     {assignment.assignment_due_date
-                      ? dayjs(assignment.assignment_due_date).utc().format('MMM D, YYYY h:mm A')
+                      ? dayjs(assignment.assignment_due_date).format('MMM D, YYYY h:mm A')
                       : 'N/A'}
                   </Table.Td>
                   <Table.Td ta="center">
                     {assignment.assignment_cut_off_date
-                      ? dayjs(assignment.assignment_cut_off_date).utc().format('MMM D, YYYY h:mm A')
+                      ? dayjs(assignment.assignment_cut_off_date).format('MMM D, YYYY h:mm A')
                       : 'N/A'}
                   </Table.Td>
                   <Table.Td ta="center">0</Table.Td>
