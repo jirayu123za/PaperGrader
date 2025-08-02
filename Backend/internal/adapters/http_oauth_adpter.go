@@ -79,7 +79,7 @@ func (h *HttpOAuthHandler) GetGoogleCallBack(c *fiber.Ctx) error {
 	user, err := h.userService.SignUpOrSignInUser(userInfo)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to process user signup/login",
+			"message": "Failed to process user sign-up/login",
 			"error":   err,
 		})
 	}
@@ -93,12 +93,6 @@ func (h *HttpOAuthHandler) GetGoogleCallBack(c *fiber.Ctx) error {
 				"error":   err,
 			})
 		}
-
-		// return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		// 	"message":  "New User logged in via Google OAuth2",
-		// 	"userInfo": userInfo,
-		// 	"jwtToken": jwtToken,
-		// })
 
 		redirectURL := "http://localhost:5173/?token=" + jwtToken
 		return c.Redirect(redirectURL, fiber.StatusTemporaryRedirect)
@@ -122,40 +116,6 @@ func (h *HttpOAuthHandler) GetGoogleCallBack(c *fiber.Ctx) error {
 		Secure:   true,
 	})
 
-	// return c.Status(fiber.StatusOK).JSON(fiber.Map{
-	// 	"message":  "User is logged in by Google OAuth2",
-	// 	"token":    token,
-	// 	"jwtToken": jwtToken,
-	// 	"user":     userInfo,
-	// })
-	// return c.Status(fiber.StatusOK).JSON(fiber.Map{
-	// 	"message": "User logged in via Google OAuth2",
-	// 	"user":    user,
-	// })
-
-	// groupID, err := utils.GetUserGroupIDFromJWT(c)
-	// if err != nil {
-	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-	// 		"message": "Invalid group_id in JWT",
-	// 		"error":   err.Error(),
-	// 	})
-	// }
-
-	// switch groupID {
-	// case 1:
-	// 	return c.Redirect("http://localhost:5173/INSCourseOverview", fiber.StatusTemporaryRedirect)
-	// case 2:
-	// 	return c.Redirect("http://localhost:5173/STDCourseOverview", fiber.StatusTemporaryRedirect)
-	// default:
-	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-	// 		"message": "Invalid group ID",
-	// 		"error":   "Invalid group ID",
-	// 	})
-	// }
-
-	// insRedirectURL := "http://localhost:5173/CourseOverview"
-	// stdRedirectURL := "http://localhost:5173/students/12345"
-	// return c.Redirect(insRedirectURL, fiber.StatusTemporaryRedirect)
 	return c.Redirect("/api/google/callback/verify", fiber.StatusTemporaryRedirect)
 }
 
@@ -172,7 +132,7 @@ func (h *HttpOAuthHandler) VerifyGoogleCallback(c *fiber.Ctx) error {
 	case 1:
 		return c.Redirect("http://localhost:5173/INSCourseOverview", fiber.StatusTemporaryRedirect)
 	case 2:
-		return c.Redirect("http://localhost:5173/student/overview/course", fiber.StatusTemporaryRedirect)
+		return c.Redirect("http://localhost:5173/student/overview", fiber.StatusTemporaryRedirect)
 	default:
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Invalid group ID",
