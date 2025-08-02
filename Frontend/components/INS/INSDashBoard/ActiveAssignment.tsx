@@ -2,6 +2,7 @@
 
 import React from 'react';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { useRouter , useParams } from 'next/navigation';
 import { Progress, Table, Paper, Button, Pagination, Flex } from '@mantine/core';
@@ -9,6 +10,7 @@ import { MdOutlineAssignmentTurnedIn } from "react-icons/md";
 import { useActiveAssignmentStore } from '../../../store/useActiveAssignmentStore';
 import { useFetchActiveAssignments } from '../../../hooks/useFetchActiveAssignment';
 import { usePagination } from '@mantine/hooks';
+dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.tz.setDefault("Asia/Bangkok"); 
 

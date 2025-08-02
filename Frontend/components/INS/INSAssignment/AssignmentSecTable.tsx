@@ -2,11 +2,13 @@
 
 import React from 'react';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { Button, Checkbox, Flex, Loader, Menu, Progress, Table, Text } from '@mantine/core';
 import { useAssignmentSettingStore, useModalAssignmentSettingStore } from '@/store/modal/useAssignmentSettingModal';
 import { IconSettings, IconTrash } from '@tabler/icons-react';
 import { useAssignmentSectionStore } from '@/store/table/useAssignmentsListStore';
+dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.tz.setDefault("Asia/Bangkok"); 
 
