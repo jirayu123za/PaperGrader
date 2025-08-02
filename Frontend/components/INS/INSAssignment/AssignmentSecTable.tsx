@@ -3,11 +3,14 @@
 import React from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import { Button, Checkbox, Flex, Loader, Menu, Progress, Table, Text } from '@mantine/core';
 import { useAssignmentSettingStore, useModalAssignmentSettingStore } from '@/store/modal/useAssignmentSettingModal';
 import { IconSettings, IconTrash } from '@tabler/icons-react';
 import { useAssignmentSectionStore } from '@/store/table/useAssignmentsListStore';
 dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.tz.setDefault("Asia/Bangkok"); 
 
 type Section = {
   assignment_section_id: string;
@@ -94,8 +97,8 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
                 />
               </Table.Td>
               <Table.Td ta="center">{section.section_name}</Table.Td>
-              <Table.Td ta="center">{section.release_date ? dayjs.utc(section.release_date).format('MMM D, YYYY h:mm A') : 'N/A'}</Table.Td>
-              <Table.Td ta="center">{section.due_date ? dayjs.utc(section.due_date).format('MMM D, YYYY h:mm A') : 'N/A'}</Table.Td>
+              <Table.Td ta="center">{section.release_date ? dayjs(section.release_date).format('MMM D, YYYY h:mm A') : 'N/A'}</Table.Td>
+              <Table.Td ta="center">{section.due_date ? dayjs(section.due_date).format('MMM D, YYYY h:mm A') : 'N/A'}</Table.Td>
               <Table.Td>
                 <Progress size="md" color={getProgressColor(section.release_date, section.due_date)} value={progress}></Progress>
                 <Text size='xs' mt='2px' ta='center'>{getRemainingTimeText(section.due_date)}</Text>
@@ -121,11 +124,13 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
 };
 
 function calculateProgress(release: string | null, due: string | null): number {
-  const now = dayjs().add(7, 'hour');
-  const releaseTime = dayjs.utc(release);
-  const dueTime = dayjs.utc(due);
+  const now = dayjs().tz('Asia/Bangkok');
+  const releaseTime = dayjs(release).tz('Asia/Bangkok');
+  const dueTime = dayjs(due).tz('Asia/Bangkok');
   const total = dueTime.diff(releaseTime);
   const remaining = dueTime.diff(now);
+  console.log(`Calculating progress: release=${release}, due=${due}, now=${now.format()}`);
+  
   if (!release || !due) return 0;
   if (now.isBefore(releaseTime)) return 100;
   if (now.isAfter(dueTime)) return 0;
@@ -140,8 +145,8 @@ const getProgressColor = (releaseDate: string | null, dueDate: string | null): s
 };
 
 function getRemainingTimeText(due: string | null): string {
-  const now = dayjs().add(7, 'hour');
-  const dueTime = dayjs.utc(due);
+  const now = dayjs().tz('Asia/Bangkok');
+  const dueTime = dayjs(due).tz('Asia/Bangkok');
   const duration = dueTime.diff(now, 'minute');
   const days = Math.floor(duration / (60 * 24));
   const hours = Math.floor((duration % (60 * 24)) / 60);
