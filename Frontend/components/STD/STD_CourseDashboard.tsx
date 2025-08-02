@@ -33,7 +33,7 @@ const STD_CourseDashboard: React.FC = () => {
         <Divider my="md" />
       </div>
 
-      {(!assignmentList || assignmentList.length === 0) ? (
+      {(!assignmentList || assignmentList.length === 0 || assignmentList === null) ? (
         <div className="text-center text-gray-500">
           This course has no assignments assigned yet.
         </div>
@@ -49,10 +49,10 @@ const STD_CourseDashboard: React.FC = () => {
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {assignmentList.map((assignment) => {
-              const status = (assignment as any).status || 'No Status';
-
-              return (
+            {assignmentList.map((assignment) => 
+             
+             
+              assignment ? (
                 <React.Fragment key={assignment.assignment_id}>
                   <Table.Tr className="border-b">
                     <Table.Td 
@@ -74,14 +74,14 @@ const STD_CourseDashboard: React.FC = () => {
                         ? dayjs(assignment.cut_off_date).utc().format('MMM D, YYYY h:mm A'): 'N/A'}
                     </Table.Td>
                     <Table.Td style={{ textAlign: 'center' }}>
-                      <Badge color={status === 'Submitted' ? 'green' : 'blue'} variant="filled">
-                        {status === 'Submitted' ? 'Submitted' : 'No Submission'}
+                      <Badge color={ 'blue'} variant="filled">
+                        No submitted
                       </Badge>
                     </Table.Td>
                   </Table.Tr>
                 </React.Fragment>
-              );
-            })}
+              ):null
+            )}
           </Table.Tbody>
         </Table>
       )}
