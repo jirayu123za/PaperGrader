@@ -2,7 +2,6 @@ package adapters
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -18,7 +17,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"gorm.io/datatypes"
-	"gorm.io/gorm"
 )
 
 // Primary adapters
@@ -36,7 +34,7 @@ func NewHttpInstructorHandler(services services.InstructorService, minioServices
 	}
 }
 
-// News Create assignment to course with Files(FromData)
+// Http handler to create assignment to course with Files(FromData)
 func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
@@ -55,154 +53,59 @@ func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 		})
 	}
 
-	assignmentName := c.FormValue("assignment_name")
-	assignmentDescription := c.FormValue("assignment_description")
-	submittedBy := c.FormValue("submitted_by")
+	sectionRaw := c.FormValue("sections")
+	if sectionRaw == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Sections cannot be empty",
+			"error":   "Sections field is required",
+		})
+	}
+	sectionNames := strings.Split(sectionRaw, ",")
 
-	assignment := models.Assignment{
-		CourseID:              courseID,
-		AssignmentName:        assignmentName,
-		AssignmentDescription: assignmentDescription,
-		SubmittedBy:           submittedBy,
+	form, err := c.MultipartForm()
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Failed to parse form data",
+			"error":   "Failed to parse form data",
+		})
+	}
+	files := form.File["files"]
+
+	var isTemplateFlags []bool
+	for i := range files {
+		val := c.FormValue(fmt.Sprintf("is_template[%d]", i))
+		flag, err := strconv.ParseBool(val)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"message": "Invalid is_template",
+				"error":   err.Error(),
+			})
+		}
+		isTemplateFlags = append(isTemplateFlags, flag)
 	}
 
-	if err := h.services.CreateAssignment(courseID, &assignment); err != nil {
+	request := response.CreateAssignmentRequest{
+		CourseID:              courseID,
+		AssignmentName:        c.FormValue("assignment_name"),
+		AssignmentDescription: c.FormValue("assignment_description"),
+		SubmittedBy:           c.FormValue("submitted_by"),
+		SectionNames:          sectionNames,
+		Files:                 files,
+		IsTemplateFlags:       isTemplateFlags,
+		UserID:                userID,
+	}
+
+	resp, err := h.services.CreateAssignmentWithFiles(request)
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to create assignment",
 			"error":   err.Error(),
 		})
 	}
 
-	var sectionIDs []uuid.UUID
-	sectionsName := c.FormValue("sections")
-	if sectionsName == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "sections name cannot be empty",
-		})
-	}
-
-	sectionsSplit := strings.Split(sectionsName, ",")
-	for _, sectionName := range sectionsSplit {
-		sectionName = strings.TrimSpace(sectionName)
-		if sectionName == "" {
-			continue
-		}
-
-		var section models.Section
-
-		err := h.sectionServices.GetSectionByCourseAndName(courseID, sectionName, &section)
-		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				newSection := models.Section{
-					CourseID:    courseID,
-					SectionName: sectionName,
-				}
-				if err := h.sectionServices.CreateSections(&newSection); err != nil {
-					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-						"message": "Failed to create section",
-						"error":   err.Error(),
-					})
-				}
-				sectionIDs = append(sectionIDs, newSection.SectionID)
-			} else {
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"message": "Failed to query section",
-					"error":   err.Error(),
-				})
-			}
-		} else {
-			sectionIDs = append(sectionIDs, section.SectionID)
-		}
-	}
-
-	var assignmentSections []models.AssignmentSection
-	for _, secID := range sectionIDs {
-		assignmentSection := models.AssignmentSection{
-			SectionID: secID,
-		}
-		assignmentSections = append(assignmentSections, assignmentSection)
-	}
-
-	// Handle files uploaded
-	form, err := c.MultipartForm()
-	if err != nil {
-		return c.Status(400).JSON(fiber.Map{
-			"error": "Failed to parse form data",
-		})
-	}
-
-	files := form.File["files"]
-	if len(files) == 0 {
-		return c.Status(400).JSON(fiber.Map{
-			"error": "No files uploaded",
-		})
-	}
-
-	var assignmentFiles []models.AssignmentFile
-	var uploads []models.Upload
-	for i, file := range files {
-		isTemplateStr := c.FormValue(fmt.Sprintf("is_template[%d]", i))
-		isTemplate, err := strconv.ParseBool(isTemplateStr)
-		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"message": "Invalid is_template value",
-				"error":   err.Error(),
-			})
-		}
-
-		assignmentFile := models.AssignmentFile{
-			AssignmentFileName: file.Filename,
-			AssignmentID:       assignment.AssignmentID,
-			IsTemplate:         isTemplate,
-		}
-
-		if err := h.services.CreateAssignmentFile(&assignmentFile); err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Failed to save assignment file",
-				"error":   err.Error(),
-			})
-		}
-
-		upload := models.Upload{
-			UserID:           userID,
-			AssignmentFileID: assignmentFile.AssignmentFileID,
-			CreatedAt:        time.Now(),
-		}
-
-		assignmentFiles = append(assignmentFiles, assignmentFile)
-		uploads = append(uploads, upload)
-
-		// structure folder bucket -> course_id -> assignment_id -> file name(version)
-		fileContent, err := file.Open()
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Failed to open file",
-				"error":   err.Error(),
-			})
-		}
-		defer fileContent.Close()
-
-		if err := h.minioServices.CreateFileToMinIO(fileContent, courseID.String(), assignment.AssignmentID.String(), file.Filename); err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Failed to save the file",
-				"error":   err.Error(),
-			})
-		}
-	}
-
-	if err := h.services.CreateAssignmentWithFiles(courseID, &assignment, assignmentFiles, uploads, assignmentSections); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to create assignment and save files",
-			"error":   err.Error(),
-		})
-	}
-
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"message":            "Assignment was created and files saved to bucket",
-		"assignment":         assignment,
-		"assignment_file":    assignmentFiles,
-		"upload":             uploads,
-		"assignment_section": assignmentSections,
+		"message": "Assignment created successfully",
+		"data":    resp,
 	})
 }
 
@@ -561,7 +464,7 @@ func (h *HttpInstructorHandler) GetPersonalDataByIDAndCourseID(c *fiber.Ctx) err
 	})
 }
 
-// handler Insert a single user to course
+// Http handler to insert a single user to roster
 func (h *HttpInstructorHandler) CreateSingleUserRoster(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
@@ -572,96 +475,28 @@ func (h *HttpInstructorHandler) CreateSingleUserRoster(c *fiber.Ctx) error {
 		})
 	}
 
-	roleType := c.FormValue("role_type")
-	sectionsName := c.FormValue("sections")
-
-	var sectionIDs []uuid.UUID
-
-	if roleType != "INSTRUCTOR" && roleType != "TA" {
-		if sectionsName == "" {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"message": "sections name cannot be empty",
-			})
-		}
-
-		sectionsSplit := strings.Split(sectionsName, ",")
-		for _, sectionName := range sectionsSplit {
-			sectionName = strings.TrimSpace(sectionName)
-			if sectionName == "" {
-				continue
-			}
-
-			var section models.Section
-
-			err := h.sectionServices.GetSectionByCourseAndName(courseID, sectionName, &section)
-			if err != nil {
-				if errors.Is(err, gorm.ErrRecordNotFound) {
-					newSection := models.Section{
-						CourseID:    courseID,
-						SectionName: sectionName,
-					}
-					if err := h.sectionServices.CreateSections(&newSection); err != nil {
-						return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-							"message": "Failed to create section",
-							"error":   err.Error(),
-						})
-					}
-					sectionIDs = append(sectionIDs, newSection.SectionID)
-				} else {
-					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-						"message": "Failed to query section",
-						"error":   err.Error(),
-					})
-				}
-			} else {
-				sectionIDs = append(sectionIDs, section.SectionID)
-			}
-		}
-	}
-
 	studentCode := c.FormValue("student_code")
 	var studentCodePtr *string
-	if studentCode == "" {
-		studentCodePtr = nil
-	} else {
+	if studentCode != "" {
 		studentCodePtr = &studentCode
+	} else {
+		studentCodePtr = nil
 	}
-	firstName := c.FormValue("first_name")
-	lastName := c.FormValue("last_name")
-	email := c.FormValue("email")
 
-	personalData := models.PersonalData{
+	payload := response.CreateSingleRosterRequest{
+		RoleType:    c.FormValue("role_type"),
+		Sections:    c.FormValue("sections"),
 		StudentCode: studentCodePtr,
-		FirstName:   firstName,
-		LastName:    lastName,
-		Email:       email,
-		RoleType:    roleType,
+		FirstName:   c.FormValue("first_name"),
+		LastName:    c.FormValue("last_name"),
+		Email:       c.FormValue("email"),
 	}
 
-	if roleType == "INSTRUCTOR" || roleType == "TA" {
-		sectionIDs = append(sectionIDs, uuid.Nil)
-	}
-
-	for _, sectionID := range sectionIDs {
-		var sectionIDPtr *uuid.UUID
-
-		if sectionID != uuid.Nil {
-			sectionIDPtr = &sectionID
-		} else {
-			sectionIDPtr = nil
-		}
-
-		enrollment := models.EnrollmentList{
-			CourseID:  courseID,
-			SectionID: sectionIDPtr,
-		}
-
-		if err := h.services.CreateSingleUserRoster(&personalData, &enrollment); err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Failed to add user to section",
-				"error":   err.Error(),
-			})
-		}
+	err = h.services.CreateSingleUserRoster(courseID, payload)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
@@ -683,115 +518,23 @@ func (h *HttpInstructorHandler) CreateMultipleUserRoster(c *fiber.Ctx) error {
 	if data == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Missing 'data' field in the request",
+			"error":   "The 'data' field is required and cannot be empty",
 		})
 	}
 
-	var inputData struct {
-		FirstName   []string `json:"first_name"`
-		LastName    []string `json:"last_name"`
-		Email       []string `json:"email"`
-		StudentCode []string `json:"student_code"`
-		Section     []string `json:"section"`
-		RoleType    string   `json:"role_type"`
-	}
-
-	if err := json.Unmarshal([]byte(data), &inputData); err != nil {
+	var input response.CreateMultipleRosterRequest
+	if err := json.Unmarshal([]byte(data), &input); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Invalid JSON format in 'data'",
 			"error":   err.Error(),
 		})
 	}
 
-	if len(inputData.FirstName) == 0 || len(inputData.LastName) == 0 || len(inputData.Email) == 0 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Missing required fields in 'data'",
+	if err := h.services.CreateMultipleUserRoster(courseID, input); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to create roster",
+			"error":   err.Error(),
 		})
-	}
-
-	if len(inputData.FirstName) != len(inputData.LastName) || len(inputData.FirstName) != len(inputData.Email) {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Inconsistent array lengths in 'data'",
-		})
-	}
-
-	for i := range inputData.FirstName {
-		studentCode := inputData.StudentCode[i]
-		sectionName := inputData.Section[i]
-
-		var sectionIDs []uuid.UUID
-		if inputData.RoleType != "INSTRUCTOR" && inputData.RoleType != "TA" {
-			if sectionName == "" {
-				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-					"message": "sections name cannot be empty",
-				})
-			}
-
-			var section models.Section
-			err := h.sectionServices.GetSectionByCourseAndName(courseID, sectionName, &section)
-			if err != nil {
-				if errors.Is(err, gorm.ErrRecordNotFound) {
-					newSection := models.Section{
-						CourseID:    courseID,
-						SectionName: sectionName,
-					}
-					if err := h.sectionServices.CreateSections(&newSection); err != nil {
-						return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-							"message": "Failed to create section",
-							"error":   err.Error(),
-						})
-					}
-					sectionIDs = append(sectionIDs, newSection.SectionID)
-				} else {
-					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-						"message": "Failed to query section",
-						"error":   err.Error(),
-					})
-				}
-			} else {
-				sectionIDs = append(sectionIDs, section.SectionID)
-			}
-		}
-
-		var studentCodePtr *string
-		if studentCode == "" {
-			studentCodePtr = nil
-		} else {
-			studentCodePtr = &studentCode
-		}
-
-		personalData := models.PersonalData{
-			StudentCode: studentCodePtr,
-			FirstName:   inputData.FirstName[i],
-			LastName:    inputData.LastName[i],
-			Email:       inputData.Email[i],
-			RoleType:    inputData.RoleType,
-		}
-
-		if inputData.RoleType == "INSTRUCTOR" || inputData.RoleType == "TA" {
-			sectionIDs = append(sectionIDs, uuid.Nil)
-		}
-
-		for _, sectionID := range sectionIDs {
-			var sectionIDPtr *uuid.UUID
-
-			if sectionID != uuid.Nil {
-				sectionIDPtr = &sectionID
-			} else {
-				sectionIDPtr = nil
-			}
-
-			enrollment := models.EnrollmentList{
-				CourseID:  courseID,
-				SectionID: sectionIDPtr,
-			}
-
-			if err := h.services.CreateSingleUserRoster(&personalData, &enrollment); err != nil {
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"message": "Failed to add user to section",
-					"error":   err.Error(),
-				})
-			}
-		}
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{

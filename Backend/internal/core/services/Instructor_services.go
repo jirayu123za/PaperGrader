@@ -10,30 +10,32 @@ import (
 	"paperGrader/internal/models"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 // Primary port
 type InstructorService interface {
-	// v1 add assignment to course with out Files(Json)
+	// CRUD operations for Assignments
 	CreateAssignment(CourseID uuid.UUID, assignment *models.Assignment) error
-	CreateAssignmentWithFiles(CourseID uuid.UUID, assignment *models.Assignment, files []models.AssignmentFile, uploads []models.Upload, assignmentSections []models.AssignmentSection) error
+	CreateAssignmentWithFiles(request response.CreateAssignmentRequest) (response.CreateAssignmentResponse, error)
+	CreateAssignmentFile(file *models.AssignmentFile) error
 
 	GetAssignmentNameTemplate(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileName string, err error)
 	GetPDFTemplateWithURL(CourseID uuid.UUID, AssignmentID uuid.UUID) (templateURL string, err error)
 	GetFileFormSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, fileURLs []string, err error)
 
-	CreateAssignmentFile(file *models.AssignmentFile) error
 	UpdateAssignmentAndAssignmentSection(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment, sections []models.AssignmentSection) error
 
+	// CRUD operations for Roster
 	GetRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
 	GetRosterSectionByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
 	GetRosterByCourseIDAndSectionID(CourseID uuid.UUID, SectionID uuid.UUID) ([]map[string]interface{}, error)
 	GetPersonalDataByIDAndCourseID(PersonalDataID uuid.UUID, CourseID uuid.UUID) ([]map[string]interface{}, error)
 
-	CreateSingleUserRoster(personalData *models.PersonalData, enrollment *models.EnrollmentList) error
-	CreateMultipleUserRoster(personalData []models.PersonalData, enrollmentLists []models.EnrollmentList) error
+	CreateSingleUserRoster(courseID uuid.UUID, payload response.CreateSingleRosterRequest) error
+	CreateMultipleUserRoster(courseID uuid.UUID, payload response.CreateMultipleRosterRequest) error
 	GetColumnsAndDataFromUploadedFile(fileBytes []byte) (map[string]interface{}, error)
 	GetColumnsAndDataFromOptionFile(fileBytes []byte) (map[string]interface{}, error)
 
@@ -122,7 +124,7 @@ func NewInstructorService(repo repositories.InstructorRepository, courseRepo rep
 	}
 }
 
-// v1 add assignment to course with out Files(Json)
+// Service to create a new assignment
 func (s *InstructorServiceImpl) CreateAssignment(CourseID uuid.UUID, assignment *models.Assignment) error {
 	existingCourse, err := s.courseRepo.FindCourseByID(CourseID)
 	if err != nil {
@@ -135,12 +137,91 @@ func (s *InstructorServiceImpl) CreateAssignment(CourseID uuid.UUID, assignment 
 	return nil
 }
 
-// News Create assignment to course with Files(FromData)
-func (s *InstructorServiceImpl) CreateAssignmentWithFiles(CourseID uuid.UUID, assignment *models.Assignment, files []models.AssignmentFile, uploads []models.Upload, assignmentSections []models.AssignmentSection) error {
-	if err := s.repo.AddAssignmentWithFiles(CourseID, assignment, files, uploads, assignmentSections); err != nil {
-		return err
+// New services create assignment with files
+func (s *InstructorServiceImpl) CreateAssignmentWithFiles(request response.CreateAssignmentRequest) (response.CreateAssignmentResponse, error) {
+	var response response.CreateAssignmentResponse
+
+	course, err := s.courseRepo.FindCourseByID(request.CourseID)
+	if err != nil {
+		return response, fmt.Errorf("course not found: %w", err)
 	}
-	return nil
+
+	assignment := models.Assignment{
+		CourseID:              course.CourseID,
+		AssignmentName:        request.AssignmentName,
+		AssignmentDescription: request.AssignmentDescription,
+		SubmittedBy:           request.SubmittedBy,
+	}
+	if err := s.repo.AddAssignment(request.CourseID, &assignment); err != nil {
+		return response, err
+	}
+
+	response.Assignment = assignment
+	var assignmentSections []models.AssignmentSection
+	for _, sectionName := range request.SectionNames {
+		sectionName = strings.TrimSpace(sectionName)
+		section, found, err := s.sectionRepo.FindSectionByCourseIDAndSectionName(request.CourseID, sectionName)
+		if err != nil {
+			return response, err
+		}
+		if !found {
+			newSection := models.Section{
+				CourseID:    request.CourseID,
+				SectionName: sectionName,
+			}
+			if err := s.sectionRepo.AddSections(&newSection); err != nil {
+				return response, fmt.Errorf("create section failed: %w", err)
+			}
+		}
+		assignmentSections = append(assignmentSections, models.AssignmentSection{
+			AssignmentID: assignment.AssignmentID,
+			SectionID:    section.SectionID,
+		})
+	}
+	response.AssignmentSections = assignmentSections
+
+	var assignmentFiles []models.AssignmentFile
+	var uploads []models.Upload
+	for i, fileHeader := range request.Files {
+		assignmentFile := models.AssignmentFile{
+			AssignmentID:       assignment.AssignmentID,
+			AssignmentFileName: fileHeader.Filename,
+			IsTemplate:         request.IsTemplateFlags[i],
+		}
+		if err := s.repo.AddAssignmentFile(&assignmentFile); err != nil {
+			return response, fmt.Errorf("create assignment file failed: %w", err)
+		}
+
+		upload := models.Upload{
+			UserID:           request.UserID,
+			AssignmentFileID: assignmentFile.AssignmentFileID,
+			CreatedAt:        time.Now(),
+		}
+		uploads = append(uploads, upload)
+		assignmentFiles = append(assignmentFiles, assignmentFile)
+
+		fileContent, err := fileHeader.Open()
+		if err != nil {
+			return response, fmt.Errorf("open file failed: %w", err)
+		}
+		defer fileContent.Close()
+
+		if err := s.minioRepo.AddFileToMinIO(fileContent, request.CourseID.String(), assignment.AssignmentID.String(), fileHeader.Filename); err != nil {
+			return response, fmt.Errorf("upload to MinIO failed: %w", err)
+		}
+	}
+	response.AssignmentFiles = assignmentFiles
+	response.Uploads = uploads
+
+	if err := s.repo.AddAssignmentWithFiles(request.CourseID, &assignment, assignmentFiles, uploads, assignmentSections); err != nil {
+		return response, fmt.Errorf("final db save failed: %w", err)
+	}
+
+	return response, nil
+}
+
+func (s *InstructorServiceImpl) CreateAssignmentFile(file *models.AssignmentFile) error {
+	return s.repo.AddAssignmentFile(file)
 }
 
 func (s *InstructorServiceImpl) GetAssignmentNameTemplate(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileName string, err error) {
@@ -188,10 +269,6 @@ func (s *InstructorServiceImpl) GetProcessLeftSideBarData(CourseID uuid.UUID, As
 	return assignment, nil
 }
 
-func (s *InstructorServiceImpl) CreateAssignmentFile(file *models.AssignmentFile) error {
-	return s.repo.AddAssignmentFile(file)
-}
-
 func (s *InstructorServiceImpl) UpdateAssignmentAndAssignmentSection(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment, sections []models.AssignmentSection) error {
 	return s.repo.ModifyAssignmentAndAssignmentSection(CourseID, AssignmentID, assignment, sections)
 }
@@ -230,19 +307,140 @@ func (s *InstructorServiceImpl) GetPersonalDataByIDAndCourseID(PersonalDataID uu
 	return personalData, nil
 }
 
-// Insert student or instructor to course
-func (s *InstructorServiceImpl) CreateSingleUserRoster(personalData *models.PersonalData, enrollment *models.EnrollmentList) error {
-	if err := s.repo.AddSingleUserRoster(personalData, enrollment); err != nil {
-		return err
+// Service to create a single user roster
+func (s *InstructorServiceImpl) CreateSingleUserRoster(courseID uuid.UUID, payload response.CreateSingleRosterRequest) error {
+	var sectionIDs []uuid.UUID
+
+	if payload.RoleType != "INSTRUCTOR" && payload.RoleType != "TA" {
+		if payload.Sections == "" {
+			return fmt.Errorf("sections cannot be empty for student role")
+		}
+
+		sectionsSplit := strings.Split(payload.Sections, ",")
+		for _, sectionName := range sectionsSplit {
+			sectionName = strings.TrimSpace(sectionName)
+			if sectionName == "" {
+				continue
+			}
+
+			section, found, err := s.sectionRepo.FindSectionByCourseIDAndSectionName(courseID, sectionName)
+			if err != nil {
+				return err
+			}
+
+			if !found {
+				newSection := models.Section{
+					CourseID:    courseID,
+					SectionName: sectionName,
+				}
+				if err := s.sectionRepo.AddSections(&newSection); err != nil {
+					return err
+				}
+				sectionIDs = append(sectionIDs, newSection.SectionID)
+			} else {
+				sectionIDs = append(sectionIDs, section.SectionID)
+			}
+		}
+	} else {
+		sectionIDs = append(sectionIDs, uuid.Nil)
+	}
+
+	personalData := models.PersonalData{
+		StudentCode: payload.StudentCode,
+		FirstName:   payload.FirstName,
+		LastName:    payload.LastName,
+		Email:       payload.Email,
+		RoleType:    payload.RoleType,
+	}
+
+	for _, sectionID := range sectionIDs {
+		var sectionIDPtr *uuid.UUID
+		if sectionID != uuid.Nil {
+			sectionIDPtr = &sectionID
+		}
+
+		enrollment := models.EnrollmentList{
+			CourseID:  courseID,
+			SectionID: sectionIDPtr,
+		}
+
+		if err := s.repo.AddSingleUserRoster(&personalData, &enrollment); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func (s *InstructorServiceImpl) CreateMultipleUserRoster(personalData []models.PersonalData, enrollmentLists []models.EnrollmentList) error {
-	if err := s.repo.AddMultipleUserRoster(personalData, enrollmentLists); err != nil {
-		return err
+// Service to create multiple user roster
+func (s *InstructorServiceImpl) CreateMultipleUserRoster(courseID uuid.UUID, payload response.CreateMultipleRosterRequest) error {
+	if len(payload.FirstName) == 0 || len(payload.LastName) == 0 || len(payload.Email) == 0 {
+		return fmt.Errorf("Missing required fields: FirstName, LastName, or Email")
 	}
-	return nil
+
+	if len(payload.FirstName) != len(payload.LastName) || len(payload.FirstName) != len(payload.Email) || len(payload.FirstName) != len(payload.Section) {
+		return fmt.Errorf("FirstName, LastName, Email, and Section must have the same length")
+	}
+
+	var personalDataList []models.PersonalData
+	var enrollmentList []models.EnrollmentList
+	for i := range payload.FirstName {
+		var sectionIDPtr *uuid.UUID
+
+		if payload.RoleType != "INSTRUCTOR" && payload.RoleType != "TA" {
+			sectionName := payload.Section[i]
+			if sectionName == "" {
+				return fmt.Errorf("section cannot be empty for student role")
+			}
+
+			if sectionName != "" {
+				section, found, err := s.sectionRepo.FindSectionByCourseIDAndSectionName(courseID, sectionName)
+				if err != nil {
+					return err
+				}
+
+				if !found {
+					newSection := models.Section{
+						CourseID:    courseID,
+						SectionName: sectionName,
+					}
+					if err := s.sectionRepo.AddSections(&newSection); err != nil {
+						return err
+					}
+					sectionID := newSection.SectionID
+					sectionIDPtr = &sectionID
+				} else {
+					sectionID := section.SectionID
+					sectionIDPtr = &sectionID
+				}
+			}
+		}
+
+		if payload.RoleType == "INSTRUCTOR" || payload.RoleType == "TA" {
+			sectionIDPtr = nil
+		}
+
+		var studentCodePtr *string
+		if payload.StudentCode[i] != "" {
+			studentCodePtr = &payload.StudentCode[i]
+		}
+
+		personal := models.PersonalData{
+			StudentCode: studentCodePtr,
+			FirstName:   payload.FirstName[i],
+			LastName:    payload.LastName[i],
+			Email:       payload.Email[i],
+			RoleType:    payload.RoleType,
+		}
+
+		enrollment := models.EnrollmentList{
+			CourseID:  courseID,
+			SectionID: sectionIDPtr,
+		}
+
+		personalDataList = append(personalDataList, personal)
+		enrollmentList = append(enrollmentList, enrollment)
+	}
+	return s.repo.AddMultipleUserRoster(personalDataList, enrollmentList)
 }
 
 func (s *InstructorServiceImpl) GetColumnsAndDataFromUploadedFile(fileBytes []byte) (map[string]interface{}, error) {

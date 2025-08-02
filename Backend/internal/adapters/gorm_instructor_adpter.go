@@ -350,7 +350,7 @@ func (r *GormInstructorRepository) FindUserByEmail(email string) (map[string]int
 	return result, nil
 }
 
-// AddSingleUserRoster adds a single user to a course
+// Handler gorm insert a single user to roster
 func (r *GormInstructorRepository) AddSingleUserRoster(personalData *models.PersonalData, enrollment *models.EnrollmentList) error {
 	tx := r.db.Begin()
 
@@ -358,12 +358,15 @@ func (r *GormInstructorRepository) AddSingleUserRoster(personalData *models.Pers
 	err := tx.Table("personal_data").
 		Select("personal_data.*").
 		Joins("LEFT JOIN enrollment_lists ON personal_data.personal_data_id = enrollment_lists.personal_data_id").
-		Where("personal_data.email = ? AND personal_data.role_type = ? AND enrollment_lists.course_id = ?",
-			personalData.Email, personalData.RoleType, enrollment.CourseID).
+		Where("personal_data.email = ? AND enrollment_lists.course_id = ?", personalData.Email, enrollment.CourseID).
 		First(&existingPersonalData).Error
 	if err == nil {
+		if existingPersonalData.RoleType != personalData.RoleType {
+			tx.Rollback()
+			return fmt.Errorf("role conflict: user with email %s already exists in this course as %s", personalData.Email, existingPersonalData.RoleType)
+		}
 		enrollment.PersonalDataID = existingPersonalData.PersonalDataID
-	} else if err != gorm.ErrRecordNotFound {
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 		tx.Rollback()
 		return fmt.Errorf("failed to query personal data: %v", err)
 	} else {
@@ -376,8 +379,7 @@ func (r *GormInstructorRepository) AddSingleUserRoster(personalData *models.Pers
 
 	var count int64
 	if err := tx.Model(&models.EnrollmentList{}).
-		Where("course_id = ? AND personal_data_id = ? AND (section_id = ? OR section_id IS NULL)",
-			enrollment.CourseID, enrollment.PersonalDataID, enrollment.SectionID).
+		Where("course_id = ? AND personal_data_id = ? AND (section_id = ? OR section_id IS NULL)", enrollment.CourseID, enrollment.PersonalDataID, enrollment.SectionID).
 		Count(&count).Error; err != nil {
 		tx.Rollback()
 		return fmt.Errorf("failed to query enrollment list: %v", err)
@@ -403,6 +405,7 @@ func (r *GormInstructorRepository) AddSingleUserRoster(personalData *models.Pers
 	return nil
 }
 
+// Handler gorm insert multiple users to roster
 func (r *GormInstructorRepository) AddMultipleUserRoster(personalData []models.PersonalData, enrollmentLists []models.EnrollmentList) error {
 	tx := r.db.Begin()
 
@@ -411,12 +414,11 @@ func (r *GormInstructorRepository) AddMultipleUserRoster(personalData []models.P
 		err := tx.Table("personal_data").
 			Select("personal_data.*").
 			Joins("LEFT JOIN enrollment_lists ON personal_data.personal_data_id = enrollment_lists.personal_data_id").
-			Where("personal_data.email = ? AND personal_data.role_type = ? AND enrollment_lists.course_id = ?",
-				pd.Email, pd.RoleType, enrollmentLists[i].CourseID).
+			Where("personal_data.email = ? AND enrollment_lists.course_id = ?", pd.Email, enrollmentLists[i].CourseID).
 			First(&existingPersonalData).Error
 		if err == nil {
 			enrollmentLists[i].PersonalDataID = existingPersonalData.PersonalDataID
-		} else if err != gorm.ErrRecordNotFound {
+		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 			tx.Rollback()
 			return fmt.Errorf("failed to query personal data: %v", err)
 		} else {
@@ -429,8 +431,7 @@ func (r *GormInstructorRepository) AddMultipleUserRoster(personalData []models.P
 
 		var count int64
 		if err := tx.Model(&models.EnrollmentList{}).
-			Where("course_id = ? AND personal_data_id = ? AND (section_id = ? OR section_id IS NULL)",
-				enrollmentLists[i].CourseID, enrollmentLists[i].PersonalDataID, enrollmentLists[i].SectionID).
+			Where("course_id = ? AND personal_data_id = ? AND (section_id = ? OR section_id IS NULL)", enrollmentLists[i].CourseID, enrollmentLists[i].PersonalDataID, enrollmentLists[i].SectionID).
 			Count(&count).Error; err != nil {
 			tx.Rollback()
 			return fmt.Errorf("failed to query enrollment list: %v", err)
