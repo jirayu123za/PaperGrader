@@ -5,11 +5,12 @@ import SectionSelector from '../Create/Sections/SectionSelector';
 import UploadFile from '../UploadFile';
 import { Modal, Button, TextInput, RadioGroup, Radio, Text } from '@mantine/core';
 import { useCreateAssignment } from '../../hooks/useCreate/useCreateAssignment';
-import { useRouter , useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useFileStore } from '../../store/useFileStore';
 import { useForm } from '@mantine/form';
 import { Editor } from './Editor.tsx/Editor';
 import { useSelectSectionStore } from '../../store/useSectionStore';
+import { notifications } from '@mantine/notifications';
 
 interface CreateAssignmentModalProps {
   isOpen: boolean;
@@ -17,7 +18,6 @@ interface CreateAssignmentModalProps {
 }
 
 const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, onClose }) => {
-  const router = useRouter();
   const params = useParams();
   const course_id = params?.course_id as string;
   const { files, templateFile, clearFiles } = useFileStore();
@@ -39,7 +39,6 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
 
   const handleSubmit = (values: typeof form.values) => {
     const formData = new FormData();
-
     formData.append('assignment_name', values.assignment_name);
     formData.append('assignment_description', values.assignment_description);
     formData.append('submitted_by', values.submitted_by);
@@ -49,9 +48,17 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
       if (file instanceof File) {
         formData.append(`is_template[${index}]`, file === templateFile ? 'true' : 'false');
         formData.append('files', file);
-        console.log(`File added: ${file.name}`);
+        notifications.show({
+          title: 'File Added',
+          message: `File ${file.name} has been added.`,
+          color: 'green',
+        });
       } else {
-        console.error('Invalid file in list:', file);
+        notifications.show({
+          title: 'Invalid File',
+          message: `File ${files} is not a valid file.`,
+          color: 'red',
+        });
       }
     });
     
@@ -62,10 +69,18 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
         resetSelectedSections();
         form.reset();
         clearFiles();
+        notifications.show({
+          title: 'Success',
+          message: 'Assignment created successfully',
+          color: 'green',
+        });
       },
       onError: (error) => {
-        console.log(File);
-        console.error('Error creating assignment:', error);
+        notifications.show({
+          title: 'Error',
+          message: `${error.response?.data?.error}`,
+          color: 'red',
+        });
       },
     });
   };

@@ -1,5 +1,5 @@
-import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
+import { useMutation } from '@tanstack/react-query';
 import { useAssignmentStore } from '../../store/useCreateAssignmentStore';
 
 const createAssignment = async ({ formData, course_id }: { formData: FormData; course_id: string }) => {
@@ -22,7 +22,6 @@ export const useCreateAssignment = () => {
       reset();
     },
     onError: (error: any) => {
-      console.error("Error creating assignment:", error);
     },
   });
 };
