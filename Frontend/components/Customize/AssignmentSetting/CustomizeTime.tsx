@@ -2,6 +2,7 @@
 
 import '@mantine/dates/styles.css';
 import React from 'react';
+import dayjs from 'dayjs';
 import SectionEditAssignment from '../../Create/Sections/SectionEditAssignment';
 import { DateTimePicker } from '@mantine/dates';
 import { Flex, Loader } from '@mantine/core';
@@ -23,6 +24,9 @@ const CustomizeTime: React.FC = () => {
       </Flex>
     );
   }
+
+  console.log('CustomizeTime values:', values);
+  
 
   return (
     <Flex direction="column" gap="xs" ml='md' h='600px'>

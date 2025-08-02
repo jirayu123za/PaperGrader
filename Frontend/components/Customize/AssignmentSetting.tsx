@@ -3,6 +3,9 @@
 import React, { useState } from 'react';
 import CustomizeTime from './AssignmentSetting/CustomizeTime';
 import BasicSettings from './AssignmentSetting/BasicSettings';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import { Tabs, Button, Modal, Group, Flex } from '@mantine/core';
 import { RiDeleteBinLine, RiFilePaper2Line } from 'react-icons/ri';
 import { CiSettings } from 'react-icons/ci';
@@ -17,6 +20,9 @@ import { SubmissionSettings } from './AssignmentSetting/SubmissionSettings';
 import { GradingDefault } from './AssignmentSetting/GradingDefault';
 import { RubricSettings } from './AssignmentSetting/RubricSettings';
 import { StudentVisibility } from './AssignmentSetting/StudentVisibility';
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.tz.setDefault("Asia/Bangkok"); 
 
 const AssignmentSetting: React.FC = () => {
   const params = useParams();
@@ -51,9 +57,9 @@ const AssignmentSetting: React.FC = () => {
     formData.append('group_submitted', values.groupSubmitted ? 'true' : 'false');
     formData.append('published', values.published ? 'true' : 'false');
     formData.append('regrades', values.regrades ? 'true' : 'false');
-    formData.append('release_date', values.releaseDate ? new Date(values.releaseDate).toISOString() : '');
-    formData.append('due_date', values.dueDate ? new Date(values.dueDate).toISOString() : '');
-    formData.append('cut_off_date', values.cutOffDate ? new Date(values.cutOffDate).toISOString() : '');
+    formData.append('release_date', values.releaseDate ? dayjs(values.releaseDate).tz().format() : '');
+    formData.append('due_date', values.dueDate ? dayjs(values.dueDate).tz().format() : '');
+    formData.append('cut_off_date', values.cutOffDate ? dayjs(values.cutOffDate).tz().format() : '');
     formData.append('sections', JSON.stringify(selectedSectionIDs));
 
     console.log('assignment_name:', values.assignmentName);
@@ -64,9 +70,9 @@ const AssignmentSetting: React.FC = () => {
     console.log('group_submitted:', values.groupSubmitted);
     console.log('published:', values.published);
     console.log('regrades:', values.regrades);
-    console.log('release_date:', values.releaseDate ? new Date(values.releaseDate).toISOString() : '');
-    console.log('due_date:', values.dueDate ? new Date(values.dueDate).toISOString() : '');
-    console.log('cut_off_date:', values.cutOffDate ? new Date(values.cutOffDate).toISOString() : '');
+    console.log('release_date:', values.releaseDate ? dayjs(values.releaseDate).tz().format() : '');
+    console.log('due_date:', values.dueDate ? dayjs(values.dueDate).tz().format() : '');
+    console.log('cut_off_date:', values.cutOffDate ? dayjs(values.cutOffDate).tz().format() : '');
     console.log('sections:', JSON.stringify(selectedSectionIDs));
 
     updateAssignment(
