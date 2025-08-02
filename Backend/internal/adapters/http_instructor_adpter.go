@@ -283,7 +283,7 @@ func (h *HttpInstructorHandler) UpdateAssignmentAndAssignmentSection(c *fiber.Ct
 	}
 
 	releaseDateStr := c.FormValue("release_date")
-	releaseDate, err := utils.ParseDate(releaseDateStr, time.RFC3339)
+	releaseDate, err := time.Parse(time.RFC3339, releaseDateStr)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Invalid release_date format",
@@ -292,7 +292,7 @@ func (h *HttpInstructorHandler) UpdateAssignmentAndAssignmentSection(c *fiber.Ct
 	}
 
 	dueDateStr := c.FormValue("due_date")
-	dueDate, err := utils.ParseDate(dueDateStr, time.RFC3339)
+	dueDate, err := time.Parse(time.RFC3339, dueDateStr)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Invalid due_date format",
@@ -301,7 +301,7 @@ func (h *HttpInstructorHandler) UpdateAssignmentAndAssignmentSection(c *fiber.Ct
 	}
 
 	cutOffDateStr := c.FormValue("cut_off_date")
-	cutOffDate, err := utils.ParseDate(cutOffDateStr, time.RFC3339)
+	cutOffDate, err := time.Parse(time.RFC3339, cutOffDateStr)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Invalid cut_off_date format",
@@ -313,13 +313,17 @@ func (h *HttpInstructorHandler) UpdateAssignmentAndAssignmentSection(c *fiber.Ct
 	fmt.Printf("Received DueDate: %s\n", c.FormValue("due_date"))
 	fmt.Printf("Received CutOffDate: %s\n", c.FormValue("cut_off_date"))
 
+	fmt.Printf("Parsed ReleaseDate: %v\n", releaseDate)
+	fmt.Printf("Parsed DueDate: %v\n", dueDate)
+	fmt.Printf("Parsed CutOffDate: %v\n", cutOffDate)
+
 	var sections []models.AssignmentSection
 	for _, sectionID := range sectionsIDs {
 		sections = append(sections, models.AssignmentSection{
 			SectionID:   sectionID,
-			ReleaseDate: releaseDate,
-			DueDate:     dueDate,
-			CutOffDate:  cutOffDate,
+			ReleaseDate: &releaseDate,
+			DueDate:     &dueDate,
+			CutOffDate:  &cutOffDate,
 		})
 	}
 
