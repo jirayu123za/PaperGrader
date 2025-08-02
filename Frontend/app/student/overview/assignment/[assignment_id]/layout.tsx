@@ -1,5 +1,5 @@
 import React from 'react'
-import LeftAssignment from '@/components/STD/SideBar/LeftAssignment'
+import LeftAssignment from '@/components/STD/SideBar/LeftCourse'
 
 export default function StudentAssignment({ children }: { children: React.ReactNode }) {
   return (
