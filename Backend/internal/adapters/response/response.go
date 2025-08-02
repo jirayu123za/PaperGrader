@@ -1,6 +1,8 @@
 package response
 
 import (
+	"mime/multipart"
+	"paperGrader/internal/models"
 	"time"
 
 	"github.com/google/uuid"
@@ -90,6 +92,26 @@ type InsAssignmentResponse struct {
 	AssignmentSections    []AssignmentSectionResponse `json:"assignment_sections" gorm:"-"`
 }
 
+// Struct for create assignment request
+type CreateAssignmentRequest struct {
+	CourseID              uuid.UUID
+	AssignmentName        string
+	AssignmentDescription string
+	SubmittedBy           string
+	SectionNames          []string
+	Files                 []*multipart.FileHeader
+	IsTemplateFlags       []bool
+	UserID                uuid.UUID
+}
+
+// Struct for create assignment response
+type CreateAssignmentResponse struct {
+	Assignment         models.Assignment
+	AssignmentFiles    []models.AssignmentFile
+	Uploads            []models.Upload
+	AssignmentSections []models.AssignmentSection
+}
+
 // Struct for GetCourseByCourseID(one structs)
 type CourseResponse struct {
 	CourseID          uuid.UUID `json:"course_id"`
@@ -123,6 +145,27 @@ type CoursesResponse struct {
 type InstructorListResponse struct {
 	PersonalDataID uuid.UUID `json:"personalData_id"`
 	InstructorName string    `json:"instructor_name"`
+}
+
+// Struct for manage roster
+// Part:1 Single user roster
+type CreateSingleRosterRequest struct {
+	RoleType    string  `form:"role_type"`
+	Sections    string  `form:"sections"`
+	StudentCode *string `form:"student_code"`
+	FirstName   string  `form:"first_name"`
+	LastName    string  `form:"last_name"`
+	Email       string  `form:"email"`
+}
+
+// Part:2 Multiple user roster
+type CreateMultipleRosterRequest struct {
+	FirstName   []string `json:"first_name"`
+	LastName    []string `json:"last_name"`
+	Email       []string `json:"email"`
+	StudentCode []string `json:"student_code"`
+	Section     []string `json:"section"`
+	RoleType    string   `json:"role_type"`
 }
 
 // Struct for Get BoundingBox By Assignment Template
