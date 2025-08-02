@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import { Tabs, ScrollArea, Card, Progress, Text, Skeleton, Flex } from '@mantine/core';
 import { useFetchStdAssignments } from '@/hooks/Student/useFetchSTD_Assignment';
 import { useAssignmentStore } from '@/store/Student/useSTD_AssignmentStore';
@@ -13,17 +14,22 @@ import STDSubmit from '@/components/STD/STD_submit';
 import Assignment from '@/app/instructor/course/[course_id]/assignment/page';
 import { log } from 'console';
 dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.tz.setDefault("Asia/Bangkok"); 
+
 
 function calculateProgress(release: string | null, due: string | null): number {
-  const now = dayjs();
-  const releaseTime = dayjs.utc(release);
-  const dueTime = dayjs.utc(due);
-  const total = dueTime.diff(releaseTime);
-  const remaining = dueTime.diff(now)
-  if (!release || !due) return 0;
-  if (now.isBefore(releaseTime)) return 100;
-  if (now.isAfter(dueTime)) return 0;;
-  return Math.max(0, Math.min(100, (remaining / total) * 100));
+  const now = dayjs().tz('Asia/Bangkok');
+    const releaseTime = dayjs(release).tz('Asia/Bangkok');
+    const dueTime = dayjs(due).tz('Asia/Bangkok');
+    const total = dueTime.diff(releaseTime);
+    const remaining = dueTime.diff(now);
+    console.log(`Calculating progress: release=${release}, due=${due}, now=${now.format()}`);
+    
+    if (!release || !due) return 0;
+    if (now.isBefore(releaseTime)) return 100;
+    if (now.isAfter(dueTime)) return 0;
+    return Math.max(0, Math.min(100, (remaining / total) * 100));
 }
 
 const getProgressColor = (releaseDate: string | null, dueDate: string | null): string => {
@@ -35,15 +41,15 @@ const getProgressColor = (releaseDate: string | null, dueDate: string | null): s
 
 
 function getRemainingTimeText(due: string | null): string {
-  const now = dayjs();
-  const dueTime = dayjs.utc(due);
-  const duration = dueTime.diff(now, 'minute');
-  const days = Math.floor(duration / (60 * 24));
-  const hours = Math.floor((duration % (60 * 24)) / 60);
-  const minutes = duration % 60;
-  if (!due) return 'N/A';
-  if (now.isAfter(dueTime)) return 'Past Due';
-  return [days && `${days}d`, hours && `${hours}h`, minutes && `${minutes}m`].filter(Boolean).join(' ') || 'Less than a minute';
+   const now = dayjs().tz('Asia/Bangkok');
+    const dueTime = dayjs(due).tz('Asia/Bangkok');
+    const duration = dueTime.diff(now, 'minute');
+    const days = Math.floor(duration / (60 * 24));
+    const hours = Math.floor((duration % (60 * 24)) / 60);
+    const minutes = duration % 60;
+    if (!due) return 'N/A';
+    if (now.isAfter(dueTime)) return 'Past Due';
+    return [days && `${days}d`, hours && `${hours}h`, minutes && `${minutes}m`].filter(Boolean).join(' ') || 'Less than a minute';
 }
 
 
