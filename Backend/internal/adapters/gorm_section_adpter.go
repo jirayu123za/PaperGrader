@@ -1,6 +1,7 @@
 package adapters
 
 import (
+	"errors"
 	"fmt"
 	"paperGrader/internal/models"
 
@@ -88,8 +89,16 @@ func (r GormSectionRepository) FindSectionsNameByCourseID(CourseID uuid.UUID) ([
 	return sections, nil
 }
 
-func (r *GormSectionRepository) FindSectionByCourseAndName(courseID uuid.UUID, sectionName string, section *models.Section) error {
-	return r.db.Where("course_id = ? AND section_name = ?", courseID, sectionName).First(section).Error
+func (r *GormSectionRepository) FindSectionByCourseIDAndSectionName(courseID uuid.UUID, sectionName string) (*models.Section, bool, error) {
+	var section models.Section
+	err := r.db.Where("course_id = ? AND section_name = ? AND deleted_at IS NULL", courseID, sectionName).First(&section).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, false, nil
+		}
+		return nil, false, err
+	}
+	return &section, true, nil
 }
 
 func (r *GormSectionRepository) FindSectionsByAssignmentID(AssignmentID uuid.UUID) ([]map[string]interface{}, error) {

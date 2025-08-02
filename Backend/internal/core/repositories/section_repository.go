@@ -16,5 +16,5 @@ type SectionRepository interface {
 	FindSectionsByAssignmentID(AssignmentID uuid.UUID) ([]map[string]interface{}, error)
 
 	AddSections(section *models.Section) error
-	FindSectionByCourseAndName(courseID uuid.UUID, sectionName string, section *models.Section) error
+	FindSectionByCourseIDAndSectionName(courseID uuid.UUID, sectionName string) (*models.Section, bool, error)
 }
