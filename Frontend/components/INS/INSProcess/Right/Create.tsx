@@ -2,15 +2,11 @@
 
 import React from 'react';
 import Question from './Question'
-import { useParams } from 'next/navigation';
 import { Container, Title, Flex, Tabs, Burger } from '@mantine/core';
 import { Rubric } from './Rubric/Rubric';
 import { useCreateSidebarStore } from '@/store/process-outline/createSidebarStore';
 
 const Create: React.FC = () => {
-  const params = useParams();
-  const course_id = params.course_id as string;
-  const assignment_id = params.assignment_id as string;
   const isCollapsed: boolean = useCreateSidebarStore((state: { isCollapsed: boolean }) => state.isCollapsed);
   const toggle: () => void = useCreateSidebarStore((state: { toggle: () => void }) => state.toggle);
 
