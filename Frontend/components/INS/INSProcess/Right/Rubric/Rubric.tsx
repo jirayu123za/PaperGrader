@@ -4,6 +4,7 @@ import DOMPurify from 'dompurify';
 import 'katex/dist/katex.min.css';
 import React, { useEffect, useState } from 'react'
 import { Box, Button, Checkbox, Divider, Flex, Group, NumberInput, Progress, ScrollArea, Text, Textarea, ActionIcon } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { FaPlus } from "react-icons/fa";
 import { AiTwotoneDelete } from "react-icons/ai"
 import { RubricSettings } from './RubricSettings';
@@ -33,7 +34,6 @@ export const Rubric = () => {
     const params = useParams();
     const assignment_id = params.assignment_id as string;
     const { questions, selectedQuestion, defaultSelectedQuestion } = useQuestionStore();
-    // const { questions, selectedQuestion, defaultSelectedQuestion, resetSelectedQuestion } = useQuestionStore();
     const { isLoading: isLoadingQuestions, data: questionsData } = useFetchQuestion(assignment_id);
     const { isLoading: isLoadingRubric, data: data } = useFetchRubric(assignment_id);
     const { mutate: createRubric, isPending: isPendingCreate } = useCreateRubric(assignment_id);
@@ -41,7 +41,6 @@ export const Rubric = () => {
     const { mutate: updateRubric, isPending: isPendingUpdate } = useUpdateRubric(assignment_id);
     const { mutate: updateRubricsIndexes, isPending: isPendingUpdateIndexes } = useUpdateRubricsIndexes(assignment_id);
     const { rubricData, setRubricData, rubrics, setRubrics, editingRubricID, setEditingRubricID, editingDescriptionID, setEditingDescriptionID } = useRubricStore();
-
     const target = selectedQuestion ?? defaultSelectedQuestion;
 
     const handleCreateRubric = () => {
@@ -56,7 +55,23 @@ export const Rubric = () => {
                     rubric_description: "",
                 }],
             },
-        });
+        },
+        {
+            onSuccess: () => {
+                notifications.show({
+                    title: 'Rubric created',
+                    message: 'Your rubric has been successfully created.',
+                    color: 'green',
+                });
+            },
+            onError: (error) => {
+                notifications.show({
+                    title: 'Error creating rubric',
+                    message: `${error.message}`,
+                    color: 'red',
+                });
+            }
+        })
     };
 
     const handleUpdateRubric = (rubric_id: string, rubric_detail_id: string,  rubric_point: number, rubric_description: string) => {
@@ -72,12 +87,24 @@ export const Rubric = () => {
                     rubric_description: rubric_description,
                 }],
             },
-        });
-        console.log("Updating rubric with ID:", rubric_id);
-        console.log("Updating rubric detail ID:", rubric_detail_id);
-        console.log("Rubric point:", rubric_point);
-        console.log("Rubric description:", rubric_description);
-    }
+        },
+        {
+            onSuccess: () => {
+                notifications.show({
+                    title: 'Rubric updated',
+                    message: 'Your rubric has been successfully updated.',
+                    color: 'green',
+                });
+            },
+            onError: (error) => {
+                notifications.show({
+                    title: 'Error updating rubric',
+                    message: `${error.message}`,
+                    color: 'red',
+                });
+            }
+        })
+    };
 
     const handleUpdateRubricsIndexes = (rubricItems: RubricItem[], rubric_id: string) => {
         updateRubricsIndexes({
@@ -93,10 +120,24 @@ export const Rubric = () => {
                     has_selected: r.has_selected,
                 })),
             },
-        });
-        console.log("Updating rubric indexes with ID:", rubric_id);
-        console.log("New rubric items after drag:", rubricItems);
-    }
+        },
+        {
+            onSuccess: () => {
+                notifications.show({
+                    title: 'Rubric indexes updated',
+                    message: 'Your rubric indexes have been successfully updated.',
+                    color: 'green',
+                });
+            },
+            onError: (error) => {
+                notifications.show({
+                    title: 'Error updating rubric indexes',
+                    message: `${error.message}`,
+                    color: 'red',
+                });
+            }
+        })
+    };
 
     const handleDeleteRubric = (rubric_id: string, rubric_detail_id: string) => {
         deleteRubric({
@@ -105,7 +146,23 @@ export const Rubric = () => {
             sub_question_id: target?.sub_question_id,
             rubric_id: rubric_id,
             rubric_detail_id: rubric_detail_id,
-        });
+        },
+        {
+            onSuccess: () => {
+                notifications.show({
+                    title: 'Rubric deleted',
+                    message: 'Your rubric has been successfully deleted.',
+                    color: 'green',
+                });
+            },
+            onError: (error) => {
+                notifications.show({
+                    title: 'Error deleting rubric',
+                    message: `${error.message}`,
+                    color: 'red',
+                });
+            }
+        })
     };
 
     const [graded, setGraded] = useState<Graded>({
@@ -119,11 +176,8 @@ export const Rubric = () => {
         const newItems = Array.from(rubrics);
         const [moved] = newItems.splice(source.index, 1);
         newItems.splice(destination.index, 0, moved);
-        
         setRubrics(newItems);
         setTimeout(() => {
-            console.log("newItems after drag:", newItems);
-            console.log("rubric id:", moved.rubric_id);
             handleUpdateRubricsIndexes(newItems, moved.rubric_id);
         }, 0);  
     };
@@ -146,15 +200,6 @@ export const Rubric = () => {
             setRubrics([]);
         }     
     }, [rubricData]);
-
-    // useEffect(() => {
-    //     if (!questionsData || questionsData.length === 0) {
-    //         resetSelectedQuestion();
-    //         console.log("resetSelectedQuestion called due to empty questionsData");
-    //     }
-    //     console.log("call useEffect for questionsData", questionsData, "assignment_id:", assignment_id);
-        
-    // }, [assignment_id]);
 
     const getSelectedQuestionPoint = (): number | null => {
         const target = selectedQuestion ?? defaultSelectedQuestion;
@@ -397,7 +442,7 @@ export const Rubric = () => {
                     color="violet"
                     className="mt-2"
                     onClick={handleCreateRubric}
-                    loading={isPendingCreate}
+                    loading={isPendingCreate || isPendingUpdate || isPendingUpdateIndexes || isPendingDelete}
                 >
                     Add Rubric Item
                 </Button>

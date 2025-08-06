@@ -38,13 +38,10 @@ export const useUpdateRubricsIndexes = (assignment_id: string) => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: updateRubricsIndexes,
-        onSuccess: (data, variables) => {
-            console.log('Rubric indexes updated successfully:', data);
+        onSuccess: (variables) => {
             queryClient.invalidateQueries({ queryKey: ['rubric', assignment_id, variables.question_id, variables.sub_question_id] });
         },
         onError: (error) => {
-            console.error('Failed to update rubric indexes:', error);
-            alert('Failed to update the rubric indexes. Please try again.');
         },
     });
 };

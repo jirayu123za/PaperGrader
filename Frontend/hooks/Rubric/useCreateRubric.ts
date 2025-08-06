@@ -36,14 +36,10 @@ export const useCreateRubric = (assignment_id: string) => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: createRubric,
-        onSuccess: (data, variables) => {
-            console.log('Rubric created successfully:', data);
-            alert(`Rubric created successfully!`);
+        onSuccess: (variables) => {
             queryClient.invalidateQueries({ queryKey: ['rubric', assignment_id, variables.question_id, variables.sub_question_id] });
         },
         onError: (error) => {
-            console.error('Failed to create rubric:', error);
-            alert('Failed to create the rubric. Please try again.');
         },
     });
 }

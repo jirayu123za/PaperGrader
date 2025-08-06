@@ -30,14 +30,10 @@ export const useDeleteRubric = (assignment_id: string) => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: deleteRubric,
-        onSuccess: (data, variables) => {
-            console.log('Rubric deleted successfully:', data);
-            alert(`Rubric deleted successfully!`);
+        onSuccess: (variables) => {
             queryClient.invalidateQueries({ queryKey: ['rubric', assignment_id, variables.question_id, variables.sub_question_id] });
         },
         onError: (error) => {
-            console.error('Failed to delete rubric:', error);
-            alert('Failed to delete the rubric. Please try again.');
         },
     });
 };
