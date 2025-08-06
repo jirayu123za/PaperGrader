@@ -5,6 +5,7 @@ import 'katex/dist/katex.min.css';
 import React, { useEffect, useState } from 'react'
 import { marked } from 'marked';
 import { ActionIcon, Box, Burger, Button, Checkbox, Divider, Flex, Group, NumberInput, Progress, ScrollArea, Text, Textarea } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { NoRubricParams } from '@/components/INS/INSProcess/Right/Rubric/NoRubricParams';
 import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea/dnd';
 import { AiTwotoneDelete } from 'react-icons/ai';
@@ -56,57 +57,115 @@ export const RubricGrader = () => {
                 rubric_description: "",
             }],
         },
-    });
+    },
+    {
+        onSuccess: () => {
+            notifications.show({
+                title: 'Rubric created',
+                message: 'Your rubric has been successfully created.',
+                color: 'green',
+            });
+        },
+        onError: (error) => {
+            notifications.show({
+                title: 'Error creating rubric',
+                message: `${error.message}`,
+                color: 'red',
+            });
+        }
+    })
   };
 
-    const handleUpdateRubric = (rubric_id: string, rubric_detail_id: string,  rubric_point: number, rubric_description: string) => {
-        updateRubric({
-            assignment_id,
-            question_id: question_id,
-            sub_question_id: sub_question_id,
-            rubric: {
-                rubric_id: rubric_id,
-                rubric_details: [{
-                    rubric_detail_id: rubric_detail_id,
-                    rubric_point: rubric_point,
-                    rubric_description: rubric_description,
-                }],
-            },
-        });
-        console.log("Updating rubric with ID:", rubric_id);
-        console.log("Updating rubric detail ID:", rubric_detail_id);
-        console.log("Rubric point:", rubric_point);
-        console.log("Rubric description:", rubric_description);
-    }
-
-    const handleUpdateRubricsIndexes = (rubricItems: RubricItem[], rubric_id: string) => {
-        updateRubricsIndexes({
-            assignment_id,
-            question_id: question_id,
-            sub_question_id: sub_question_id,
-            rubric: {
-                rubric_id: rubric_id,
-                rubric_details: rubricItems.map((r) => ({
-                    rubric_detail_id: r.rubric_detail_id,
-                    rubric_point: r.rubric_point,
-                    rubric_description: r.rubric_description,
-                    has_selected: r.has_selected,
-                })),
-            },
-        });
-        console.log("Updating rubric indexes with ID:", rubric_id);
-        console.log("New rubric items after drag:", rubricItems);
-    }
-
-    const handleDeleteRubric = (rubric_id: string, rubric_detail_id: string) => {
-        deleteRubric({
-            assignment_id,
-            question_id: question_id,
-            sub_question_id: sub_question_id,
+  const handleUpdateRubric = (rubric_id: string, rubric_detail_id: string,  rubric_point: number, rubric_description: string) => {
+    updateRubric({
+        assignment_id,
+        question_id: question_id,
+        sub_question_id: sub_question_id,
+        rubric: {
             rubric_id: rubric_id,
-            rubric_detail_id: rubric_detail_id,
-        });
-    };
+            rubric_details: [{
+                rubric_detail_id: rubric_detail_id,
+                rubric_point: rubric_point,
+                rubric_description: rubric_description,
+            }],
+        },
+    },
+    {
+        onSuccess: () => {
+            notifications.show({
+                title: 'Rubric updated',
+                message: 'Your rubric has been successfully updated.',
+                color: 'green',
+            });
+        },
+        onError: (error) => {
+            notifications.show({
+                title: 'Error updating rubric',
+                message: `${error.message}`,
+                color: 'red',
+            });
+        }
+    })
+  };
+
+  const handleUpdateRubricsIndexes = (rubricItems: RubricItem[], rubric_id: string) => {
+    updateRubricsIndexes({
+        assignment_id,
+        question_id: question_id,
+        sub_question_id: sub_question_id,
+        rubric: {
+            rubric_id: rubric_id,
+            rubric_details: rubricItems.map((r) => ({
+                rubric_detail_id: r.rubric_detail_id,
+                rubric_point: r.rubric_point,
+                rubric_description: r.rubric_description,
+                has_selected: r.has_selected,
+            })),
+        },
+    },
+    {
+        onSuccess: () => {
+            notifications.show({
+                title: 'Rubric indexes updated',
+                message: 'Your rubric indexes have been successfully updated.',
+                color: 'green',
+            });
+        },
+        onError: (error) => {
+            notifications.show({
+                title: 'Error updating rubric indexes',
+                message: `${error.message}`,
+                color: 'red',
+            });
+        }
+    })
+  };
+
+  const handleDeleteRubric = (rubric_id: string, rubric_detail_id: string) => {
+    deleteRubric({
+        assignment_id,
+        question_id: question_id,
+        sub_question_id: sub_question_id,
+        rubric_id: rubric_id,
+        rubric_detail_id: rubric_detail_id,
+    },
+    {
+        onSuccess: () => {
+            notifications.show({
+                title: 'Rubric deleted',
+                message: 'Your rubric has been successfully deleted.',
+                color: 'green',
+            });
+        },
+        onError: (error) => {
+            notifications.show({
+                title: 'Error deleting rubric',
+                message: `${error.message}`,
+                color: 'red',
+            });
+        }
+    })
+  };
 
     const [graded, setGraded] = useState<Graded>({
         has_graded: 2,
