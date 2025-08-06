@@ -40,6 +40,7 @@ const SingleUser: React.FC<SingleUserModalProps> = ({ isOpen, onClose }) => {
       name: (value) => (value.length < 2 ? 'Name must have at least 2 characters' : null),
       email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email format'),
       role_type: (value) => (value ? null : 'Please select a role'),
+      student_code: (value) => (value.length > 0 && value.length < 5 ? 'Student ID must be at least 5 characters' : null),
     },
   });
 
