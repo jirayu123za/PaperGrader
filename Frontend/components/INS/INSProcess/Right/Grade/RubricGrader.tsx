@@ -22,6 +22,7 @@ import { RubricItem, useRubricStore } from '@/store/rubric/useRubricStore';
 import { NoQuestion } from '@/components/INS/INSProcess/Right/Rubric/NoQuestion';
 import { QuestionSelectorParams } from '@/components/INS/INSProcess/Right/Rubric/QuestionSelectorParams';
 import { RubricSettingsParams } from '@/components/INS/INSProcess/Right/Rubric/RubricSettingsParams';
+import { RubricParamsLoader } from '@/components/INS/INSProcess/Right/Rubric/RubricParamsLoader';
 import { useDisclosure, useHotkeys } from '@mantine/hooks';
 marked.use(markedKatex({ throwOnError: false }));
 
@@ -234,7 +235,7 @@ export const RubricGrader = () => {
     ['INPUT', 'TEXTAREA', 'SELECT']
   );
 
-  if (questions.length === 0) {
+  if (questions.length === 0 && !isLoadingQuestions) {
     return <NoQuestion/>
   }
 
@@ -278,7 +279,9 @@ export const RubricGrader = () => {
                     <Divider label="Collapse View" labelPosition="right" pb='xs' />
                 </Box>
 
-                {rubrics.length === 0 ? (
+                {isLoadingRubric ? (
+                    <RubricParamsLoader />
+                ) : rubrics.length === 0 ? (
                     <NoRubricParams />
                 ) : (       
                     <ScrollArea type="auto" scrollbarSize={4} scrollbars="y" h="calc(100vh - 340px)" mah={600}>
@@ -485,7 +488,7 @@ export const RubricGrader = () => {
                         color="violet"
                         className="mt-2"
                         onClick={handleCreateRubric}
-                        loading={isPendingCreate}
+                        loading={isPendingCreate || isPendingUpdate || isPendingUpdateIndexes || isPendingDelete}
                     >
                         Add Rubric Item
                     </Button>
