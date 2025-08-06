@@ -1252,39 +1252,20 @@ func (s *InstructorServiceImpl) CreateGrade(assignmentID uuid.UUID, submissionID
 		return err
 	}
 
+	// 2. Find rubric data by assignmentID, one time only
 	rubricData, err := s.repo.FindRubricDataByAssignmentID(assignmentID)
 	if err != nil {
 		return err
 	}
 
-	if err := utils.SetSelectedRubricInTemplate(rubricData, request); err != nil {
-		return err
-	}
-
-	rubricDataJSON, err := json.Marshal(rubricData)
-	if err != nil {
-		return err
-	}
-
-	if err := s.repo.ModifyRubricData(assignmentID, json.RawMessage(rubricDataJSON)); err != nil {
-		return err
-	}
-
 	var gradeData map[string]interface{}
-	if exists {
-		// 2. If grade_data exists, fetch it
+	if !exists {
+		gradeData = rubricData
+	} else {
 		gradeData, err = s.repo.FindGradeData(assignmentID, submissionID)
 		if err != nil {
 			return err
 		}
-	} else {
-		// 3. If not exists, load rubric_data
-		// rubricData, err := s.repo.FindRubricDataByAssignmentID(assignmentID)
-		// if err != nil {
-		// 	return err
-		// }
-		// 4. Use rubric_data as template for grade_data
-		gradeData = rubricData
 	}
 
 	// Helper function to update rubric selection
