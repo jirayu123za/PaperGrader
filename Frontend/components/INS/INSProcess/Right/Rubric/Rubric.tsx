@@ -13,6 +13,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 import { marked } from 'marked';
 import { NoQuestion } from './NoQuestion';
 import { NoRubric } from './NoRubric';
+import { RubricLoader } from './RubricLoader';
 import { useFetchRubric } from '@/hooks/Rubric/useFetchRubric';
 import { useParams } from 'next/navigation';
 import { useQuestionStore } from '@/store/question/useQuestionStore';
@@ -215,7 +216,7 @@ export const Rubric = () => {
         return question.question_point;
     };
 
-    if (questions.length === 0) {
+    if (questions.length === 0 && !isLoadingQuestions) {
         return <NoQuestion/>
     }
     
@@ -248,7 +249,9 @@ export const Rubric = () => {
                 <Divider label="Collapse View" labelPosition="right" pb='xs' />
             </Box>
 
-            {rubrics.length === 0 ? (
+            {isLoadingRubric ? (
+                <RubricLoader />
+            ) : rubrics.length === 0 ? (
                 <NoRubric assignment_id={assignment_id} />
             ) : (       
                 <ScrollArea type="auto" scrollbarSize={4} scrollbars="y" h="calc(100vh - 340px)">
