@@ -167,76 +167,76 @@ export const RubricGrader = () => {
     })
   };
 
-    const [graded, setGraded] = useState<Graded>({
-        has_graded: 2,
-        total_grade: 10,
-    });
+  const [graded, setGraded] = useState<Graded>({
+    has_graded: 2,
+    total_grade: 10,
+  });
 
-    const handleDragEnd = (result: DropResult) => {
-        const { destination, source } = result;
-        if (!destination || destination.index === source.index) return;
-        const newItems = Array.from(rubrics);
-        const [moved] = newItems.splice(source.index, 1);
-        newItems.splice(destination.index, 0, moved);
-        
-        setRubrics(newItems);
-        setTimeout(() => {
-            console.log("newItems after drag:", newItems);
-            console.log("rubric id:", moved.rubric_id);
-            handleUpdateRubricsIndexes(newItems, moved.rubric_id);
-        }, 0);  
-    };
+  const handleDragEnd = (result: DropResult) => {
+    const { destination, source } = result;
+    if (!destination || destination.index === source.index) return;
+    const newItems = Array.from(rubrics);
+    const [moved] = newItems.splice(source.index, 1);
+    newItems.splice(destination.index, 0, moved);
+    
+    setRubrics(newItems);
+    setTimeout(() => {
+        console.log("newItems after drag:", newItems);
+        console.log("rubric id:", moved.rubric_id);
+        handleUpdateRubricsIndexes(newItems, moved.rubric_id);
+    }, 0);  
+  };
 
-    useEffect(() => {
-        if (rubricData?.rubric_details) {
-            const setting: 'Positive scoring' | 'Negative scoring' | null = rubricData.rubric_setting === 'Negative scoring' ? 'Negative scoring' : 'Positive scoring';
-            const mapped = rubricData.rubric_details.map((r) => ({
-                rubric_id: rubricData.rubric_id ?? "",
-                rubric_detail_id: r.rubric_detail_id,
-                rubric_point: r.rubric_point,
-                rubric_description: r.rubric_description,
-                has_selected: r.has_selected,
-                rubric_setting: setting,
-                has_ceiling: rubricData.has_ceiling,
-                has_floor: rubricData.has_floor,
-            }));
-            setRubrics(mapped);
-        } else {
-            setRubrics([]);
-        }     
-    }, [rubricData]);
+  useEffect(() => {
+    if (rubricData?.rubric_details) {
+        const setting: 'Positive scoring' | 'Negative scoring' | null = rubricData.rubric_setting === 'Negative scoring' ? 'Negative scoring' : 'Positive scoring';
+        const mapped = rubricData.rubric_details.map((r) => ({
+            rubric_id: rubricData.rubric_id ?? "",
+            rubric_detail_id: r.rubric_detail_id,
+            rubric_point: r.rubric_point,
+            rubric_description: r.rubric_description,
+            has_selected: r.has_selected,
+            rubric_setting: setting,
+            has_ceiling: rubricData.has_ceiling,
+            has_floor: rubricData.has_floor,
+        }));
+        setRubrics(mapped);
+    } else {
+        setRubrics([]);
+    }     
+  }, [rubricData]);
 
-    const getSelectedQuestionPoint = (): number | null => {
-        if (!question_id) return null;
+  const getSelectedQuestionPoint = (): number | null => {
+    if (!question_id) return null;
 
-        const question = questions.find(q => q.question_id === question_id);
-        if (!question) return null;
+    const question = questions.find(q => q.question_id === question_id);
+    if (!question) return null;
 
-        if (sub_question_id) {
-            const sub = question.sub_questions?.find(sq => sq.sub_question_id === sub_question_id);
-            return sub?.sub_question_point ?? null;
-        }
-        return question.question_point;
-    };
-
-    const toggleRubric = (index: number) => {
-        if (index >= rubrics.length) return;
-        const updated = rubrics.map((r, i) =>
-            i === index ? { ...r, has_selected: !r.has_selected } : r
-        );
-        setRubrics(updated);
-    };
-
-    const keys = Array.from({ length: 9 }, (_, i) => `${i + 1}`);
-
-    useHotkeys(
-        keys.map((key, i) => [key, () => toggleRubric(i)]),
-        ['INPUT', 'TEXTAREA', 'SELECT']
-    );
-
-    if (questions.length === 0) {
-        return <NoQuestion/>
+    if (sub_question_id) {
+        const sub = question.sub_questions?.find(sq => sq.sub_question_id === sub_question_id);
+        return sub?.sub_question_point ?? null;
     }
+    return question.question_point;
+  };
+
+  const toggleRubric = (index: number) => {
+    if (index >= rubrics.length) return;
+    const updated = rubrics.map((r, i) =>
+        i === index ? { ...r, has_selected: !r.has_selected } : r
+    );
+    setRubrics(updated);
+  };
+
+  const keys = Array.from({ length: 9 }, (_, i) => `${i + 1}`);
+
+  useHotkeys(
+    keys.map((key, i) => [key, () => toggleRubric(i)]),
+    ['INPUT', 'TEXTAREA', 'SELECT']
+  );
+
+  if (questions.length === 0) {
+    return <NoQuestion/>
+  }
 
   return (
     <Flex direction="column" bg={"#6665AC"} w={opened ? "100%" : 60} maw={460}>
