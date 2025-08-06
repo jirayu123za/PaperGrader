@@ -38,7 +38,7 @@ export const useUpdateRubricsIndexes = (assignment_id: string) => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: updateRubricsIndexes,
-        onSuccess: (variables) => {
+        onSuccess: (data, variables) => {
             queryClient.invalidateQueries({ queryKey: ['rubric', assignment_id, variables.question_id, variables.sub_question_id] });
         },
         onError: (error) => {
