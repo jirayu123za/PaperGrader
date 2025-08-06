@@ -35,8 +35,6 @@ export const useUploadSubmissionFile = (assignment_id: string) => {
     return useMutation({
         mutationFn: uploadSubmissionFile,
         onSuccess: (data) => {
-            console.log('Upload successful:', data);
-            alert(`File uploaded successfully!`);
             queryClient.invalidateQueries({ queryKey: ['submissions_list'] });
             refetchSubmissionsList().then((response) => {
                 if (response.data) {
@@ -45,8 +43,6 @@ export const useUploadSubmissionFile = (assignment_id: string) => {
             });
         },
         onError: (error) => {
-            console.error('Upload failed:', error);
-            alert('Failed to upload the file. Please try again.');
         },
     });
 };
