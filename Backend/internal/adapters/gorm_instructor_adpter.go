@@ -1067,7 +1067,7 @@ func (r *GormInstructorRepository) ModifyBoundingBoxesQuestions(AssignmentID uui
 		}
 
 		updatedData := map[string]interface{}{
-			"question_data": formattedQuestions,
+			"questions_data": formattedQuestions,
 		}
 		jsonBytes, err := json.Marshal(updatedData)
 		if err != nil {
