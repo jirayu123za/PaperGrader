@@ -373,13 +373,15 @@ type RubricQuestion struct {
 	QuestionTitle string              `json:"question_title"`
 	QuestionPoint float64             `json:"question_point"`
 	SubQuestions  []RubricSubQuestion `json:"sub_questions,omitempty"`
+	Rubrics       *RubricResponse     `json:"rubrics,omitempty"`
 }
 
 type RubricSubQuestion struct {
-	SubQuestionID    *uuid.UUID `json:"sub_question_id,omitempty"`
-	BoundingBoxID    *uuid.UUID `json:"bounding_box_id,omitempty"`
-	SubQuestionTitle string     `json:"sub_question_title"`
-	SubQuestionPoint float64    `json:"sub_question_point"`
+	SubQuestionID    *uuid.UUID      `json:"sub_question_id,omitempty"`
+	BoundingBoxID    *uuid.UUID      `json:"bounding_box_id,omitempty"`
+	SubQuestionTitle string          `json:"sub_question_title"`
+	SubQuestionPoint float64         `json:"sub_question_point"`
+	Rubrics          *RubricResponse `json:"rubrics,omitempty"`
 }
 
 // Part: 1 Rubric
