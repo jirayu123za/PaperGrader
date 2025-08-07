@@ -119,16 +119,16 @@ const GradeBottomBar: React.FC = () => {
         Question: <Text component="span" fw={700}>{display}</Text> of {total}
       </Text>
       <Group gap="xs">
-        <Button variant="outline" disabled={!prevUng} onClick={handlePrevUng}>
+        <Button variant="outline" color="violet"  disabled={!prevUng} onClick={handlePrevUng}>
           ‹‹ Prev Ungraded
         </Button>
-        <Button variant="outline" disabled={!prevItem} onClick={handlePrev}>
+        <Button variant="outline" color="violet"  disabled={!prevItem} onClick={handlePrev}>
           ‹ Prev
         </Button>
-        <Button variant="outline" disabled={!nextItem} onClick={handleNext}>
+        <Button variant="outline" color="violet"  disabled={!nextItem} onClick={handleNext}>
           Next ›
         </Button>
-        <Button variant="outline" disabled={!nextUng} onClick={handleNextUng}>
+        <Button variant="outline" color="violet"  disabled={!nextUng} onClick={handleNextUng}>
           Next Ungraded ››
         </Button>
       </Group>
