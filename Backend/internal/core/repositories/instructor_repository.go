@@ -91,6 +91,10 @@ type InstructorRepository interface {
 	// Second: rubric
 	FindRubricDataByAssignmentID(assignmentID uuid.UUID) (map[string]interface{}, error)
 	ModifyRubricData(assignmentID uuid.UUID, rubricData json.RawMessage) error
+	// Third: rubric
+	// FindSubmissionIDsByAssignmentID(assignmentID uuid.UUID) ([]uuid.UUID, error)
+	// AddRubricToSubQuestionGrade(submissionID uuid.UUID, questionID uuid.UUID, subQuestionID *uuid.UUID, rubricData json.RawMessage) error
+	// AddRubricToMainQuestionGrade(submissionID uuid.UUID, questionID uuid.UUID, rubricData json.RawMessage) error
 	// etc..
 	FindRubricByQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID) (response.RubricResponse, error)
 	FindRubricBySubQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID *uuid.UUID) (response.RubricResponse, error)

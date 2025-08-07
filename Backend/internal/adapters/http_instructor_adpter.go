@@ -1591,6 +1591,15 @@ func (h *HttpInstructorHandler) CreateRubric(c *fiber.Ctx) error {
 		})
 	}
 
+	// submissionIDParam := c.Query("submission_id")
+	// submissionID, err := uuid.Parse(submissionIDParam)
+	// if err != nil {
+	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	// 		"message": "Invalid submission_id",
+	// 		"error":   err.Error(),
+	// 	})
+	// }
+
 	var req response.CreateRubricRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -1605,6 +1614,13 @@ func (h *HttpInstructorHandler) CreateRubric(c *fiber.Ctx) error {
 			"error":   err.Error(),
 		})
 	}
+
+	// if err := h.services.CreateRubricData(assignmentID, submissionID, req); err != nil {
+	// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+	// 		"message": "Failed to create rubric",
+	// 		"error":   err.Error(),
+	// 	})
+	// }
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message": "Rubric created successfully",

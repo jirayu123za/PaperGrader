@@ -1515,6 +1515,30 @@ func (r *GormInstructorRepository) ModifyRubricData(AssignmentID uuid.UUID, rubr
 	})
 }
 
+// Third: rubric
+// func (r *GormInstructorRepository) FindSubmissionIDsByAssignmentID(assignmentID uuid.UUID) ([]uuid.UUID, error) {
+// 	var submissionIDs []uuid.UUID
+
+// 	if err := r.db.
+// 		Table("submissions").
+// 		Select("submission_id").
+// 		Where("assignment_id = ? AND deleted_at IS NULL", assignmentID).
+// 		Scan(&submissionIDs).Error; err != nil {
+// 		return nil, err
+// 	}
+// 	return submissionIDs, nil
+// }
+
+// func (r *GormInstructorRepository) AddRubricToSubQuestionGrade(submissionID uuid.UUID, questionID uuid.UUID, subQuestionID *uuid.UUID, rubricData json.RawMessage) error {
+// 	// Implementation here
+// 	return nil
+// }
+
+// func (r *GormInstructorRepository) AddRubricToMainQuestionGrade(submissionID uuid.UUID, questionID uuid.UUID, rubricData json.RawMessage) error {
+// 	// Implementation here
+// 	return nil
+// }
+
 // etc..
 func (r *GormInstructorRepository) FindRubricByQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID) (response.RubricResponse, error) {
 	var rubric struct {

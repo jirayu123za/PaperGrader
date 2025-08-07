@@ -87,6 +87,7 @@ type InstructorService interface {
 
 	// Part:1 CRUD Rubric
 	CreateRubricData(assignment_id uuid.UUID, rubricData response.CreateRubricRequest) error
+	// CreateRubricData(assignment_id uuid.UUID, submissionID uuid.UUID, rubricData response.CreateRubricRequest) error
 	UpdateRubricData(assignmentID uuid.UUID, rubricData response.UpdateRubricRequest) error
 	UpdateRubricIndexes(assignmentID uuid.UUID, rubricData response.UpdateRubricIndexesRequest) error
 	DeleteRubricData(assignmentID uuid.UUID, rubricData response.DeleteRubricRequest) error
@@ -823,6 +824,7 @@ func (s *InstructorServiceImpl) GetNoSubmittedQuestionsList(AssignmentID uuid.UU
 }
 
 func (s *InstructorServiceImpl) CreateRubricData(assignmentID uuid.UUID, rubricData response.CreateRubricRequest) error {
+	// func (s *InstructorServiceImpl) CreateRubricData(assignmentID uuid.UUID, submissionID uuid.UUID, rubricData response.CreateRubricRequest) error {
 	rubricID := uuid.New()
 
 	var details []map[string]interface{}
@@ -858,11 +860,47 @@ func (s *InstructorServiceImpl) CreateRubricData(assignmentID uuid.UUID, rubricD
 		return err
 	}
 
+	// Step 1: Save rubric to rubric template table
 	if rubricData.SubQuestionID != nil {
 		return s.repo.AddRubricToSubQuestion(assignmentID, rubricData.QuestionID, *rubricData.SubQuestionID, rubricBytes)
 	} else {
 		return s.repo.AddRubricToMainQuestion(assignmentID, rubricData.QuestionID, rubricBytes)
 	}
+	// if rubricData.SubQuestionID != nil {
+	// 	if err := s.repo.AddRubricToSubQuestion(assignmentID, rubricData.QuestionID, *rubricData.SubQuestionID, rubricBytes); err != nil {
+	// 		return err
+	// 	}
+	// } else {
+	// 	if err := s.repo.AddRubricToMainQuestion(assignmentID, rubricData.QuestionID, rubricBytes); err != nil {
+	// 		return err
+	// 	}
+	// }
+
+	// Step 2: Save rubric to individual grade records
+	// if submissionID != uuid.Nil {
+	// 	// case: has submission_id, add rubric to that submission
+	// 	if rubricData.SubQuestionID != nil {
+	// 		return s.repo.AddRubricToSubQuestionGrade(submissionID, rubricData.QuestionID, *rubricData.SubQuestionID, rubricData.Rubric.RubricData)
+	// 	} else {
+	// 		return s.repo.AddRubricToMainQuestionGrade(submissionID, rubricData.QuestionID, rubricData.Rubric.RubricData)
+	// 	}
+	// }
+
+	// // case: no submission_id, find all submission IDs for the assignment
+	// submissionIDs, err := s.repo.FindSubmissionIDsByAssignmentID(assignmentID)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// for _, subID := range submissionIDs {
+	// 	if rubricData.SubQuestionID != nil {
+	// 		return s.repo.AddRubricToSubQuestionGrade(subID, rubricData.QuestionID, *rubricData.SubQuestionID, rubricBytes)
+	// 	} else {
+	// 		return s.repo.AddRubricToMainQuestionGrade(subID, rubricData.QuestionID, rubricBytes)
+	// 	}
+	// }
+
+	// return nil
 }
 
 func (s *InstructorServiceImpl) UpdateRubricData(assignmentID uuid.UUID, rubricData response.UpdateRubricRequest) error {
@@ -916,12 +954,7 @@ func (s *InstructorServiceImpl) UpdateRubricData(assignmentID uuid.UUID, rubricD
 					currentID := fmt.Sprintf("%v", detailMap["rubric_detail_id"])
 
 					for _, incomingDetail := range rubricData.Rubric.RubricData {
-						// fmt.Println("🔍 Comparing:")
-						// fmt.Println("  DB rubric_detail_id    =", currentID)
-						// fmt.Println("  Incoming rubric_detail_id =", incomingDetail.RubricDetailID)
-
 						if currentID == incomingDetail.RubricDetailID {
-							// fmt.Println("✅ Match found! Updating...")
 							detailMap["rubric_point"] = incomingDetail.RubricPoint
 							detailMap["rubric_description"] = incomingDetail.RubricDescription
 							break FOUND
