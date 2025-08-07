@@ -8,9 +8,7 @@ export default function SubmissionsLayout({ children }: { children: React.ReactN
         <main>{children}</main>
         <footer
         className="fixed bottom-0 left-64 w-[calc(100%-16rem)] border-t border-gray-300 bg-white z-50"
-        style={{
-          padding: "0.1rem",
-        }}
+        style={{    }}
       >
         <GradeBottomBar />
       </footer>
