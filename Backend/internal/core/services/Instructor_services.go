@@ -786,7 +786,14 @@ func (s *InstructorServiceImpl) UpdateBoundingBoxesNameAndID(AssignmentID uuid.U
 }
 
 func (s *InstructorServiceImpl) UpdateBoundingBoxesQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData []response.RubricQuestion) error {
-	if err := s.repo.ModifyBoundingBoxesQuestions(AssignmentID, boundingBoxes, rubricData); err != nil {
+	rubricMap, err := s.repo.FindRubricDataByAssignmentID(AssignmentID)
+	if err != nil {
+		return err
+	}
+
+	mergedRubricData := utils.MergeRubricsFromMap(rubricData, rubricMap)
+
+	if err := s.repo.ModifyBoundingBoxesQuestions(AssignmentID, boundingBoxes, mergedRubricData); err != nil {
 		return err
 	}
 	return nil

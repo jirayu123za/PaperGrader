@@ -1049,15 +1049,24 @@ func (r *GormInstructorRepository) ModifyBoundingBoxesQuestions(AssignmentID uui
 				"question_title": question.QuestionTitle,
 				"question_point": question.QuestionPoint,
 			}
+
+			if question.Rubrics != nil {
+				entry["rubrics"] = question.Rubrics
+			}
+
 			if len(question.SubQuestions) > 0 {
 				var subQs []map[string]interface{}
 				for _, sq := range question.SubQuestions {
-					subQs = append(subQs, map[string]interface{}{
+					subEntry := map[string]interface{}{
 						"sub_question_id":    sq.SubQuestionID.String(),
 						"sub_question_title": sq.SubQuestionTitle,
 						"sub_question_point": sq.SubQuestionPoint,
 						"bounding_box_id":    sq.BoundingBoxID.String(),
-					})
+					}
+					if sq.Rubrics != nil {
+						subEntry["rubrics"] = sq.Rubrics
+					}
+					subQs = append(subQs, subEntry)
 				}
 				entry["sub_questions"] = subQs
 			} else if question.BoundingBoxID != nil {
