@@ -78,6 +78,7 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
         <h2 className="text-2xl font-semibold">Active Assignments</h2>
         <Button
           variant="filled"
+          color='#4C6EF5'
           size="md"
           radius="sm"
           className="shadow-md"
@@ -166,6 +167,7 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
       {activeAssignments.length > 0 && (
         <div className="flex justify-center mt-4">
           <Pagination
+            color='#4C6EF5'
             total={totalPages}
             siblings={1}
             boundaries={1}
