@@ -40,15 +40,20 @@ export default function QuestionOutline() {
 
 
 
-  const handleSave = () => {
-    const payload = {
-      bounding_boxes: mapBoundingBoxesToApiFormat(boundingBoxes),
-      questions_data: mapRubricToQuestionsData(rubricData),
-    };
-    upsertAll(payload);
+const handleSave = () => {
+
+  const isUpdate = rubricData.questions.some(q =>
+    !q.question_id.startsWith('temp-')
+  );
+
+  const payload = {
+    bounding_boxes:  mapBoundingBoxesToApiFormat(boundingBoxes, isUpdate),
+    questions_data:  mapRubricToQuestionsData(rubricData, isUpdate), 
   };
 
-
+  console.log('upsert payload:', payload);
+  upsertAll(payload);
+};
 
 
   return (
