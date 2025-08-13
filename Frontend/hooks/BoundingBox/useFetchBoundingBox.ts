@@ -16,7 +16,7 @@ interface BoundingBox {
 }
 
 export interface ApiBoundingBox {
-  bounding_box_id?: string;           
+  bounding_box_id?: string;
   bounding_box_point_x: number;
   bounding_box_point_y: number;
   bounding_box_width: number;
@@ -39,7 +39,7 @@ interface Question {
 
 export interface CreateBoundingBoxPayload {
   assignment_id: string;
-  bounding_boxes: ApiBoundingBox[]; 
+  bounding_boxes: ApiBoundingBox[];
   questions_data: Question[];
 }
 
@@ -71,23 +71,34 @@ interface QuestionPayload {
 
 
 
-export function mapBoundingBoxesToApiFormat(boundingBoxes: any[]): ApiBoundingBox[] {
+
+
+export function mapBoundingBoxesToApiFormat(
+  boundingBoxes: any[],
+  includeId = false,
+): ApiBoundingBox[] {
   const pageMetas = usePageMetaStore.getState().pageMetas;
-
-  return boundingBoxes.map((box) => {
-    const meta = pageMetas.find((m) => m.pageNumber === box.bounding_box_page);
-    if (!meta) return null;
-
-    return {
-      bounding_box_point_x: box.point_x ,
-      bounding_box_point_y: box.point_y ,
-      bounding_box_width: box.width ,
-      bounding_box_height: box.height ,
-      bounding_box_type: box.bounding_box_type,
-      bounding_box_page: box.bounding_box_page,
-    };
-  }).filter((b): b is ApiBoundingBox => b !== null);
+  return boundingBoxes
+    .map((box) => {
+      const meta = pageMetas.find((m) => m.pageNumber === box.bounding_box_page);
+      if (!meta) return null;
+      const payload: any = {
+        bounding_box_point_x: box.point_x,
+        bounding_box_point_y: box.point_y,
+        bounding_box_width: box.width,
+        bounding_box_height: box.height,
+        bounding_box_type: box.bounding_box_type,
+        bounding_box_page: box.bounding_box_page,
+      };
+      // ใส่ id ให้เฉพาะไอเท็มที่มาจาก BE (ไม่ใช่ temp-)
+      if (includeId && box.bounding_box_id && !box.bounding_box_id.startsWith('temp-')) {
+        payload.bounding_box_id = box.bounding_box_id;
+      }
+      return payload as ApiBoundingBox;
+    })
+    .filter((b): b is ApiBoundingBox => b !== null);
 }
+
 
 
 export type TemplateResponse = {
@@ -140,7 +151,7 @@ export const useFetchTemplate = (assignment_id: string) => {
 
       const data = response.data;
 
-      // แปลงและเซฟ bounding boxes ลง store
+
       setBoxes(
         data.bounding_boxes.map((b) => ({
           bounding_box_id: b.bounding_box_id,
@@ -153,13 +164,13 @@ export const useFetchTemplate = (assignment_id: string) => {
         }))
       );
 
-      // แปลงและเซฟ rubric data ลง store
+
       setRubric(
         data.questions.questions_data.map((q) => ({
           question_id: q.question_id,
           question_title: q.question_title,
           question_point: q.question_point,
-          // ถ้าไม่มี sub_questions ก็เซฟเป็น array ว่าง
+
           subquestions: q.sub_questions?.map((sub) => ({
             subquestion_id: sub.sub_question_id,
             subquestion_title: sub.sub_question_title,
@@ -191,13 +202,14 @@ export function useUpsertBoundingBoxesAndQuestions(assignment_id: string) {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey:['boundingBoxes', assignment_id] });
-      queryClient.invalidateQueries({ queryKey:['questions', assignment_id] });
+      queryClient.invalidateQueries({ queryKey: ['boundingBoxes', assignment_id] });
+      queryClient.invalidateQueries({ queryKey: ['questions', assignment_id] });
+      
     },
   });
 }
 
-// DELETE bounding box
+
 export function useDeleteBoundingBox(assignment_id: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -211,23 +223,38 @@ export function useDeleteBoundingBox(assignment_id: string) {
   });
 }
 
-// helper to map local rubricData to API structure
-export function mapRubricToQuestionsData(rubricData: any) {
-  return rubricData.questions.map((q: any) => {
-    const hasSub = Array.isArray(q.subquestions) && q.subquestions.length > 0;
+// hooks/BoundingBox/useFetchBoundingBox.ts
 
-    const questionPayload: any = {
+export function mapRubricToQuestionsData(
+  rubricData: any,
+  includeId = false,
+): QuestionPayload[] {
+  return rubricData.questions.map((q: any) => {
+    // สร้าง payload เบื้องต้น
+    const p: any = {
       question_title: q.question_title,
       question_point: q.question_point,
+      // ให้ sub_questions แม้ไม่มี ก็คืนเป็น []
+      sub_questions: q.subquestions?.map((sub: any) => {
+        const sp: any = {
+          sub_question_title: sub.subquestion_title,
+          sub_question_point: sub.subquestion_point,
+        };
+        if (includeId && !sub.subquestion_id.startsWith('temp-')) {
+          sp.sub_question_id = sub.subquestion_id;
+          sp.bounding_box_id = sub.bounding_box_id;
+        }
+        return sp;
+      }) ?? [],
     };
 
-    if (hasSub) {
-      questionPayload.sub_questions = q.subquestions.map((sub: any) => ({
-        sub_question_title: sub.subquestion_title,
-        sub_question_point: sub.subquestion_point,
-      }));
+    // ใส่ question_id + bounding_box_id เฉพาะของเก่า
+    if (includeId && !q.question_id.startsWith('temp-')) {
+      p.question_id     = q.question_id;
+      p.bounding_box_id = q.bounding_box_id;
     }
 
-    return questionPayload;
+    return p as QuestionPayload;
   });
 }
+
