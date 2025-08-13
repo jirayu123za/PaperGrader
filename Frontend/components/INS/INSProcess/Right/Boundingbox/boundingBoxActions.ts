@@ -7,7 +7,7 @@ export function handleAddNameBoundingBox() {
   const { addBoundingBox } = useBoundingBoxStore.getState();
   const { currentPage } = usePageMetaStore.getState();
   addBoundingBox({
-    bounding_box_id: nanoid(),
+    bounding_box_id:`temp-${nanoid()}`,
     bounding_box_type: 'name',
     bounding_box_page: currentPage,
     point_x: 50,
@@ -21,7 +21,7 @@ export function handleAddIdBoundingBox() {
   const { addBoundingBox } = useBoundingBoxStore.getState();
   const { currentPage } = usePageMetaStore.getState();
   addBoundingBox({
-    bounding_box_id: nanoid(),
+    bounding_box_id:`temp-${nanoid()}`,
     bounding_box_type: 'id',
     bounding_box_page: currentPage,
     point_x: 50,
@@ -34,8 +34,8 @@ export function handleAddIdBoundingBox() {
 export function handleAddQuestionAndBoundingBox() {
   const { addBoundingBox, addQuestion } = useBoundingBoxStore.getState();
   const { currentPage } = usePageMetaStore.getState();
-  const bounding_box_id = nanoid();
-  const question_id = nanoid();
+  const bounding_box_id = `temp-${nanoid()}`;
+  const question_id     = `temp-${nanoid()}`;
 
   addBoundingBox({
     bounding_box_id,
@@ -81,7 +81,7 @@ export function handleAddSubquestion(question: any) {
       bounding_box_id: '',
       subquestions: [
         {
-          subquestion_id: nanoid(),
+          subquestion_id: `temp-${nanoid()}`,
           subquestion_title: 'New Subquestion',
           subquestion_point: 1,
           bounding_box_id: question.bounding_box_id,
@@ -90,13 +90,13 @@ export function handleAddSubquestion(question: any) {
     });
   } else {
     // เพิ่ม subquestion ใหม่ พร้อม bounding box ใหม่
-    const newId = nanoid();
+    const newId = `temp-${nanoid()}`;
     handleAddBoundingBox(newId, 'question');
     updateQuestion(question.question_id, {
       subquestions: [
         ...question.subquestions,
         {
-          subquestion_id: nanoid(),
+          subquestion_id: `temp-${nanoid()}`,
           subquestion_title: 'New Subquestion',
           subquestion_point: 1,
           bounding_box_id: newId,
