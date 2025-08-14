@@ -80,6 +80,8 @@ const ExportModal: React.FC = () => {
           clearable
           withScrollArea={false}
           mb="md"
+          disabled={isLoadingAssignments}
+          withAsterisk
           nothingFoundMessage="No assignments available for export."
           leftSection={<BsFiletypeXlsx size={24}/>}
         />
