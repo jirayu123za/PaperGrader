@@ -12,7 +12,7 @@ export const TabsGradeSubmissionsClient = () => {
         <Tabs.Tab value="questions">Questions view</Tabs.Tab>
       </Tabs.List>
 
-      <Tabs.Panel value="submissions" pt="md">
+      <Tabs.Panel value="submissions">
         <INSSubmissions/>
       </Tabs.Panel>
 
