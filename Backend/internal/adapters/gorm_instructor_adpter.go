@@ -16,6 +16,7 @@ import (
 	"github.com/xuri/excelize/v2"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // Secondary adapters
@@ -925,14 +926,43 @@ func (r *GormInstructorRepository) AddBoundingBoxesQuestions(AssignmentID uuid.U
 			return nil
 		}
 
-		rubric := models.Rubric{
-			RubricID:     uuid.New(),
-			AssignmentID: AssignmentID,
-			RubricData:   datatypes.JSON([]byte{}),
-		}
+		// For Rubric
+		var existingRubric models.Rubric
+		err := tx.
+			Clauses(clause.Locking{Strength: "UPDATE"}).
+			Where("assignment_id = ? AND deleted_at IS NULL", AssignmentID).
+			First(&existingRubric).Error
 
-		if err := tx.Create(&rubric).Error; err != nil {
+		var existingQuestions []map[string]interface{}
+
+		switch {
+		case errors.Is(err, gorm.ErrRecordNotFound):
+			existingRubric = models.Rubric{
+				RubricID:     uuid.New(),
+				AssignmentID: AssignmentID,
+				RubricData:   datatypes.JSON([]byte{}),
+			}
+			if err := tx.Create(&existingRubric).Error; err != nil {
+				return err
+			}
+
+		case err != nil:
 			return err
+
+		default:
+			if len(existingRubric.RubricData) > 0 {
+				var rubricMap map[string]interface{}
+				if umErr := json.Unmarshal(existingRubric.RubricData, &rubricMap); umErr != nil {
+					return fmt.Errorf("failed to unmarshal existing rubric_data: %w", umErr)
+				}
+				if qs, ok := rubricMap["questions_data"].([]interface{}); ok && qs != nil {
+					for _, q := range qs {
+						if m, ok := q.(map[string]interface{}); ok {
+							existingQuestions = append(existingQuestions, m)
+						}
+					}
+				}
+			}
 		}
 
 		var questionBoxIDs []uuid.UUID
@@ -947,18 +977,12 @@ func (r *GormInstructorRepository) AddBoundingBoxesQuestions(AssignmentID uuid.U
 			}
 		}
 
-		if len(questionBoxIDs) < utils.CountTotalQuestions(rubricData) {
-			return fmt.Errorf("not enough question bounding boxes")
-		}
-
 		totalQuestions := utils.CountTotalQuestions(rubricData)
 		if len(questionBoxIDs) < totalQuestions {
 			return fmt.Errorf("not enough question bounding boxes")
 		}
 
-		var formattedQuestions []map[string]interface{}
 		questionBoxIndex := 0
-
 		for _, question := range rubricData {
 			questionID := uuid.New()
 			questionEntry := map[string]interface{}{
@@ -989,18 +1013,19 @@ func (r *GormInstructorRepository) AddBoundingBoxesQuestions(AssignmentID uuid.U
 				questionEntry["bounding_box_id"] = questionBoxIDs[questionBoxIndex].String()
 				questionBoxIndex++
 			}
-			formattedQuestions = append(formattedQuestions, questionEntry)
+			existingQuestions = append(existingQuestions, questionEntry)
 		}
 
 		questionsData := map[string]interface{}{
-			"questions_data": formattedQuestions,
+			"questions_data": existingQuestions,
 		}
+
 		jsonBytes, err := json.Marshal(questionsData)
 		if err != nil {
 			return fmt.Errorf("failed to marshal rubric data: %w", err)
 		}
 		if err := tx.Model(&models.Rubric{}).
-			Where("rubric_id = ?", rubric.RubricID).
+			Where("rubric_id = ?", existingRubric.RubricID).
 			Update("rubric_data", datatypes.JSON(jsonBytes)).Error; err != nil {
 			return err
 		}
