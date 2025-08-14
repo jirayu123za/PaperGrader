@@ -92,9 +92,7 @@ type InstructorRepository interface {
 	FindRubricDataByAssignmentID(assignmentID uuid.UUID) (map[string]interface{}, error)
 	ModifyRubricData(assignmentID uuid.UUID, rubricData json.RawMessage) error
 	// Third: rubric
-	// FindSubmissionIDsByAssignmentID(assignmentID uuid.UUID) ([]uuid.UUID, error)
-	// AddRubricToSubQuestionGrade(submissionID uuid.UUID, questionID uuid.UUID, subQuestionID *uuid.UUID, rubricData json.RawMessage) error
-	// AddRubricToMainQuestionGrade(submissionID uuid.UUID, questionID uuid.UUID, rubricData json.RawMessage) error
+	FindSubmissionIDsByAssignmentID(assignmentID uuid.UUID) ([]uuid.UUID, error)
 	// etc..
 	FindRubricByQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID) (response.RubricResponse, error)
 	FindRubricBySubQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID *uuid.UUID) (response.RubricResponse, error)
@@ -109,6 +107,11 @@ type InstructorRepository interface {
 	FindExistingGradeData(assignmentID uuid.UUID, submissionID uuid.UUID) (bool, error)
 	FindGradeData(assignmentID uuid.UUID, submissionID uuid.UUID) (map[string]interface{}, error)
 	ModifyGradeData(assignmentID uuid.UUID, submissionID uuid.UUID, updateGradeData json.RawMessage) error
+	// Second: Grade
+	// First: main Question
+	AddRubricToMainQuestionInGrade(assignmentID uuid.UUID, submissionID uuid.UUID, questionID uuid.UUID, rubricData json.RawMessage) error
+	// Second: sub Question
+	AddRubricToSubQuestionInGrade(assignmentID uuid.UUID, submissionID uuid.UUID, questionID uuid.UUID, subQuestionID uuid.UUID, rubricData json.RawMessage) error
 
 	// Part:1 Export data
 	FindAssignmentsListForExport(CourseID uuid.UUID) ([]response.AssignmentsListResponse, error)

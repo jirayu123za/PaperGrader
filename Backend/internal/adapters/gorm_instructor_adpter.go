@@ -1525,28 +1525,22 @@ func (r *GormInstructorRepository) ModifyRubricData(AssignmentID uuid.UUID, rubr
 }
 
 // Third: rubric
-// func (r *GormInstructorRepository) FindSubmissionIDsByAssignmentID(assignmentID uuid.UUID) ([]uuid.UUID, error) {
-// 	var submissionIDs []uuid.UUID
-
-// 	if err := r.db.
-// 		Table("submissions").
-// 		Select("submission_id").
-// 		Where("assignment_id = ? AND deleted_at IS NULL", assignmentID).
-// 		Scan(&submissionIDs).Error; err != nil {
-// 		return nil, err
-// 	}
-// 	return submissionIDs, nil
-// }
-
-// func (r *GormInstructorRepository) AddRubricToSubQuestionGrade(submissionID uuid.UUID, questionID uuid.UUID, subQuestionID *uuid.UUID, rubricData json.RawMessage) error {
-// 	// Implementation here
-// 	return nil
-// }
-
-// func (r *GormInstructorRepository) AddRubricToMainQuestionGrade(submissionID uuid.UUID, questionID uuid.UUID, rubricData json.RawMessage) error {
-// 	// Implementation here
-// 	return nil
-// }
+func (r *GormInstructorRepository) FindSubmissionIDsByAssignmentID(assignmentID uuid.UUID) ([]uuid.UUID, error) {
+	var rows []struct {
+		SubmissionID uuid.UUID
+	}
+	if err := r.db.Table("submissions").
+		Select("submission_id").
+		Where("assignment_id = ? AND deleted_at IS NULL", assignmentID).
+		Scan(&rows).Error; err != nil {
+		return nil, err
+	}
+	out := make([]uuid.UUID, 0, len(rows))
+	for _, v := range rows {
+		out = append(out, v.SubmissionID)
+	}
+	return out, nil
+}
 
 // etc..
 func (r *GormInstructorRepository) FindRubricByQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID) (response.RubricResponse, error) {
@@ -1864,6 +1858,191 @@ func (r *GormInstructorRepository) ModifyGradeData(assignmentID uuid.UUID, submi
 		}
 
 		return nil
+	})
+}
+
+// Second: Grade
+// First: main Question
+func (r *GormInstructorRepository) AddRubricToMainQuestionInGrade(assignmentID uuid.UUID, submissionID uuid.UUID, questionID uuid.UUID, rubricData json.RawMessage) error {
+	var m map[string]interface{}
+	if err := json.Unmarshal(rubricData, &m); err != nil {
+		return err
+	}
+
+	init := map[string]interface{}{
+		"rubric_id":      m["rubric_id"],
+		"rubric_setting": m["rubric_setting"],
+		"has_ceiling":    m["has_ceiling"],
+		"has_floor":      m["has_floor"],
+		"rubric_details": []interface{}{},
+	}
+	initJSON, err := json.Marshal(init)
+	if err != nil {
+		return err
+	}
+
+	detailsJSON, err := json.Marshal(m["rubric_details"])
+	if err != nil {
+		return err
+	}
+
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Exec(`
+            WITH tg AS (
+                SELECT g.grade_id, g.grade_data
+                FROM grades g
+                JOIN submissions s ON s.submission_id = g.submission_id
+                WHERE s.assignment_id = ? AND s.submission_id = ?
+                  AND g.deleted_at IS NULL AND s.deleted_at IS NULL
+            ),
+            q_idx AS (
+                SELECT tg.grade_id, ord - 1 AS i
+                FROM tg
+                CROSS JOIN LATERAL jsonb_array_elements(tg.grade_data->'questions_data') WITH ORDINALITY AS q(q, ord)
+                WHERE q.q->>'question_id' = ?
+            )
+            UPDATE grades g
+            SET grade_data = jsonb_set(
+                g.grade_data,
+                ARRAY['questions_data', q_idx.i::text, 'rubrics'],
+                ?::jsonb,
+                true
+            )
+            FROM q_idx
+            WHERE g.grade_id = q_idx.grade_id
+              AND (g.grade_data->'questions_data'->(q_idx.i)::int->'rubrics') IS NULL;
+        `, assignmentID, submissionID, questionID, string(initJSON)).Error; err != nil {
+			return err
+		}
+
+		return tx.Exec(`
+            WITH tg AS (
+                SELECT g.grade_id, g.grade_data
+                FROM grades g
+                JOIN submissions s ON s.submission_id = g.submission_id
+                WHERE s.assignment_id = ? AND s.submission_id = ?
+                  AND g.deleted_at IS NULL AND s.deleted_at IS NULL
+            ),
+            q_idx AS (
+                SELECT tg.grade_id, ord - 1 AS i
+                FROM tg
+                CROSS JOIN LATERAL jsonb_array_elements(tg.grade_data->'questions_data') WITH ORDINALITY AS q(q, ord)
+                WHERE q.q->>'question_id' = ?
+            )
+            UPDATE grades g
+            SET grade_data = jsonb_set(
+                g.grade_data,
+                ARRAY['questions_data', q_idx.i::text, 'rubrics', 'rubric_details'],
+                COALESCE(
+                    g.grade_data->'questions_data'->(q_idx.i)::int->'rubrics'->'rubric_details',
+                    '[]'::jsonb
+                ) || ?::jsonb,
+                true
+            )
+            FROM q_idx
+            WHERE g.grade_id = q_idx.grade_id;
+        `, assignmentID, submissionID, questionID, string(detailsJSON)).Error
+	})
+}
+
+// Second: sub Question
+func (r *GormInstructorRepository) AddRubricToSubQuestionInGrade(assignmentID uuid.UUID, submissionID uuid.UUID, questionID uuid.UUID, subQuestionID uuid.UUID, rubricData json.RawMessage) error {
+	var m map[string]interface{}
+	if err := json.Unmarshal(rubricData, &m); err != nil {
+		return err
+	}
+
+	init := map[string]interface{}{
+		"rubric_id":      m["rubric_id"],
+		"rubric_setting": m["rubric_setting"],
+		"has_ceiling":    m["has_ceiling"],
+		"has_floor":      m["has_floor"],
+		"rubric_details": []interface{}{},
+	}
+	initJSON, err := json.Marshal(init)
+	if err != nil {
+		return err
+	}
+
+	detailsJSON, err := json.Marshal(m["rubric_details"])
+	if err != nil {
+		return err
+	}
+
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Exec(`
+            WITH tg AS (
+                SELECT g.grade_id, g.grade_data
+                FROM grades g
+                JOIN submissions s ON s.submission_id = g.submission_id
+                WHERE s.assignment_id = ? AND s.submission_id = ?
+                  AND g.deleted_at IS NULL AND s.deleted_at IS NULL
+            ),
+            q_idx AS (
+                SELECT tg.grade_id, ord - 1 AS i
+                FROM tg
+                CROSS JOIN LATERAL jsonb_array_elements(tg.grade_data->'questions_data') WITH ORDINALITY AS q(q, ord)
+                WHERE q.q->>'question_id' = ?
+            ),
+            sq_idx AS (
+                SELECT tg.grade_id, q_idx.i, ord - 1 AS j
+                FROM tg
+                JOIN q_idx ON q_idx.grade_id = tg.grade_id
+                CROSS JOIN LATERAL jsonb_array_elements(
+                    tg.grade_data->'questions_data'->(q_idx.i)::int->'sub_questions'
+                ) WITH ORDINALITY AS sq(sq, ord)
+                WHERE sq.sq->>'sub_question_id' = ?
+            )
+            UPDATE grades g
+            SET grade_data = jsonb_set(
+                g.grade_data,
+                ARRAY['questions_data', sq_idx.i::text, 'sub_questions', sq_idx.j::text, 'rubrics'],
+                ?::jsonb,
+                true
+            )
+            FROM sq_idx
+            WHERE g.grade_id = sq_idx.grade_id
+              AND (g.grade_data->'questions_data'->(sq_idx.i)::int->'sub_questions'->(sq_idx.j)::int->'rubrics') IS NULL;
+        `, assignmentID, submissionID, questionID, subQuestionID, string(initJSON)).Error; err != nil {
+			return err
+		}
+
+		return tx.Exec(`
+            WITH tg AS (
+                SELECT g.grade_id, g.grade_data
+                FROM grades g
+                JOIN submissions s ON s.submission_id = g.submission_id
+                WHERE s.assignment_id = ? AND s.submission_id = ?
+                  AND g.deleted_at IS NULL AND s.deleted_at IS NULL
+            ),
+            q_idx AS (
+                SELECT tg.grade_id, ord - 1 AS i
+                FROM tg
+                CROSS JOIN LATERAL jsonb_array_elements(tg.grade_data->'questions_data') WITH ORDINALITY AS q(q, ord)
+                WHERE q.q->>'question_id' = ?
+            ),
+            sq_idx AS (
+                SELECT tg.grade_id, q_idx.i, ord - 1 AS j
+                FROM tg
+                JOIN q_idx ON q_idx.grade_id = tg.grade_id
+                CROSS JOIN LATERAL jsonb_array_elements(
+                    tg.grade_data->'questions_data'->(q_idx.i)::int->'sub_questions'
+                ) WITH ORDINALITY AS sq(sq, ord)
+                WHERE sq.sq->>'sub_question_id' = ?
+            )
+            UPDATE grades g
+            SET grade_data = jsonb_set(
+                g.grade_data,
+                ARRAY['questions_data', sq_idx.i::text, 'sub_questions', sq_idx.j::text, 'rubrics', 'rubric_details'],
+                COALESCE(
+                    g.grade_data->'questions_data'->(sq_idx.i)::int->'sub_questions'->(sq_idx.j)::int->'rubrics'->'rubric_details',
+                    '[]'::jsonb
+                ) || ?::jsonb,
+                true
+            )
+            FROM sq_idx
+            WHERE g.grade_id = sq_idx.grade_id;
+        `, assignmentID, submissionID, questionID, subQuestionID, string(detailsJSON)).Error
 	})
 }
 

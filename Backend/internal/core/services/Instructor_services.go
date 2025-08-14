@@ -55,7 +55,7 @@ type InstructorService interface {
 	GetSubmissionFiles(AssignmentID uuid.UUID) ([]response.SubmissionFilesResponse, error)
 	GetSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error)
 	GetSubmissionFileURL(CourseID uuid.UUID, AssignmentID uuid.UUID, SubmissionID uuid.UUID) (submissionFileURL string, err error)
-	// Part: 1
+	// Part 1:
 	GetSubmissionsList(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionsListResponse, error)
 	GetProcessOCRForSubmissions(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionsOCRData, error)
 	GetMapSubmissionFileURLs(submissionBoxFiles map[uuid.UUID][]string, courseID, assignmentID uuid.UUID) map[uuid.UUID][]string
@@ -68,7 +68,7 @@ type InstructorService interface {
 	//!
 	CreateCroppedSubmissionBox(submission models.SubmissionBox) error
 
-	//! OCR Services
+	// OCR Services
 	GetStudentsListForOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForOCRResponse, error)
 	GetBoundingBoxesByAssignmentTemplate(AssignmentID uuid.UUID) ([]response.BoundingBoxTemplateResponse, error)
 	GetBoundingBoxesType(AssignmentID uuid.UUID) ([]response.BoundingBoxDataResponse, error)
@@ -85,26 +85,24 @@ type InstructorService interface {
 	GetQuestionsList(AssignmentID uuid.UUID) (response.QuestionsListResponse, error)
 	GetNoSubmittedQuestionsList(AssignmentID uuid.UUID) (response.MixedQuestionsList, error)
 
-	// Part:1 CRUD Rubric
+	// Part 1: CRUD Rubric
 	CreateRubricData(assignment_id uuid.UUID, rubricData response.CreateRubricRequest) error
-	// CreateRubricData(assignment_id uuid.UUID, submissionID uuid.UUID, rubricData response.CreateRubricRequest) error
 	UpdateRubricData(assignmentID uuid.UUID, rubricData response.UpdateRubricRequest) error
 	UpdateRubricIndexes(assignmentID uuid.UUID, rubricData response.UpdateRubricIndexesRequest) error
 	DeleteRubricData(assignmentID uuid.UUID, rubricData response.DeleteRubricRequest) error
 	GetRubricData(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID *uuid.UUID) (response.RubricResponse, error)
-	// Part:2 U Rubric
+	// Part 2: U Rubric
 	UpdateRubricSetting(assignmentID uuid.UUID, rubricData response.UpdateRubricSettingRequest) error
 	UpdateRubricScoreBounds(assignmentID uuid.UUID, rubricData response.UpdateRubricScoreBoundsRequest) error
 
-	// Part:1 Grade
+	// Part 1: Grade
 	CreateGrade(assignmentID uuid.UUID, submissionID uuid.UUID, request response.CreateGradeRequest, userID uuid.UUID) error
-
 	// R Submission from question
 	GetSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error)
 	// R Bounding Boxes data
 	GetBoundingBoxesData(AssignmentID uuid.UUID) (response.BoundingBoxesDataResponse, error)
 
-	// Part:1 Export data
+	// Part 1: Export data
 	GetAssignmentsListForExport(CourseID uuid.UUID) ([]response.AssignmentsListResponse, error)
 }
 
@@ -831,7 +829,7 @@ func (s *InstructorServiceImpl) GetNoSubmittedQuestionsList(AssignmentID uuid.UU
 }
 
 func (s *InstructorServiceImpl) CreateRubricData(assignmentID uuid.UUID, rubricData response.CreateRubricRequest) error {
-	// func (s *InstructorServiceImpl) CreateRubricData(assignmentID uuid.UUID, submissionID uuid.UUID, rubricData response.CreateRubricRequest) error {
+	// Step 1: Create rubric object
 	rubricID := uuid.New()
 
 	var details []map[string]interface{}
@@ -867,47 +865,35 @@ func (s *InstructorServiceImpl) CreateRubricData(assignmentID uuid.UUID, rubricD
 		return err
 	}
 
-	// Step 1: Save rubric to rubric template table
+	// Step 2: Save rubric to rubric template table
 	if rubricData.SubQuestionID != nil {
-		return s.repo.AddRubricToSubQuestion(assignmentID, rubricData.QuestionID, *rubricData.SubQuestionID, rubricBytes)
+		if err := s.repo.AddRubricToSubQuestion(assignmentID, rubricData.QuestionID, *rubricData.SubQuestionID, rubricBytes); err != nil {
+			return err
+		}
 	} else {
-		return s.repo.AddRubricToMainQuestion(assignmentID, rubricData.QuestionID, rubricBytes)
+		if err := s.repo.AddRubricToMainQuestion(assignmentID, rubricData.QuestionID, rubricBytes); err != nil {
+			return err
+		}
 	}
-	// if rubricData.SubQuestionID != nil {
-	// 	if err := s.repo.AddRubricToSubQuestion(assignmentID, rubricData.QuestionID, *rubricData.SubQuestionID, rubricBytes); err != nil {
-	// 		return err
-	// 	}
-	// } else {
-	// 	if err := s.repo.AddRubricToMainQuestion(assignmentID, rubricData.QuestionID, rubricBytes); err != nil {
-	// 		return err
-	// 	}
-	// }
 
-	// Step 2: Save rubric to individual grade records
-	// if submissionID != uuid.Nil {
-	// 	// case: has submission_id, add rubric to that submission
-	// 	if rubricData.SubQuestionID != nil {
-	// 		return s.repo.AddRubricToSubQuestionGrade(submissionID, rubricData.QuestionID, *rubricData.SubQuestionID, rubricData.Rubric.RubricData)
-	// 	} else {
-	// 		return s.repo.AddRubricToMainQuestionGrade(submissionID, rubricData.QuestionID, rubricData.Rubric.RubricData)
-	// 	}
-	// }
+	// Step 3: If assignment already has submission, copy rubric data to grade data only has grade data
+	subMissionIDs, err := s.repo.FindSubmissionIDsByAssignmentID(assignmentID)
+	if err != nil {
+		return err
+	}
 
-	// // case: no submission_id, find all submission IDs for the assignment
-	// submissionIDs, err := s.repo.FindSubmissionIDsByAssignmentID(assignmentID)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// for _, subID := range submissionIDs {
-	// 	if rubricData.SubQuestionID != nil {
-	// 		return s.repo.AddRubricToSubQuestionGrade(subID, rubricData.QuestionID, *rubricData.SubQuestionID, rubricBytes)
-	// 	} else {
-	// 		return s.repo.AddRubricToMainQuestionGrade(subID, rubricData.QuestionID, rubricBytes)
-	// 	}
-	// }
-
-	// return nil
+	for _, subMissionID := range subMissionIDs {
+		if rubricData.SubQuestionID != nil {
+			if err := s.repo.AddRubricToSubQuestionInGrade(assignmentID, subMissionID, rubricData.QuestionID, *rubricData.SubQuestionID, rubricBytes); err != nil {
+				return err
+			}
+		} else {
+			if err := s.repo.AddRubricToMainQuestionInGrade(assignmentID, subMissionID, rubricData.QuestionID, rubricBytes); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (s *InstructorServiceImpl) UpdateRubricData(assignmentID uuid.UUID, rubricData response.UpdateRubricRequest) error {
