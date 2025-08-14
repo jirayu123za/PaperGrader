@@ -57,7 +57,7 @@ export default function KonvaCanvas({ innerContainerRef }: KonvaCanvasProps) {
     const layer = new Konva.Layer();
     stage.add(layer);
 
- 
+
     stage.on('click', (e) => {
       if (e.target === stage) {
         layer.find('Transformer').forEach((tr) => tr.destroy());
@@ -91,6 +91,15 @@ export default function KonvaCanvas({ innerContainerRef }: KonvaCanvasProps) {
     const layer = layerRef.current;
     if (!layer || !isTemplateSuccess || !pageMetas.length) return;
 
+    const currentIds = new Set(boundingBoxes.map((b: any) => b.bounding_box_id));
+    for (const [id, group] of groupMapRef.current) {
+      if (!currentIds.has(id)) {
+        group.destroy();           
+        groupMapRef.current.delete(id);
+      }
+    }
+
+    layer.batchDraw();
 
     const labelMap = new Map<string, { title: string; point: number }>();
     rubricData.questions.forEach((q: any) => {
@@ -121,8 +130,8 @@ export default function KonvaCanvas({ innerContainerRef }: KonvaCanvasProps) {
         box.bounding_box_type === 'name'
           ? 'Student Name'
           : box.bounding_box_type === 'id'
-          ? 'Student ID'
-          : (info?.title || 'Question');
+            ? 'Student ID'
+            : (info?.title || 'Question');
 
 
       const x = box.point_x * meta.scale;
@@ -144,7 +153,7 @@ export default function KonvaCanvas({ innerContainerRef }: KonvaCanvasProps) {
         const txt = existing.findOne('.titleText') as Konva.Text;
         if (txt) {
           txt.text(defaultLabel);
-          txt.width(160); 
+          txt.width(160);
           txt.scale({ x: 1, y: 1 });
         }
       } else {
@@ -161,7 +170,7 @@ export default function KonvaCanvas({ innerContainerRef }: KonvaCanvasProps) {
             question_title: defaultLabel,
             question_point: info?.point ?? 0,
           },
-          (node) => attachTransformer(layer, node) 
+          (node) => attachTransformer(layer, node)
         );
 
 
