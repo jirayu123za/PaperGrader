@@ -3,17 +3,14 @@
 import React from 'react';
 import { Table, TextInput, Flex, Text, Paper, Pagination, Select, ActionIcon } from '@mantine/core';
 import { useRouter, useParams } from 'next/navigation';
-import { useFetchSubmissions } from '../../../../hooks/useFetchINS_Submission';
-import { useINS_SubmissionStore } from '../../../../store/useINS_SubmissionStore';
+import { useFetchSubmissions } from '@/hooks/useFetchINS_Submission';
+import { useINS_SubmissionStore } from '@/store/useINS_SubmissionStore';
 import { usePagination } from '@mantine/hooks';
 import { IoListOutline, IoSearch } from 'react-icons/io5';
 import { FaRegFilePdf } from 'react-icons/fa';
-
-
-
+import { NoSubmissionsPlaceholder } from './NoSubmissionsPlaceholder ';
 
 export const INSSubmissions = () => {
-  
   const router = useRouter();
   const params = useParams();
   const course_id = params.course_id as string;
@@ -21,12 +18,10 @@ export const INSSubmissions = () => {
   const icons = {
     submissionsList: <IoListOutline />,
     searchIcon: <IoSearch />,
-    submissionFile: <FaRegFilePdf />
+    submissionFile: <FaRegFilePdf color='red'/>
   };
 
   // Need implement submissionFilter, setSubmissionFilter
-
-
   const { submissions, searchTerm, setSearchTerm } = useINS_SubmissionStore();
   const { isLoading, error } = useFetchSubmissions(course_id as string, assignment_id as string);
 
@@ -36,7 +31,6 @@ export const INSSubmissions = () => {
         submission.student_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
         submission.section_name.toLowerCase().includes(searchTerm.toLowerCase())
       : true;
-    
     // const matchesSubmission -> Need implement
     return matchesSearch;
   });
@@ -60,83 +54,107 @@ export const INSSubmissions = () => {
     );
   };
 
-  return (
-    <Paper shadow="sm" radius="md" withBorder p="xl">
-      <Flex align="center" gap="xs" mb="md">
-        <TextInput
-          placeholder="Search by Student Code, Name, or Section"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.currentTarget.value)}
-          disabled={submissions.length === 0 || isLoading }
-          rightSection={icons.searchIcon}
-          w="25%"
-        />
-        <Select
-          placeholder="Filter by submitted"
-          data={[
-            { value: 'NOT_SUBMITTED', label: 'Not submitted' },
-          ]}
-          // value={roleFilter}
-          // onChange={setRoleFilter}
-          clearable
-          disabled={submissions.length === 0 || isLoading }
-        />        
+  if (submissions.length === 0 && !isLoading) {
+    return (
+      <Flex direction="column" gap="sm" p="md">
+        <NoSubmissionsPlaceholder />
       </Flex>
-      <Table highlightOnHover verticalSpacing="md">
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Student ID</Table.Th>
-            <Table.Th w="25%">Name</Table.Th>
-            <Table.Th>Section</Table.Th>
-            <Table.Th>Submitted At</Table.Th>
-            <Table.Th>View</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {paginatedData.map((submission) => (
-            <Table.Tr key={submission.submission_id}>
-              <Table.Td>{submission.student_code}</Table.Td>
-              <Table.Td>{submission.full_name}</Table.Td>
-              <Table.Td pl={24}>{submission.section_name}</Table.Td>
-              <Table.Td>{new Date(submission.submitted_at).toLocaleString()}</Table.Td>
-              <Table.Td>
-                <ActionIcon
-                  variant="transparent"
-                  aria-label="view PDF" 
-                  onClick={() => 
-                    handleViewPDF(submission.submission_id)
-                  }>
-                  {icons.submissionFile}
-                </ActionIcon>               
-              </Table.Td>
-            </Table.Tr>
-          ))}
-          {filteredSubmissions.length === 0 && (
-            <Table.Tr>
-              <Table.Td colSpan={5} style={{ textAlign: 'center' }}>
-                <Text c="dimmed">No submissions yet</Text>
-              </Table.Td>
-            </Table.Tr>
-          )}
-        </Table.Tbody>
-      </Table>
+    );
+  }
 
-      <Flex justify="space-between" align="center" mt="lg">
-        <Flex justify="center" style={{ flex: 1 }}>
-          <Pagination
-            total={totalPages}
-            siblings={1}
-            boundaries={1}
-            value={pagination.active}
-            onChange={pagination.setPage}
-          />
-        </Flex>
-        <Text size="lg" c="dimmed">
-          {submissions.length > 0
-            ? `(${submissions.length} Submissions)`
-            : 'No submissions yet'}
+  return (
+    <Flex direction="column" gap="sm" p="md">
+      <Flex direction="column">
+        <Text size="lg" fw={500}>
+          Submissions list
         </Text>
-      </Flex>      
-    </Paper>
+        <Text size="sm" c="dimmed" mb="md">
+          View and manage all student submissions for this assignment.
+        </Text>
+      </Flex>
+
+      <Paper withBorder>
+        {/* <Flex align="center" gap="xs" mb="md">
+          <TextInput
+            placeholder="Search by Student Code, Name, or Section"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.currentTarget.value)}
+            disabled={submissions.length === 0 || isLoading }
+            rightSection={icons.searchIcon}
+            w="25%"
+          />
+          <Select
+            placeholder="Filter by submitted"
+            data={[
+              { value: 'NOT_SUBMITTED', label: 'Not submitted' },
+            ]}
+            // value={roleFilter}
+            // onChange={setRoleFilter}
+            clearable
+            disabled={submissions.length === 0 || isLoading }
+          />        
+        </Flex> */}
+        <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
+          <Table.Thead className='bg-gray-100'>
+            <Table.Tr>
+              <Table.Th>Student ID</Table.Th>
+              <Table.Th w="25%">Name</Table.Th>
+              <Table.Th>Section</Table.Th>
+              <Table.Th>Submitted at</Table.Th>
+              <Table.Th>View</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {paginatedData.map((submission) => (
+              <Table.Tr key={submission.submission_id}>
+                <Table.Td>{submission.student_code}</Table.Td>
+                <Table.Td>{submission.full_name}</Table.Td>
+                <Table.Td pl={24}>{submission.section_name}</Table.Td>
+                <Table.Td>{new Date(submission.submitted_at).toLocaleString()}</Table.Td>
+                <Table.Td>
+                  <ActionIcon
+                    variant="transparent"
+                    aria-label="view PDF" 
+                    onClick={() => 
+                      handleViewPDF(submission.submission_id)
+                    }>
+                    {icons.submissionFile}
+                  </ActionIcon>               
+                </Table.Td>
+              </Table.Tr>
+            ))}
+            {filteredSubmissions.length === 0 && (
+              <Table.Tr>
+                <Table.Td colSpan={5} style={{ textAlign: 'center' }}>
+                  <Text c="dimmed">No submissions yet</Text>
+                </Table.Td>
+              </Table.Tr>
+            )}
+          </Table.Tbody>
+
+          <Table.Tfoot>
+            <Table.Tr>
+              <Table.Td colSpan={7} className="border-t border-gray-300">
+                <Flex align="center" w="100%" justify="space-between">
+                  <Text size="sm" c="dimmed">
+                    Total submissions: {`${submissions.length} submissions`}
+                  </Text>
+                  <Pagination
+                    total={totalPages}
+                    siblings={1}
+                    boundaries={1}
+                    value={pagination.active}
+                    onChange={pagination.setPage}
+                    size="sm"
+                    gap="2px"
+                    color='#4C6EF5'
+                  />
+                </Flex>
+              </Table.Td>
+            </Table.Tr>
+          </Table.Tfoot>
+        </Table>     
+      </Paper>
+    </Flex>
   );
 };
