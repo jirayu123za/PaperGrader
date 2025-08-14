@@ -1361,7 +1361,123 @@ func (s *InstructorServiceImpl) DeleteRubricData(assignmentID uuid.UUID, rubricD
 	if err != nil {
 		return err
 	}
-	return s.repo.ModifyRubricData(assignmentID, updatedJSON)
+
+	if err := s.repo.ModifyRubricData(assignmentID, updatedJSON); err != nil {
+		return err
+	}
+
+	// Second: If assignment already has submission, copy rubric data to grade data only has grade data
+	subMissionIDs, err := s.repo.FindSubmissionIDsByAssignmentID(assignmentID)
+	if err != nil {
+		return err
+	}
+
+	// Third: If assignment has submissions, copy rubric data to each submission
+	for _, subMissionID := range subMissionIDs {
+		exists, err := s.repo.FindExistingGradeData(assignmentID, subMissionID)
+		if err != nil {
+			return err
+		}
+
+		if !exists {
+			continue
+		}
+
+		gradeData, err := s.repo.FindGradeData(assignmentID, subMissionID)
+		if err != nil {
+			return err
+		}
+
+		questionsData, ok := gradeData["questions_data"].([]interface{})
+		if !ok {
+			return err
+		}
+
+		for _, q := range questionsData {
+			qMap := q.(map[string]interface{})
+			if qMap["question_id"] == rubricData.QuestionID.String() {
+
+				if rubricData.SubQuestionID != nil {
+					subQs, ok := qMap["sub_questions"].([]interface{})
+					if !ok {
+						return err
+					}
+
+					for _, sq := range subQs {
+						sqMap := sq.(map[string]interface{})
+						if sqMap["sub_question_id"] == rubricData.SubQuestionID.String() {
+							rubrics, ok := sqMap["rubrics"].(map[string]interface{})
+							if !ok || rubrics["rubric_id"] != rubricData.RubricID {
+								continue
+							}
+
+							details, ok := rubrics["rubric_details"].([]interface{})
+							if !ok {
+								continue
+							}
+
+							var updatedDetails []interface{}
+							for _, d := range details {
+								if d == nil {
+									continue
+								}
+								detailMap := d.(map[string]interface{})
+								currentID := fmt.Sprintf("%v", detailMap["rubric_detail_id"])
+								if currentID != rubricData.RubricDetailID {
+									updatedDetails = append(updatedDetails, detailMap)
+								}
+							}
+
+							if len(updatedDetails) == 0 {
+								delete(sqMap, "rubrics")
+							} else {
+								rubrics["rubric_details"] = updatedDetails
+							}
+						}
+					}
+				} else {
+					rubrics, ok := qMap["rubrics"].(map[string]interface{})
+					if !ok || rubrics["rubric_id"] != rubricData.RubricID {
+						continue
+					}
+
+					details, ok := rubrics["rubric_details"].([]interface{})
+					if !ok {
+						continue
+					}
+
+					var updatedDetails []interface{}
+					for _, d := range details {
+						if d == nil {
+							continue
+						}
+						detailMap := d.(map[string]interface{})
+						currentID := fmt.Sprintf("%v", detailMap["rubric_detail_id"])
+						if currentID != rubricData.RubricDetailID {
+							updatedDetails = append(updatedDetails, detailMap)
+						}
+					}
+
+					if len(updatedDetails) == 0 {
+						delete(qMap, "rubrics")
+					} else {
+						rubrics["rubric_details"] = updatedDetails
+					}
+				}
+			}
+		}
+
+		updatedJSON, err := json.Marshal(gradeData)
+		if err != nil {
+			return err
+		}
+
+		if err := s.repo.ModifyGradeData(assignmentID, subMissionID, updatedJSON); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Query
