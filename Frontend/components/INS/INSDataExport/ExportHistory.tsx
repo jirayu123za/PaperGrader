@@ -2,6 +2,9 @@
 
 import React, { useState } from 'react';
 import ExportModal from '@/components/INS/INSDataExport/ExportModal';
+import { RingProgressReady } from "@/components/INS/INSDataExport/RingProgressReady";
+import { RingProgressProcess } from "@/components/INS/INSDataExport/RingProgressProcess";
+import { RingProgressExpired } from "@/components/INS/INSDataExport/RingProgressExpired";
 import { Button, Divider, Table, Text, ActionIcon, Flex, Title, Checkbox, Paper, Pagination } from '@mantine/core';
 import { IconTrash, IconDownload } from '@tabler/icons-react';
 import { FaFileExport } from "react-icons/fa6";
@@ -14,18 +17,18 @@ interface HistoryItem {
   fileName: string;
   exportedAt: string; 
   exportedBy: string;
-  status: 'processing' | 'ready' | 'failed';
+  status: 'processing' | 'ready' | 'expired';
   downloadUrl?: string;
 }
 
 const mockHistory: HistoryItem[] = [
   { id: '1', fileName: 'export-2025-07-01.csv', exportedAt: '2025-07-01T14:30:00Z', exportedBy: 'Shweta Betgeri', status: 'ready', downloadUrl: '/downloads/export-2025-07-01.csv' },
   { id: '2', fileName: 'export-2025-07-02.csv', exportedAt: '2025-07-02T09:15:00Z', exportedBy: 'Shweta Betgeri', status: 'processing' },
-  { id: '3', fileName: 'export-2025-07-03.pdf', exportedAt: '2025-07-03T11:45:00Z', exportedBy: 'jayant jain', status: 'failed' },
+  { id: '3', fileName: 'export-2025-07-03.pdf', exportedAt: '2025-07-03T11:45:00Z', exportedBy: 'jayant jain', status: 'expired' },
   { id: '4', fileName: 'export-2025-07-04.csv', exportedAt: '2025-07-04T08:05:00Z', exportedBy: 'Shweta Betgeri', status: 'ready', downloadUrl: '/downloads/export-2025-07-04.csv' },
   { id: '5', fileName: 'export-2025-07-05.pdf', exportedAt: '2025-07-05T16:20:00Z', exportedBy: 'Shweta Betgeri', status: 'ready', downloadUrl: '/downloads/export-2025-07-05.pdf' },
   { id: '6', fileName: 'export-2025-07-06.csv', exportedAt: '2025-07-06T10:10:00Z', exportedBy: 'jayant jain', status: 'processing' },
-  { id: '7', fileName: 'export-2025-07-07.pdf', exportedAt: '2025-07-07T12:00:00Z', exportedBy: 'jayant jain', status: 'failed' },
+  { id: '7', fileName: 'export-2025-07-07.pdf', exportedAt: '2025-07-07T12:00:00Z', exportedBy: 'jayant jain', status: 'expired' },
   { id: '8', fileName: 'export-2025-07-08.csv', exportedAt: '2025-07-08T13:30:00Z', exportedBy: 'Shweta Betgeri', status: 'ready', downloadUrl: '/downloads/export-2025-07-08.csv' },
   { id: '9', fileName: 'export-2025-07-09.pdf', exportedAt: '2025-07-09T15:45:00Z', exportedBy: 'Shweta Betgeri', status: 'processing' },
   { id: '21', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
@@ -94,6 +97,7 @@ export default function ExportHistory() {
                 </Table.Th>
                 <Table.Th>File name</Table.Th>
                 <Table.Th>Export at</Table.Th>
+                <Table.Th>Export status</Table.Th>
                 <Table.Th>Export by</Table.Th>
                 <Table.Th></Table.Th>
               </Table.Tr>
@@ -117,6 +121,11 @@ export default function ExportHistory() {
                     </Table.Td>
                     <Table.Td>{item.fileName}</Table.Td>
                     <Table.Td>{new Date(item.exportedAt).toLocaleString()}</Table.Td>
+                    <Table.Td pl="38px">
+                      {item.status === "processing" && <RingProgressProcess />}
+                      {item.status === "ready" && <RingProgressReady />}
+                      {item.status === "expired" && <RingProgressExpired />}
+                    </Table.Td>
                     <Table.Td>{item.exportedBy}</Table.Td>
                     <Table.Td>
                       <Flex align="center" gap="xs">
