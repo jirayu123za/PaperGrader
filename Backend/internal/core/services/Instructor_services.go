@@ -1137,7 +1137,137 @@ func (s *InstructorServiceImpl) UpdateRubricIndexes(assignmentID uuid.UUID, rubr
 	if err != nil {
 		return err
 	}
-	return s.repo.ModifyRubricData(assignmentID, updatedJSON)
+
+	if err := s.repo.ModifyRubricData(assignmentID, updatedJSON); err != nil {
+		return err
+	}
+
+	// Second: If assignment already has submission, copy rubric data to grade data only has grade data
+	subMissionIDs, err := s.repo.FindSubmissionIDsByAssignmentID(assignmentID)
+	if err != nil {
+		return err
+	}
+
+	for _, subMissionID := range subMissionIDs {
+		exists, err := s.repo.FindExistingGradeData(assignmentID, subMissionID)
+		if err != nil {
+			return err
+		}
+
+		if !exists {
+			continue
+		}
+
+		gradeData, err := s.repo.FindGradeData(assignmentID, subMissionID)
+		if err != nil {
+			return err
+		}
+
+		questionsData, ok := gradeData["questions_data"].([]interface{})
+		if !ok {
+			return err
+		}
+
+		for _, q := range questionsData {
+			qMap := q.(map[string]interface{})
+
+			if qMap["question_id"] == rubricData.QuestionID.String() {
+				if rubricData.SubQuestionID != nil {
+					subQs, ok := qMap["sub_questions"].([]interface{})
+					if !ok {
+						return err
+					}
+
+					for _, sq := range subQs {
+						sqMap := sq.(map[string]interface{})
+						if sqMap["sub_question_id"] == rubricData.SubQuestionID.String() {
+
+							rubricObj, ok := sqMap["rubrics"].(map[string]interface{})
+							if !ok {
+								rubricObj = make(map[string]interface{})
+								sqMap["rubrics"] = rubricObj
+							}
+
+							existingSelected := map[string]bool{}
+							if oldArr, ok := rubricObj["rubric_details"].([]interface{}); ok {
+								for _, v := range oldArr {
+									if m, ok := v.(map[string]interface{}); ok {
+										id := fmt.Sprintf("%v", m["rubric_detail_id"])
+										if sel, ok := m["has_selected"].(bool); ok {
+											existingSelected[id] = sel
+										}
+									}
+								}
+							}
+
+							newDetails := make([]map[string]interface{}, 0, len(rubricData.Rubric.RubricData))
+							for _, d := range rubricData.Rubric.RubricData {
+								sel := d.HasSelected
+								if prev, ok := existingSelected[d.RubricDetailID]; ok {
+									sel = prev
+								}
+								newDetails = append(newDetails, map[string]interface{}{
+									"rubric_detail_id":   d.RubricDetailID,
+									"rubric_point":       d.RubricPoint,
+									"rubric_description": d.RubricDescription,
+									"has_selected":       sel,
+								})
+							}
+							rubricObj["rubric_id"] = rubricData.Rubric.RubricID
+							rubricObj["rubric_details"] = newDetails
+							break
+						}
+					}
+				} else {
+					rubricObj, ok := qMap["rubrics"].(map[string]interface{})
+					if !ok {
+						rubricObj = make(map[string]interface{})
+						qMap["rubrics"] = rubricObj
+					}
+
+					existingSelected := map[string]bool{}
+					if oldArr, ok := rubricObj["rubric_details"].([]interface{}); ok {
+						for _, v := range oldArr {
+							if m, ok := v.(map[string]interface{}); ok {
+								id := fmt.Sprintf("%v", m["rubric_detail_id"])
+								if sel, ok := m["has_selected"].(bool); ok {
+									existingSelected[id] = sel
+								}
+							}
+						}
+					}
+
+					newDetails := make([]map[string]interface{}, 0, len(rubricData.Rubric.RubricData))
+					for _, d := range rubricData.Rubric.RubricData {
+						sel := d.HasSelected
+						if prev, ok := existingSelected[d.RubricDetailID]; ok {
+							sel = prev
+						}
+						newDetails = append(newDetails, map[string]interface{}{
+							"rubric_detail_id":   d.RubricDetailID,
+							"rubric_point":       d.RubricPoint,
+							"rubric_description": d.RubricDescription,
+							"has_selected":       sel,
+						})
+					}
+					rubricObj["rubric_id"] = rubricData.Rubric.RubricID
+					rubricObj["rubric_details"] = newDetails
+				}
+				break
+			}
+		}
+
+		updatedJSON, err := json.Marshal(gradeData)
+		if err != nil {
+			return err
+		}
+
+		if err := s.repo.ModifyGradeData(assignmentID, subMissionID, updatedJSON); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *InstructorServiceImpl) DeleteRubricData(assignmentID uuid.UUID, rubricData response.DeleteRubricRequest) error {
