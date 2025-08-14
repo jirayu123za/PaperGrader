@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Table, TextInput, Flex, Text, Paper, Pagination, Select, ActionIcon } from '@mantine/core';
+import { Table, TextInput, Flex, Text, Paper, Pagination, Select, ActionIcon, Skeleton } from '@mantine/core';
 import { useRouter, useParams } from 'next/navigation';
 import { useFetchSubmissions } from '@/hooks/useFetchINS_Submission';
 import { useINS_SubmissionStore } from '@/store/useINS_SubmissionStore';
@@ -58,6 +58,56 @@ export const INSSubmissions = () => {
     return (
       <Flex direction="column" gap="sm" p="md">
         <NoSubmissionsPlaceholder />
+      </Flex>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <Flex direction="column" gap="sm" p="md">
+        <Flex direction="column">
+          <Text size="lg" fw={500}>
+            Submissions list
+          </Text>
+          <Text size="sm" c="dimmed" mb="md">
+            View and manage all student submissions for this assignment.
+          </Text>
+        </Flex>
+
+        <Paper withBorder>
+          <Table verticalSpacing="md" horizontalSpacing="lg">
+            <Table.Thead className="bg-gray-100">
+              <Table.Tr>
+                <Table.Th>Student ID</Table.Th>
+                <Table.Th w="25%">Name</Table.Th>
+                <Table.Th>Section</Table.Th>
+                <Table.Th>Submitted at</Table.Th>
+                <Table.Th>View</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {Array.from({ length: 10 }).map((_, i) => (
+                <Table.Tr key={i}>
+                  <Table.Td>
+                    <Skeleton height={16} width="80%" />
+                  </Table.Td>
+                  <Table.Td>
+                    <Skeleton height={16} width="90%" />
+                  </Table.Td>
+                  <Table.Td>
+                    <Skeleton height={16} width="60%" />
+                  </Table.Td>
+                  <Table.Td>
+                    <Skeleton height={16} width="70%" />
+                  </Table.Td>
+                  <Table.Td>
+                    <Skeleton height={24} circle />
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        </Paper>
       </Flex>
     );
   }
