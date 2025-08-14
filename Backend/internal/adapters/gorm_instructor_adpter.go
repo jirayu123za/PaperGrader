@@ -1676,6 +1676,34 @@ func (r *GormInstructorRepository) FindRubricBySubQuestionID(AssignmentID uuid.U
 	}, nil
 }
 
+func (r *GormInstructorRepository) ModifyRubricDataOrHardDelete(assignmentID uuid.UUID, rubricData json.RawMessage) error {
+	var probe struct {
+		QuestionsData []interface{} `json:"questions_data"`
+	}
+	if err := json.Unmarshal(rubricData, &probe); err != nil {
+		return fmt.Errorf("invalid rubricData json: %w", err)
+	}
+
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if len(probe.QuestionsData) == 0 {
+			if err := tx.
+				Unscoped().
+				Where("assignment_id = ?", assignmentID).
+				Delete(&models.Rubric{}).Error; err != nil {
+				return err
+			}
+			return nil
+		}
+
+		if err := tx.Model(&models.Rubric{}).
+			Where("assignment_id = ? AND deleted_at IS NULL", assignmentID).
+			Update("rubric_data", datatypes.JSON(rubricData)).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
 // R submissions from question
 func (r *GormInstructorRepository) FindSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error) {
 	var rawResults []response.SubmissionsFromQuestionRaw
