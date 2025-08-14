@@ -1,38 +1,22 @@
 'use client';
 
 import React from 'react';
-import { Modal, MultiSelect, Text, Button, Flex } from '@mantine/core';
+import { Modal, MultiSelect, Button, Flex } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
+import { BsFiletypeXlsx } from "react-icons/bs";
 import { useForm } from '@mantine/form';
-import { useParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useExportModalStore } from '@/store/modal/useExportModalStore';
 import { useFetchAssignments, useExportAssignments } from '@/hooks/useFetchExportModal';
 
 const ExportModal: React.FC = () => {
-  const params = useParams();
   const opened = useExportModalStore((s) => s.opened);
   const closeModal = useExportModalStore((s) => s.closeModal);
-
-
-  const rawId = params.course_id;
-  const paramId = typeof rawId === 'string' ? rawId : null;
-  const course_id: string | null = useExportModalStore(s => s.course_id) ?? paramId;
-
+  const course_id = useExportModalStore((s) => s.course_id);
   // QueryClient for invalidating history
   const queryClient = useQueryClient();
-
-  const {
-    data: assignments = [],
-    isLoading: isLoadingAssignments,
-    error: fetchError,
-  } = useFetchAssignments(course_id);
-
-  const {
-    exportAssignments,
-    isExporting,
-    exportError,
-  } = useExportAssignments(course_id);
+  const { data: assignments = [], isLoading: isLoadingAssignments, error: fetchError } = useFetchAssignments(course_id);
+  const { exportAssignments, isExporting, exportError } = useExportAssignments(course_id);
 
   const form = useForm({
     initialValues: { assignments: [] as string[] },
@@ -46,8 +30,6 @@ const ExportModal: React.FC = () => {
     try {
       // Call export API (business logic)
      const blob = await exportAssignments(values.assignments, 'excel');
-  
-
       // Download the file
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -58,14 +40,12 @@ const ExportModal: React.FC = () => {
 
       // Invalidate export history query to refresh table
       queryClient.invalidateQueries({ queryKey: ['exportHistory'] });
-
       showNotification({
         title: 'Export Success',
         message: 'Your assignments have been exported in Excel format.',
         color: 'green',
         position: 'bottom-right',
       });
-
       closeModal();
     } catch {
       showNotification({
@@ -90,10 +70,6 @@ const ExportModal: React.FC = () => {
       overlayProps={{ blur: 3, opacity: 0.55 }}
     >
       <form onSubmit={handleSubmit}>
-        <Text size="sm" mb="sm">
-          The exported file will be in Excel format.
-        </Text>
-
         <MultiSelect
           {...form.getInputProps('assignments')}
           data={options}
@@ -105,6 +81,7 @@ const ExportModal: React.FC = () => {
           withScrollArea={false}
           mb="md"
           nothingFoundMessage="No assignments available for export."
+          leftSection={<BsFiletypeXlsx size={24}/>}
         />
 
         <Flex justify="flex-end" gap="md" mt="md">

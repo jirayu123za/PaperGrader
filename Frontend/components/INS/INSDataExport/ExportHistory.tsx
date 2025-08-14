@@ -70,7 +70,7 @@ export default function ExportHistory() {
       <div className="flex justify-between items-center mb-6">
         <Title order={2}>Export History</Title>
         <Button 
-          onClick={() => openModal(course_id!)} 
+          onClick={() => openModal(course_id)} 
           color="#4C6EF5"
           leftSection={<FaFileExport />}
         >
