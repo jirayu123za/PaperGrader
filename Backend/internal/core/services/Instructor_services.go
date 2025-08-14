@@ -965,7 +965,99 @@ func (s *InstructorServiceImpl) UpdateRubricData(assignmentID uuid.UUID, rubricD
 	if err != nil {
 		return err
 	}
-	return s.repo.ModifyRubricData(assignmentID, updatedJSON)
+
+	if err := s.repo.ModifyRubricData(assignmentID, updatedJSON); err != nil {
+		return err
+	}
+
+	// Second: If assignment already has submission, copy rubric data to grade data only has grade data
+	subMissionIDs, err := s.repo.FindSubmissionIDsByAssignmentID(assignmentID)
+	if err != nil {
+		return err
+	}
+
+	for _, subMissionID := range subMissionIDs {
+		exists, err := s.repo.FindExistingGradeData(assignmentID, subMissionID)
+		if err != nil {
+			return err
+		}
+		if !exists {
+			continue
+		}
+
+		gradeData, err := s.repo.FindGradeData(assignmentID, subMissionID)
+		if err != nil {
+			return err
+		}
+
+		questionsData, ok := gradeData["questions_data"].([]interface{})
+		if !ok {
+			return err
+		}
+
+		for _, q := range questionsData {
+			qMap := q.(map[string]interface{})
+			if qMap["question_id"] == rubricData.QuestionID.String() {
+				var rubricTarget map[string]interface{}
+
+				// Sub-question rubric
+				if rubricData.SubQuestionID != nil {
+					subQs, ok := qMap["sub_questions"].([]interface{})
+					if !ok {
+						return err
+					}
+					for _, sq := range subQs {
+						sqMap := sq.(map[string]interface{})
+						if sqMap["sub_question_id"] == rubricData.SubQuestionID.String() {
+							if rubrics, ok := sqMap["rubrics"].(map[string]interface{}); ok {
+								rubricTarget = rubrics
+							}
+						}
+					}
+				} else {
+					// Main question rubric
+					if rubrics, ok := qMap["rubrics"].(map[string]interface{}); ok {
+						rubricTarget = rubrics
+					}
+				}
+
+				// Update rubric_detail match rubric_detail_id
+				if rubricTarget != nil && rubricTarget["rubric_id"] == rubricData.Rubric.RubricID {
+					details, ok := rubricTarget["rubric_details"].([]interface{})
+					if !ok {
+						return err
+					}
+
+				UPDATED:
+					for _, d := range details {
+						detailMap := d.(map[string]interface{})
+						currentID := fmt.Sprintf("%v", detailMap["rubric_detail_id"])
+
+						for _, incomingDetail := range rubricData.Rubric.RubricData {
+							if currentID == incomingDetail.RubricDetailID {
+								detailMap["rubric_point"] = incomingDetail.RubricPoint
+								detailMap["rubric_description"] = incomingDetail.RubricDescription
+								break UPDATED
+							}
+
+						}
+					}
+
+				}
+			}
+		}
+
+		// Marshal and update to DB
+		updatedJSON, err := json.Marshal(gradeData)
+		if err != nil {
+			return err
+		}
+
+		if err := s.repo.ModifyGradeData(assignmentID, subMissionID, updatedJSON); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *InstructorServiceImpl) UpdateRubricIndexes(assignmentID uuid.UUID, rubricData response.UpdateRubricIndexesRequest) error {
