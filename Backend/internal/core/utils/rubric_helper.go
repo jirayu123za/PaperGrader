@@ -2,7 +2,11 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"paperGrader/internal/adapters/response"
+	"strings"
+
+	"github.com/google/uuid"
 )
 
 func MergeRubricsFromMap(rubricData []response.RubricQuestion, rubricMap map[string]interface{}) []response.RubricQuestion {
@@ -58,4 +62,109 @@ func MergeRubricsFromMap(rubricData []response.RubricQuestion, rubricMap map[str
 	}
 
 	return rubricData
+}
+
+func PruneRubricByBoundingBoxes(rubricJSON map[string]interface{}, ids []uuid.UUID) (map[string]interface{}, bool, error) {
+	if rubricJSON == nil || len(rubricJSON) == 0 {
+		return rubricJSON, false, nil
+	}
+	if len(ids) == 0 {
+		return rubricJSON, false, nil
+	}
+
+	idSet := make(map[string]struct{}, len(ids))
+	for _, id := range ids {
+		idSet[strings.ToLower(id.String())] = struct{}{}
+	}
+
+	qsRaw, ok := rubricJSON["questions_data"]
+	if !ok || qsRaw == nil {
+		return rubricJSON, false, nil
+	}
+	qsSlice, ok := qsRaw.([]interface{})
+	if !ok {
+		return nil, false, fmt.Errorf("questions_data is not an array")
+	}
+
+	changed := false
+	keptQs := make([]interface{}, 0, len(qsSlice))
+
+	for _, qRaw := range qsSlice {
+		qMap, ok := qRaw.(map[string]interface{})
+		if !ok {
+			keptQs = append(keptQs, qRaw)
+			continue
+		}
+
+		if del, hit, err := shouldDeleteByBBox(qMap, "bounding_box_id", idSet); err != nil {
+			return nil, false, err
+		} else if hit && del {
+			changed = true
+			continue
+		}
+
+		if sqRaw, hasSQ := qMap["sub_questions"]; hasSQ && sqRaw != nil {
+			if sqSlice, ok := sqRaw.([]interface{}); ok {
+				keptSubs := make([]interface{}, 0, len(sqSlice))
+				for _, one := range sqSlice {
+					sqMap, ok := one.(map[string]interface{})
+					if !ok {
+						keptSubs = append(keptSubs, one)
+						continue
+					}
+					if del, hit, err := shouldDeleteByBBox(sqMap, "bounding_box_id", idSet); err != nil {
+						return nil, false, err
+					} else if hit && del {
+						changed = true
+						continue
+					}
+					keptSubs = append(keptSubs, sqMap)
+				}
+				qMap["sub_questions"] = keptSubs
+			}
+		}
+
+		if isNilOrEmpty(qMap["bounding_box_id"]) && isNilOrEmptyArray(qMap["sub_questions"]) {
+			changed = true
+			continue
+		}
+
+		keptQs = append(keptQs, qMap)
+	}
+
+	rubricJSON["questions_data"] = keptQs
+	return rubricJSON, changed, nil
+}
+
+func shouldDeleteByBBox(m map[string]interface{}, key string, idSet map[string]struct{}) (delete bool, hit bool, err error) {
+	v, ok := m[key]
+	if !ok || v == nil {
+		return false, false, nil
+	}
+	switch vv := v.(type) {
+	case string:
+		_, hit = idSet[strings.ToLower(vv)]
+		return hit, hit, nil
+	default:
+		s := fmt.Sprintf("%v", vv)
+		if _, parseErr := uuid.Parse(s); parseErr == nil {
+			_, hit = idSet[strings.ToLower(s)]
+			return hit, hit, nil
+		}
+		return false, false, nil
+	}
+}
+
+func isNilOrEmpty(v interface{}) bool {
+	return v == nil || v == ""
+}
+
+func isNilOrEmptyArray(v interface{}) bool {
+	if v == nil {
+		return true
+	}
+	if arr, ok := v.([]interface{}); ok {
+		return len(arr) == 0
+	}
+	return false
 }
