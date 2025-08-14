@@ -779,17 +779,31 @@ func (r *GormInstructorRepository) FindSubmissionFiles(AssignmentID uuid.UUID) (
 func (r *GormInstructorRepository) FindSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error) {
 	var submissionList []response.SubmissionResponse
 
-	if err := r.db.
-		Table("submissions").
-		Select("submissions.submission_id, submissions.submitted_at, personal_data.personal_data_id, personal_data.student_code, CONCAT(personal_data.first_name, ' ', personal_data.last_name) AS full_name, personal_data.email, sections.section_name").
-		Joins("JOIN users ON submissions.submitted_by = users.user_id").
-		Joins("JOIN personal_data ON users.email = personal_data.email").
-		Joins("JOIN enrollment_lists ON personal_data.personal_data_id = enrollment_lists.personal_data_id").
-		Joins("JOIN sections ON enrollment_lists.section_id = sections.section_id").
-		Where("enrollment_lists.course_id = ? AND submissions.assignment_id = ?", CourseID, AssignmentID).
-		Where("submissions.deleted_at IS NULL AND users.deleted_at IS NULL AND personal_data.deleted_at IS NULL AND sections.deleted_at IS NULL AND enrollment_lists.deleted_at IS NULL").
-		Order("submissions.submitted_at ASC").
-		Scan(&submissionList).Error; err != nil {
+	err := r.db.
+		Table("submissions AS sub").
+		Select(`
+            sub.submission_id,
+            sub.submitted_at,
+            pd.personal_data_id,
+            pd.student_code,
+            CONCAT(pd.first_name, ' ', pd.last_name) AS full_name,
+            pd.email,
+            sec.section_name
+        `).
+		Joins(`JOIN personal_data AS pd
+                  ON pd.personal_data_id = sub.belongs_to
+                 AND pd.deleted_at IS NULL`).
+		Joins(`JOIN enrollment_lists AS el
+                  ON el.personal_data_id = pd.personal_data_id
+                 AND el.course_id = ?
+                 AND el.deleted_at IS NULL`, CourseID).
+		Joins(`JOIN sections AS sec
+                  ON sec.section_id = el.section_id
+                 AND sec.deleted_at IS NULL`).
+		Where(`sub.assignment_id = ? AND sub.deleted_at IS NULL`, AssignmentID).
+		Order(`sub.submitted_at ASC`).
+		Scan(&submissionList).Error
+	if err != nil {
 		return nil, err
 	}
 	return submissionList, nil
