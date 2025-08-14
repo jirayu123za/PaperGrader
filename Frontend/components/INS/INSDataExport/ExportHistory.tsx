@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import {Button,Divider,Table,ThemeIcon,Text,ActionIcon,Flex,Title,Checkbox,Paper,useMantineTheme,} from '@mantine/core';
-import { IconTrash, IconDownload } from '@tabler/icons-react';
-import { useExportModalStore } from '@/store/modal/useExportModalStore';
 import ExportModal from '@/components/INS/INSDataExport/ExportModal';
-
+import { Button, Divider, Table, Text, ActionIcon, Flex, Title, Checkbox, Paper, Pagination } from '@mantine/core';
+import { IconTrash, IconDownload } from '@tabler/icons-react';
+import { FaFileExport } from "react-icons/fa6";
+import { usePagination } from '@mantine/hooks';
+import { useExportModalStore } from '@/store/modal/useExportModalStore';
+import { useParams } from 'next/navigation';
 
 interface HistoryItem {
   id: string;
@@ -15,6 +17,7 @@ interface HistoryItem {
   status: 'processing' | 'ready' | 'failed';
   downloadUrl?: string;
 }
+
 const mockHistory: HistoryItem[] = [
   { id: '1', fileName: 'export-2025-07-01.csv', exportedAt: '2025-07-01T14:30:00Z', exportedBy: 'Shweta Betgeri', status: 'ready', downloadUrl: '/downloads/export-2025-07-01.csv' },
   { id: '2', fileName: 'export-2025-07-02.csv', exportedAt: '2025-07-02T09:15:00Z', exportedBy: 'Shweta Betgeri', status: 'processing' },
@@ -25,13 +28,22 @@ const mockHistory: HistoryItem[] = [
   { id: '7', fileName: 'export-2025-07-07.pdf', exportedAt: '2025-07-07T12:00:00Z', exportedBy: 'jayant jain', status: 'failed' },
   { id: '8', fileName: 'export-2025-07-08.csv', exportedAt: '2025-07-08T13:30:00Z', exportedBy: 'Shweta Betgeri', status: 'ready', downloadUrl: '/downloads/export-2025-07-08.csv' },
   { id: '9', fileName: 'export-2025-07-09.pdf', exportedAt: '2025-07-09T15:45:00Z', exportedBy: 'Shweta Betgeri', status: 'processing' },
-  { id: '10', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
+  { id: '21', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
+  { id: '11', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
+  { id: '12', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
+  { id: '13', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
+  { id: '14', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
+  { id: '15', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
+  { id: '16', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
+  { id: '17', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
+  { id: '18', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
+  { id: '19', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
 ];
 
 export default function ExportHistory() {
-  const theme = useMantineTheme();
+  const params = useParams();
+  const course_id = params.course_id as string;
   const openModal = useExportModalStore((s) => s.openModal);
-  const course_id = useExportModalStore((s) => s.course_id);
   const data = mockHistory;
 
   const [selected, setSelected] = useState<string[]>([]);
@@ -41,23 +53,37 @@ export default function ExportHistory() {
   const toggleRow = (id: string) =>
     setSelected((current) =>
       current.includes(id) ? current.filter((i) => i !== id) : [...current, id]
-    );
+  );
+
+  const pageSize = 10;
+  const totalPages = data ? Math.ceil(data.length / pageSize) : 1;
+  const pagination = usePagination({
+    total: totalPages,
+    initialPage: 1,
+  });
+  const startIndex = (pagination.active - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedExportTable = data.slice(startIndex, endIndex);
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <Title order={2}>Export History</Title>
-        <Button onClick={() => openModal( course_id!)} >
-        Export
+        <Button 
+          onClick={() => openModal(course_id!)} 
+          color="#4C6EF5"
+          leftSection={<FaFileExport />}
+        >
+          Export
         </Button>
       </div>
 
       <Divider my="sm" />
 
-      <Paper shadow="sm" radius="md" withBorder p="xl" mt="md">
-        <div style={{ maxHeight: 'calc(100vh - 280px)', overflowY: 'auto' }}>
+      <Paper withBorder mb="md">
+        <Table.ScrollContainer minWidth="100%" className='no-scroll-padding'>
           <Table highlightOnHover verticalSpacing="sm">
-            <Table.Thead>
+            <Table.Thead className="bg-gray-100">
               <Table.Tr>
                 <Table.Th>
                   <Checkbox
@@ -77,11 +103,11 @@ export default function ExportHistory() {
               {data.length === 0 ? (
                 <Table.Tr>
                   <Table.Td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>
-                    <Text color="dimmed">No export history available.</Text>
+                    <Text c="dimmed">No export history available.</Text>
                   </Table.Td>
                 </Table.Tr>
               ) : (
-                data.map((item) => (
+                paginatedExportTable.map((item) => (
                   <Table.Tr key={item.id}>
                     <Table.Td>
                       <Checkbox
@@ -95,11 +121,11 @@ export default function ExportHistory() {
                     <Table.Td>
                       <Flex align="center" gap="xs">
                         {item.status === 'ready' && item.downloadUrl && (
-                          <ActionIcon component="a" href={item.downloadUrl} target="_blank" size="sm">
+                          <ActionIcon component="a" variant="transparent" href={item.downloadUrl} target="_blank" size="sm">
                             <IconDownload size={16} />
                           </ActionIcon>
                         )}
-                        <ActionIcon color="red" size="sm" disabled={item.status !== 'ready'}>
+                        <ActionIcon variant="transparent" color="red" size="sm" disabled={item.status !== 'ready'}>
                           <IconTrash size={16} />
                         </ActionIcon>
                       </Flex>
@@ -108,8 +134,30 @@ export default function ExportHistory() {
                 ))
               )}
             </Table.Tbody>
+
+            <Table.Tfoot>
+              <Table.Tr>
+                <Table.Td colSpan={7} className="border-t border-gray-300">
+                  <Flex align="center" w="100%" justify="space-between">
+                    <Text size="sm" c="dimmed">
+                      Total files: {data.length}
+                    </Text>
+                    <Pagination
+                      total={totalPages}
+                      siblings={1}
+                      boundaries={1}
+                      value={pagination.active}
+                      onChange={pagination.setPage}
+                      gap="2px"
+                      size="sm"
+                      color="#4C6EF5"
+                    />
+                  </Flex>
+                </Table.Td>
+              </Table.Tr>
+            </Table.Tfoot>
           </Table>
-        </div>
+        </Table.ScrollContainer>
       </Paper>
 
       <ExportModal />
