@@ -8,8 +8,8 @@ export const TabsGradeSubmissionsClient = () => {
   return (
     <Tabs defaultValue="submissions" p="md">
       <Tabs.List>
-        <Tabs.Tab value="submissions">Submissions list</Tabs.Tab>
-        <Tabs.Tab value="questions">Questions list</Tabs.Tab>
+        <Tabs.Tab value="submissions">Submissions view</Tabs.Tab>
+        <Tabs.Tab value="questions">Questions view</Tabs.Tab>
       </Tabs.List>
 
       <Tabs.Panel value="submissions" pt="md">
