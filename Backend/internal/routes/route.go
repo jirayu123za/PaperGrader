@@ -143,12 +143,15 @@ func RegisterRoutes(
 	// Bounding Boxes data
 	apiGroup.Get("/instructor/boundingBoxes/data", instructorHandler.GetBoundingBoxesData)
 
+	// Part-student: route
 	apiGroup.Get("/student/dashboard", studentHandler.GetCoursesAndAssignments)
-	// test api get pdf files name
+	// Files
 	apiGroup.Get("/student/files", studentHandler.GetAssignmentNamesWithCourseIDAndAssignmentID)
 	apiGroup.Get("/student/files/download", studentHandler.GetPDFFileNamesAndURLs)
 	apiGroup.Post("/student/file", studentHandler.CreateSubmissionFile)
+	// Courses
 	apiGroup.Get("/student/courses", studentHandler.GetCoursesByUserID)
 	apiGroup.Get("/student/course", studentHandler.GetCourseByCourseID)
+	// Assignments
 	apiGroup.Get("/student/assignments", studentHandler.GetAssignmentsByCourseID)
 }
