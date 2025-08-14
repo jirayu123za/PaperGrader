@@ -801,6 +801,34 @@ func (s *InstructorServiceImpl) DeleteBoundingBoxes(AssignmentID uuid.UUID, boun
 	if err := s.repo.RemoveBoundingBoxes(AssignmentID, boundingBoxIDs); err != nil {
 		return err
 	}
+
+	rubricMap, err := s.repo.FindRubricDataByAssignmentID(AssignmentID)
+	if err != nil {
+		return err
+	}
+
+	if rubricMap == nil {
+		return nil
+	}
+
+	prunedJSON, changed, err := utils.PruneRubricByBoundingBoxes(rubricMap, boundingBoxIDs)
+	if err != nil {
+		return err
+	}
+
+	if !changed {
+		return nil
+	}
+
+	// Marshal and update to DB
+	updatedJSON, err := json.Marshal(prunedJSON)
+	if err != nil {
+		return err
+	}
+
+	if err := s.repo.ModifyRubricDataOrHardDelete(AssignmentID, updatedJSON); err != nil {
+		return err
+	}
 	return nil
 }
 
