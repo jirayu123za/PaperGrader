@@ -31,6 +31,9 @@ interface RubricData {
   questions: Question[];
 }
 
+
+
+type DeletePair = { bounding_box_id: string; question_id: string | null };
 interface BoundingBoxStore {
   boundingBoxes: BoundingBox[];
   rubricData: RubricData;
@@ -44,9 +47,14 @@ interface BoundingBoxStore {
   removeQuestion: (id: string) => void;
   setBoundingBoxesFromAPI: (data: BoundingBox[]) => void;
   setRubricDataFromAPI: (questions: Question[]) => void;
+  pendingDeletes: DeletePair[];
+  markForDelete: (pair: DeletePair) => void;
+  clearPendingDeletes: () => void;
+
 }
 
 const useBoundingBoxStore = create<BoundingBoxStore>((set) => ({
+  pendingDeletes: [],
   boundingBoxes: [],
   rubricData: { rubric_id: '', questions: [] },
 
@@ -171,16 +179,50 @@ const useBoundingBoxStore = create<BoundingBoxStore>((set) => ({
       };
     }),
 
-  setRubricDataFromAPI: (questions) =>
-    set({
-      rubricData: {
-        rubric_id: '', // หรือจาก API จริง
-        questions: questions.map((q) => ({
-          ...q,
-          subquestions: q.subquestions ?? [],
-        })),
-      },
-    }),
+  
+setRubricDataFromAPI: (questions) =>
+    set((state) => {
+      const mapped = (questions ?? []).map((q: any) => {
+        const subsRaw = q.sub_questions ?? q.subquestions ?? [];
+        const subquestions = subsRaw.map((s: any) => ({
+          subquestion_id: s.sub_question_id ?? s.subquestion_id,
+          subquestion_title: s.sub_question_title ?? s.subquestion_title ?? '',
+          subquestion_point: Number(s.sub_question_point ?? s.subquestion_point ?? 0),
+          bounding_box_id: s.bounding_box_id ?? null,
+        }));
+
+        // กติกา: ถ้ามี subquestions แล้ว ห้ามปล่อย bounding_box_id ไว้ที่ระดับ question
+        let question_bounding_box_id = q.bounding_box_id ?? null;
+
+        if (subquestions.length > 0 && question_bounding_box_id) {
+          // ย้าย bbox ของ question ไปให้ subquestion ตัวแรกที่ยังไม่มี bbox
+          const idx = subquestions.findIndex((s: any) => !s.bounding_box_id);
+          if (idx >= 0) subquestions[idx].bounding_box_id = question_bounding_box_id;
+          question_bounding_box_id = null;
+        }
+
+        return {
+          question_id: q.question_id,
+          question_title: q.question_title ?? '',
+          question_point: Number(q.question_point ?? 0),
+          bounding_box_id: question_bounding_box_id,
+          subquestions,
+        };
+      });
+
+      return {
+        rubricData: {
+          ...state.rubricData,
+          questions: mapped,
+        },
+      };
+    })
+,
+
+  markForDelete: (pair) =>
+    set((s) => ({ pendingDeletes: [...s.pendingDeletes, pair] })),
+
+  clearPendingDeletes: () => set({ pendingDeletes: [] }),
 
 }));
 

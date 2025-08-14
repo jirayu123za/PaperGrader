@@ -101,16 +101,18 @@ export default function KonvaCanvas({ innerContainerRef }: KonvaCanvasProps) {
 
     layer.batchDraw();
 
+    
     const labelMap = new Map<string, { title: string; point: number }>();
     rubricData.questions.forEach((q: any) => {
-      if (q.bounding_box_id) {
+      // ถ้ามี subquestions แล้ว ไม่ตั้ง label ที่ระดับ question
+      if ((!q.subquestions || q.subquestions.length === 0) && q.bounding_box_id) {
         labelMap.set(q.bounding_box_id, {
           title: q.question_title ?? '',
           point: q.question_point ?? 0,
         });
       }
       (q.subquestions ?? []).forEach((s: any) => {
-        if (s.bounding_box_id) {
+        if (s?.bounding_box_id) {
           labelMap.set(s.bounding_box_id, {
             title: s.subquestion_title ?? '',
             point: s.subquestion_point ?? 0,
@@ -119,9 +121,25 @@ export default function KonvaCanvas({ innerContainerRef }: KonvaCanvasProps) {
       });
     });
 
-    const groups = groupMapRef.current;
+    // เลือกเฉพาะกล่อง question ที่ถูกใช้งานจริง
+    const usedIds = new Set<string>();
+    rubricData.questions.forEach((q: any) => {
+      if (!q.subquestions || q.subquestions.length === 0) {
+        if (q.bounding_box_id) usedIds.add(q.bounding_box_id);
+      }
+      (q.subquestions ?? []).forEach((s: any) => {
+        if (s?.bounding_box_id) usedIds.add(s.bounding_box_id);
+      });
+    });
+    const boxesToRender = boundingBoxes.filter((b: any) => {
+      if (b.bounding_box_type === 'question') {
+        return usedIds.has(b.bounding_box_id);
+      }
+      return true; // name/id แสดงทั้งหมด
+    });
+const groups = groupMapRef.current;
 
-    boundingBoxes.forEach((box: any) => {
+    boxesToRender.forEach((box: any) => {
       const meta = pageMetas.find((m: any) => m.pageNumber === box.bounding_box_page);
       if (!meta) return;
 

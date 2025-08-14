@@ -170,12 +170,13 @@ export const useFetchTemplate = (assignment_id: string) => {
           question_id: q.question_id,
           question_title: q.question_title,
           question_point: q.question_point,
+          ...(q.bounding_box_id ? { bounding_box_id: q.bounding_box_id } : {}),
 
           subquestions: q.sub_questions?.map((sub) => ({
             subquestion_id: sub.sub_question_id,
             subquestion_title: sub.sub_question_title,
             subquestion_point: sub.sub_question_point,
-            bounding_box_id: sub.bounding_box_id,
+            bounding_box_id: sub.bounding_box_id ?? '',
           })) || [],
         }))
       );
@@ -195,17 +196,12 @@ export function useUpsertBoundingBoxesAndQuestions(assignment_id: string) {
       bounding_boxes?: BoundingBoxPayload[];
       questions_data?: QuestionPayload[];
     }) => {
-      const res = await axios.post(
-        `/api/api/instructor/boundingBoxes?assignment_id=${assignment_id}`,
-        payload
-      );
+      const res = await axios.post(`/api/api/instructor/boundingBoxes`, payload, { params: { assignment_id } });
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['boundingBoxes', assignment_id] });
-      queryClient.invalidateQueries({ queryKey: ['questions', assignment_id] });
-      
-    },
+      queryClient.invalidateQueries({ queryKey: ['template', assignment_id] });
+      },
   });
 }
 
@@ -214,7 +210,7 @@ export function useDeleteBoundingBox(assignment_id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (bounding_box_id: string) => {
-      const res = await axios.delete(`/api/instructor/boundingBoxes/${bounding_box_id}`);
+      const res = await axios.delete(`/api/api/instructor/boundingBoxes/${bounding_box_id}`);
       return res.data;
     },
     onSuccess: () => {
@@ -258,3 +254,24 @@ export function mapRubricToQuestionsData(
   });
 }
 
+
+export type DeletePair = { bounding_box_id: string; question_id: string | null };
+
+export function useBatchDeletePairs(assignment_id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ['batchDeletePairs', assignment_id],
+    mutationFn: async (pairs: DeletePair[]) => {
+      const real = (pairs ?? []).filter((p) => p.bounding_box_id && !p.bounding_box_id.startsWith('temp-'));
+      if (real.length === 0) return null;
+
+      await Promise.all(
+        real.map((p) => axios.delete(`/api/api/instructor/boundingBoxes`, { params: { assignment_id, bounding_box_id: p.bounding_box_id, question_id: p.question_id ?? '' } }))
+      );
+      return true;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['template', assignment_id] });
+    },
+  });
+}

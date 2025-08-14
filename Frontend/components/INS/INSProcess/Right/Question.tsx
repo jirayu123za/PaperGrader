@@ -19,6 +19,7 @@ import {
   mapRubricToQuestionsData,
   useFetchTemplate,
 } from '@/hooks/BoundingBox/useFetchBoundingBox';
+import { useBatchDeletePairs } from '@/hooks/BoundingBox/useFetchBoundingBox';
 import { mapBoundingBoxesToApiFormat } from '@/hooks/BoundingBox/useFetchBoundingBox';
 import { useParams } from 'next/navigation';
 import { useEffect } from 'react';
@@ -27,12 +28,13 @@ import React from 'react';
 export default function QuestionOutline() {
   const params = useParams();
   const assignment_id = params.assignment_id as string;
-  const { rubricData, boundingBoxes, updateQuestion, removeQuestion } = useBoundingBoxStore();
-  const { mutate: upsertAll } = useUpsertBoundingBoxesAndQuestions(assignment_id);
+  const { rubricData, boundingBoxes, updateQuestion, removeQuestion, pendingDeletes, markForDelete, clearPendingDeletes} = useBoundingBoxStore();
+  const { mutateAsync: upsertAll } = useUpsertBoundingBoxesAndQuestions(assignment_id);
+  const { mutateAsync: batchDelete } = useBatchDeletePairs(assignment_id);
 
   const { data: template } = useFetchTemplate(assignment_id);
 
-
+  const upsert = useUpsertBoundingBoxesAndQuestions(assignment_id);
 
 
   const calculateTotalPoints = () =>
@@ -40,19 +42,42 @@ export default function QuestionOutline() {
 
 
 
-const handleSave = () => {
 
-  const isUpdate = rubricData.questions.some(q =>
-    !q.question_id.startsWith('temp-')
-  );
-
-  const payload = {
-    bounding_boxes:  mapBoundingBoxesToApiFormat(boundingBoxes, isUpdate),
-    questions_data:  mapRubricToQuestionsData(rubricData, isUpdate), 
+ 
+  const queueDeleteQuestion = (q: any) => {
+    if (q?.bounding_box_id) {
+      markForDelete({ bounding_box_id: q.bounding_box_id, question_id: q.question_id ?? null });
+    }
+    removeQuestion(q.question_id);
   };
 
-  console.log('upsert payload:', payload);
-  upsertAll(payload);
+const handleSave = async () => {
+  // เลือกส่งเฉพาะกล่องที่ "ถูกใช้งานจริง" เพื่อตัดกล่อง question ที่ลอย/ค่าเริ่มต้น
+  const usedIds = new Set<string>();
+  rubricData.questions.forEach((q: any) => {
+    if (q.bounding_box_id) usedIds.add(q.bounding_box_id);
+    (q.subquestions ?? []).forEach((s: any) => {
+      if (s.bounding_box_id) usedIds.add(s.bounding_box_id);
+    });
+  });
+  const filteredBoxes = boundingBoxes.filter((b: any) => {
+    if (b.bounding_box_type === 'question') {
+      return usedIds.has(b.bounding_box_id);
+    }
+    return true; // name/id ส่งทั้งหมด
+  });
+
+  const payload = {
+    bounding_boxes: mapBoundingBoxesToApiFormat(filteredBoxes, true),
+    questions_data: mapRubricToQuestionsData(rubricData, true),
+  };
+
+
+  await upsertAll(payload);
+  if (pendingDeletes && pendingDeletes.length > 0) {
+    await batchDelete(pendingDeletes);
+    clearPendingDeletes();
+  }
 };
 
 
@@ -120,7 +145,7 @@ const handleSave = () => {
                       <ActionIcon
                         color="red"
                         variant="light"
-                        onClick={() => removeQuestion(question.question_id)}
+                        onClick={() => queueDeleteQuestion(question)}
                       >
                         <FaTrash size={16} />
                       </ActionIcon>
