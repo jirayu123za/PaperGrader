@@ -83,7 +83,7 @@ export function handleAddSubquestion(question: any) {
         {
           subquestion_id: `temp-${nanoid()}`,
           subquestion_title: 'New Subquestion',
-          subquestion_point: 1,
+          subquestion_point: 0,
           bounding_box_id: question.bounding_box_id,
         },
       ],
@@ -98,7 +98,7 @@ export function handleAddSubquestion(question: any) {
         {
           subquestion_id: `temp-${nanoid()}`,
           subquestion_title: 'New Subquestion',
-          subquestion_point: 1,
+          subquestion_point: 0,
           bounding_box_id: newId,
         },
       ],
