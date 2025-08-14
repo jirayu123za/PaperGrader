@@ -16,7 +16,7 @@ type StudentService interface {
 	GetAssignmentNamesWithCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, err error)
 	GetPDFFileNamesAndURLs(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, fileURLs []string, err error)
 	GetCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error)
-	GetAssignmentsByCourseID(CourseID uuid.UUID) (map[string]interface{}, error)
+	GetAssignmentsByCourseID(CourseID uuid.UUID, UserID uuid.UUID) ([]map[string]interface{}, error)
 	GetCourseByCourseID(CourseID uuid.UUID) (map[string]interface{}, error)
 }
 
@@ -84,8 +84,8 @@ func (s *StudentServiceImpl) GetCoursesByUserID(UserID uuid.UUID) ([]map[string]
 	return courses, nil
 }
 
-func (s *StudentServiceImpl) GetAssignmentsByCourseID(CourseID uuid.UUID) (map[string]interface{}, error) {
-	assignments, err := s.repo.FindAssignmentsByCourseID(CourseID)
+func (s *StudentServiceImpl) GetAssignmentsByCourseID(CourseID uuid.UUID, UserID uuid.UUID) ([]map[string]interface{}, error) {
+	assignments, err := s.repo.FindAssignmentsByCourseID(CourseID, UserID)
 	if err != nil {
 		return nil, err
 	}

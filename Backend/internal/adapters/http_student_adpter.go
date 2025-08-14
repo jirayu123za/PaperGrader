@@ -237,6 +237,14 @@ func (h *HttpStudentHandler) GetCoursesByUserID(c *fiber.Ctx) error {
 }
 
 func (h *HttpStudentHandler) GetAssignmentsByCourseID(c *fiber.Ctx) error {
+	userID, err := utils.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid user_id in JWT",
+			"error":   err.Error(),
+		})
+	}
+
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
 	if err != nil {
@@ -246,7 +254,7 @@ func (h *HttpStudentHandler) GetAssignmentsByCourseID(c *fiber.Ctx) error {
 		})
 	}
 
-	assignments, err := h.services.GetAssignmentsByCourseID(courseID)
+	assignments, err := h.services.GetAssignmentsByCourseID(courseID, userID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to get assignments",
