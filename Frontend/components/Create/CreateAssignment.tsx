@@ -22,7 +22,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
   const course_id = params?.course_id as string;
   const { files, templateFile, clearFiles } = useFileStore();
   const { mutate } = useCreateAssignment();
-  const { selectedSections, resetSelectedSections} = useSelectSectionStore();
+  const { selectedSections, resetSelectedSections } = useSelectSectionStore();
 
   const form = useForm({
     initialValues: {
@@ -44,45 +44,69 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
     formData.append('submitted_by', values.submitted_by);
     formData.append('sections', selectedSections.join(','));
 
-    files.forEach((file, index) => {
-      if (file instanceof File) {
-        formData.append(`is_template[${index}]`, file === templateFile ? 'true' : 'false');
-        formData.append('files', file);
-        notifications.show({
-          title: 'File Added',
-          message: `File ${file.name} has been added.`,
-          color: 'green',
-        });
-      } else {
-        notifications.show({
-          title: 'Invalid File',
-          message: `File ${files} is not a valid file.`,
-          color: 'red',
-        });
+
+    const toUpload: File[] = [...files];
+
+
+    if (
+      templateFile &&
+      !toUpload.some(
+        (f) => f === templateFile || (f.name === templateFile.name && f.size === templateFile.size)
+      )
+    ) {
+      toUpload.push(templateFile);
+    }
+
+    if (toUpload.length === 0) {
+      notifications.show({
+        title: 'No file',
+        message: 'กรุณาอัปโหลดอย่างน้อย 1 ไฟล์ (เช่น Template)',
+        color: 'red',
+      });
+      return;
+    }
+
+
+    toUpload.forEach((file, index) => {
+      const isTemplate =
+        !!templateFile &&
+        (file === templateFile ||
+          (file.name === templateFile.name && file.size === templateFile.size));
+
+      formData.append(`is_template[${index}]`, isTemplate ? 'true' : 'false');
+      formData.append('files', file);
+
+      notifications.show({
+        title: isTemplate ? 'Template added' : 'File added',
+        message: file.name,
+        color: 'green',
+      });
+    });
+
+
+    mutate(
+      { formData, course_id: Array.isArray(course_id) ? course_id[0] : course_id || '' },
+      {
+        onSuccess: () => {
+          onClose();
+          resetSelectedSections();
+          form.reset();
+          clearFiles();
+          notifications.show({
+            title: 'Success',
+            message: 'Assignment created successfully',
+            color: 'green',
+          });
+        },
+        onError: (error: any) => {
+          notifications.show({
+            title: 'Error',
+            message: `${error?.response?.data?.error ?? 'Failed to create assignment'}`,
+            color: 'red',
+          });
+        },
       }
-    });
-    
-    
-    mutate({formData, course_id: Array.isArray(course_id) ? course_id[0] : course_id || ''}, {
-      onSuccess: () => {
-        onClose();
-        resetSelectedSections();
-        form.reset();
-        clearFiles();
-        notifications.show({
-          title: 'Success',
-          message: 'Assignment created successfully',
-          color: 'green',
-        });
-      },
-      onError: (error) => {
-        notifications.show({
-          title: 'Error',
-          message: `${error.response?.data?.error}`,
-          color: 'red',
-        });
-      },
-    });
+    );
   };
 
   return (
@@ -115,7 +139,7 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
         {/* Section Selector */}
         <div className="mb-4 mt-4">
           <SectionSelector />
-          </div>
+        </div>
 
         {/* File Upload */}
         <div className="flex flex-col mb-4 mt-4">
