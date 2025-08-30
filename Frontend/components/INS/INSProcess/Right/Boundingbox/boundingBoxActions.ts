@@ -34,6 +34,7 @@ export function handleAddIdBoundingBox() {
 export function handleAddQuestionAndBoundingBox() {
   const { addBoundingBox, addQuestion } = useBoundingBoxStore.getState();
   const { currentPage } = usePageMetaStore.getState();
+
   const bounding_box_id = `temp-${nanoid()}`;
   const question_id     = `temp-${nanoid()}`;
 
@@ -54,8 +55,6 @@ export function handleAddQuestionAndBoundingBox() {
     question_point: 0,
     subquestions: [],
   });
-
-
 }
 
 export function handleAddBoundingBox(bounding_box_id: string, type: 'question' | 'name' | 'id') {
@@ -72,44 +71,77 @@ export function handleAddBoundingBox(bounding_box_id: string, type: 'question' |
   });
 }
 export function handleAddSubquestion(question: any) {
-  const { updateQuestion } = useBoundingBoxStore.getState();
+  const { updateQuestion, addBoundingBox } = useBoundingBoxStore.getState();
+  const { currentPage } = usePageMetaStore.getState();
   const isFirst = !question.subquestions || question.subquestions.length === 0;
 
   if (isFirst) {
-    // ย้าย bounding box จากคำถามหลักไปที่ subquestion แรก
-    updateQuestion(question.question_id, {
-      bounding_box_id: '',
-      subquestions: [
-        {
-          subquestion_id: `temp-${nanoid()}`,
-          subquestion_title: 'New Subquestion',
-          subquestion_point: 0,
-          bounding_box_id: question.bounding_box_id,
-        },
-      ],
-    });
+
+    if (question.bounding_box_id) {
+      const firstSubId = `temp-${nanoid()}`;
+      updateQuestion(question.question_id, {
+        bounding_box_id: undefined, 
+        subquestions: [
+          {
+            subquestion_id: firstSubId,
+            subquestion_title: 'New Subquestion',
+            subquestion_point: 0,
+            bounding_box_id: question.bounding_box_id,
+          },
+        ],
+      });
+    } else {
+
+      const bboxId = `temp-${nanoid()}`;
+      addBoundingBox({
+        bounding_box_id: bboxId,
+        bounding_box_type: 'question',
+        bounding_box_page: currentPage,
+        point_x: 100,
+        point_y: 200,
+        width: 300,
+        height: 100,
+      });
+      const firstSubId = `temp-${nanoid()}`;
+      updateQuestion(question.question_id, {
+        subquestions: [
+          {
+            subquestion_id: firstSubId,
+            subquestion_title: 'New Subquestion',
+            subquestion_point: 0,
+            bounding_box_id: bboxId,
+          },
+        ],
+      });
+    }
   } else {
-    // เพิ่ม subquestion ใหม่ พร้อม bounding box ใหม่
-    const newId = `temp-${nanoid()}`;
-    handleAddBoundingBox(newId, 'question');
+
+    const bboxId = `temp-${nanoid()}`;
+    addBoundingBox({
+      bounding_box_id: bboxId,
+      bounding_box_type: 'question',
+      bounding_box_page: currentPage,
+      point_x: 100,
+      point_y: 200,
+      width: 300,
+      height: 100,
+    });
+    const newSubId = `temp-${nanoid()}`;
     updateQuestion(question.question_id, {
       subquestions: [
-        ...question.subquestions,
+        ...(question.subquestions ?? []),
         {
-          subquestion_id: `temp-${nanoid()}`,
+          subquestion_id: newSubId,
           subquestion_title: 'New Subquestion',
           subquestion_point: 0,
-          bounding_box_id: newId,
+          bounding_box_id: bboxId,
         },
       ],
     });
   }
 }
 
-/**
- * เปลี่ยนแปลงข้อมูลของ subquestion (title หรือ point) โดยไม่ให้รวม point เกิน question หลัก
- */
-// ก่อน: file “boundingBoxActions.ts”
+
 export function handleSubChange(question: any,subIdx: number,field: string,value: any) {
   const { updateQuestion } = useBoundingBoxStore.getState();
   const newSubs = [...(question.subquestions || [])];                                  
@@ -129,11 +161,7 @@ export function handleSubChange(question: any,subIdx: number,field: string,value
   });
 }
 
-/**
- * ลบ subquestion และจัดการกับ bounding box ตามเงื่อนไข:
- * - ถ้ามีแค่ 1 ตัว: คืน bounding box ให้ question หลัก
- * - ถ้ามีหลายตัว: ลบ bounding box ของตัวนั้น
- */
+
 export function handleSubDelete(question: any, subIdx: number) {
   const { updateQuestion, removeBoundingBox } = useBoundingBoxStore.getState();
   const subToRemove = question.subquestions[subIdx];

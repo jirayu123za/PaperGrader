@@ -90,7 +90,7 @@ export function mapBoundingBoxesToApiFormat(
         bounding_box_type: box.bounding_box_type,
         bounding_box_page: box.bounding_box_page,
       };
-      // ใส่ id ให้เฉพาะไอเท็มที่มาจาก BE (ไม่ใช่ temp-)
+
       if (includeId && box.bounding_box_id && !box.bounding_box_id.startsWith('temp-')) {
         payload.bounding_box_id = box.bounding_box_id;
       }
@@ -120,7 +120,7 @@ export type TemplateResponse = {
       question_point: number;
       question_title: string;
       sub_questions?: Array<{
-        bounding_box_id: string;
+        bounding_box_id?: string;
         sub_question_id: string;
         sub_question_point: number;
         sub_question_title: string;
@@ -131,7 +131,7 @@ export type TemplateResponse = {
 
 
 
-// GET bounding boxes & GET questions
+
 export const useFetchTemplate = (assignment_id: string) => {
   const setBoxes = useBoundingBoxStore((s) => s.setBoundingBoxesFromAPI);
   const setRubric = useBoundingBoxStore((s) => s.setRubricDataFromAPI);
@@ -170,7 +170,7 @@ export const useFetchTemplate = (assignment_id: string) => {
           question_id: q.question_id,
           question_title: q.question_title,
           question_point: q.question_point,
-          ...(q.bounding_box_id ? { bounding_box_id: q.bounding_box_id } : {}),
+          bounding_box_id: q.bounding_box_id ?? '',
 
           subquestions: q.sub_questions?.map((sub) => ({
             subquestion_id: sub.sub_question_id,
@@ -219,37 +219,37 @@ export function useDeleteBoundingBox(assignment_id: string) {
   });
 }
 
-// hooks/BoundingBox/useFetchBoundingBox.ts
+
 
 export function mapRubricToQuestionsData(
   rubricData: any,
   includeId = false,
 ): QuestionPayload[] {
+  if (!rubricData?.questions) return [];
   return rubricData.questions.map((q: any) => {
-    // สร้าง payload เบื้องต้น
     const p: any = {
       question_title: q.question_title,
       question_point: q.question_point,
-      // ให้ sub_questions แม้ไม่มี ก็คืนเป็น []
-      sub_questions: q.subquestions?.map((sub: any) => {
+      sub_questions: (q.subquestions ?? []).map((sub: any) => {
         const sp: any = {
           sub_question_title: sub.subquestion_title,
           sub_question_point: sub.subquestion_point,
         };
-        if (includeId && !sub.subquestion_id.startsWith('temp-')) {
+        if (includeId && sub.subquestion_id && !String(sub.subquestion_id).startsWith('temp-')) {
           sp.sub_question_id = sub.subquestion_id;
+        }
+        if (includeId && sub.bounding_box_id && !String(sub.bounding_box_id).startsWith('temp-')) {
           sp.bounding_box_id = sub.bounding_box_id;
         }
         return sp;
-      }) ?? [],
+      }),
     };
-
-    // ใส่ question_id + bounding_box_id เฉพาะของเก่า
-    if (includeId && !q.question_id.startsWith('temp-')) {
-      p.question_id     = q.question_id;
+    if (includeId && q.question_id && !String(q.question_id).startsWith('temp-')) {
+      p.question_id = q.question_id;
+    }
+    if (includeId && q.bounding_box_id && !String(q.bounding_box_id).startsWith('temp-')) {
       p.bounding_box_id = q.bounding_box_id;
     }
-
     return p as QuestionPayload;
   });
 }
@@ -274,4 +274,52 @@ export function useBatchDeletePairs(assignment_id: string) {
       queryClient.invalidateQueries({ queryKey: ['template', assignment_id] });
     },
   });
+}
+
+
+
+export function mapRubricToQuestionsDataDelta(rubricData: any): QuestionPayload[] {
+  if (!rubricData?.questions) return [];
+  const out: any[] = [];
+  for (const q of rubricData.questions) {
+    const isNewQ = !q.question_id || String(q.question_id).startsWith('temp-');
+    if (isNewQ) {
+      out.push({
+        question_title: q.question_title,
+        question_point: q.question_point,
+        sub_questions: (q.subquestions ?? []).map((sub: any) => ({
+          sub_question_title: sub.subquestion_title,
+          sub_question_point: sub.subquestion_point,
+        })),
+      });
+    } else {
+      const newSubs = (q.subquestions ?? []).filter(
+        (s: any) => !s.subquestion_id || String(s.subquestion_id).startsWith('temp-')
+      );
+      if (newSubs.length > 0) {
+        out.push({
+          question_id: q.question_id, 
+          sub_questions: newSubs.map((sub: any) => ({
+            sub_question_title: sub.subquestion_title,
+            sub_question_point: sub.subquestion_point,
+          })),
+        });
+      }
+    }
+  }
+  return out as QuestionPayload[];
+}
+
+
+
+export function mapBoundingBoxesToApiFormatNewOnly(boundingBoxes: any[], usedIds: Set<string>): ApiBoundingBox[] {
+  const onlyNew = (boundingBoxes ?? []).filter((b) => {
+    const isTemp = !b.bounding_box_id || String(b.bounding_box_id).startsWith('temp-');
+    if (!isTemp) return false;
+    if (b.bounding_box_type === 'question') {
+      return usedIds.has(b.bounding_box_id);
+    }
+    return true; 
+  });
+  return mapBoundingBoxesToApiFormat(onlyNew, false);
 }
