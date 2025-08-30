@@ -174,6 +174,18 @@ const groups = groupMapRef.current;
           txt.width(160);
           txt.scale({ x: 1, y: 1 });
         }
+        const ptxt = existing.findOne('.pointText') as Konva.Text;
+        if (ptxt) {
+          const pointVal = info?.point ?? 0;
+          ptxt.text(`${Number(pointVal)} pts`);
+          const bgNow = existing.findOne('.background') as Konva.Rect;
+          if (bgNow) {
+            const wNow = bgNow.width();
+            ptxt.x(Math.max(0, wNow - 64));
+            ptxt.width(60);
+          }
+        }
+        layer.batchDraw();
       } else {
 
         const group = createBoundingBoxGroup(
@@ -231,6 +243,11 @@ const groups = groupMapRef.current;
             if (txt) {
               txt.width(160);
               txt.scale({ x: 1, y: 1 });
+            }
+            const ptxt = group.findOne('.pointText') as Konva.Text;
+            if (ptxt) {
+              ptxt.x(Math.max(0, newWCanvas - 64));
+              ptxt.width(60);
             }
 
 
