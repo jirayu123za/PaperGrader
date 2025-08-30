@@ -53,11 +53,11 @@ const UploadFile: React.FC = () => {
       {/* Template File */}
       <Box mb="md">
         <Text size="sm" fw={500}>
-          Template File
+          Question/Template
         </Text>
         <FileInput
           leftSection={icon}
-          placeholder="Select Template File"
+          placeholder="Select Question/Template File"
           accept=".pdf"
           onChange={handleTemplateFileChange}
         />
@@ -68,7 +68,7 @@ const UploadFile: React.FC = () => {
             </Text>
           ) : (
             <Text color="dimmed" size="sm">
-              No template file selected.
+              No Question/template file selected.
             </Text>
           )}
         </Box>
