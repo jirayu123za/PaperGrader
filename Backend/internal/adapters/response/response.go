@@ -542,7 +542,3 @@ type TotalSubmissionIDs struct {
 	SubmissionID uuid.UUID `json:"submission_id"`
 	HasGrade     bool      `json:"has_grade"`
 }
-
-type TotalSubmissionsResponse struct {
-	TotalSubmissions []TotalSubmissionIDs `json:"total_submissions"`
-}

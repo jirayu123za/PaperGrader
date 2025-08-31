@@ -74,7 +74,7 @@ type InstructorService interface {
 	GetBoundingBoxesType(AssignmentID uuid.UUID) ([]response.BoundingBoxDataResponse, error)
 
 	// R total submission ids
-	GetTotalSubmissionIDsByHasGrade(AssignmentID uuid.UUID) (response.TotalSubmissionsResponse, error)
+	GetTotalSubmissionIDsByHasGrade(AssignmentID uuid.UUID) ([]response.TotalSubmissionIDs, error)
 
 	// Bounding Boxes Services
 	CreateBoundingBoxesNameAndID(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error
@@ -766,12 +766,12 @@ func (s *InstructorServiceImpl) GetBoundingBoxesType(AssignmentID uuid.UUID) ([]
 }
 
 // Get total submission IDs by has grade
-func (s *InstructorServiceImpl) GetTotalSubmissionIDsByHasGrade(AssignmentID uuid.UUID) (response.TotalSubmissionsResponse, error) {
+func (s *InstructorServiceImpl) GetTotalSubmissionIDsByHasGrade(AssignmentID uuid.UUID) ([]response.TotalSubmissionIDs, error) {
 	submissionIDs, err := s.repo.FindTotalSubmissionIDsByHasGrade(AssignmentID)
 	if err != nil {
-		return response.TotalSubmissionsResponse{}, err
+		return nil, err
 	}
-	return response.TotalSubmissionsResponse{TotalSubmissions: submissionIDs}, nil
+	return submissionIDs, nil
 }
 
 func (s *InstructorServiceImpl) CreateBoundingBoxesNameAndID(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox) error {
