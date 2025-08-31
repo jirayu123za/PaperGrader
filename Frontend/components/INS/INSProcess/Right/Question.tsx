@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, NumberInput, TextInput, ActionIcon, Table, ScrollArea, Box } from '@mantine/core';
+import { Button, NumberInput, TextInput, ActionIcon, Table, ScrollArea, Box, Group } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { FaTrash, FaPlus } from 'react-icons/fa';
 import useBoundingBoxStore from '@/store/BoundingBox/useBoundingBoxStore';
@@ -22,6 +22,7 @@ import {
 import { useBatchDeletePairs, mapRubricToQuestionsDataDelta, mapBoundingBoxesToApiFormatNewOnly } from '@/hooks/BoundingBox/useFetchBoundingBox';
 import { mapBoundingBoxesToApiFormat } from '@/hooks/BoundingBox/useFetchBoundingBox';
 import { useParams } from 'next/navigation';
+import { useAssignmentLeftProcessStore } from '@/store/useLeftProcessStore';
 import { useEffect } from 'react';
 import React from 'react';
 
@@ -30,8 +31,8 @@ export default function QuestionOutline() {
   const assignment_id = params.assignment_id as string;
   const { rubricData, boundingBoxes, updateQuestion, removeQuestion, pendingDeletes, markForDelete, clearPendingDeletes} = useBoundingBoxStore();
   const { mutateAsync: upsertAll, isPending: isUpserting } = useUpsertBoundingBoxesAndQuestions(assignment_id);
-const { mutateAsync: batchDelete } = useBatchDeletePairs(assignment_id);
-
+  const { mutateAsync: batchDelete } = useBatchDeletePairs(assignment_id);
+  const { assignmentLeftProcess } = useAssignmentLeftProcessStore();
   const { data: template, isFetching: isFetchingTemplate, refetch: refetchTemplate } = useFetchTemplate(assignment_id);
   const [isSaving, setIsSaving] = React.useState(false);
 
@@ -259,19 +260,18 @@ const handleSave = async () => {
   return (
     <div className="p-6 space-y-6 rounded-md max-h-[86vh] overflow-y-auto">
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Outline for Test</h1>
-        <p className="text-gray-600">{calculateTotalPoints()} points total</p>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleAddNameBoundingBox}>
-            Student Name
-          </Button>
-          <Button variant="outline" onClick={handleAddIdBoundingBox}>
-            Student ID
-          </Button>
-        </div>
+        <h1 className="text-2xl font-bold">Outline for {assignmentLeftProcess?.assignment_name ?? 'Assignment'}</h1>
+        <Group justify="center" gap="sm">
+          <Button variant="outline" onClick={handleAddNameBoundingBox}>Student Name</Button>
+          <Button variant="outline" onClick={handleAddIdBoundingBox}>Student ID</Button>
+        </Group>
       </div>
 
       <ScrollArea>
+        <Box className="w-full flex justify-end mb-2">
+          <span className="text-gray-600 text-sm">{calculateTotalPoints()} Points Total</span>
+        </Box>
+
         <Table highlightOnHover style={{ border: 'none' }}>
           <Table.Thead>
             <Table.Tr>
