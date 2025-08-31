@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
-import { useRubricStore } from "@/store/rubric/useRubricStore";
+import { useRubricGradeStore } from "@/store/rubric/useRubricGradeStore";
 
 interface RubricDetail {
     rubric_detail_id: string;
@@ -17,15 +17,16 @@ interface Rubric {
     rubric_details: RubricDetail[] | null;
 }
 
-export const useFetchRubricParams = (assignment_id: string, question_id: string, sub_question_id?: string | undefined) => {
-    const setRubricData = useRubricStore((state) => state.setRubricData);
+export const useFetchRubricParams = (assignment_id: string, submission_id: string, question_id: string, sub_question_id?: string | undefined) => {
+    const setRubricData = useRubricGradeStore((state) => state.setRubricData);
 
     return useQuery<Rubric, Error>({
-        queryKey: ["rubric", assignment_id, question_id, sub_question_id],
+        queryKey: ["rubric", assignment_id, submission_id, question_id, sub_question_id],
         queryFn: async () => {
-            const response = await axios.get("/api/api/instructor/rubric", {
+            const response = await axios.get("/api/api/instructor/rubric/graded", {
                 params: {
                     assignment_id,
+                    submission_id,
                     question_id,
                     sub_question_id,
                 },
@@ -39,7 +40,7 @@ export const useFetchRubricParams = (assignment_id: string, question_id: string,
             setRubricData(rubric);
             return rubric;
         },
-        enabled: !!assignment_id && !!question_id,
+        enabled: !!assignment_id && !!submission_id && !!question_id,
         refetchOnWindowFocus: false,
     });
 };
