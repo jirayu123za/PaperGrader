@@ -6,8 +6,8 @@ import { FaTrash, FaPlus } from 'react-icons/fa';
 import useBoundingBoxStore from '@/store/BoundingBox/useBoundingBoxStore';
 import { nanoid } from 'nanoid';
 import {
-  handleAddNameBoundingBox,
-  handleAddIdBoundingBox,
+  handleToggleNameBoundingBox,
+  handleToggleIdBoundingBox,
   handleAddQuestionAndBoundingBox,
   handleAddBoundingBox,
   handleAddSubquestion,
@@ -30,6 +30,9 @@ export default function QuestionOutline() {
   const params = useParams();
   const assignment_id = params.assignment_id as string;
   const { rubricData, boundingBoxes, updateQuestion, removeQuestion, pendingDeletes, markForDelete, clearPendingDeletes} = useBoundingBoxStore();
+  const hasName = React.useMemo(() => (boundingBoxes ?? []).some((b: any) => b.bounding_box_type === 'name'), [boundingBoxes]);
+  const hasId   = React.useMemo(() => (boundingBoxes ?? []).some((b: any) => b.bounding_box_type === 'id'), [boundingBoxes]);
+
   const { mutateAsync: upsertAll, isPending: isUpserting } = useUpsertBoundingBoxesAndQuestions(assignment_id);
   const { mutateAsync: batchDelete } = useBatchDeletePairs(assignment_id);
   const { assignmentLeftProcess } = useAssignmentLeftProcessStore();
@@ -262,8 +265,8 @@ const handleSave = async () => {
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Outline for {assignmentLeftProcess?.assignment_name ?? 'Assignment'}</h1>
         <Group justify="center" gap="sm">
-          <Button variant="outline" onClick={handleAddNameBoundingBox}>Student Name</Button>
-          <Button variant="outline" onClick={handleAddIdBoundingBox}>Student ID</Button>
+          <Button variant={hasName ? "filled" : "outline"} onClick={handleToggleNameBoundingBox} disabled={isSaving || isUpserting || isFetchingTemplate}>{hasName ? "Remove Student Name" : "Student Name"}</Button>
+          <Button variant={hasId ? "filled" : "outline"} onClick={handleToggleIdBoundingBox} disabled={isSaving || isUpserting || isFetchingTemplate}>{hasId ? "Remove Student ID" : "Student ID"}</Button>
         </Group>
       </div>
 

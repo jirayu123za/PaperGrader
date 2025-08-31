@@ -179,3 +179,40 @@ export function handleSubDelete(question: any, subIdx: number) {
     updateQuestion(question.question_id, { subquestions: newSubs });
   }
 }
+
+
+
+export function handleToggleFixedBox(type: 'name' | 'id') {
+  const { boundingBoxes, addBoundingBox, removeBoundingBox } = useBoundingBoxStore.getState();
+  const { currentPage } = usePageMetaStore.getState();
+
+  const existing = (boundingBoxes ?? []).filter((b: any) => b.bounding_box_type === type);
+
+  if (existing.length > 0) {
+    existing.forEach((b: any) => {
+      if (b?.bounding_box_id) removeBoundingBox(b.bounding_box_id);
+    });
+    return;
+  }
+
+
+  const bboxId = `temp-${nanoid()}`;
+  const defaults = type === 'name'
+    ? { point_x: 50,  point_y: 100, width: 200, height: 50 }
+    : { point_x: 300, point_y: 100, width: 200, height: 50 };
+
+  addBoundingBox({
+    bounding_box_id: bboxId,
+    bounding_box_type: type,
+    bounding_box_page: currentPage,
+    ...defaults,
+  });
+}
+
+export function handleToggleNameBoundingBox() {
+  return handleToggleFixedBox('name');
+}
+
+export function handleToggleIdBoundingBox() {
+  return handleToggleFixedBox('id');
+}
