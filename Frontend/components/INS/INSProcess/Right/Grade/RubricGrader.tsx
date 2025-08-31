@@ -18,6 +18,7 @@ import { useCreateRubric } from '@/hooks/Rubric/useCreateRubric';
 import { useDeleteRubric } from '@/hooks/Rubric/useDeleteRubric';
 import { useUpdateRubric } from '@/hooks/Rubric/useUpdateRubric';
 import { useUpdateRubricsIndexes } from '@/hooks/Rubric/useUpdateRubricsIndexes';
+import { useUpdateGrade } from '@/hooks/Grade/useUpdateGrade';
 import { RubricItem, useRubricStore } from '@/store/rubric/useRubricStore';
 import { NoQuestion } from '@/components/INS/INSProcess/Right/Rubric/NoQuestion';
 import { QuestionSelectorParams } from '@/components/INS/INSProcess/Right/Rubric/QuestionSelectorParams';
@@ -34,6 +35,7 @@ interface Graded {
 export const RubricGrader = () => {
   const params = useParams();
   const assignment_id = params.assignment_id as string;
+  const submission_id = params.submission_id as string;
   const question_id = params.question_id as string;
   const sub_question_id = params.sub_question_id as string | undefined;
   const { questions } = useQuestionStore();
@@ -43,6 +45,7 @@ export const RubricGrader = () => {
   const { mutate: deleteRubric, isPending: isPendingDelete } = useDeleteRubric(assignment_id);
   const { mutate: updateRubric, isPending: isPendingUpdate } = useUpdateRubric(assignment_id);
   const { mutate: updateRubricsIndexes, isPending: isPendingUpdateIndexes } = useUpdateRubricsIndexes(assignment_id);
+  const { mutate: updateGrade, isPending: isPendingUpdateGrade } = useUpdateGrade();
   const { rubricData, rubrics, setRubrics, editingRubricID, setEditingRubricID, editingDescriptionID, setEditingDescriptionID } = useRubricStore();
   const [opened, { toggle }] = useDisclosure(true);
 
@@ -222,10 +225,47 @@ export const RubricGrader = () => {
 
   const toggleRubric = (index: number) => {
     if (index >= rubrics.length) return;
+    const target = rubrics[index];
+    const nextSelected = !target.has_selected;
+
+    // optimistic update
+    const prev = [...rubrics];
     const updated = rubrics.map((r, i) =>
-        i === index ? { ...r, has_selected: !r.has_selected } : r
+      i === index ? { ...r, has_selected: nextSelected } : r
     );
     setRubrics(updated);
+
+    // call API
+    updateGrade(
+      {
+        params: { assignment_id, submission_id },
+        body: {
+          question_id,
+          sub_question_id: sub_question_id ?? undefined,
+          rubric_id: target.rubric_id,
+          rubric_detail_id: target.rubric_detail_id,
+          has_selected: nextSelected,
+        },
+      },
+      {
+        onSuccess: () => {
+          notifications.show({
+            title: 'Grade updated',
+            message: 'Add grade successfully',
+            color: 'green',
+          });
+        },
+        onError: (error) => {
+          setRubrics(prev);
+          notifications.show({
+            title: 'Error updating grade',
+            message: `${error.message}`,
+            color: 'red',
+          });
+          console.log(error);
+        }
+      }
+    );
   };
 
   const keys = Array.from({ length: 9 }, (_, i) => `${i + 1}`);
