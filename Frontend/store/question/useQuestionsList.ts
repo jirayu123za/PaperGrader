@@ -5,6 +5,8 @@ interface SubQuestion {
     sub_question_title: string;
     sub_question_point: number;
     submission_id: string;
+    progress?: number;
+    graded_by?: string | null;
 }
 
 interface Question {
@@ -12,6 +14,8 @@ interface Question {
     question_title: string;
     question_point: number;
     submission_id: string | null;
+    progress?: number;
+    graded_by?: string | null;
     sub_questions?: SubQuestion[];
 }
 

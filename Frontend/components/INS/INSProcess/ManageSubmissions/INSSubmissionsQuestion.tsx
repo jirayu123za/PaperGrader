@@ -17,10 +17,6 @@ export const INSSubmissionsQuestion: React.FC = () => {
   const { isLoading: isLoadingQuestions, data: questionsData } = useFetchQuestionsList(assignment_id);
   const { questions } = useQuestionsListStore();
 
-  // Mock data for progress bars
-  const mockProgressMain = Math.floor(Math.random() * 100);
-  const mockProgressSub = Math.floor(Math.random() * 100);
-
   const allSubmissionsEmpty = questions.every((q) => {
     if (q.sub_questions && q.sub_questions.length > 0) {
       return q.sub_questions.every((sub) => sub.submission_id === null);
@@ -145,8 +141,8 @@ export const INSSubmissionsQuestion: React.FC = () => {
                   <Table.Td ta="center" className="align-top">
                     {!hasSub ? (
                       <Flex align="center" justify="center">
-                        <Progress value={mockProgressMain} color="green" w={350} size="lg" />
-                        <Text size="sm" fw={500} c="green" w={30}>{mockProgressMain}%</Text>
+                        <Progress value={question.progress ?? 0} color="green" w={350} size="lg" />
+                        <Text size="sm" fw={500} c="green" w={30}>{question.progress}%</Text>
                       </Flex>
                     ) : (
                       <>
@@ -160,12 +156,12 @@ export const INSSubmissionsQuestion: React.FC = () => {
                               gap="2px"
                             >
                               <Progress
-                                value={mockProgressSub}
+                                value={sub.progress ?? 0}
                                 color="gray"
                                 w={350}
                                 size="lg"
                               />
-                              <Text size="sm" fw={500} c="green" w={30}>{mockProgressSub}%</Text>
+                              <Text size="sm" fw={500} c="green" w={30}>{sub.progress}%</Text>
                             </Flex>
                           ))}
                         </Flex>                      
@@ -176,7 +172,7 @@ export const INSSubmissionsQuestion: React.FC = () => {
                   {/* Graded by Column */}
                   <Table.Td ta="center" className="align-top">
                     {!hasSub ? (
-                        <Text size="sm" fw={500} c="dimmed">Mock user</Text>
+                        <Text size="sm" fw={500} c="dimmed">{question.graded_by ?? "-"}</Text>
                       ) : (
                         <>
                           <div className="min-h-[24px] mb-[10px]" />
@@ -188,7 +184,7 @@ export const INSSubmissionsQuestion: React.FC = () => {
                                 fw={500}
                                 c="dimmed"
                               >
-                                Mock user
+                                {sub.graded_by ?? "-"}
                               </Text>
                             ))}
                           </Flex>
