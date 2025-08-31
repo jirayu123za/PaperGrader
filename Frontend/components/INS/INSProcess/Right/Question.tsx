@@ -264,10 +264,10 @@ const handleSave = async () => {
     <div className="p-6 space-y-6 rounded-md max-h-[86vh] overflow-y-auto">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Outline for {assignmentLeftProcess?.assignment_name ?? 'Assignment'}</h1>
-        <Group justify="center" gap="sm">
-          <Button variant={hasName ? "filled" : "outline"} onClick={handleToggleNameBoundingBox} disabled={isSaving || isUpserting || isFetchingTemplate}>{hasName ? "Remove Student Name" : "Student Name"}</Button>
-          <Button variant={hasId ? "filled" : "outline"} onClick={handleToggleIdBoundingBox} disabled={isSaving || isUpserting || isFetchingTemplate}>{hasId ? "Remove Student ID" : "Student ID"}</Button>
-        </Group>
+        <Group gap="sm" grow className="w-full">
+  <Button fullWidth variant={hasName ? "filled" : "outline"} onClick={handleToggleNameBoundingBox} disabled={isSaving || isUpserting || isFetchingTemplate}>{hasName ? "Remove Student Name" : "Student Name"}</Button>
+  <Button fullWidth variant={hasId ? "filled" : "outline"} onClick={handleToggleIdBoundingBox} disabled={isSaving || isUpserting || isFetchingTemplate}>{hasId ? "Remove Student ID" : "Student ID"}</Button>
+</Group>
       </div>
 
       <ScrollArea>
