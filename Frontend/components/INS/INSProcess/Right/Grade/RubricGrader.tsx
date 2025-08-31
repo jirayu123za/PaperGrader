@@ -19,7 +19,7 @@ import { useDeleteRubric } from '@/hooks/Rubric/useDeleteRubric';
 import { useUpdateRubric } from '@/hooks/Rubric/useUpdateRubric';
 import { useUpdateRubricsIndexes } from '@/hooks/Rubric/useUpdateRubricsIndexes';
 import { useUpdateGrade } from '@/hooks/Grade/useUpdateGrade';
-import { RubricItem, useRubricStore } from '@/store/rubric/useRubricStore';
+import { RubricItem, useRubricGradeStore } from '@/store/rubric/useRubricGradeStore';
 import { NoQuestion } from '@/components/INS/INSProcess/Right/Rubric/NoQuestion';
 import { QuestionSelectorParams } from '@/components/INS/INSProcess/Right/Rubric/QuestionSelectorParams';
 import { RubricSettingsParams } from '@/components/INS/INSProcess/Right/Rubric/RubricSettingsParams';
@@ -40,13 +40,13 @@ export const RubricGrader = () => {
   const sub_question_id = params.sub_question_id as string | undefined;
   const { questions } = useQuestionStore();
   const { isLoading: isLoadingQuestions, data: questionsData } = useFetchQuestion(assignment_id);
-  const { isLoading: isLoadingRubric, data: data } = useFetchRubricParams(assignment_id, question_id, sub_question_id);
+  const { isLoading: isLoadingRubric, data: rubric } = useFetchRubricParams(assignment_id, submission_id, question_id, sub_question_id);
   const { mutate: createRubric, isPending: isPendingCreate } = useCreateRubric(assignment_id);
   const { mutate: deleteRubric, isPending: isPendingDelete } = useDeleteRubric(assignment_id);
   const { mutate: updateRubric, isPending: isPendingUpdate } = useUpdateRubric(assignment_id);
   const { mutate: updateRubricsIndexes, isPending: isPendingUpdateIndexes } = useUpdateRubricsIndexes(assignment_id);
   const { mutate: updateGrade, isPending: isPendingUpdateGrade } = useUpdateGrade();
-  const { rubricData, rubrics, setRubrics, editingRubricID, setEditingRubricID, editingDescriptionID, setEditingDescriptionID } = useRubricStore();
+  const { rubricData, rubrics, setRubrics, editingRubricID, setEditingRubricID, editingDescriptionID, setEditingDescriptionID } = useRubricGradeStore();
   const [opened, { toggle }] = useDisclosure(true);
 
   const handleCreateRubric = () => {
