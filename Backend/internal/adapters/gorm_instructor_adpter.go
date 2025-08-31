@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"math/rand"
 	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/core/utils"
@@ -1289,22 +1290,21 @@ func (r *GormInstructorRepository) FindQuestionsList(AssignmentID uuid.UUID) (re
 }
 
 func (r *GormInstructorRepository) FindNoSubmittedQuestionsList(AssignmentID uuid.UUID) (response.MixedQuestionsList, error) {
-	var rubric struct {
-		RubricID   uuid.UUID      `gorm:"column:rubric_id"`
-		RubricData datatypes.JSON `gorm:"column:rubric_data"`
+	type rubricRow struct {
+		RubricID   uuid.UUID
+		RubricData datatypes.JSON
 	}
+	var rubric rubricRow
 
-	tx := r.db.
+	if err := r.db.
 		Table("rubrics").
 		Select("rubric_id, rubric_data").
 		Where("assignment_id = ? AND deleted_at IS NULL", AssignmentID).
-		Take(&rubric)
-
-	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
-		return response.MixedQuestionsList{}, nil
-	}
-	if tx.Error != nil {
-		return nil, tx.Error
+		Take(&rubric).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return response.MixedQuestionsList{}, nil
+		}
+		return nil, err
 	}
 
 	var submissionIDs response.UngradedSubmissions
@@ -1316,55 +1316,208 @@ func (r *GormInstructorRepository) FindNoSubmittedQuestionsList(AssignmentID uui
 		return nil, err
 	}
 
+	var totalSub int64
+	if err := r.db.
+		Table("submissions").
+		Where("assignment_id = ? AND deleted_at IS NULL", AssignmentID).
+		Count(&totalSub).Error; err != nil {
+		return nil, err
+	}
+
+	const pathMainExists = `$.questions_data[*] ? (@.question_id == $qid && @.grades.has_graded == true)`
+	const pathSubExists = `$.questions_data[*].sub_questions[*] ? (@.sub_question_id == $sqid && @.grades.has_graded == true)`
+	const pathMainGrader = `$.questions_data[*] ? (@.question_id == $qid).grades.graded_by`
+	const pathSubGrader = `$.questions_data[*].sub_questions[*] ? (@.sub_question_id == $sqid).grades.graded_by`
+
+	const countMainSQL = `
+		SELECT COUNT(DISTINCT s.submission_id) AS cnt
+		FROM grades g
+		JOIN submissions s ON s.submission_id = g.submission_id
+		WHERE s.assignment_id = $1
+			AND g.deleted_at IS NULL
+			AND jsonb_path_exists(
+				g.grade_data,
+				$2::jsonpath,
+				jsonb_build_object('qid', to_jsonb($3::text))
+			)
+	`
+
+	// ---- COUNT (sub) ----
+	const countSubSQL = `
+		SELECT COUNT(DISTINCT s.submission_id) AS cnt
+		FROM grades g
+		JOIN submissions s ON s.submission_id = g.submission_id
+		WHERE s.assignment_id = $1
+			AND g.deleted_at IS NULL
+			AND jsonb_path_exists(
+				g.grade_data,
+				$2::jsonpath,
+				jsonb_build_object('sqid', to_jsonb($3::text))
+			)
+	`
+
+	// ---- LATEST GRADER (main) ----
+	const latestGraderMainSQL = `
+		WITH matched AS (
+			SELECT g.*, GREATEST(g.updated_at, g.created_at) AS ts
+			FROM grades g
+			JOIN submissions s ON s.submission_id = g.submission_id
+			WHERE s.assignment_id = $1
+			AND g.deleted_at IS NULL
+			AND jsonb_path_exists(
+				g.grade_data,
+				$2::jsonpath,
+				jsonb_build_object('qid', to_jsonb($3::text))
+				)
+		),
+		last_one AS (SELECT * FROM matched ORDER BY ts DESC LIMIT 1),
+		pick AS (
+			SELECT jsonb_path_query_first(
+					g.grade_data,
+					$4::jsonpath,
+					jsonb_build_object('qid', to_jsonb($3::text))
+				) #>> '{}' AS graded_by_user_id
+			FROM last_one g
+		)
+		SELECT CONCAT(u.first_name,' ',u.last_name) AS name
+		FROM pick p
+		JOIN users u ON u.user_id::text = p.graded_by_user_id
+		LIMIT 1
+	`
+
+	// ---- LATEST GRADER (sub) ----
+	const latestGraderSubSQL = `
+		WITH matched AS (
+			SELECT g.*, GREATEST(g.updated_at, g.created_at) AS ts
+			FROM grades g
+			JOIN submissions s ON s.submission_id = g.submission_id
+			WHERE s.assignment_id = $1
+			AND g.deleted_at IS NULL
+			AND jsonb_path_exists(
+				g.grade_data,
+				$2::jsonpath,
+				jsonb_build_object('sqid', to_jsonb($3::text))
+				)
+		),
+		last_one AS (SELECT * FROM matched ORDER BY ts DESC LIMIT 1),
+		pick AS (
+			SELECT jsonb_path_query_first(
+					g.grade_data,
+					$4::jsonpath,
+					jsonb_build_object('sqid', to_jsonb($3::text))
+				) #>> '{}' AS graded_by_user_id
+			FROM last_one g
+		)
+		SELECT CONCAT(u.first_name,' ',u.last_name) AS name
+		FROM pick p
+		JOIN users u ON u.user_id::text = p.graded_by_user_id
+		LIMIT 1
+	`
+
+	progressOf := func(n int64) int {
+		if totalSub == 0 {
+			return 0
+		}
+		return int(math.Round(float64(n) * 100.0 / float64(totalSub)))
+	}
+
 	var parsed response.RawRubricData
 	if err := json.Unmarshal(rubric.RubricData, &parsed); err != nil {
 		return nil, err
 	}
 
 	var result response.MixedQuestionsList
-	subIDx := 0
+	subIdx := 0
+
 	for _, q := range parsed.QuestionsData {
 		if len(q.SubQuestions) > 0 {
-			question := response.QuestionNoSubmission{
+			main := response.QuestionNoSubmission{
 				QuestionID:    q.QuestionID,
 				QuestionTitle: q.QuestionTitle,
 				QuestionPoint: q.QuestionPoint,
 			}
 
 			for _, sq := range q.SubQuestions {
-				sub := response.SubQuestion{
+				var subCnt int64
+				if err := r.db.Raw(
+					countSubSQL,
+					AssignmentID,
+					pathSubExists,
+					sq.SubQuestionID.String(),
+				).Row().Scan(&subCnt); err != nil {
+					return nil, err
+				}
+
+				var grSub struct{ Name *string }
+				if err := r.db.Raw(
+					latestGraderSubSQL,
+					AssignmentID,
+					pathSubExists,
+					sq.SubQuestionID.String(),
+					pathSubGrader,
+				).Scan(&grSub).Error; err != nil {
+					grSub.Name = nil
+				}
+
+				var subIDPtr *uuid.UUID
+				if len(submissionIDs) > 0 {
+					id := submissionIDs[subIdx%len(submissionIDs)].SubmissionID
+					subIDPtr = &id
+					subIdx++
+				}
+
+				main.SubQuestions = append(main.SubQuestions, response.SubQuestion{
 					SubQuestionID:    sq.SubQuestionID,
 					SubQuestionTitle: sq.SubQuestionTitle,
 					SubQuestionPoint: sq.SubQuestionPoint,
-				}
-
-				if len(submissionIDs) > 0 {
-					sub.SubmissionID = &submissionIDs[subIDx%len(submissionIDs)].SubmissionID
-					subIDx++
-				} else {
-					sub.SubmissionID = nil
-				}
-
-				question.SubQuestions = append(question.SubQuestions, sub)
-			}
-			result = append(result, question)
-
-		} else {
-			question := response.Question{
-				QuestionID:    q.QuestionID,
-				QuestionTitle: q.QuestionTitle,
-				QuestionPoint: q.QuestionPoint,
+					SubmissionID:     subIDPtr,
+					Progress:         progressOf(subCnt),
+					GradedBy:         grSub.Name,
+				})
 			}
 
-			if len(submissionIDs) > 0 {
-				question.SubmissionID = &submissionIDs[subIDx%len(submissionIDs)].SubmissionID
-				subIDx++
-			} else {
-				question.SubmissionID = nil
-			}
-			result = append(result, question)
+			result = append(result, main)
+			continue
 		}
+
+		var mainCnt int64
+		if err := r.db.Raw(
+			countMainSQL,
+			AssignmentID,
+			pathMainExists,
+			q.QuestionID.String(),
+		).Row().Scan(&mainCnt); err != nil {
+			return nil, err
+		}
+
+		var grMain struct{ Name *string }
+		if err := r.db.Raw(
+			latestGraderMainSQL,
+			AssignmentID,
+			pathMainExists,
+			q.QuestionID.String(),
+			pathMainGrader,
+		).Scan(&grMain).Error; err != nil {
+			grMain.Name = nil
+		}
+
+		var subIDPtr *uuid.UUID
+		if len(submissionIDs) > 0 {
+			id := submissionIDs[subIdx%len(submissionIDs)].SubmissionID
+			subIDPtr = &id
+			subIdx++
+		}
+
+		result = append(result, response.Question{
+			QuestionID:    q.QuestionID,
+			QuestionTitle: q.QuestionTitle,
+			QuestionPoint: q.QuestionPoint,
+			SubmissionID:  subIDPtr,
+			Progress:      progressOf(mainCnt),
+			GradedBy:      grMain.Name,
+		})
 	}
+
 	return result, nil
 }
 

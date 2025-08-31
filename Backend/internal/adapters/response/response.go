@@ -219,6 +219,8 @@ type SubQuestion struct {
 	SubQuestionTitle string     `json:"sub_question_title"`
 	SubQuestionPoint int        `json:"sub_question_point"`
 	SubmissionID     *uuid.UUID `json:"submission_id"`
+	Progress         int        `json:"progress"`
+	GradedBy         *string    `json:"graded_by"`
 }
 
 type Question struct {
@@ -227,6 +229,8 @@ type Question struct {
 	QuestionPoint int           `json:"question_point"`
 	SubmissionID  *uuid.UUID    `json:"submission_id"`
 	SubQuestions  []SubQuestion `json:"sub_questions,omitempty"`
+	Progress      int           `json:"progress"`
+	GradedBy      *string       `json:"graded_by"`
 }
 
 type QuestionNoSubmission struct {
