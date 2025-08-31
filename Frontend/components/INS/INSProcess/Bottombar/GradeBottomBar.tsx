@@ -1,85 +1,60 @@
 "use client";
 
 import React, { useEffect } from 'react';
-import { Group, Button, Text } from '@mantine/core';
+import {Group,Button,Text,Tooltip,Kbd,Popover,ActionIcon,Table,} from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { useParams, usePathname, useRouter } from 'next/navigation';
-import { useQuestionStore } from '@/store/question/useQuestionStore';
-import { useGradeboxStore } from '@/store/BoundingBox/useGradeboxStore';
-import { useSubmissionsStore } from '@/store/Submissions/useSubmissionsStore';
-
-interface NavItem {
-  question_id: string;
-  sub_question_id?: string;
-}
+import { useFetchTotalSubmissionIDs } from '@/hooks/useFetchGradeBottom';
+import { useTotalSubmissionsStore } from '@/store/useGradeBottomStore';
 
 const GradeBottomBar: React.FC = () => {
   const params = useParams();
   const router = useRouter();
   const pathname = usePathname();
 
-  // Route params
+
   const course_id = params.course_id as string;
   const assignment_id = params.assignment_id as string;
   const submission_id = params.submission_id as string;
   const question_id = params.question_id as string;
   const sub_question_id = params.sub_question_id as string | undefined;
 
-  // Mode
   const isListMode = pathname.includes('/lists/');
   const mode = isListMode ? 'lists' : 'submissions';
 
-  // Stores
-  const { questions } = useQuestionStore();
-  const { bounding_boxes_data } = useGradeboxStore();
-  const { submissions: submissionsData } = useSubmissionsStore();
-  const submissionsList = submissionsData?.submissions ?? [];
 
-  // Build navigation items
-  const navItems: NavItem[] = questions.reduce<NavItem[]>((acc, q) => {
-    if (q.sub_questions && q.sub_questions.length > 0) {
-      q.sub_questions.forEach(sq => {
-        if (
-          isListMode ||
-          bounding_boxes_data.some(
-            bb => bb.question_id === q.question_id && bb.sub_question_id === sq.sub_question_id
-          )
-        ) {
-          acc.push({ question_id: q.question_id, sub_question_id: sq.sub_question_id });
-        }
-      });
-    } else {
-      if (
-        isListMode ||
-        bounding_boxes_data.some(bb => bb.question_id === q.question_id && bb.sub_question_id === undefined)
-      ) {
-        acc.push({ question_id: q.question_id });
-      }
+  useFetchTotalSubmissionIDs(assignment_id);
+  const totalSubs = useTotalSubmissionsStore((s) => s.total);
+
+
+  const currentIndex = totalSubs.findIndex((s) => s.submission_id === submission_id);
+  const prevSub = currentIndex > 0 ? totalSubs[currentIndex - 1] : undefined;
+  const nextSub =
+    currentIndex >= 0 && currentIndex < totalSubs.length - 1
+      ? totalSubs[currentIndex + 1]
+      : undefined;
+
+
+  const findPrevUngraded = () => {
+    if (currentIndex <= 0) return undefined;
+    for (let i = currentIndex - 1; i >= 0; i--) {
+      if (!totalSubs[i].has_grade) return totalSubs[i];
     }
-    return acc;
-  }, []);
-
-  // Current question index
-  const currentIndex = navItems.findIndex(
-    item => item.question_id === question_id && item.sub_question_id === sub_question_id
-  );
-  const prevItem = currentIndex > 0 ? navItems[currentIndex - 1] : undefined;
-  const nextItem = currentIndex >= 0 && currentIndex < navItems.length - 1 ? navItems[currentIndex + 1] : undefined;
-
-  // Build question URL
-  const buildQHref = (qId: string, sId?: string) => {
-    const base = `/instructor/course/${course_id}/process/${assignment_id}/grade-submissions/questions/${qId}`;
-    return sId
-      ? `${base}/sub-questions/${sId}/${mode}/${submission_id}`
-      : `${base}/${mode}/${submission_id}`;
+    return undefined;
   };
 
-  // Ungraded navigation
-  const ungradedSubs = submissionsList.filter(s => !s.grade_status);
-  const subIndex = ungradedSubs.findIndex(s => s.submission_id === submission_id);
-  const prevUng = subIndex > 0 ? ungradedSubs[subIndex - 1] : undefined;
-  const nextUng = subIndex >= 0 && subIndex < ungradedSubs.length - 1 ? ungradedSubs[subIndex + 1] : undefined;
+  const findNextUngraded = () => {
+    if (currentIndex < 0) return undefined;
+    for (let i = currentIndex + 1; i < totalSubs.length; i++) {
+      if (!totalSubs[i].has_grade) return totalSubs[i];
+    }
+    return undefined;
+  };
 
-  // Build submission URL
+  const prevUng = findPrevUngraded();
+  const nextUng = findNextUngraded();
+
+
   const buildSHref = (subId: string) => {
     const base = `/instructor/course/${course_id}/process/${assignment_id}/grade-submissions/questions/${question_id}`;
     return sub_question_id
@@ -88,26 +63,35 @@ const GradeBottomBar: React.FC = () => {
   };
 
   // Handlers
+  const handlePrev = () => prevSub && router.push(buildSHref(prevSub.submission_id));
+  const handleNext = () => nextSub && router.push(buildSHref(nextSub.submission_id));
   const handlePrevUng = () => prevUng && router.push(buildSHref(prevUng.submission_id));
-  const handlePrev = () => prevItem && router.push(buildQHref(prevItem.question_id, prevItem.sub_question_id));
-  const handleNext = () => nextItem && router.push(buildQHref(nextItem.question_id, nextItem.sub_question_id));
   const handleNextUng = () => nextUng && router.push(buildSHref(nextUng.submission_id));
 
-  // Keyboard shortcuts via event listener
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'm') handlePrevUng();
-      if (e.key === ',') handlePrev();
-      if (e.key === '.') handleNext();
-      if (e.key === '/') handleNextUng();
+      const key = e.key;
+      if (key === 'm' || key === 'M') handlePrevUng();
+      if (key === ',' || key === '<') handlePrev();
+      if (key === '.' || key === '>') handleNext();
+      if (key === '/' || key === '?') handleNextUng();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [handlePrevUng, handlePrev, handleNext, handleNextUng]);
+  }, [prevSub, nextSub, prevUng, nextUng]);
 
-  // Display count
+
   const display = currentIndex >= 0 ? currentIndex + 1 : 0;
-  const total = navItems.length;
+  const total = totalSubs.length;
+
+
+  const Wrap = ({ children }: { children: React.ReactNode }) => (
+    <span style={{ display: 'inline-block' }}>{children}</span>
+  );
+
+
+  const [opened, { toggle, close }] = useDisclosure(false);
 
   return (
     <Group
@@ -116,21 +100,158 @@ const GradeBottomBar: React.FC = () => {
       style={{ width: '100%', height: 45, padding: '0 16px', backgroundColor: '#f5f5f5' }}
     >
       <Text size="sm">
-        Question: <Text component="span" fw={700}>{display}</Text> of {total}
+        Submission: <Text component="span" fw={700}>{display}</Text> of {total}
       </Text>
+
       <Group gap="xs">
-        <Button variant="outline" color="violet"  disabled={!prevUng} onClick={handlePrevUng}>
-          ‹‹ Prev Ungraded
-        </Button>
-        <Button variant="outline" color="violet"  disabled={!prevItem} onClick={handlePrev}>
-          ‹ Prev
-        </Button>
-        <Button variant="outline" color="violet"  disabled={!nextItem} onClick={handleNext}>
-          Next ›
-        </Button>
-        <Button variant="outline" color="violet"  disabled={!nextUng} onClick={handleNextUng}>
-          Next Ungraded ››
-        </Button>
+        <Tooltip label="Shortcut: M" withArrow>
+          <Wrap>
+            <Button
+              variant="outline"
+              color="violet"
+              disabled={!prevUng}
+              onClick={handlePrevUng}
+              aria-label="Prev Ungraded (Shortcut: M)"
+              rightSection={<Kbd>M</Kbd>}
+            >
+              ‹‹ Prev Ungraded
+            </Button>
+          </Wrap>
+        </Tooltip>
+
+        <Tooltip label="Shortcut: <  or  ," withArrow>
+          <Wrap>
+            <Button
+              variant="outline"
+              color="violet"
+              disabled={!prevSub}
+              onClick={handlePrev}
+              aria-label="Prev (Shortcut: < or ,)"
+              rightSection={
+                <Group gap={4}>
+                  <Kbd>{'<'}</Kbd>
+                  <Text size="xs">or</Text>
+                  <Kbd>,</Kbd>
+                </Group>
+              }
+            >
+              ‹ Prev
+            </Button>
+          </Wrap>
+        </Tooltip>
+
+        <Tooltip label="Shortcut: >  or  ." withArrow>
+          <Wrap>
+            <Button
+              variant="outline"
+              color="violet"
+              disabled={!nextSub}
+              onClick={handleNext}
+              aria-label="Next (Shortcut: > or .)"
+              rightSection={
+                <Group gap={4}>
+                  <Kbd>{'>'}</Kbd>
+                  <Text size="xs">or</Text>
+                  <Kbd>.</Kbd>
+                </Group>
+              }
+            >
+              Next ›
+            </Button>
+          </Wrap>
+        </Tooltip>
+
+        <Tooltip label="Shortcut: ?  or  /" withArrow>
+          <Wrap>
+            <Button
+              variant="outline"
+              color="violet"
+              disabled={!nextUng}
+              onClick={handleNextUng}
+              aria-label="Next Ungraded (Shortcut: ? or /)"
+              rightSection={
+                <Group gap={4}>
+                  <Kbd>?</Kbd>
+                  <Text size="xs">or</Text>
+                  <Kbd>/</Kbd>
+                </Group>
+              }
+            >
+              Next Ungraded ››
+            </Button>
+          </Wrap>
+        </Tooltip>
+
+
+        <Popover
+          opened={opened}
+          onChange={close}
+          position="top-end"
+          withArrow
+          shadow="md"
+          trapFocus={false}
+          closeOnEscape
+          closeOnClickOutside
+        >
+          <Popover.Target>
+            <ActionIcon
+              variant="light"
+              color="gray"
+              onClick={toggle}
+              aria-label="Show keyboard shortcuts"
+              size="lg"
+            >
+              <Text fw={700}>?</Text>
+            </ActionIcon>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Text fw={700} mb="xs">Keyboard Shortcuts</Text>
+            <Table withRowBorders={false} highlightOnHover={false} striped={false}>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Action</Table.Th>
+                  <Table.Th>Shortcut</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                <Table.Tr>
+                  <Table.Td>Prev Ungraded</Table.Td>
+                  <Table.Td><Kbd>M</Kbd></Table.Td>
+                </Table.Tr>
+                <Table.Tr>
+                  <Table.Td>Prev</Table.Td>
+                  <Table.Td>
+                    <Group gap={6}>
+                      <Kbd>{'<'}</Kbd>
+                      <Text size="xs">or</Text>
+                      <Kbd>,</Kbd>
+                    </Group>
+                  </Table.Td>
+                </Table.Tr>
+                <Table.Tr>
+                  <Table.Td>Next</Table.Td>
+                  <Table.Td>
+                    <Group gap={6}>
+                      <Kbd>{'>'}</Kbd>
+                      <Text size="xs">or</Text>
+                      <Kbd>.</Kbd>
+                    </Group>
+                  </Table.Td>
+                </Table.Tr>
+                <Table.Tr>
+                  <Table.Td>Next Ungraded</Table.Td>
+                  <Table.Td>
+                    <Group gap={6}>
+                      <Kbd>?</Kbd>
+                      <Text size="xs">or</Text>
+                      <Kbd>/</Kbd>
+                    </Group>
+                  </Table.Td>
+                </Table.Tr>
+              </Table.Tbody>
+            </Table>
+          </Popover.Dropdown>
+        </Popover>
       </Group>
     </Group>
   );
