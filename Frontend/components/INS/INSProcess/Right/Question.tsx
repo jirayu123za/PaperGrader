@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, NumberInput, TextInput, ActionIcon, Table, ScrollArea, Box, Group } from '@mantine/core';
+import { Button, NumberInput, TextInput, ActionIcon, Table, ScrollArea, Box, Group, Title, Tooltip } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { FaTrash, FaPlus } from 'react-icons/fa';
 import useBoundingBoxStore from '@/store/BoundingBox/useBoundingBoxStore';
@@ -40,6 +40,8 @@ export default function QuestionOutline() {
   const [isSaving, setIsSaving] = React.useState(false);
 
   
+
+  const [expandTitle, setExpandTitle] = React.useState(false);
 const calculateTotalPoints = () =>
     rubricData.questions.reduce((acc, q) => acc + q.question_point, 0);
 
@@ -263,10 +265,23 @@ const handleSave = async () => {
   return (
     <div className="p-6 space-y-6 rounded-md max-h-[86vh] overflow-y-auto">
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Outline for {assignmentLeftProcess?.assignment_name ?? 'Assignment'}</h1>
-        <Group gap="sm" grow className="w-full">
-  <Button fullWidth variant={hasName ? "filled" : "outline"} onClick={handleToggleNameBoundingBox} disabled={isSaving || isUpserting || isFetchingTemplate}>{hasName ? "Remove Student Name" : "Student Name"}</Button>
-  <Button fullWidth variant={hasId ? "filled" : "outline"} onClick={handleToggleIdBoundingBox} disabled={isSaving || isUpserting || isFetchingTemplate}>{hasId ? "Remove Student ID" : "Student ID"}</Button>
+        <Tooltip label={(assignmentLeftProcess?.assignment_name ?? "Assignment")} withArrow>
+  <Title
+    order={2}
+    className="font-bold cursor-pointer"
+    lineClamp={expandTitle ? undefined : 1}
+    onClick={() => setExpandTitle((v) => !v)}
+  >
+    {`Outline for ${assignmentLeftProcess?.assignment_name ?? "Assignment"}`}
+  </Title>
+</Tooltip>
+        <Group gap="sm" grow className="w-full mt-4">
+  <Button fullWidth variant="outline" color={hasName ? "red" : undefined} onClick={handleToggleNameBoundingBox} disabled={isSaving || isUpserting || isFetchingTemplate}>
+    {hasName ? "Remove Student Name" : "Student Name"}
+  </Button>
+  <Button fullWidth variant="outline" color={hasId ? "red" : undefined} onClick={handleToggleIdBoundingBox} disabled={isSaving || isUpserting || isFetchingTemplate}>
+    {hasId ? "Remove Student ID" : "Student ID"}
+  </Button>
 </Group>
       </div>
 
