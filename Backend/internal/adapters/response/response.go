@@ -542,3 +542,54 @@ type TotalSubmissionIDs struct {
 	SubmissionID uuid.UUID `json:"submission_id"`
 	HasGrade     bool      `json:"has_grade"`
 }
+
+// Part:3 Grade
+// ---- JSON structs for rubric/grade ----
+type RubricJSON struct {
+	QuestionsData []RubricQuestionJSON `json:"questions_data"`
+}
+
+type RubricQuestionJSON struct {
+	QuestionID    string                  `json:"question_id"`
+	QuestionTitle string                  `json:"question_title"`
+	QuestionPoint float64                 `json:"question_point"`
+	Rubrics       *RubricsBlockJSON       `json:"rubrics,omitempty"`       // main question
+	SubQuestions  []RubricSubQuestionJSON `json:"sub_questions,omitempty"` // sub questions
+}
+
+type RubricSubQuestionJSON struct {
+	SubQuestionID    string            `json:"sub_question_id"`
+	SubQuestionTitle string            `json:"sub_question_title"`
+	SubQuestionPoint float64           `json:"sub_question_point"`
+	Rubrics          *RubricsBlockJSON `json:"rubrics,omitempty"`
+}
+
+type RubricsBlockJSON struct {
+	RubricID      string             `json:"rubric_id"`
+	RubricSetting string             `json:"rubric_setting"`
+	HasCeiling    bool               `json:"has_ceiling"`
+	HasFloor      bool               `json:"has_floor"`
+	RubricDetails []RubricDetailJSON `json:"rubric_details"`
+}
+
+type RubricDetailJSON struct {
+	RubricDetailID    string  `json:"rubric_detail_id"`
+	RubricPoint       float64 `json:"rubric_point"`
+	RubricDescription string  `json:"rubric_description"`
+	HasSelected       bool    `json:"has_selected"`
+}
+
+type GradeJSON struct {
+	QuestionsData []GradeQuestionJSON `json:"questions_data"`
+}
+
+type GradeQuestionJSON struct {
+	QuestionID   string                 `json:"question_id"`
+	Rubrics      *RubricsBlockJSON      `json:"rubrics,omitempty"`       // main
+	SubQuestions []GradeSubQuestionJSON `json:"sub_questions,omitempty"` // subs
+}
+
+type GradeSubQuestionJSON struct {
+	SubQuestionID string            `json:"sub_question_id"`
+	Rubrics       *RubricsBlockJSON `json:"rubrics,omitempty"`
+}

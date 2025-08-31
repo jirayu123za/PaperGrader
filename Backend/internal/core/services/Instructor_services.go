@@ -97,6 +97,8 @@ type InstructorService interface {
 	// Part 2: U Rubric
 	UpdateRubricSetting(assignmentID uuid.UUID, rubricData response.UpdateRubricSettingRequest) error
 	UpdateRubricScoreBounds(assignmentID uuid.UUID, rubricData response.UpdateRubricScoreBoundsRequest) error
+	// Part 3: R Rubric
+	GetRubricAfterGraded(assignmentID uuid.UUID, submissionID uuid.UUID, questionID uuid.UUID, subQuestionID *uuid.UUID) (response.RubricResponse, error)
 
 	// Part 1: Grade
 	CreateGrade(assignmentID uuid.UUID, submissionID uuid.UUID, request response.CreateGradeRequest, userID uuid.UUID) error
@@ -1628,6 +1630,15 @@ func (s *InstructorServiceImpl) UpdateRubricScoreBounds(assignmentID uuid.UUID, 
 		return err
 	}
 	return s.repo.ModifyRubricData(assignmentID, updatedJSON)
+}
+
+// Get rubric after graded
+func (s *InstructorServiceImpl) GetRubricAfterGraded(assignmentID uuid.UUID, submissionID uuid.UUID, questionID uuid.UUID, subQuestionID *uuid.UUID) (response.RubricResponse, error) {
+	rubric, err := s.repo.FindRubricAfterGraded(assignmentID, submissionID, questionID, subQuestionID)
+	if err != nil {
+		return response.RubricResponse{}, err
+	}
+	return rubric, nil
 }
 
 // Submission from question

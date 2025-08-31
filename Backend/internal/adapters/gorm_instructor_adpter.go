@@ -1606,6 +1606,133 @@ func (r *GormInstructorRepository) FindSubmissionIDsByAssignmentID(assignmentID 
 	return out, nil
 }
 
+// Fourth: rubric
+func (r *GormInstructorRepository) FindRubricAfterGraded(assignmentID uuid.UUID, submissionID uuid.UUID, questionID uuid.UUID, subQuestionID *uuid.UUID) (response.RubricResponse, error) {
+	var rubric struct {
+		RubricID   uuid.UUID      `gorm:"column:rubric_id"`
+		RubricData datatypes.JSON `gorm:"column:rubric_data"`
+	}
+
+	if err := r.db.
+		Table("rubrics").
+		Select("rubric_id, rubric_data").
+		Where("assignment_id = ? AND deleted_at IS NULL", assignmentID).
+		Take(&rubric).Error; err != nil {
+		return response.RubricResponse{}, err
+	}
+
+	var rubricJSON response.RubricJSON
+	if err := json.Unmarshal(rubric.RubricData, &rubricJSON); err != nil {
+		return response.RubricResponse{}, err
+	}
+
+	var gradeData struct {
+		GradeData datatypes.JSON `gorm:"column:grade_data"`
+	}
+	_ = r.db.
+		Table("grades").
+		Select("grade_data").
+		Where("submission_id = ? AND deleted_at IS NULL", submissionID).
+		Order("updated_at DESC").
+		Take(&gradeData).Error
+
+	var gradeDataJSON response.GradeJSON
+	if len(gradeData.GradeData) > 0 {
+		_ = json.Unmarshal(gradeData.GradeData, &gradeDataJSON)
+	}
+
+	selectedMap := map[string]bool{}
+
+	var gq *response.GradeQuestionJSON
+	for i := range gradeDataJSON.QuestionsData {
+		if gradeDataJSON.QuestionsData[i].QuestionID == questionID.String() {
+			gq = &gradeDataJSON.QuestionsData[i]
+			break
+		}
+	}
+	if gq != nil {
+		if subQuestionID == nil {
+			if gq.Rubrics != nil {
+				for _, d := range gq.Rubrics.RubricDetails {
+					selectedMap[d.RubricDetailID] = d.HasSelected
+				}
+			}
+		} else {
+			for i := range gq.SubQuestions {
+				if gq.SubQuestions[i].SubQuestionID == subQuestionID.String() {
+					if gq.SubQuestions[i].Rubrics != nil {
+						for _, d := range gq.SubQuestions[i].Rubrics.RubricDetails {
+							selectedMap[d.RubricDetailID] = d.HasSelected
+						}
+					}
+					break
+				}
+			}
+		}
+	}
+
+	var out response.RubricResponse
+	for _, q := range rubricJSON.QuestionsData {
+		if q.QuestionID != questionID.String() {
+			continue
+		}
+
+		// main question
+		if subQuestionID == nil && q.Rubrics != nil {
+			rubricID, _ := uuid.Parse(q.Rubrics.RubricID)
+			out.RubricID = &rubricID
+			out.RubricSetting = q.Rubrics.RubricSetting
+			out.HasCeiling = q.Rubrics.HasCeiling
+			out.HasFloor = q.Rubrics.HasFloor
+
+			details := make([]response.RubricDetailWithHasSelect, 0, len(q.Rubrics.RubricDetails))
+			for _, d := range q.Rubrics.RubricDetails {
+				details = append(details, response.RubricDetailWithHasSelect{
+					RubricDetailID:    d.RubricDetailID,
+					RubricPoint:       d.RubricPoint,
+					RubricDescription: d.RubricDescription,
+					HasSelected:       selectedMap[d.RubricDetailID],
+				})
+			}
+			out.RubricData = details
+			return out, nil
+		}
+
+		// sub question
+		if subQuestionID != nil {
+			for _, sq := range q.SubQuestions {
+				if sq.SubQuestionID == subQuestionID.String() && sq.Rubrics != nil {
+					rubricID, _ := uuid.Parse(sq.Rubrics.RubricID)
+					out.RubricID = &rubricID
+					out.RubricSetting = sq.Rubrics.RubricSetting
+					out.HasCeiling = sq.Rubrics.HasCeiling
+					out.HasFloor = sq.Rubrics.HasFloor
+
+					details := make([]response.RubricDetailWithHasSelect, 0, len(sq.Rubrics.RubricDetails))
+					for _, d := range sq.Rubrics.RubricDetails {
+						details = append(details, response.RubricDetailWithHasSelect{
+							RubricDetailID:    d.RubricDetailID,
+							RubricPoint:       d.RubricPoint,
+							RubricDescription: d.RubricDescription,
+							HasSelected:       selectedMap[d.RubricDetailID],
+						})
+					}
+					out.RubricData = details
+					return out, nil
+				}
+			}
+		}
+	}
+
+	return response.RubricResponse{
+		RubricID:      nil,
+		RubricSetting: "",
+		HasCeiling:    false,
+		HasFloor:      false,
+		RubricData:    nil,
+	}, nil
+}
+
 // etc..
 func (r *GormInstructorRepository) FindRubricByQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID) (response.RubricResponse, error) {
 	var rubric struct {

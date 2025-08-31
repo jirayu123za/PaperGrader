@@ -1883,6 +1883,64 @@ func (h *HttpInstructorHandler) UpdateRubricScoreBounds(c *fiber.Ctx) error {
 	})
 }
 
+// Part: 3 Rubric Handlers
+func (h *HttpInstructorHandler) GetRubricAfterGraded(c *fiber.Ctx) error {
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	submissionIDParam := c.Query("submission_id")
+	submissionID, err := uuid.Parse(submissionIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid submission_id",
+			"error":   err.Error(),
+		})
+	}
+
+	questionIDParam := c.Query("question_id")
+	questionID, err := uuid.Parse(questionIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid questionID",
+			"error":   err.Error(),
+		})
+	}
+
+	subQuestionIDParam := c.Query("sub_question_id")
+	var subQuestionID *uuid.UUID
+	if subQuestionIDParam != "" {
+		id, err := uuid.Parse(subQuestionIDParam)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"message": "Invalid sub_question_id",
+				"error":   err.Error(),
+			})
+		}
+		if id != uuid.Nil {
+			subQuestionID = &id
+		}
+	}
+
+	rubric, err := h.services.GetRubricAfterGraded(assignmentID, submissionID, questionID, subQuestionID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get rubric",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Rubric retrieved successfully",
+		"rubric":  rubric,
+	})
+}
+
 // Question Handlers
 func (h *HttpInstructorHandler) GetSubmissionsFromQuestion(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")

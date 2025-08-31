@@ -133,6 +133,8 @@ func RegisterRoutes(
 	// Part:2 Rubric
 	apiGroup.Put("/instructor/rubric/setting", instructorHandler.UpdateRubricSetting)
 	apiGroup.Put("/instructor/rubric/scoreBounds", instructorHandler.UpdateRubricScoreBounds)
+	// Part:3 Rubric
+	apiGroup.Get("/instructor/rubric/graded", instructorHandler.GetRubricAfterGraded)
 
 	// Part:1 Grade
 	apiGroup.Post("/instructor/grade", instructorHandler.CreateGrade)
