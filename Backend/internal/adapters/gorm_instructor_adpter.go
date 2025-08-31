@@ -1182,6 +1182,31 @@ func (r *GormInstructorRepository) RemoveBoundingBoxes(AssignmentID uuid.UUID, b
 	})
 }
 
+// Get total submission IDs by has grade
+func (r *GormInstructorRepository) FindTotalSubmissionIDsByHasGrade(AssignmentID uuid.UUID) ([]response.TotalSubmissionIDs, error) {
+	var out []response.TotalSubmissionIDs
+
+	raw := `
+		SELECT 
+			s.submission_id,
+			EXISTS (
+				SELECT 1 
+				FROM grades g 
+				WHERE g.submission_id = s.submission_id
+				  AND g.deleted_at IS NULL
+			) AS has_grade
+		FROM submissions s
+		WHERE s.assignment_id = ?
+		  AND s.deleted_at IS NULL
+		ORDER BY s.submitted_at DESC;
+	`
+
+	if err := r.db.Raw(raw, AssignmentID).Scan(&out).Error; err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // For get Questions By Assignment Template
 func (r *GormInstructorRepository) FindQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (response.QuestionsTemplateResponse, error) {
 	var rubric response.RubricData

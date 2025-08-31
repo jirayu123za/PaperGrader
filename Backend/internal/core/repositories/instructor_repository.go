@@ -74,6 +74,9 @@ type InstructorRepository interface {
 	ModifyBoundingBoxesQuestions(AssignmentID uuid.UUID, boundingBoxes []models.BoundingBox, rubricData []response.RubricQuestion) error
 	RemoveBoundingBoxes(AssignmentID uuid.UUID, boundingBoxIDs []uuid.UUID) error
 
+	// C total submission ids
+	FindTotalSubmissionIDsByHasGrade(AssignmentID uuid.UUID) ([]response.TotalSubmissionIDs, error)
+
 	// CRUD Questions
 	FindQuestionsByAssignmentTemplate(AssignmentID uuid.UUID) (response.QuestionsTemplateResponse, error)
 	FindQuestionsList(AssignmentID uuid.UUID) (response.QuestionsListResponse, error)

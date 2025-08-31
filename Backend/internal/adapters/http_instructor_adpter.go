@@ -1580,6 +1580,30 @@ func (h *HttpInstructorHandler) GetProcessOCRForSubmissions(c *fiber.Ctx) error 
 	})
 }
 
+// Part: 1 Total submissions has_grade handler
+func (h *HttpInstructorHandler) GetTotalSubmissionIDsByHasGrade(c *fiber.Ctx) error {
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	result, err := h.services.GetTotalSubmissionIDsByHasGrade(assignmentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to query total submission ids",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"total_submissions": result,
+	})
+}
+
 // Part:1 Rubric Handlers
 func (h *HttpInstructorHandler) CreateRubric(c *fiber.Ctx) error {
 	assignmentIDParam := c.Query("assignment_id")

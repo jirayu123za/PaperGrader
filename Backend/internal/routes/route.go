@@ -107,6 +107,8 @@ func RegisterRoutes(
 	apiGroup.Patch("/instructor/submission/manage", instructorHandler.UpdateSubmissionList)
 	apiGroup.Get("/instructor/submission/studentList", instructorHandler.GetStudentListForSubmission)
 	apiGroup.Get("/instructor/submission/test", instructorHandler.GetAssignmentTemplateCount)
+	// Total submissionIDs
+	apiGroup.Get("/instructor/submission/totalIDs", instructorHandler.GetTotalSubmissionIDsByHasGrade)
 
 	// OCR data
 	apiGroup.Get("/instructor/ocr/studentsList", instructorHandler.GetStudentsListForOCR)
