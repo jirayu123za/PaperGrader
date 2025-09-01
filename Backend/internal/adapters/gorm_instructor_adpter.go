@@ -780,11 +780,37 @@ func (r *GormInstructorRepository) FindSubmissionFiles(AssignmentID uuid.UUID) (
 func (r *GormInstructorRepository) FindSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error) {
 	var submissionList []response.SubmissionResponse
 
-	err := r.db.
+	subq := r.db.
 		Table("submissions AS sub").
 		Select(`
             sub.submission_id,
             sub.submitted_at,
+            sub.submitted_by,
+            sub.belongs_to,
+            sub.assignment_id,
+            sub.submission_file_name,
+            ROW_NUMBER() OVER (
+                PARTITION BY
+                  CASE
+                    WHEN sub.submitted_by = u.user_id THEN sub.belongs_to
+                    ELSE sub.submission_id
+                  END
+                ORDER BY sub.submitted_at DESC
+            ) AS rn
+        `).
+		Joins(`JOIN personal_data AS pd
+                 ON pd.personal_data_id = sub.belongs_to
+                AND pd.deleted_at IS NULL`).
+		Joins(`JOIN users AS u
+                 ON u.email = pd.email
+                AND u.deleted_at IS NULL`).
+		Where(`sub.assignment_id = ? AND sub.deleted_at IS NULL`, AssignmentID)
+
+	err := r.db.
+		Table("(?) AS s", subq).
+		Select(`
+            s.submission_id,
+            s.submitted_at,
             pd.personal_data_id,
             pd.student_code,
             CONCAT(pd.first_name, ' ', pd.last_name) AS full_name,
@@ -792,18 +818,19 @@ func (r *GormInstructorRepository) FindSubmissionListByCourseIDAndAssignmentID(C
             sec.section_name
         `).
 		Joins(`JOIN personal_data AS pd
-                  ON pd.personal_data_id = sub.belongs_to
-                 AND pd.deleted_at IS NULL`).
+                 ON pd.personal_data_id = s.belongs_to
+                AND pd.deleted_at IS NULL`).
 		Joins(`JOIN enrollment_lists AS el
-                  ON el.personal_data_id = pd.personal_data_id
-                 AND el.course_id = ?
-                 AND el.deleted_at IS NULL`, CourseID).
+                 ON el.personal_data_id = pd.personal_data_id
+                AND el.course_id = ?
+                AND el.deleted_at IS NULL`, CourseID).
 		Joins(`JOIN sections AS sec
-                  ON sec.section_id = el.section_id
-                 AND sec.deleted_at IS NULL`).
-		Where(`sub.assignment_id = ? AND sub.deleted_at IS NULL`, AssignmentID).
-		Order(`sub.submitted_at ASC`).
+                 ON sec.section_id = el.section_id
+                AND sec.deleted_at IS NULL`).
+		Where("s.rn = 1").
+		Order("s.submitted_at ASC").
 		Scan(&submissionList).Error
+
 	if err != nil {
 		return nil, err
 	}
