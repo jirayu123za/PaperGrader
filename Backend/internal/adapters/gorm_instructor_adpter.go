@@ -1215,18 +1215,41 @@ func (r *GormInstructorRepository) FindTotalSubmissionIDsByHasGrade(AssignmentID
 	var out []response.TotalSubmissionIDs
 
 	raw := `
-		SELECT 
-			s.submission_id,
+		WITH s0 AS (
+			SELECT
+				s.submission_id,
+				s.submitted_at,
+				s.submitted_by,
+				s.belongs_to,
+				ROW_NUMBER() OVER (
+					PARTITION BY
+						CASE
+							WHEN s.submitted_by = u.user_id THEN s.belongs_to
+							ELSE s.submission_id
+						END
+					ORDER BY s.submitted_at DESC
+				) AS rn
+			FROM submissions s
+			LEFT JOIN personal_data p
+			  ON p.personal_data_id = s.belongs_to
+			 AND p.deleted_at IS NULL
+			LEFT JOIN users u
+			  ON u.email = p.email
+			 AND u.deleted_at IS NULL
+			WHERE s.assignment_id = ?
+			  AND s.deleted_at IS NULL
+		)
+		SELECT
+			s0.submission_id,
 			EXISTS (
-				SELECT 1 
-				FROM grades g 
-				WHERE g.submission_id = s.submission_id
+				SELECT 1
+				FROM grades g
+				WHERE g.submission_id = s0.submission_id
 				  AND g.deleted_at IS NULL
 			) AS has_grade
-		FROM submissions s
-		WHERE s.assignment_id = ?
-		  AND s.deleted_at IS NULL
-		ORDER BY s.submitted_at DESC;
+		FROM s0
+		WHERE s0.rn = 1
+		ORDER BY s0.submitted_at DESC;
 	`
 
 	if err := r.db.Raw(raw, AssignmentID).Scan(&out).Error; err != nil {
