@@ -2079,13 +2079,41 @@ func (r *GormInstructorRepository) ModifyRubricDataOrHardDelete(assignmentID uui
 func (r *GormInstructorRepository) FindSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error) {
 	var rawResults []response.SubmissionsFromQuestionRaw
 
-	err := r.db.
+	subq := r.db.
 		Table("submissions AS s").
-		Select("s.submission_id, p.first_name, p.last_name, p.email, sec.section_name").
-		Joins("LEFT JOIN personal_data p ON p.personal_data_id = s.belongs_to").
-		Joins("LEFT JOIN enrollment_lists el ON el.personal_data_id = p.personal_data_id AND el.course_id = ?", courseID).
-		Joins("LEFT JOIN sections sec ON sec.section_id = el.section_id AND sec.deleted_at IS NULL").
-		Where("s.assignment_id = ? AND s.deleted_at IS NULL", assignmentID).
+		Select(`
+			s.submission_id,
+			s.submitted_at,
+			s.submitted_by,
+			s.belongs_to,
+			s.assignment_id,
+			ROW_NUMBER() OVER (
+				PARTITION BY
+				  CASE
+					WHEN s.submitted_by = u.user_id THEN s.belongs_to
+					ELSE s.submission_id
+				  END
+				ORDER BY s.submitted_at DESC
+			) AS rn
+		`).
+		Joins(`LEFT JOIN personal_data p ON p.personal_data_id = s.belongs_to AND p.deleted_at IS NULL`).
+		Joins(`LEFT JOIN users u ON u.email = p.email AND u.deleted_at IS NULL`).
+		Where(`s.assignment_id = ? AND s.deleted_at IS NULL`, assignmentID)
+
+	err := r.db.
+		Table("(?) AS s", subq).
+		Select(`
+			s.submission_id,
+			p.first_name,
+			p.last_name,
+			p.email,
+			sec.section_name
+		`).
+		Joins(`LEFT JOIN personal_data p ON p.personal_data_id = s.belongs_to AND p.deleted_at IS NULL`).
+		Joins(`LEFT JOIN enrollment_lists el ON el.personal_data_id = p.personal_data_id AND el.course_id = ? AND el.deleted_at IS NULL`, courseID).
+		Joins(`LEFT JOIN sections sec ON sec.section_id = el.section_id AND sec.deleted_at IS NULL`).
+		Where(`s.rn = 1`).
+		Order(`s.submitted_at ASC`).
 		Scan(&rawResults).Error
 	if err != nil {
 		return nil, err
