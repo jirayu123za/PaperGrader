@@ -159,23 +159,57 @@ func (r *GormInstructorRepository) FindSubmissionFileName(AssignmentID uuid.UUID
 // Part:1
 func (r *GormInstructorRepository) FindSubmissionsList(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionsList, error) {
 	var submissions []response.SubmissionsList
-	err := r.db.
+
+	subq := r.db.
 		Table("submissions AS s").
 		Select(`
 			s.submission_id,
-			sec.section_name,
-			COALESCE(pd.first_name || ' ' || pd.last_name, NULL) AS full_name,
-			COALESCE(pd.student_code, NULL) AS student_code,
-			pd.personal_data_id,
-			(s.belongs_to IS NOT NULL) AS has_assigned,
+			s.submitted_at,
+			s.submitted_by,
+			s.belongs_to,
+			s.assignment_id,
 			s.matched_by,
-			s.submitted_at
+			ROW_NUMBER() OVER (
+				PARTITION BY
+					CASE
+						WHEN s.submitted_by = u_owner.user_id THEN s.belongs_to
+						ELSE s.submission_id
+					END
+				ORDER BY s.submitted_at DESC
+			) AS rn
 		`).
-		Joins("LEFT JOIN personal_data AS pd ON s.belongs_to = pd.personal_data_id").
-		Joins("LEFT JOIN enrollment_lists AS el ON pd.personal_data_id = el.personal_data_id AND el.course_id = ?", CourseID).
-		Joins("LEFT JOIN sections AS sec ON el.section_id = sec.section_id AND sec.course_id = ?", CourseID).
-		Where("s.assignment_id = ? AND s.deleted_at IS NULL", AssignmentID).
+		Joins(`LEFT JOIN personal_data AS p_owner
+                 ON p_owner.personal_data_id = s.belongs_to
+                AND p_owner.deleted_at IS NULL`).
+		Joins(`LEFT JOIN users AS u_owner
+                 ON u_owner.email = p_owner.email
+                AND u_owner.deleted_at IS NULL`).
+		Where(`s.assignment_id = ? AND s.deleted_at IS NULL`, AssignmentID)
+
+	err := r.db.
+		Table("(?) AS b", subq).
+		Select(`
+			b.submission_id,
+			sec.section_name,
+			(pd.first_name || ' ' || pd.last_name) AS full_name,
+			pd.student_code,
+			pd.personal_data_id,
+			(b.belongs_to IS NOT NULL) AS has_assigned,
+			b.matched_by,
+			b.submitted_at
+		`).
+		Joins(`LEFT JOIN personal_data AS pd
+                 ON b.belongs_to = pd.personal_data_id`).
+		Joins(`LEFT JOIN enrollment_lists AS el
+                 ON pd.personal_data_id = el.personal_data_id
+                AND el.course_id = ?`, CourseID).
+		Joins(`LEFT JOIN sections AS sec
+                 ON el.section_id = sec.section_id
+                AND sec.course_id = ?`, CourseID).
+		Where("b.rn = 1").
+		Order("b.submitted_at DESC").
 		Scan(&submissions).Error
+
 	if err != nil {
 		return nil, err
 	}
@@ -185,27 +219,50 @@ func (r *GormInstructorRepository) FindSubmissionsList(CourseID uuid.UUID, Assig
 func (r *GormInstructorRepository) FindStudentListForSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) (response.StudentSubmissionSplitResponse, error) {
 	var studentList []response.StudentListForSubmissionResponse
 
-	if err := r.db.Table("personal_data").
-		Select(`
-		personal_data.personal_data_id,
-		CONCAT(personal_data.first_name, ' ', personal_data.last_name) AS full_name,
-		personal_data.email,
-		personal_data.student_code,
-		CASE WHEN submissions.submission_id IS NOT NULL THEN TRUE ELSE FALSE END AS has_submission
-	`).
-		Joins("JOIN enrollment_lists ON enrollment_lists.personal_data_id = personal_data.personal_data_id").
-		Joins("LEFT JOIN submissions ON submissions.belongs_to = personal_data.personal_data_id AND submissions.assignment_id = ?", AssignmentID).
-		Where("enrollment_lists.course_id = ?", CourseID).
-		Where("personal_data.role_type = ?", "STUDENT").
-		Where("personal_data.deleted_at IS NULL").
-		Where("enrollment_lists.deleted_at IS NULL").
-		Scan(&studentList).Error; err != nil {
+	raw := `
+        SELECT
+            pd.personal_data_id, (pd.first_name || ' ' || pd.last_name) AS full_name, pd.email, pd.student_code,
+            EXISTS (
+                SELECT 1
+                FROM (
+                    SELECT
+                        s.submission_id,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY
+                                CASE
+                                    WHEN s.submitted_by = u_owner.user_id THEN s.belongs_to
+                                    ELSE s.submission_id
+                                END
+                            ORDER BY s.submitted_at DESC
+                        ) AS rn
+                    FROM submissions s
+                    LEFT JOIN personal_data p_owner
+                      ON p_owner.personal_data_id = s.belongs_to
+                     AND p_owner.deleted_at IS NULL
+                    LEFT JOIN users u_owner
+                      ON u_owner.email = p_owner.email
+                     AND u_owner.deleted_at IS NULL
+                    WHERE s.assignment_id = ?
+                      AND s.belongs_to   = pd.personal_data_id
+                      AND s.deleted_at IS NULL
+                ) x
+                WHERE x.rn = 1
+            ) AS has_submission
+        FROM personal_data pd
+        JOIN enrollment_lists el
+          ON el.personal_data_id = pd.personal_data_id
+         AND el.course_id       = ?
+         AND el.deleted_at IS NULL
+        WHERE pd.role_type  = 'STUDENT'
+          AND pd.deleted_at IS NULL
+        ORDER BY pd.first_name, pd.last_name;
+    `
+
+	if err := r.db.Raw(raw, AssignmentID, CourseID).Scan(&studentList).Error; err != nil {
 		return response.StudentSubmissionSplitResponse{}, err
 	}
 
-	var withSubmission []response.StudentListForSubmissionResponse
-	var withoutSubmission []response.StudentListForSubmissionResponse
-
+	var withSubmission, withoutSubmission []response.StudentListForSubmissionResponse
 	for _, s := range studentList {
 		if s.HasSubmission {
 			withSubmission = append(withSubmission, s)
@@ -738,43 +795,79 @@ func (r *GormInstructorRepository) ModifySubmissionList(SubmissionID uuid.UUID, 
 }
 
 func (r *GormInstructorRepository) FindSubmissionFiles(AssignmentID uuid.UUID) ([]response.SubmissionFilesResponse, error) {
-	var submissionFiles []response.SubmissionFilesResponse
+	var rows []struct {
+		SubmissionID        uuid.UUID `gorm:"column:submission_id"`
+		SubmissionFileName  string    `gorm:"column:submission_file_name"`
+		SubmittedAt         time.Time `gorm:"column:submitted_at"`
+		TotalSubmissions    int       `gorm:"column:total_submissions"`
+		SubmittedByFullname string    `gorm:"column:submitted_by"`
+	}
 
 	query := `
-		SELECT DISTINCT ON (s.submitted_by, s.file_prefix)
-			s.submission_id,
-			regexp_replace(s.submission_file_name, '_submission_[0-9]+(\.[a-zA-Z0-9]+)$', '\1') AS submission_file_name,
-			s.submitted_at,
-			sub_count.total_submissions,
-			(u.first_name || ' ' || u.last_name) AS submitted_by,
-			s.file_prefix
-		FROM (
-			SELECT *,
-				regexp_replace(submission_file_name, '_submission_[0-9]+(\.[a-zA-Z0-9]+)$', '', 'g') AS file_prefix
-			FROM submissions
-			WHERE assignment_id = ?
-			AND deleted_at IS NULL
-		) s
-		JOIN users u ON s.submitted_by = u.user_id
-		JOIN (
+		WITH base AS (
 			SELECT
-				regexp_replace(submission_file_name, '_submission_[0-9]+(\.[a-zA-Z0-9]+)$', '', 'g') AS file_prefix,
-				submitted_by,
-				COUNT(*) AS total_submissions
-			FROM submissions
-			WHERE assignment_id = ?
-			AND deleted_at IS NULL
-			GROUP BY file_prefix, submitted_by
-		) sub_count ON sub_count.file_prefix = s.file_prefix AND sub_count.submitted_by = s.submitted_by
-		ORDER BY s.submitted_by, s.file_prefix, s.submitted_at DESC
+				s.submission_id,
+				s.submission_file_name,
+				s.submitted_at,
+				s.submitted_by,
+				s.belongs_to,
+				u_owner.user_id AS owner_user_id,
+
+				ROW_NUMBER() OVER (
+					PARTITION BY
+						CASE WHEN s.submitted_by = u_owner.user_id THEN s.belongs_to
+							 ELSE s.submission_id
+						END
+					ORDER BY s.submitted_at DESC
+				) AS rn,
+
+				COUNT(*) OVER (
+					PARTITION BY
+						CASE WHEN s.submitted_by = u_owner.user_id THEN s.belongs_to
+							 ELSE s.submission_id
+						END
+				) AS total_submissions
+			FROM submissions s
+			LEFT JOIN personal_data p_owner
+			       ON p_owner.personal_data_id = s.belongs_to
+			      AND p_owner.deleted_at IS NULL
+			LEFT JOIN users u_owner
+			       ON u_owner.email = p_owner.email
+			      AND u_owner.deleted_at IS NULL
+			WHERE s.assignment_id = ?
+			  AND s.deleted_at IS NULL
+		)
+		SELECT
+			b.submission_id,
+			b.submission_file_name,
+			b.submitted_at,
+			b.total_submissions,
+			(u_submit.first_name || ' ' || u_submit.last_name) AS submitted_by
+		FROM base b
+		JOIN users u_submit ON u_submit.user_id = b.submitted_by
+		WHERE b.rn = 1
+		ORDER BY b.submitted_at DESC;
 	`
 
-	if err := r.db.
-		Raw(query, AssignmentID, AssignmentID).
-		Scan(&submissionFiles).Error; err != nil {
+	if err := r.db.Raw(query, AssignmentID).Scan(&rows).Error; err != nil {
 		return nil, err
 	}
-	return submissionFiles, nil
+
+	out := make([]response.SubmissionFilesResponse, 0, len(rows))
+	for _, row := range rows {
+		cleanName := utils.CleanFileName(row.SubmissionFileName)
+		prefix := utils.FilePrefix(row.SubmissionFileName)
+
+		out = append(out, response.SubmissionFilesResponse{
+			SubmissionID:       row.SubmissionID,
+			SubmissionFileName: cleanName,
+			SubmittedAt:        row.SubmittedAt,
+			TotalSubmissions:   row.TotalSubmissions,
+			SubmittedBy:        row.SubmittedByFullname,
+			FilePrefix:         prefix,
+		})
+	}
+	return out, nil
 }
 
 func (r *GormInstructorRepository) FindSubmissionListByCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionResponse, error) {
