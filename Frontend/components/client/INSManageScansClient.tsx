@@ -7,8 +7,8 @@ export default function INSManageScansClient({ course_id, assignment_id }: { cou
   return (
     <Tabs defaultValue="upload-files">
       <Tabs.List>
-        <Tabs.Tab value="upload-files">Upload Files</Tabs.Tab>
-        <Tabs.Tab value="student-matching">Student Matching</Tabs.Tab>
+        <Tabs.Tab value="upload-files">1.Upload Files</Tabs.Tab>
+        <Tabs.Tab value="student-matching">2.Student Matching</Tabs.Tab>
       </Tabs.List>
 
       <Tabs.Panel value="upload-files" pt="md">
