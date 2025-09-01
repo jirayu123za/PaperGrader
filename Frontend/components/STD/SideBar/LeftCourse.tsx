@@ -1,7 +1,8 @@
 "use client";
 
 import react from "react";
-import { useRouter, useParams } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter, useParams, usePathname } from "next/navigation";
 import AccountMenu from "../../Account";
 import {
   FaUser,
@@ -29,6 +30,7 @@ export default function LeftAssignment() {
   const router = useRouter();
   const params = useParams();
   const course_id = params?.course_id as string;
+  const [activeOption, setActiveOption] = useState("");
   const { isLoading, error } = useFetchInstructorList(course_id as string);
   const { instructorList } = useInstructorListStore();
   const { isLoading: isCourseLoading, error: errorCourse } = useFetchStdCourse(
@@ -42,6 +44,27 @@ export default function LeftAssignment() {
     user: <FaUser />,
     clipboardList: <FaClipboardList />,
   };
+  const pathname = usePathname();
+
+useEffect(() => {
+  if (pathname.includes("dashboard")) setActiveOption("dashboard");
+  else if (pathname.includes("regrade")) setActiveOption("regrade");
+}, [pathname]);
+
+const menuItems = [
+  {
+    key: "dashboard",
+    label: "Dashboard",
+    icon: icons.home,
+    href: `/student/overview/${course_id}/dashboard`,
+  },
+  {
+    key: "regrade",
+    label: "Regrade Requests",
+    icon: icons.clipboardList,
+    href: `/student/overview/${course_id}/regrade`,
+  },
+];
 
   return (
     <div
@@ -161,38 +184,34 @@ export default function LeftAssignment() {
           pr={16}
         />
 
-        <Button
-          // disabled={!course}
-          leftSection={icons.home}
-          variant="subtle"
-          style={() => ({
-            color: "#F9F9F9",
-            display: "flex",
-            justifyContent: isCollapsed ? "center" : "flex-start",
-          })}
-          onClick={() => {
-            router.push(`/student/overview/${course_id}/dashboard`);
-          }}
-        >
-          {!isCollapsed && <span>Dashboard</span>}
-        </Button>
+       {menuItems.map((item) => (
+  <Button
+    key={item.key}
+    leftSection={item.icon}
+    variant="subtle"
+    styles={{
+      root: {
+        display: "flex",
+        justifyContent: isCollapsed ? "center" : "flex-start",
+        color: activeOption === item.key ? "#424242" : "#FFFFFF",
+        backgroundColor:
+          activeOption === item.key ? "#f8f9fa" : "transparent",
+        borderRadius: "8px",
+        transition: "background-color 0.3s, color 0.3s",
+      },
+      section: {
+        marginRight: isCollapsed ? 0 : 8,
+      },
+    }}
+    onClick={() => {
+      setActiveOption(item.key);
+      router.push(item.href);
+    }}
+  >
+    {!isCollapsed && <span>{item.label}</span>}
+  </Button>
+))}
 
-        <Button
-          // disabled={!course}
-          leftSection={icons.clipboardList}
-          variant="subtle"
-          style={() => ({
-            color: "#F9F9F9",
-            display: "flex",
-            justifyContent: isCollapsed ? "center" : "flex-start",
-          })}
-          onClick={() => {
-            // router.push(`/student/${studentId}/regrade`);
-            console.log("Regrade Requests");
-          }}
-        >
-          {!isCollapsed && <span>Regrade Requests</span>}
-        </Button>
 
         <Divider
           style={{

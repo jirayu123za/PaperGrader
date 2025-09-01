@@ -1,15 +1,25 @@
 "use client";
 
-import react from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {FaHome, FaBook, FaCog, FaUser,FaRegArrowAltCircleRight } from "react-icons/fa";
+import {
+  FaHome,
+  FaBook,
+  FaCog,
+  FaUser,
+  FaRegArrowAltCircleRight,
+} from "react-icons/fa";
 import { useDisclosure } from "@mantine/hooks";
-import { Button, Divider, Flex, Image, Stack } from "@mantine/core";
+import { Button, Flex, Image, Stack } from "@mantine/core";
 import AccountMenu from "../../Account";
+import { usePathname } from "next/navigation";
 
 export default function LeftMain() {
   const router = useRouter();
-  const [isCollapsed, { toggle:toggleCollapse }] = useDisclosure(false);
+  const [isCollapsed, { toggle: toggleCollapse }] = useDisclosure(false);
+  const pathname = usePathname();
+
+  const [activeOption, setActiveOption] = useState("");
 
   const icons = {
     home: <FaHome />,
@@ -17,6 +27,34 @@ export default function LeftMain() {
     cog: <FaCog />,
     user: <FaUser />,
   };
+
+  const menuItems = [
+  {
+    key: "dashboard",
+    label: "Dashboard",
+    icon: icons.home,
+    href: `/student/overview`,
+  },
+  {
+    key: "courses",
+    label: "Courses",
+    icon: icons.book,
+    href: `/student/overview/course`,
+  },
+  {
+    key: "settings",
+    label: "Settings",
+    icon: icons.cog,
+    href: `/student/settings`,
+  },
+];
+
+  useEffect(() => {
+  if (pathname.includes("course")) setActiveOption("courses");
+  else if (pathname.includes("overview")) setActiveOption("dashboard");
+  else if (pathname.includes("settings")) setActiveOption("settings");
+}, [pathname]);
+
 
   return (
     <div
@@ -47,87 +85,67 @@ export default function LeftMain() {
           />
         )}
         <Button
-                  onClick={toggleCollapse}
-                  variant="transparent"
-                  radius="md"
-                  styles={() => ({
-                    root: {
-                      border: "none",
-                      padding: isCollapsed ? "0 0 0 8px" : "0",
-                      height: "auto",
-                    },
-                  })}
-                >
-                  <FaRegArrowAltCircleRight
-                    size={24}
-                    style={{
-                      color: isCollapsed ? "#f1f3f8" : "#f1f3f8",
-                    }}
-                    className={`transition-transform duration-300 ${
-                      isCollapsed ? "" : "transform rotate-180"
-                    }`}
-                  />
-                </Button>
+          onClick={toggleCollapse}
+          variant="transparent"
+          radius="md"
+          styles={() => ({
+            root: {
+              border: "none",
+              padding: isCollapsed ? "0 0 0 8px" : "0",
+              height: "auto",
+            },
+          })}
+        >
+          <FaRegArrowAltCircleRight
+            size={24}
+            style={{
+              color: isCollapsed ? "#f1f3f8" : "#f1f3f8",
+            }}
+            className={`transition-transform duration-300 ${
+              isCollapsed ? "" : "transform rotate-180"
+            }`}
+          />
+        </Button>
       </Flex>
 
       {/* Main Menu */}
       <Stack
-        p={16}
-        gap="xs"
-        className="grow"
-        style={() => ({
-          backgroundColor: "#6665AC",
-        })}
-      >
-        <Button
-          // disabled={!course}
-          leftSection={icons.home}
-          variant="subtle"
-          style={() => ({
-            color: "#F9F9F9",
-            display: "flex",
-            justifyContent: isCollapsed ? "center" : "flex-start",
-          })}
-          onClick={() => {
-            router.push(`/student/overview`);
-          }}
-        >
-          {!isCollapsed && <span>Dashboard</span>}
-        </Button>
+  p={16}
+  gap="xs"
+  className="grow"
+  style={() => ({
+    backgroundColor: "#6665AC",
+  })}
+>
+  {menuItems.map((item) => (
+    <Button
+      key={item.key}
+      leftSection={item.icon}
+      variant="subtle"
+      styles={{
+        root: {
+          display: "flex",
+          justifyContent: isCollapsed ? "center" : "flex-start",
+          color: activeOption === item.key ? "#424242" : "#FFFFFF",
+          backgroundColor:
+            activeOption === item.key ? "#f8f9fa" : "transparent",
+          borderRadius: "8px",
+          transition: "background-color 0.3s, color 0.3s",
+        },
+        section: {
+          marginRight: isCollapsed ? 0 : 8,
+        },
+      }}
+      onClick={() => {
+        setActiveOption(item.key);
+        router.push(item.href);
+      }}
+    >
+      {!isCollapsed && <span>{item.label}</span>}
+    </Button>
+  ))}
+</Stack>
 
-        <Button
-          // disabled={!course}
-          leftSection={icons.book}
-          variant="subtle"
-          style={() => ({
-            color: "#F9F9F9",
-            display: "flex",
-            justifyContent: isCollapsed ? "center" : "flex-start",
-          })}
-          onClick={() => {
-            router.push(`/student/overview/course`);
-          }}
-        >
-          {!isCollapsed && <span>Course</span>}
-        </Button>
-
-        <Button
-          // disabled={!course}
-          leftSection={icons.cog}
-          variant="subtle"
-          style={() => ({
-            color: "#F9F9F9",
-            display: "flex",
-            justifyContent: isCollapsed ? "center" : "flex-start",
-          })}
-          onClick={() => {
-            // router.push(`/student/${studentId}/settings`);
-            console.log("Settings");
-          }}
-        >
-          {!isCollapsed && <span>Settings</span>}
-        </Button>
-      </Stack>
 
       {/* Account Section */}
       <Stack pb={0.75}>
