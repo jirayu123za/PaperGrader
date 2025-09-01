@@ -1,29 +1,41 @@
 "use client";
 
-import React from 'react';
-import { Modal, Button, FileInput, Alert, Text as MantineText } from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { IconDownload, IconFileText } from '@tabler/icons-react';
-import { useFetchInstructorFile } from '@/hooks/Student/useFetchInstructorFile';
-import { useUploadStudentFile } from '@/hooks/useUploadStudentFile';
-import { useReceiveFileStore } from '@/store/Student/useReceiveFileStore';
-import { useSubmitAndDownloadModalStore } from '@/store/modal/useSubmitAndDownloadModal';
+import React, { useState } from "react";
+import {
+  Modal,
+  Button,
+  FileInput,
+  Alert,
+  Text as MantineText,
+} from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { IconDownload, IconFileText } from "@tabler/icons-react";
+import { useFetchInstructorFile } from "@/hooks/Student/useFetchInstructorFile";
+import { useUploadStudentFile } from "@/hooks/useUploadStudentFile";
+import { useReceiveFileStore } from "@/store/Student/useReceiveFileStore";
+import { useSubmitAndDownloadModalStore } from "@/store/modal/useSubmitAndDownloadModal";
+import { notifications } from "@mantine/notifications";
 
 const STDSubmit: React.FC = () => {
-  const { assignment_id, course_id, opened, closeModal, files, fileNames } = useSubmitAndDownloadModalStore();
+  const { assignment_id, course_id, opened, closeModal, files, fileNames } =
+    useSubmitAndDownloadModalStore();
   const { isLoading } = useFetchInstructorFile();
   const { mutate: uploadStudentFile } = useUploadStudentFile();
   const { studentFile, setStudentFile } = useReceiveFileStore();
 
+  const [submittedFileName, setSubmittedFileName] = useState<string | null>(
+    null
+  );
+
   const form = useForm({
     initialValues: { file: null },
     validate: {
-      file: (value) => (value ? null : 'You must upload a PDF'),
+      file: (value) => (value ? null : "You must upload a PDF"),
     },
   });
 
   const downloadFile = (url: string, fileName: string) => {
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = fileName;
     document.body.appendChild(link);
@@ -32,50 +44,126 @@ const STDSubmit: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    if (studentFile) {
-      uploadStudentFile(
-        { course_id, assignment_id, file: studentFile },
-        {
-          onSuccess: (data) => {
-            console.log('Upload successful:', data);
-            closeModal();
-          },
-          onError: (error) => {
-            console.error('Upload failed:', error);
-          },
-        }
-      );
-    } else {
-      console.log('No file selected');
+    if (!studentFile) {
+      console.log("No file selected");
+      return;
     }
+
+    if (submittedFileName && studentFile.name === submittedFileName) {
+      notifications.show({
+        title: "⚠️ Duplicate file",
+        message: `ไฟล์ "${studentFile.name}" ถูกส่งไปแล้ว`,
+        color: "yellow",
+      });
+      return;
+    }
+
+    uploadStudentFile(
+      { course_id, assignment_id, file: studentFile },
+      {
+        onSuccess: () => {
+          setSubmittedFileName(studentFile.name);
+          notifications.show({
+            title: "✅ File uploaded successfully!",
+            message: `📄 Submission File name: ${studentFile.name}`,
+            color: "green",
+            autoClose: 5000,
+          });
+          closeModal();
+        },
+        onError: (error) => {
+          console.error("Upload failed:", error);
+          notifications.show({
+            title: "❌ Upload failed",
+            message: "Please try again later.",
+            color: "red",
+          });
+        },
+      }
+    );
   };
 
   return (
-    <Modal opened={opened} onClose={closeModal} title="Submit Homework Assignment" size="lg">
+    <Modal
+      opened={opened}
+      onClose={closeModal}
+      title="Submit Homework Assignment"
+      size="lg"
+    >
       {isLoading ? (
         <div>Loading...</div>
       ) : (
         <>
           {files.length && fileNames.length > 0 ? (
-            <Alert title="Your Instructor has provided PDF files to help you complete your assignment" color="blue" radius="md">
-              {files.map((fileUrl: string, index: number) => (
-                <div key={index} className="mb-2">
-                  <Button
-                    variant="light"
-                    onClick={() => downloadFile(fileUrl, fileNames[index])}
-                    className="text-blue-500 hover:underline block"
-                  >
-                    <IconDownload size={18} className="inline-block mr-2" />
-                    {fileNames[index]}
-                  </Button>
-                  <MantineText size="sm" color="dimmed" className="ml-2">
-                    {index === 0 ? 'This is a template file.' : 'This is an additional file.'}
+            <Alert
+              title="Your Instructor has provided PDF files to help you complete your assignment"
+              color="blue"
+              radius="md"
+            >
+              {/* Template file box */}
+              {files.length > 0 && (
+                <div
+                  style={{
+                    backgroundColor: "#ffe4e1", // เปลี่ยนตรงนี้ เป็นสีฟ้าพาสเทลสบายตา
+                    padding: "12px",
+                    borderRadius: "8px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  <MantineText size="sm" color="blue" className="mb-2">
+                    This is a template file.
                   </MantineText>
+                  <div className="ml-2"> {/* ห่อปุ่มด้วย div เพื่อสร้างระยะห่างเหมือน additional file */}
+      <Button
+        variant="light"
+        onClick={() => downloadFile(files[0], fileNames[0])}
+        className="text-blue-600 hover:underline block"
+      >
+        <IconDownload size={18} className="inline-block mr-2" />
+        {fileNames[0]}
+      </Button>
+    </div>
                 </div>
-              ))}
+              )}
+
+              {/* Additional files box */}
+              {files.length > 1 && (
+                <div
+                  style={{
+                    backgroundColor: "#eafcf4",
+                    padding: "12px",
+                    borderRadius: "8px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  <MantineText size="sm" color="teal" className="mb-2">
+                    This is an additional file.
+                  </MantineText>
+
+                  {files.slice(1).map((fileUrl: string, index: number) => (
+                    <div key={index} className="mb-2 ml-2">
+                      <Button
+                        variant="light"
+                        onClick={() =>
+                          downloadFile(fileUrl, fileNames[index + 1])
+                        }
+                        className="text-blue-600 hover:underline block"
+                      >
+                        <IconDownload size={18} className="inline-block mr-2" />
+                        {fileNames[index + 1]}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </Alert>
           ) : (
-            <Alert icon={<IconFileText size={16} />} title="No file available" color="red" radius="md">
+            <Alert
+              icon={<IconFileText size={16} />}
+              title="No file available"
+              color="red"
+              radius="md"
+            >
               No file uploaded by the instructor.
             </Alert>
           )}
@@ -98,9 +186,9 @@ const STDSubmit: React.FC = () => {
             </div>
 
             {studentFile && (
-              <div className="mb-4">
+              <div className="mb-4 text-sm text-gray-700">
                 <IconFileText className="inline-block mr-2" />
-                {studentFile.name}
+                Selected file: <strong>{studentFile.name}</strong>
               </div>
             )}
 
