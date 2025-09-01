@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
+import { notifications } from '@mantine/notifications'; // <-- import notifications
 
 interface UploadFileParams {
   assignment_id: string;
@@ -25,17 +26,28 @@ const uploadStudentFile = async ({ assignment_id, course_id, file }: UploadFileP
   return data;
 };
 
-
 export const useUploadStudentFile = () => {
   return useMutation({
     mutationFn: uploadStudentFile,
     onSuccess: (data) => {
       console.log('Upload successful:', data);
-      alert(`File uploaded successfully! Submission ID: ${data.submission.SubmissionID}`);
+      notifications.show({
+        title: '✅ File uploaded successfully!',
+        message: `Submission ID: ${data.submission.SubmissionID}`,
+        color: 'green',
+        autoClose: 5000,
+        position: 'bottom-right',
+      });
     },
     onError: (error) => {
       console.error('Upload failed:', error);
-      alert('Failed to upload the file. Please try again.');
+      notifications.show({
+        title: '❌ Upload failed',
+        message: 'Failed to upload the file. Please try again.',
+        color: 'red',
+        autoClose: 5000,
+        position: 'bottom-right',
+      });
     },
   });
 };
