@@ -113,16 +113,18 @@ const STDSubmit: React.FC = () => {
                   <MantineText size="sm" color="blue" className="mb-2">
                     This is a template file.
                   </MantineText>
-                  <div className="ml-2"> {/* ห่อปุ่มด้วย div เพื่อสร้างระยะห่างเหมือน additional file */}
-      <Button
-        variant="light"
-        onClick={() => downloadFile(files[0], fileNames[0])}
-        className="text-blue-600 hover:underline block"
-      >
-        <IconDownload size={18} className="inline-block mr-2" />
-        {fileNames[0]}
-      </Button>
-    </div>
+                  <div className="ml-2">
+                    {" "}
+                    {/* ห่อปุ่มด้วย div เพื่อสร้างระยะห่างเหมือน additional file */}
+                    <Button
+                      variant="light"
+                      onClick={() => downloadFile(files[0], fileNames[0])}
+                      className="text-blue-600 hover:underline block"
+                    >
+                      <IconDownload size={18} className="inline-block mr-2" />
+                      {fileNames[0]}
+                    </Button>
+                  </div>
                 </div>
               )}
 
@@ -184,9 +186,16 @@ const STDSubmit: React.FC = () => {
                 required
               />
             </div>
-
             {studentFile && (
-              <div className="mb-4 text-sm text-gray-700">
+              <div
+                className="mb-4 text-sm text-gray-700 cursor-pointer underline"
+                onClick={() => {
+                  const fileUrl = URL.createObjectURL(studentFile);
+                  window.open(fileUrl, "_blank");
+                  setTimeout(() => URL.revokeObjectURL(fileUrl), 10000);
+                }}
+                title="Click to preview selected file"
+              >
                 <IconFileText className="inline-block mr-2" />
                 Selected file: <strong>{studentFile.name}</strong>
               </div>
