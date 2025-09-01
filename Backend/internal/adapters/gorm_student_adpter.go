@@ -151,20 +151,24 @@ func (r *GormStudentRepository) FindAssignmentsByCourseID(courseID uuid.UUID, us
             assignments.assignment_id,
             assignments.assignment_name,
             assignments.assignment_description,
-            MIN(asec.release_date)                           AS release_date,
-            MIN(asec.due_date)                               AS due_date,
-            MIN(asec.cut_off_date)                           AS cut_off_date,
-            CASE WHEN COUNT(DISTINCT sub.submission_id) > 0  THEN TRUE ELSE FALSE END AS has_submitted,
-            MAX(sub.submitted_at)                            AS last_submitted_at
+            MIN(asec.release_date) AS release_date,
+            MIN(asec.due_date)     AS due_date,
+            MIN(asec.cut_off_date) AS cut_off_date,
+            CASE WHEN COUNT(DISTINCT sub.submission_id) > 0 THEN TRUE ELSE FALSE END AS has_submitted,
+            MAX(sub.submitted_at)  AS last_submitted_at
         `).
 		Joins(`JOIN assignment_sections AS asec
-			ON asec.assignment_id = assignments.assignment_id
-			AND asec.deleted_at IS NULL
-			AND asec.section_id IN (?)`, enrolledSections).
+            ON asec.assignment_id = assignments.assignment_id
+           AND asec.deleted_at IS NULL
+           AND asec.section_id IN (?)
+           AND asec.release_date IS NOT NULL
+           AND (asec.release_date AT TIME ZONE 'Asia/Bangkok')::date <= (now() AT TIME ZONE 'Asia/Bangkok')::date
+        `, enrolledSections).
 		Joins(`LEFT JOIN submissions AS sub
-			ON sub.assignment_id = assignments.assignment_id
-			AND sub.deleted_at IS NULL
-			AND sub.belongs_to IN (?)`, personalDataIDSub).
+            ON sub.assignment_id = assignments.assignment_id
+           AND sub.deleted_at IS NULL
+           AND sub.belongs_to IN (?)
+        `, personalDataIDSub).
 		Where(`assignments.course_id = ? AND assignments.deleted_at IS NULL`, courseID).
 		Group(`assignments.assignment_id, assignments.assignment_name, assignments.assignment_description`).
 		Order(`release_date ASC, assignments.assignment_id ASC`).
