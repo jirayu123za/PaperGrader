@@ -1577,7 +1577,77 @@ func (s *InstructorServiceImpl) UpdateRubricSetting(assignmentID uuid.UUID, rubr
 	if err != nil {
 		return err
 	}
-	return s.repo.ModifyRubricData(assignmentID, updatedJSON)
+
+	if err := s.repo.ModifyRubricData(assignmentID, updatedJSON); err != nil {
+		return err
+	}
+
+	submissionIDs, err := s.repo.FindSubmissionIDsByAssignmentID(assignmentID)
+	if err != nil {
+		return err
+	}
+
+	for _, submissionID := range submissionIDs {
+		exists, err := s.repo.FindExistingGradeData(assignmentID, submissionID)
+		if err != nil {
+			return err
+		}
+		if !exists {
+			continue
+		}
+
+		gradeMap, err := s.repo.FindGradeData(assignmentID, submissionID)
+		if err != nil {
+			return err
+		}
+
+		for _, q := range gradeMap["questions_data"].([]interface{}) {
+			qMap, ok := q.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if fmt.Sprintf("%v", qMap["question_id"]) != rubricData.QuestionID.String() {
+				continue
+			}
+
+			if rubricData.SubQuestionID != nil {
+				subQs, ok := qMap["sub_questions"].([]interface{})
+				if !ok {
+					return fmt.Errorf("sub_questions not found or wrong type in grade_data")
+				}
+				for _, sq := range subQs {
+					sqMap, ok := sq.(map[string]interface{})
+					if !ok {
+						continue
+					}
+					if fmt.Sprintf("%v", sqMap["sub_question_id"]) != rubricData.SubQuestionID.String() {
+						continue
+					}
+					if rubrics, ok := sqMap["rubrics"].(map[string]interface{}); ok {
+						if fmt.Sprintf("%v", rubrics["rubric_id"]) == rubricData.Rubric.RubricID {
+							rubrics["rubric_setting"] = rubricData.Rubric.RubricSetting
+						}
+					}
+				}
+			} else {
+				if rubrics, ok := qMap["rubrics"].(map[string]interface{}); ok {
+					if fmt.Sprintf("%v", rubrics["rubric_id"]) == rubricData.Rubric.RubricID {
+						rubrics["rubric_setting"] = rubricData.Rubric.RubricSetting
+					}
+				}
+			}
+		}
+
+		updatedGradeJSON, err := json.Marshal(gradeMap)
+		if err != nil {
+			return err
+		}
+		if err := s.repo.ModifyGradeData(assignmentID, submissionID, updatedGradeJSON); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Update rubric score bounds (Ceiling and Floor)
@@ -1629,7 +1699,84 @@ func (s *InstructorServiceImpl) UpdateRubricScoreBounds(assignmentID uuid.UUID, 
 	if err != nil {
 		return err
 	}
-	return s.repo.ModifyRubricData(assignmentID, updatedJSON)
+
+	if err := s.repo.ModifyRubricData(assignmentID, updatedJSON); err != nil {
+		return err
+	}
+
+	submissionIDs, err := s.repo.FindSubmissionIDsByAssignmentID(assignmentID)
+	if err != nil {
+		return err
+	}
+
+	for _, submissionID := range submissionIDs {
+		exists, err := s.repo.FindExistingGradeData(assignmentID, submissionID)
+		if err != nil {
+			return err
+		}
+		if !exists {
+			continue
+		}
+
+		gradeMap, err := s.repo.FindGradeData(assignmentID, submissionID)
+		if err != nil {
+			return err
+		}
+
+		gq, ok := gradeMap["questions_data"].([]interface{})
+		if !ok {
+			return fmt.Errorf("questions_data not found or wrong type in grade_data")
+		}
+
+		for _, q := range gq {
+			qMap, ok := q.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if fmt.Sprintf("%v", qMap["question_id"]) != rubricData.QuestionID.String() {
+				continue
+			}
+
+			if rubricData.SubQuestionID != nil {
+				subQs, ok := qMap["sub_questions"].([]interface{})
+				if !ok {
+					return fmt.Errorf("sub_questions not found or wrong type in grade_data")
+				}
+				for _, sq := range subQs {
+					sqMap, ok := sq.(map[string]interface{})
+					if !ok {
+						continue
+					}
+					if fmt.Sprintf("%v", sqMap["sub_question_id"]) != rubricData.SubQuestionID.String() {
+						continue
+					}
+					if rubrics, ok := sqMap["rubrics"].(map[string]interface{}); ok {
+						if fmt.Sprintf("%v", rubrics["rubric_id"]) == rubricData.Rubric.RubricID {
+							rubrics["has_ceiling"] = rubricData.Rubric.HasCeiling
+							rubrics["has_floor"] = rubricData.Rubric.HasFloor
+						}
+					}
+				}
+			} else {
+				if rubrics, ok := qMap["rubrics"].(map[string]interface{}); ok {
+					if fmt.Sprintf("%v", rubrics["rubric_id"]) == rubricData.Rubric.RubricID {
+						rubrics["has_ceiling"] = rubricData.Rubric.HasCeiling
+						rubrics["has_floor"] = rubricData.Rubric.HasFloor
+					}
+				}
+			}
+		}
+
+		updatedGradeJSON, err := json.Marshal(gradeMap)
+		if err != nil {
+			return err
+		}
+		if err := s.repo.ModifyGradeData(assignmentID, submissionID, updatedGradeJSON); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Get rubric after graded
