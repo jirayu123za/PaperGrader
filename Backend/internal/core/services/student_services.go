@@ -18,6 +18,9 @@ type StudentService interface {
 	GetCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error)
 	GetAssignmentsByCourseID(CourseID uuid.UUID, UserID uuid.UUID) ([]map[string]interface{}, error)
 	GetCourseByCourseID(CourseID uuid.UUID) (map[string]interface{}, error)
+
+	// File services
+	GetSubmissionFileFormMinIO(AssignmentID uuid.UUID, CourseID uuid.UUID, UserID uuid.UUID) (fileURL string, err error)
 }
 
 type StudentServiceImpl struct {
@@ -98,4 +101,18 @@ func (s *StudentServiceImpl) GetCourseByCourseID(CourseID uuid.UUID) (map[string
 		return nil, err
 	}
 	return course, nil
+}
+
+// File services
+func (s *StudentServiceImpl) GetSubmissionFileFormMinIO(AssignmentID uuid.UUID, CourseID uuid.UUID, UserID uuid.UUID) (fileURL string, err error) {
+	fileName, err := s.repo.FindSubmissionFileName(AssignmentID, CourseID, UserID)
+	if err != nil {
+		return "", err
+	}
+
+	fileURL, err = s.minioRepo.FindFileFromMinIO(CourseID.String(), AssignmentID.String(), fileName)
+	if err != nil {
+		return "", err
+	}
+	return fileURL, nil
 }

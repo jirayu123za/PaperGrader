@@ -19,4 +19,7 @@ type StudentRepository interface {
 	FindAssignmentsByCourseID(CourseID uuid.UUID, UserID uuid.UUID) ([]map[string]interface{}, error)
 
 	FindCourseByCourseID(CourseID uuid.UUID) (map[string]interface{}, error)
+
+	// File
+	FindSubmissionFileName(AssignmentID uuid.UUID, CourseID uuid.UUID, UserID uuid.UUID) (string, error)
 }

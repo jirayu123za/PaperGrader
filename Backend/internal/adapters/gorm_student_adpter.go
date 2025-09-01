@@ -191,3 +191,37 @@ func (r *GormStudentRepository) FindCourseByCourseID(CourseID uuid.UUID) (map[st
 	}
 	return course, nil
 }
+
+// File
+func (r *GormStudentRepository) FindSubmissionFileName(AssignmentID uuid.UUID, CourseID uuid.UUID, UserID uuid.UUID) (string, error) {
+	pdSub := r.db.
+		Table("personal_data AS pd").
+		Select("pd.personal_data_id").
+		Joins(`JOIN users AS u ON u.email = pd.email AND u.deleted_at IS NULL`).
+		Joins(`JOIN enrollment_lists AS el ON el.personal_data_id = pd.personal_data_id AND el.deleted_at IS NULL`).
+		Where(`u.user_id = ? AND el.course_id = ? AND pd.deleted_at IS NULL`, UserID, CourseID)
+
+	var row struct {
+		FileName string `gorm:"column:submission_file_name"`
+	}
+
+	err := r.db.
+		Table("submissions AS s").
+		Select("s.submission_file_name").
+		Where(`
+            s.assignment_id = ?
+            AND s.deleted_at IS NULL
+            AND s.belongs_to IN (?)
+        `, AssignmentID, pdSub).
+		Order(gorm.Expr("CASE WHEN s.submitted_by = ? THEN 0 ELSE 1 END ASC", UserID)).
+		Order("s.submitted_at DESC").
+		Limit(1).
+		Scan(&row).Error
+	if err != nil {
+		return "", err
+	}
+	if row.FileName == "" {
+		return "", gorm.ErrRecordNotFound
+	}
+	return row.FileName, nil
+}

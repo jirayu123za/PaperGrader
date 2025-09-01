@@ -291,3 +291,44 @@ func (h *HttpStudentHandler) GetCourseByCourseID(c *fiber.Ctx) error {
 		"course":  course,
 	})
 }
+
+func (h *HttpStudentHandler) GetSubmissionFileFormMinIO(c *fiber.Ctx) error {
+	userID, err := utils.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid user_id in JWT",
+			"error":   err.Error(),
+		})
+	}
+
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	url, err := h.services.GetSubmissionFileFormMinIO(assignmentID, courseID, userID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get submission file form MinIO",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Successfully fetched submission file form MinIO",
+		"url":     url,
+	})
+}
