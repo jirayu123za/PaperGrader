@@ -32,9 +32,13 @@ const STD_CourseDashboard: React.FC = () => {
     <div className="course-dashboard">
       <div className="header mb-6">
         <Title order={2}>
-          {courseData?.course_name} | {courseData?.semester} /{" "}
-          {courseData?.academic_year}
+          {courseData?.course_name} | ({courseData?.semester}/
+          {courseData?.academic_year
+            ? Number(courseData.academic_year) + 543
+            : ""}
+          )
         </Title>
+
         <p className="text-gray-500">Course Code: {courseData?.course_code}</p>
         <Divider my="md" />
       </div>
@@ -73,23 +77,23 @@ const STD_CourseDashboard: React.FC = () => {
                     </Table.Td>
                     <Table.Td style={{ textAlign: "center" }}>
                       {assignment.release_date
-                        ? dayjs(assignment.release_date)
-                
-                            .format("MMM D, YYYY h:mm A")
+                        ? dayjs(assignment.release_date).format(
+                            "MMM D, YYYY h:mm A"
+                          )
                         : "N/A"}
                     </Table.Td>
                     <Table.Td style={{ textAlign: "center" }}>
                       {assignment.due_date
-                        ? dayjs(assignment.due_date)
-                            
-                            .format("MMM D, YYYY h:mm A")
+                        ? dayjs(assignment.due_date).format(
+                            "MMM D, YYYY h:mm A"
+                          )
                         : "N/A"}
                     </Table.Td>
                     <Table.Td style={{ textAlign: "center" }}>
                       {assignment.cut_off_date
-                        ? dayjs(assignment.cut_off_date)
-                          
-                            .format("MMM D, YYYY h:mm A")
+                        ? dayjs(assignment.cut_off_date).format(
+                            "MMM D, YYYY h:mm A"
+                          )
                         : "N/A"}
                     </Table.Td>
                     <Table.Td style={{ textAlign: "center" }}>
