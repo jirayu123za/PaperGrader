@@ -689,7 +689,7 @@ func (s *InstructorServiceImpl) GetProcessOCRForSubmissions(CourseID uuid.UUID, 
 	if err := os.MkdirAll(tempBaseDir, os.ModePerm); err != nil {
 		return nil, err
 	}
-	defer os.RemoveAll(tempBaseDir)
+	// defer os.RemoveAll(tempBaseDir)
 
 	var results []response.SubmissionsOCRData
 	for _, submission := range submissionBoxes {
@@ -715,7 +715,8 @@ func (s *InstructorServiceImpl) GetProcessOCRForSubmissions(CourseID uuid.UUID, 
 			lower := strings.ToLower(tempFilePath)
 
 			if strings.Contains(lower, "name") {
-				text, err := utils.PerformOCRThaiText(tempFilePath)
+				// text, err := utils.PerformOCRThaiText(tempFilePath)
+				text, err := utils.PerformOCREngText(tempFilePath)
 				if err != nil {
 					continue
 				}
