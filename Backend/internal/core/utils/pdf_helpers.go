@@ -47,21 +47,75 @@ func ExtractPDFPages(inputPath string, startPage, endPage int) (string, error) {
 		return "", err
 	}
 
-	re := regexp.MustCompile(`p(\d+)`)
-	sort.Slice(files, func(i, j int) bool {
-		ai := re.FindStringSubmatch(files[i].Name())
-		aj := re.FindStringSubmatch(files[j].Name())
-		if len(ai) == 2 && len(aj) == 2 {
-			ni, _ := strconv.Atoi(ai[1])
-			nj, _ := strconv.Atoi(aj[1])
-			return ni < nj
+	type pageFile struct {
+		name string
+		path string
+		key  int
+	}
+
+	reP := regexp.MustCompile(`p(\d+)`)
+	var pages []pageFile
+
+	naturalLess := func(a, b string) bool {
+		sa := regexp.MustCompile(`\d+|\D+`).FindAllString(a, -1)
+		sb := regexp.MustCompile(`\d+|\D+`).FindAllString(b, -1)
+		for i := 0; i < len(sa) && i < len(sb); i++ {
+			aa, bb := sa[i], sb[i]
+			ia, ea := strconv.Atoi(aa)
+			ib, eb := strconv.Atoi(bb)
+			if ea == nil && eb == nil {
+				if ia != ib {
+					return ia < ib
+				}
+			} else {
+				if aa != bb {
+					return aa < bb
+				}
+			}
 		}
-		return files[i].Name() < files[j].Name()
+		return len(sa) < len(sb)
+	}
+
+	for _, e := range files {
+		if e.IsDir() {
+			continue
+		}
+		name := e.Name()
+		if strings.ToLower(filepath.Ext(name)) != ".pdf" {
+			continue
+		}
+		path := filepath.Join(tempDir, name)
+
+		matches := reP.FindAllStringSubmatch(name, -1)
+		key := 1 << 30
+		if len(matches) > 0 {
+			last := matches[len(matches)-1][1]
+			n, _ := strconv.Atoi(last)
+			if n >= startPage && n <= endPage {
+				key = n
+			} else {
+				key = startPage + n - 1
+			}
+		}
+
+		pages = append(pages, pageFile{name: name, path: path, key: key})
+	}
+
+	if len(pages) == 0 {
+		os.RemoveAll(tempDir)
+		return "", fmt.Errorf("no extracted PDF pages found in %s", tempDir)
+	}
+
+	sort.SliceStable(pages, func(i, j int) bool {
+		if pages[i].key != pages[j].key {
+			return pages[i].key < pages[j].key
+		}
+		return naturalLess(pages[i].name, pages[j].name)
 	})
 
-	var filePaths []string
-	for _, file := range files {
-		filePaths = append(filePaths, filepath.Join(tempDir, file.Name()))
+	filePaths := make([]string, 0, len(pages))
+	for _, p := range pages {
+		filePaths = append(filePaths, p.path)
 	}
 
 	err = api.MergeCreateFile(filePaths, mergedFilePath, false, nil)
