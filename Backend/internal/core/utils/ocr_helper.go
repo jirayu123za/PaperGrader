@@ -14,23 +14,49 @@ import (
 )
 
 func FilterThaiCharacters(input string) string {
-	re := regexp.MustCompile(`[\x{0E01}-\x{0E5B}]`)
+	re := regexp.MustCompile(`[\p{Thai}0-9\s]`)
+	return strings.Join(re.FindAllString(input, -1), "")
+}
+
+func FilterEngCharacters(input string) string {
+	re := regexp.MustCompile(`[A-Za-z0-9\s]`)
 	return strings.Join(re.FindAllString(input, -1), "")
 }
 
 func PerformOCRThaiText(imagePath string) (string, error) {
-	cmd := exec.Command("tesseract", imagePath, "stdout", "-l", "tha", "--oem", "1", "--psm", "6")
+	text, err := performOCR(imagePath, "tha")
+	if err != nil {
+		return "", fmt.Errorf("tesseract error (thai text): %w", err)
+	}
+	return FilterThaiCharacters(text), nil
+}
 
+func PerformOCREngText(imagePath string) (string, error) {
+	text, err := performOCR(imagePath, "eng")
+	if err != nil {
+		return "", fmt.Errorf("tesseract error (eng text): %w", err)
+	}
+	return FilterEngCharacters(text), nil
+}
+
+func performOCR(imagePath, lang string) (string, error) {
+	cmd := exec.Command(
+		"tesseract",
+		imagePath,
+		"stdout",
+		"-l", lang,
+		"--oem", "1",
+		"--psm", "6",
+	)
 	var stderr strings.Builder
 	cmd.Stderr = &stderr
 
 	output, err := cmd.Output()
 	if err != nil {
-		return "", fmt.Errorf("tesseract error (thai text): %v, details: %s", err, stderr.String())
+		return "", fmt.Errorf("%v, details: %s", err, stderr.String())
 	}
 
-	text := strings.TrimSpace(string(output))
-	return FilterThaiCharacters(text), nil
+	return strings.TrimSpace(string(output)), nil
 }
 
 func PerformOCRDigitsOnly(imagePath string) (string, error) {
