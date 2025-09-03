@@ -46,7 +46,14 @@ export const Editor: React.FC = () => {
 
   return (
     <Box pos="relative">
-      <RichTextEditor editor={editor}>
+      <RichTextEditor editor={editor}
+        styles={{
+          content: {
+            maxHeight: 400,
+            overflowY: 'auto',
+          },
+        }}
+      >
         {showToolbar && (
           <RichTextEditor.Toolbar sticky stickyOffset={60}>
             <RichTextEditor.ControlsGroup>
@@ -93,9 +100,7 @@ export const Editor: React.FC = () => {
           </RichTextEditor.ControlsGroup>
           </RichTextEditor.Toolbar>
         )}
-        <Box maw={540}>
-          <RichTextEditor.Content />
-        </Box>
+        <RichTextEditor.Content />
       </RichTextEditor>
     </Box>
   )
