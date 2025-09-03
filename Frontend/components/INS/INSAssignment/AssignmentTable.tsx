@@ -4,14 +4,14 @@ import React from 'react';
 import AssignmentSetting from '../../Customize/AssignmentSetting';
 import AssignmentSecTable from './AssignmentSecTable';
 import { useParams, useRouter } from 'next/navigation';
-import { Button, Menu, Anchor, Text, Checkbox, Flex, Table, Paper, Pagination, ActionIcon, Image } from '@mantine/core';
+import { Button, Menu, Anchor, Text, Flex, Table, Paper, Pagination, ActionIcon, Image } from '@mantine/core';
 import { usePagination } from '@mantine/hooks';
 import { useFetchAssignmentsTable } from '@/hooks/useFetchAssignments';
 import { useAssignmentsListTableStore } from '@/store/useAssignmentStore';
-import { useAssignmentSettingStore, useModalAssignmentSettingStore } from '@/store/modal/useAssignmentSettingModal';
+import { useModalAssignmentSettingStore } from '@/store/modal/useAssignmentSettingModal';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { IconSettings, IconTrash } from '@tabler/icons-react';
-import { useAssignmentSectionStore, useExpandedAssignmentStore } from '@/store/table/useAssignmentsListStore';
+import { useExpandedAssignmentStore } from '@/store/table/useAssignmentsListStore';
 
 const AssignmentTable: React.FC = () => {
   const router = useRouter();
@@ -19,10 +19,7 @@ const AssignmentTable: React.FC = () => {
   const { openModal } = useModalAssignmentSettingStore();
   const { isLoading: isLoadingAssignmentsList } = useFetchAssignmentsTable(course_id);
   const { assignmentList } = useAssignmentsListTableStore();
-  const { selectedSectionIDs, setSectionIDs } = useAssignmentSettingStore();
-
   const { expandedAssignmentIDs, toggleExpandedAssignmentID } = useExpandedAssignmentStore();
-  const { addAssignmentSectionIDs, removeAssignmentSectionIDs, selectedAssignmentIDs, selectedAssignmentSectionIDs, setAssignmentID, removeAssignmentID } = useAssignmentSectionStore();
 
   const pageSize = 8;
   const totalPages = assignmentList ? Math.ceil(assignmentList.length / pageSize) : 1;
@@ -59,14 +56,12 @@ const AssignmentTable: React.FC = () => {
     <Flex direction="column" gap="md">
       <Paper withBorder mb="md">
         <Table.ScrollContainer minWidth="100%" maxHeight={905} className='no-scroll-padding'>
-          <Table verticalSpacing="xs" horizontalSpacing="xs">
+          <Table verticalSpacing="xs" horizontalSpacing="xl">
             <Table.Thead className='bg-gray-100 h-14'>
               <Table.Tr>
-                <Table.Th w={50}></Table.Th>
-                <Table.Th w={300}>Name</Table.Th>
-                <Table.Th w={160}>Published grade</Table.Th>
+                <Table.Th w={200}>Name</Table.Th>
                 <Table.Th w={120}>Regrades</Table.Th>
-                <Table.Th w={150}>Submitted by</Table.Th>
+                <Table.Th w={120}>Submitted by</Table.Th>
                 <Table.Th w={120}>Sections</Table.Th>
                 <Table.Th w={100}>Actions</Table.Th>
               </Table.Tr>
@@ -74,48 +69,20 @@ const AssignmentTable: React.FC = () => {
             <Table.Tbody>
               {isLoadingAssignmentsList ? (
                 <Table.Tr>
-                  <Table.Td colSpan={7}>
+                  <Table.Td colSpan={6}>
                     <Text ta="center">Loading...</Text>
                   </Table.Td>
                 </Table.Tr>
               ) : (
                 paginatedAssignmentsTable.map((assignment) => {
-                  const assignmentSectionIDs = assignment.assignment_sections.map(s => s.assignment_section_id);
-                  const selectedAssignmentSectionIDsForThisAssignment  = assignmentSectionIDs.filter(id => selectedAssignmentSectionIDs.includes(id));
-                  const isChecked = selectedAssignmentSectionIDsForThisAssignment .length === assignmentSectionIDs.length;
-                  const isIndeterminate = selectedAssignmentSectionIDsForThisAssignment .length > 0 && !isChecked;
-
                   return (
                     <React.Fragment key={assignment.assignment_id}>
-                      <Table.Tr bg={selectedAssignmentIDs.includes(assignment.assignment_id) ? 'var(--mantine-color-blue-light)' : 'white'}>
-                        <Table.Td>
-                          <Checkbox 
-                            aria-label="Select assignment" 
-                            checked={isChecked}
-                            indeterminate={isIndeterminate}
-                            onChange={(event) => {
-                              const isNowChecked = event.currentTarget.checked;
-                              const sectionIDs = assignment.assignment_sections.map(s => s.section_id);
-
-                              if (isNowChecked) {
-                                setAssignmentID(assignment.assignment_id);
-                                addAssignmentSectionIDs(assignmentSectionIDs);
-                                const merged = Array.from(new Set([...selectedSectionIDs, ...sectionIDs]));
-                                setSectionIDs(merged);
-                              } else {
-                                removeAssignmentID(assignment.assignment_id);
-                                removeAssignmentSectionIDs(assignmentSectionIDs);
-                                const updatedSectionIDs = selectedSectionIDs.filter(id => !sectionIDs.includes(id));
-                                setSectionIDs(updatedSectionIDs);
-                              }
-                            }}
-                          />
-                        </Table.Td>
+                      <Table.Tr>
                         <Table.Td>
                           <Flex align="center">
-                            <Anchor lineClamp={1} c="black" size="sm" title={assignment.assignment_name} 
+                            <Anchor lineClamp={1} c="black" size="sm" title={assignment.assignment_name.charAt(0).toUpperCase() + assignment.assignment_name.slice(1)} 
                               onClick={() => router.push(`/instructor/course/${course_id}/process/${assignment.assignment_id}/create-outline`)}>
-                              {assignment.assignment_name}
+                              {assignment.assignment_name.charAt(0).toUpperCase() + assignment.assignment_name.slice(1)}
                             </Anchor>
                             <ActionIcon
                               variant="transparent"
@@ -125,10 +92,9 @@ const AssignmentTable: React.FC = () => {
                             </ActionIcon>
                           </Flex>
                         </Table.Td>
-                        <Table.Td>{assignment.published ? 'Yes' : 'No'}</Table.Td>
-                        <Table.Td>{assignment.regrades ? 'Yes' : 'No'}</Table.Td>
-                        <Table.Td>{assignment.submitted_by}</Table.Td>
-                        <Table.Td>{assignment.assignment_sections.length}</Table.Td>                      
+                        <Table.Td pl="50px">{assignment.regrades ? 'Yes' : 'No'}</Table.Td>
+                        <Table.Td pl="50px">{assignment.submitted_by.charAt(0).toUpperCase() + assignment.submitted_by.slice(1)}</Table.Td>
+                        <Table.Td pl="50px">{assignment.assignment_sections.length}</Table.Td>                      
                         <Table.Td>
                           <Menu shadow="md">
                             <Menu.Target>

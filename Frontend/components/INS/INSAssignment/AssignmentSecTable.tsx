@@ -5,9 +5,11 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { Badge, Button, Checkbox, Flex, Loader, Menu, Progress, SegmentedControl, Table, Text, Tooltip, } from '@mantine/core';
-import { useAssignmentSettingStore, useModalAssignmentSettingStore } from '@/store/modal/useAssignmentSettingModal';
+import { useAssignmentSettingStore } from '@/store/modal/useAssignmentSettingModal';
 import { IconSettings, IconTrash } from '@tabler/icons-react';
 import { useAssignmentSectionStore } from '@/store/table/useAssignmentsListStore';
+import { useModalAssignmentTimeSettingStore } from '@/store/modal/useAssignmentTimeSettingModal';
+import { TimeSetting } from '@/components/Customize/TimeSetting';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -17,6 +19,7 @@ type Section = {
   assignment_section_id: string;
   section_id: string;
   section_name: string;
+  published: boolean;
   release_date: string | null;
   due_date: string | null;
 };
@@ -29,32 +32,34 @@ type Props = {
 };
 
 const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
-  const { openModal } = useModalAssignmentSettingStore();
-  const {
-    addAssignmentSectionIDs,
-    removeAssignmentSectionIDs,
-    removeAssignmentID,
-    setAssignmentID,
-    selectedAssignmentSectionIDs,
-  } = useAssignmentSectionStore();
-  const [isLoading, setIsLoading] = React.useState(true);
+  const { openModal } = useModalAssignmentTimeSettingStore();
+  const { addAssignmentSectionIDs, removeAssignmentSectionIDs, removeAssignmentID, setAssignmentID, selectedAssignmentSectionIDs } = useAssignmentSectionStore();
   const { selectedSectionIDs, setSectionIDs } = useAssignmentSettingStore();
-
-
-  const [publicState, setPublicState] = React.useState<Record<string, 'public' | 'private'>>(() => {
-    const now = dayjs().tz('Asia/Bangkok');
-    const map: Record<string, 'public' | 'private'> = {};
-    assignment.assignment_sections.forEach((s) => {
-      const released = s.release_date ? dayjs(s.release_date).tz('Asia/Bangkok').isBefore(now) : false;
-      map[s.assignment_section_id] = released ? 'public' : 'private';
-    });
-    return map;
-  });
+  const [ isLoading, setIsLoading ] = React.useState(true);
 
   React.useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
     return () => clearTimeout(timer);
   }, []);
+
+  // Helper checks
+  const allAssignmentSectionIDs = React.useMemo(() => assignment.assignment_sections.map(s => s.assignment_section_id), [assignment.assignment_sections]);
+  const allPlainSectionIDs = React.useMemo(() => assignment.assignment_sections.map(s => s.section_id), [assignment.assignment_sections]);
+  const allSelected = allAssignmentSectionIDs.length > 0 && allAssignmentSectionIDs.every(id => selectedAssignmentSectionIDs.includes(id));
+  const someSelected = selectedAssignmentSectionIDs.length > 0 && !allSelected;
+
+  const handleToggleAll = (checked: boolean) => {
+    if (checked) {
+      addAssignmentSectionIDs(allAssignmentSectionIDs);
+      setSectionIDs(Array.from(new Set([...selectedSectionIDs, ...allPlainSectionIDs])));
+      setAssignmentID(assignment.assignment_id);
+    } else {
+      removeAssignmentSectionIDs(allAssignmentSectionIDs);
+      const toRemove = new Set(allPlainSectionIDs);
+      setSectionIDs(selectedSectionIDs.filter(id => !toRemove.has(id)));
+      removeAssignmentID(assignment.assignment_id);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -69,12 +74,19 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
       <Table highlightOnHover verticalSpacing="xs" horizontalSpacing="xl">
         <Table.Thead className="bg-gray-100 h-14 whitespace-nowrap">
           <Table.Tr>
-            <Table.Th w={50}></Table.Th>
+            <Table.Th w={50} ta="center">
+              <Checkbox
+                aria-label="Select all assignment sections"
+                checked={allSelected}
+                indeterminate={someSelected}
+                onChange={(e) => handleToggleAll(e.currentTarget.checked)}
+              />
+            </Table.Th>
             <Table.Th w={100} ta="center">Sections</Table.Th>
             <Table.Th w={240} ta="center">Release date</Table.Th>
             <Table.Th w={240} ta="center">Due date</Table.Th>
-            <Table.Th w={340} ta="center">Time Remaining</Table.Th>
-            <Table.Th w={200} ta="center">Public Grade</Table.Th>
+            <Table.Th w={340} ta="center">Time remaining</Table.Th>
+            <Table.Th w={200} ta="center">Published</Table.Th>
             <Table.Th w={100} ta="center">Actions</Table.Th>
           </Table.Tr>
         </Table.Thead>
@@ -83,13 +95,7 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
           {assignment.assignment_sections.map((section) => {
             const progress = calculateProgress(section.release_date, section.due_date);
             const isChecked = selectedAssignmentSectionIDs.includes(section.assignment_section_id);
-            const pubVal = publicState[section.assignment_section_id] ?? 'private';
-
-
-            const descFull =
-              pubVal === 'public'
-                ? 'Grade visible to students'
-                : 'Grade hidden from students';
+            const isFullPublished = section.published ? 'Grade visible to students' : 'Grade hidden from students';
 
             return (
               <Table.Tr
@@ -103,23 +109,16 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
                     onChange={(event) => {
                       const checked = event.currentTarget.checked;
                       const sectionID = section.section_id;
-
                       if (checked) {
                         addAssignmentSectionIDs([section.assignment_section_id]);
                       } else {
                         removeAssignmentSectionIDs([section.assignment_section_id]);
                       }
-
-                      const updatedSectionIDs = checked
-                        ? [...selectedSectionIDs, sectionID]
-                        : selectedSectionIDs.filter((id) => id !== sectionID);
+                      const updatedSectionIDs = checked ? [...selectedSectionIDs, sectionID] : selectedSectionIDs.filter((id) => id !== sectionID);
                       setSectionIDs(Array.from(new Set(updatedSectionIDs)));
-
-                      const allSectionIDs = assignment.assignment_sections.map((s) => s.assignment_section_id);
-                      const updated = checked
-                        ? [...selectedAssignmentSectionIDs, section.assignment_section_id]
-                        : selectedAssignmentSectionIDs.filter((id) => id !== section.assignment_section_id);
-                      const isAllSelected = allSectionIDs.every((id) => updated.includes(id));
+                      const allIDs = allAssignmentSectionIDs;
+                      const updated = checked ? [...selectedAssignmentSectionIDs, section.assignment_section_id] : selectedAssignmentSectionIDs.filter((id) => id !== section.assignment_section_id);
+                      const isAllSelected = allIDs.every((id) => updated.includes(id));
                       if (isAllSelected) setAssignmentID(assignment.assignment_id);
                       else removeAssignmentID(assignment.assignment_id);
                     }}
@@ -142,7 +141,7 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
                 </Table.Td>
 
                 <Table.Td>
-                  <Progress size="md" color={getProgressColor(section.release_date, section.due_date)} value={progress} />
+                  <Progress mt="md" size="md" color={getProgressColor(section.release_date, section.due_date)} value={progress} />
                   <Text size="xs" mt="2px" ta="center">
                     {getRemainingTimeText(section.due_date)}
                   </Text>
@@ -151,32 +150,25 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
                 <Table.Td ta="center">
                   <SegmentedControl
                     size="xs"
-                    value={pubVal}
-                    onChange={(val) =>
-                      setPublicState((prev) => ({
-                        ...prev,
-                        [section.assignment_section_id]: (val as 'public' | 'private') ?? 'private',
-                      }))
-                    }
+                    value={section.published ? 'public' : 'private'}
                     data={[
-                      { label: 'Public', value: 'public' },
-                      { label: 'Private', value: 'private' },
+                      { label: 'Public', value: "public" },
+                      { label: 'Private', value: "private" },
                     ]}
                   />
 
-                  <div style={{ marginTop: 6 }}>
-                    <Tooltip label={descFull} withArrow openDelay={200} position="top">
+                  <Flex justify="center" mt="xs">
+                    <Tooltip label={isFullPublished} withArrow openDelay={200} position="top">
                       <Badge
-                        color={pubVal === 'public' ? 'green' : 'gray'}
+                        color={section.published ? 'green' : 'gray'}
                         variant="light"
-
-                        title={descFull}
+                        title={isFullPublished}
                         style={{ cursor: 'help' }}
                       >
-                        {descFull}
+                        {isFullPublished}
                       </Badge>
                     </Tooltip>
-                  </div>
+                  </Flex>
                 </Table.Td>
 
                 <Table.Td w={180} ta="center">
@@ -199,6 +191,7 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
           })}
         </Table.Tbody>
       </Table>
+      <TimeSetting />
     </Table.ScrollContainer>
   );
 };
