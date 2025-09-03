@@ -6,10 +6,8 @@ interface Assignment {
   assignment_id: string;
   assignment_name: string;
   assignment_description: string;
-  grading_type: string;
   group_submitted: boolean;
   late_submitted: boolean;
-  published: boolean;
   regrades: boolean;
   submitted_by: string;
 }
@@ -17,6 +15,7 @@ interface Assignment {
 interface AssignmentSections {
   section_id: string;
   section_name: string;
+  published: boolean;
   release_date: string | null;
   due_date: string | null;
   cut_off_date: string | null;
@@ -46,6 +45,7 @@ export const useFetchAssignmentSetting = (course_id: string, assignment_id: stri
       const assignmentSectionsData = assignment_sections.map((AssignmentSections: AssignmentSections) => ({
         section_id: AssignmentSections.section_id,
         section_name: AssignmentSections.section_name,
+        published: AssignmentSections.published,
         release_date: AssignmentSections.release_date,
         due_date: AssignmentSections.due_date,
         cut_off_date: AssignmentSections.cut_off_date,
@@ -55,10 +55,8 @@ export const useFetchAssignmentSetting = (course_id: string, assignment_id: stri
         assignment_id: assignment.assignment_id,
         assignment_name: assignment.assignment_name,
         assignment_description: assignment.assignment_description,
-        grading_type: assignment.grading_type,
         group_submitted: assignment.group_submitted,
         late_submitted: assignment.late_submitted,
-        published: assignment.published,
         regrades: assignment.regrades,
         submitted_by: assignment.submitted_by,
       };
@@ -72,9 +70,7 @@ export const useFetchAssignmentSetting = (course_id: string, assignment_id: stri
         assignmentName: assignment.assignment_name,
         assignmentDescription: assignment.assignment_description,
         submittedBy: assignment.submitted_by,
-        scoringMethod: assignment.grading_type,
         lateSubmitted: assignment.late_submitted,
-        published: assignment.published,
         regrades: assignment.regrades,
         groupSubmitted: assignment.group_submitted,
         releaseDate: release ? release.toISOString() : null,
