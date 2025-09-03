@@ -109,7 +109,8 @@ func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 	})
 }
 
-func (h *HttpInstructorHandler) UpdateAssignmentAndAssignmentSection(c *fiber.Ctx) error {
+// ! new version: update assignment
+func (h *HttpInstructorHandler) UpdateAssignmentSetting(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
 	if err != nil {
@@ -131,7 +132,6 @@ func (h *HttpInstructorHandler) UpdateAssignmentAndAssignmentSection(c *fiber.Ct
 	assignmentName := c.FormValue("assignment_name")
 	assignmentDescription := c.FormValue("assignment_description")
 	submittedBy := c.FormValue("submitted_by")
-	gradingType := c.FormValue("grading_type")
 	lateSubmittedStr := c.FormValue("late_submitted")
 	lateSubmitted, err := strconv.ParseBool(lateSubmittedStr)
 	if err != nil {
@@ -148,14 +148,6 @@ func (h *HttpInstructorHandler) UpdateAssignmentAndAssignmentSection(c *fiber.Ct
 			"error":   err.Error(),
 		})
 	}
-	publishGradesStr := c.FormValue("published")
-	publishGrades, err := strconv.ParseBool(publishGradesStr)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid published value",
-			"error":   err.Error(),
-		})
-	}
 	regradesStr := c.FormValue("regrades")
 	regrades, err := strconv.ParseBool(regradesStr)
 	if err != nil {
@@ -169,11 +161,40 @@ func (h *HttpInstructorHandler) UpdateAssignmentAndAssignmentSection(c *fiber.Ct
 		AssignmentName:        assignmentName,
 		AssignmentDescription: assignmentDescription,
 		SubmittedBy:           submittedBy,
-		GradingType:           gradingType,
 		LateSubmitted:         lateSubmitted,
 		GroupSubmitted:        groupSubmitted,
-		Published:             publishGrades,
 		Regrades:              regrades,
+	}
+
+	if err := h.services.UpdateAssignmentSetting(courseID, assignmentID, &assignment); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to update assignment settings",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Assignment and sections were updated successfully",
+	})
+}
+
+func (h *HttpInstructorHandler) UpdateAssignmentTimeSetting(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
 	}
 
 	sectionsData := c.FormValue("sections")
@@ -235,15 +256,15 @@ func (h *HttpInstructorHandler) UpdateAssignmentAndAssignmentSection(c *fiber.Ct
 			section.SectionID, section.ReleaseDate, section.DueDate, section.CutOffDate)
 	}
 
-	if err := h.services.UpdateAssignmentAndAssignmentSection(courseID, assignmentID, &assignment, sections); err != nil {
+	if err := h.services.UpdateAssignmentTimeSettings(courseID, assignmentID, sections); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to update assignment and sections",
+			"message": "Failed to update assignment time settings",
 			"error":   err.Error(),
 		})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Assignment and sections were updated successfully",
+		"message": "Assignments time settings were updated successfully",
 	})
 }
 
