@@ -1,10 +1,12 @@
+'use client'
 import React from 'react';
 import { Text, Loader, MultiSelect } from '@mantine/core';
-import { useFetchAssignmentSections } from '../../../hooks/AssignmentSetting/useFetchAssignmentSections';
-import { useAssignmentSettingStore, useModalAssignmentSettingStore } from '../../../store/modal/useAssignmentSettingModal';
+import { useFetchAssignmentSections } from '@/hooks/AssignmentSetting/useFetchAssignmentSections';
+import { useAssignmentSettingStore } from '@/store/modal/useAssignmentSettingModal';
+import { useModalAssignmentTimeSettingStore } from '@/store/modal/useAssignmentTimeSettingModal';
 
 const SectionEditAssignment: React.FC = () => {
-  const { assignment_id } = useModalAssignmentSettingStore(state => state);
+  const { assignment_id } = useModalAssignmentTimeSettingStore();
   const { data: sections, isLoading, error } = useFetchAssignmentSections(assignment_id);
   const { selectedSectionIDs, setSectionIDs } = useAssignmentSettingStore();
 
