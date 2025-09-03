@@ -16,7 +16,8 @@ type InstructorRepository interface {
 	FindFileFormSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, err error)
 
 	AddAssignmentFile(file *models.AssignmentFile) error
-	ModifyAssignmentAndAssignmentSection(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment, sections []models.AssignmentSection) error
+	ModifyAssignmentSetting(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment) error
+	ModifyAssignmentTimeSettings(CourseID uuid.UUID, AssignmentID uuid.UUID, sections []models.AssignmentSection) error
 
 	// CRUD operations for Roster of a course
 	FindRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
