@@ -167,7 +167,7 @@ export const INSSubmissions = () => {
                   )}
                 </Table.Td>
                 <Table.Td>
-                  {submission.student_code === "" ? (
+                  {submission.full_name === "" ? (
                     <Text c="dimmed" size="sm">
                       -
                     </Text>
@@ -177,7 +177,7 @@ export const INSSubmissions = () => {
                 </Table.Td>
 
                 <Table.Td pl={24}>
-                  {submission.student_code === "" ? (
+                  {submission.section_name === "" ? (
                     <Text c="dimmed" size="sm">
                       -
                     </Text>
