@@ -100,7 +100,6 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
               <Table.Th ta="center">Late</Table.Th>
               <Table.Th ta="center">% Submission</Table.Th>
               <Table.Th ta="center">% Graded</Table.Th>
-              <Table.Th ta="center">Published</Table.Th>
               <Table.Th ta="center">Regrades</Table.Th>
             </Table.Tr>
           </Table.Thead>
@@ -152,7 +151,6 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
                   </Table.Td>
                   <Table.Td ta="center">0</Table.Td>
                   <Table.Td ta="center">0%</Table.Td>
-                  <Table.Td ta="center">{assignment.published ? 'Yes' : 'No'}</Table.Td>
                   <Table.Td ta="center">{assignment.regrades ? 'Yes' : 'No'}</Table.Td>
                 </Table.Tr>
               ))}
