@@ -26,7 +26,8 @@ type InstructorService interface {
 	GetPDFTemplateWithURL(CourseID uuid.UUID, AssignmentID uuid.UUID) (templateURL string, err error)
 	GetFileFormSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, fileURLs []string, err error)
 
-	UpdateAssignmentAndAssignmentSection(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment, sections []models.AssignmentSection) error
+	UpdateAssignmentSetting(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment) error
+	UpdateAssignmentTimeSettings(CourseID uuid.UUID, AssignmentID uuid.UUID, sections []models.AssignmentSection) error
 
 	// CRUD operations for Roster
 	GetRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
@@ -273,8 +274,12 @@ func (s *InstructorServiceImpl) GetProcessLeftSideBarData(CourseID uuid.UUID, As
 	return assignment, nil
 }
 
-func (s *InstructorServiceImpl) UpdateAssignmentAndAssignmentSection(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment, sections []models.AssignmentSection) error {
-	return s.repo.ModifyAssignmentAndAssignmentSection(CourseID, AssignmentID, assignment, sections)
+func (s *InstructorServiceImpl) UpdateAssignmentSetting(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment) error {
+	return s.repo.ModifyAssignmentSetting(CourseID, AssignmentID, assignment)
+}
+
+func (s *InstructorServiceImpl) UpdateAssignmentTimeSettings(CourseID uuid.UUID, AssignmentID uuid.UUID, sections []models.AssignmentSection) error {
+	return s.repo.ModifyAssignmentTimeSettings(CourseID, AssignmentID, sections)
 }
 
 // Get instructors and students by course id
