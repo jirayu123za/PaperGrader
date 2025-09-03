@@ -43,46 +43,31 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
     formData.append('assignment_description', values.assignment_description);
     formData.append('submitted_by', values.submitted_by);
     formData.append('sections', selectedSections.join(','));
-
-
+    
     const toUpload: File[] = [...files];
-
-
-    if (
-      templateFile &&
-      !toUpload.some(
-        (f) => f === templateFile || (f.name === templateFile.name && f.size === templateFile.size)
-      )
-    ) {
+    if (templateFile && !toUpload.some((f) => f === templateFile || (f.name === templateFile.name && f.size === templateFile.size))) {
       toUpload.push(templateFile);
     }
 
     if (toUpload.length === 0) {
       notifications.show({
         title: 'No file',
-        message: 'กรุณาอัปโหลดอย่างน้อย 1 ไฟล์ (เช่น Template)',
+        message: 'Please upload at least 1 file (e.g. Template)',
         color: 'red',
       });
       return;
     }
 
-
     toUpload.forEach((file, index) => {
-      const isTemplate =
-        !!templateFile &&
-        (file === templateFile ||
-          (file.name === templateFile.name && file.size === templateFile.size));
-
+      const isTemplate = !!templateFile && (file === templateFile || (file.name === templateFile.name && file.size === templateFile.size));
       formData.append(`is_template[${index}]`, isTemplate ? 'true' : 'false');
       formData.append('files', file);
-
       notifications.show({
         title: isTemplate ? 'Template added' : 'File added',
         message: file.name,
         color: 'green',
       });
     });
-
 
     mutate(
       { formData, course_id: Array.isArray(course_id) ? course_id[0] : course_id || '' },
