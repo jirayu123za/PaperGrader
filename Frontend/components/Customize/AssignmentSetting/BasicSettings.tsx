@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react';
-import { TextInput, Checkbox, Radio, Select, Flex, Text, Loader, Box, Tooltip, ActionIcon } from '@mantine/core';
+import { TextInput, Flex, Text, Loader, Box, Tooltip, ActionIcon } from '@mantine/core';
 import { Editor } from '../../Create/Editor.tsx/AssignmentEditor';
 import { useAssignmentSettingFormStore, useAssignmentSettingStore } from '@/store/modal/useAssignmentSettingModal';
 import { FaSlidersH } from 'react-icons/fa';
@@ -9,7 +9,7 @@ import { FaSlidersH } from 'react-icons/fa';
 const BasicSettings: React.FC = () => {
     const { values, reset } = useAssignmentSettingFormStore();
     const { showToolbar, toggleToolbar } = useAssignmentSettingStore();
-    const [isLoading, setIsLoading] = React.useState(true);
+    const [ isLoading, setIsLoading ] = React.useState(true);
       
     React.useEffect(() => {
         const timer = setTimeout(() => setIsLoading(false), 400);
@@ -55,83 +55,6 @@ const BasicSettings: React.FC = () => {
                     </Flex>
                     <Editor/>                        
                 </Flex>
-
-                <Radio.Group
-                    label="Who will upload submissions?"
-                    required
-                    value={values.submittedBy}
-                    onChange={(value) => 
-                        useAssignmentSettingFormStore.getState().setField('submittedBy', value)
-                    }
-                >
-                    <Flex gap="md" pt={4}>
-                        <Radio value="instructor" label="Instructor" />
-                        <Radio value="student" label="Student" />
-                    </Flex>
-                </Radio.Group>
-                <Select
-                    label="Scoring Method"
-                    placeholder="Select Default Scoring Method"
-                    clearable
-                    data={[
-                        { value: 'negative', label: 'Negative scoring' },
-                        { value: 'positive', label: 'Positive scoring' },
-                    ]}
-                    value={values.scoringMethod}
-                    onChange={(value) => useAssignmentSettingFormStore.getState().setField('scoringMethod', value || '')}
-                />
-                <Checkbox.Group label="Other Settings">
-                    <Flex direction="column" gap={4} mt={4}>
-                        <Checkbox
-                            label="Allow Late Submissions"
-                            value="lateSubmitted"
-                            checked={values.lateSubmitted}
-                            onChange={(event) => 
-                                useAssignmentSettingFormStore.getState().setField('lateSubmitted', event.currentTarget.checked)
-                            }
-                        />
-                        <Checkbox
-                            label="Published"
-                            value="published"
-                            checked={values.published}
-                            onChange={(event) => 
-                                useAssignmentSettingFormStore.getState().setField('published', event.currentTarget.checked)
-                            }
-                        />
-                        <Checkbox
-                            value="enableRegrades"
-                            label="Enable Regrades"
-                            checked={values.regrades}
-                            onChange={(event) => 
-                                useAssignmentSettingFormStore.getState().setField('regrades', event.currentTarget.checked)
-                            }
-                        />
-                    </Flex>
-                </Checkbox.Group>
-                <Checkbox.Group label="Group Settings">
-                    {/* Checkbox for Group Submission */}
-                    <Checkbox
-                        mt={4}
-                        value="groupSubmitted"
-                        label="Enable Group Submission"
-                        checked={values.groupSubmitted}
-                        onChange={(event) => 
-                            useAssignmentSettingFormStore.getState().setField('groupSubmitted', event.currentTarget.checked)
-                        }
-                    />
-
-                    {/* show TextInput when Group Submission opened */}
-                    {values.groupSubmitted && (
-                        <TextInput
-                            label="Limit Group Size"
-                            placeholder="Enter max group size"
-                            mt="md"
-                            value={values.groupSizeLimit}
-                            onChange={(event) => useAssignmentSettingFormStore.getState().setField('groupSizeLimit', event.currentTarget.value)}
-                            type="number"
-                        />
-                    )}
-                </Checkbox.Group>                    
             </Flex>
         </Box>
     );
