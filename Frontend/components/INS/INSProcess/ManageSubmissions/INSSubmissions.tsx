@@ -157,9 +157,34 @@ export const INSSubmissions = () => {
           <Table.Tbody>
             {paginatedData.map((submission) => (
               <Table.Tr key={submission.submission_id}>
-                <Table.Td>{submission.student_code}</Table.Td>
-                <Table.Td>{submission.full_name}</Table.Td>
-                <Table.Td pl={24}>{submission.section_name}</Table.Td>
+                <Table.Td>
+                  {submission.student_code === "" ? (
+                    <Text c="dimmed" size="sm">
+                      -
+                    </Text>
+                  ) : (
+                    submission.student_code
+                  )}
+                </Table.Td>
+                <Table.Td>
+                  {submission.student_code === "" ? (
+                    <Text c="dimmed" size="sm">
+                      -
+                    </Text>
+                  ) : (
+                    submission.full_name
+                  )}
+                </Table.Td>
+
+                <Table.Td pl={24}>
+                  {submission.student_code === "" ? (
+                    <Text c="dimmed" size="sm">
+                      -
+                    </Text>
+                  ) : (
+                    submission.section_name
+                  )}
+                </Table.Td>
                 <Table.Td>{new Date(submission.submitted_at).toLocaleString()}</Table.Td>
                 <Table.Td>
                   <ActionIcon
