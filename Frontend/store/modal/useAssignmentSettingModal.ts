@@ -66,15 +66,11 @@ type AssignmentFormValues = {
     assignmentName: string;
     assignmentDescription: string;
     submittedBy: string;
-    scoringMethod: string;
     lateSubmitted: boolean;
     published: boolean;
     regrades: boolean;
-    rubricVisibility: string;
     groupSubmitted: boolean;
     groupSizeLimit: string;
-    studentVisibility: string;
-    rubricSelectionStyle: string;
     releaseDate: string | null;
     dueDate: string | null;
     cutOffDate: string | null;
@@ -93,6 +89,7 @@ interface AssignmentFormStore {
 interface AssignmentSections {
     section_id: string;
     section_name: string;
+    published: boolean;
     release_date: string | null;
     due_date: string | null;
     cut_off_date: string | null;
@@ -103,15 +100,11 @@ export const useAssignmentSettingFormStore = create<AssignmentFormStore>((set) =
         assignmentName: '',
         assignmentDescription: '',
         submittedBy: '',
-        scoringMethod: '',
         lateSubmitted: false,
         published: false,
         regrades: false,
         groupSubmitted: false,
         groupSizeLimit: '',
-        rubricVisibility: '',
-        studentVisibility: '',
-        rubricSelectionStyle: '',
         releaseDate: null,
         dueDate: null,
         cutOffDate: null,
@@ -134,15 +127,11 @@ export const useAssignmentSettingFormStore = create<AssignmentFormStore>((set) =
                 assignmentName: '',
                 assignmentDescription: '',
                 submittedBy: '',
-                scoringMethod: '',
                 lateSubmitted: false,
                 published: false,
                 regrades: false,
                 groupSubmitted: false,
                 groupSizeLimit: '',
-                rubricVisibility: '',
-                studentVisibility: '',
-                rubricSelectionStyle: '',
                 releaseDate: null,
                 dueDate: null,
                 cutOffDate: null,
