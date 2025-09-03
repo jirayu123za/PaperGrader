@@ -1,13 +1,13 @@
 'use client'
 
 import React from 'react'
-import { Checkbox, Flex, Loader, Radio } from '@mantine/core'
+import { Checkbox, Divider, Flex, Loader, Radio, TextInput } from '@mantine/core'
 import { useAssignmentSettingFormStore } from '@/store/modal/useAssignmentSettingModal';
 
 export const SubmissionSettings = () => {
   const { values, reset } = useAssignmentSettingFormStore();
-  const [isLoading, setIsLoading] = React.useState(true);
-    
+  const [ isLoading, setIsLoading ] = React.useState(true);
+
   React.useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 400);
     return () => clearTimeout(timer);
@@ -22,25 +22,66 @@ export const SubmissionSettings = () => {
   }
 
   return (
-    <Flex direction="column" gap="xs" ml='md' h='600px'>
+    <Flex direction="column" gap="xs" h='600px'>
       <Radio.Group
-        label="Submission Type"
+        label="Who will upload submissions?"
         required
         value={values.submittedBy}
         onChange={(value) => 
-          useAssignmentSettingFormStore.getState().setField('submittedBy', value)
+            useAssignmentSettingFormStore.getState().setField('submittedBy', value)
         }
       >
-        <Radio value="variable" label="Variable length" mt={4} />
-        <Radio value="fixed" label="Templated (fixed length)" mt={4} />
+        <Flex gap="xl" pt={4}>
+          <Radio value="instructor" label="Instructor" />
+          <Radio value="student" label="Student" />
+        </Flex>
       </Radio.Group>
-      <Checkbox.Group label="Template Visibility">
+
+      <Divider label="Group submission" labelPosition="left" mt="xs"/>
+
+      {/* Checkbox for Group Submission */}
+      <Flex direction="column">
         <Checkbox
-          mt={4}
-          value="false"
-          label="Allow students to view and download the template"
+          mt={2}
+          value="groupSubmitted"
+          label="Enable group submission"
+          checked={values.groupSubmitted}
+          onChange={(event) => 
+            useAssignmentSettingFormStore.getState().setField('groupSubmitted', event.currentTarget.checked)
+          }
         />
-      </Checkbox.Group>
+        {/* show TextInput when Group Submission opened */}
+        {values.groupSubmitted && (
+          <TextInput
+            label="Limit Group Size"
+            placeholder="Enter max group size"
+            mt="xs"
+            value={values.groupSizeLimit}
+            onChange={(event) => useAssignmentSettingFormStore.getState().setField('groupSizeLimit', event.currentTarget.value)}
+            type="number"
+          />
+        )}
+      </Flex>
+
+      <Divider label="Other settings" labelPosition="left" mt="xs"/>
+
+      {/* Other Settings */}
+      <Flex direction="column" gap={4} mt={2}>
+        <Checkbox
+          label="Allow Late Submissions"
+          checked={!!values.lateSubmitted}
+          onChange={(e) =>
+            useAssignmentSettingFormStore.getState().setField('lateSubmitted', e.currentTarget.checked)
+          }
+        />
+        <Checkbox
+          label="Enable Regrades"
+          checked={!!values.regrades}
+          onChange={(e) =>
+            useAssignmentSettingFormStore.getState().setField('regrades', e.currentTarget.checked)
+          }
+        />
+      </Flex>
     </Flex>
   )
 }
