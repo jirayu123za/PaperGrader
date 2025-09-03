@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
-import CustomizeTime from './AssignmentSetting/CustomizeTime';
+import React from 'react';
 import BasicSettings from './AssignmentSetting/BasicSettings';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
@@ -13,13 +12,11 @@ import { LuPenLine, LuClock } from 'react-icons/lu';
 import { GrShareOption } from 'react-icons/gr';
 import { FiEye } from 'react-icons/fi';
 import { useParams } from 'next/navigation';
-import { useAssignmentSettingFormStore, useAssignmentSettingStore, useModalAssignmentSettingStore } from '../../store/modal/useAssignmentSettingModal';
-import { useFetchAssignmentSetting } from '../../hooks/AssignmentSetting/useFetchAssignmentSetting';
-import { useUpdateAssignment } from '../../hooks/AssignmentSetting/useUpdateAssignment';
-import { SubmissionSettings } from './AssignmentSetting/SubmissionSettings';
-import { GradingDefault } from './AssignmentSetting/GradingDefault';
-import { RubricSettings } from './AssignmentSetting/RubricSettings';
-import { StudentVisibility } from './AssignmentSetting/StudentVisibility';
+import { useAssignmentSettingFormStore, useModalAssignmentSettingStore } from '@/store/modal/useAssignmentSettingModal';
+import { useFetchAssignmentSetting } from '@/hooks/AssignmentSetting/useFetchAssignmentSetting';
+import { useUpdateAssignment } from '@/hooks/AssignmentSetting/useUpdateAssignment';
+import { SubmissionSettings } from '@/components/Customize/AssignmentSetting/SubmissionSettings';
+import { notifications } from '@mantine/notifications';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.tz.setDefault("Asia/Bangkok"); 
@@ -30,8 +27,7 @@ const AssignmentSetting: React.FC = () => {
   const { assignment_id, opened, closeModal } = useModalAssignmentSettingStore();
   const { isLoading } = useFetchAssignmentSetting(course_id as string, assignment_id as string);
   const { mutate: updateAssignment, isPending } = useUpdateAssignment();
-
-  const [activeTab, setActiveTab] = useState<string | null>('basic-settings');
+  const { values, reset } = useAssignmentSettingFormStore();
 
   const icons = {
     bin: <RiDeleteBinLine />,
@@ -43,52 +39,44 @@ const AssignmentSetting: React.FC = () => {
     clock: <LuClock />,
   };
   
-  const { selectedSectionIDs } = useAssignmentSettingStore();
-  const { values, reset } = useAssignmentSettingFormStore();
-  
   const handleUpdateSettings = () => {
     const formData = new FormData();
-
     formData.append('assignment_name', values.assignmentName);
     formData.append('assignment_description', values.assignmentDescription);
     formData.append('submitted_by', values.submittedBy);
-    formData.append('grading_type', values.scoringMethod);
     formData.append('late_submitted', values.lateSubmitted ? 'true' : 'false');
     formData.append('group_submitted', values.groupSubmitted ? 'true' : 'false');
-    formData.append('published', values.published ? 'true' : 'false');
     formData.append('regrades', values.regrades ? 'true' : 'false');
-    formData.append('release_date', values.releaseDate ? dayjs(values.releaseDate).tz().format() : '');
-    formData.append('due_date', values.dueDate ? dayjs(values.dueDate).tz().format() : '');
-    formData.append('cut_off_date', values.cutOffDate ? dayjs(values.cutOffDate).tz().format() : '');
-    formData.append('sections', JSON.stringify(selectedSectionIDs));
 
     console.log('assignment_name:', values.assignmentName);
     console.log('assignment_description:', values.assignmentDescription);
     console.log('submitted_by:', values.submittedBy);
-    console.log('grading_type:', values.scoringMethod);
     console.log('late_submitted:', values.lateSubmitted);
     console.log('group_submitted:', values.groupSubmitted);
-    console.log('published:', values.published);
     console.log('regrades:', values.regrades);
-    console.log('release_date:', values.releaseDate ? dayjs(values.releaseDate).tz().format() : '');
-    console.log('due_date:', values.dueDate ? dayjs(values.dueDate).tz().format() : '');
-    console.log('cut_off_date:', values.cutOffDate ? dayjs(values.cutOffDate).tz().format() : '');
-    console.log('sections:', JSON.stringify(selectedSectionIDs));
 
     updateAssignment(
       { formData, course_id: course_id as string, assignment_id: assignment_id as string },
       {
         onSuccess: () => {
-          console.log('Assignment updated successfully');
+          notifications.show({
+            title: 'Success',
+            message: 'Assignment updated successfully',
+            color: 'green',
+          });
           reset();
           closeModal();
         },
         onError: (error) => {
-          console.error('Failed to update assignment:', error);
+          notifications.show({
+              title: 'Upload Failed',
+              message: `${error.response?.data?.error}`,
+              color: 'red',
+          });
+          closeModal();
         },
       }
     );
-    closeModal();
   };
 
   return (
@@ -99,7 +87,8 @@ const AssignmentSetting: React.FC = () => {
         closeModal();
       }}
       title="Edit assignment"
-      size="xl"
+      size="55rem"
+      h="auto"
       overlayProps={{ opacity: 0.55, blur: 3 }}
     >
       <form 
@@ -108,48 +97,24 @@ const AssignmentSetting: React.FC = () => {
           handleUpdateSettings();
         }}
       >
-        <Tabs keepMounted={false} orientation="vertical" defaultValue="basic-settings" color="violet" value={activeTab} onChange={setActiveTab}>
+        <Tabs keepMounted={false} orientation="vertical" defaultValue="basic-settings" color="violet">
           <Flex w="100%" h="100%" gap="xs">
             <Tabs.List>
               <Tabs.Tab value="basic-settings" leftSection={icons.settings} classNames={{ tabLabel: 'flex justify-start text-left w-full' }}>
                 Basic Settings
               </Tabs.Tab>
-              <Tabs.Tab value="customize-time" leftSection={icons.clock} classNames={{ tabLabel: 'flex justify-start text-left w-full' }}>
-                Time Setting
-              </Tabs.Tab>
               <Tabs.Tab value="submission-settings" leftSection={icons.paper} classNames={{ tabLabel: 'flex justify-start text-left w-full' }}>
                 Submission Settings
-              </Tabs.Tab>
-              <Tabs.Tab value="grading-defaults" leftSection={icons.choice} classNames={{ tabLabel: 'flex justify-start text-left w-full' }}>
-                Grading Defaults
-              </Tabs.Tab>
-              <Tabs.Tab value="rubric-settings" leftSection={icons.pen} classNames={{ tabLabel: 'flex justify-start text-left w-full' }}>
-                Rubric Settings
-              </Tabs.Tab>
-              <Tabs.Tab value="student-visibility" leftSection={icons.eye} classNames={{ tabLabel: 'flex justify-start text-left w-full' }}>
-                Student Visibility
               </Tabs.Tab>
             </Tabs.List>          
 
             <Flex direction="column" w="100%" ml="md" mt="md">
               {/* Panels */}
               <Tabs.Panel value="basic-settings">
-                {activeTab === 'basic-settings' && <BasicSettings />}
-              </Tabs.Panel>
-              <Tabs.Panel value="customize-time">
-                {activeTab === 'customize-time' && <CustomizeTime />}
+                <BasicSettings />
               </Tabs.Panel>
               <Tabs.Panel value="submission-settings">
-                {activeTab === 'submission-settings' && <SubmissionSettings />}
-              </Tabs.Panel>
-              <Tabs.Panel value="grading-defaults">
-                {activeTab === 'grading-defaults' && <GradingDefault />}
-              </Tabs.Panel>
-              <Tabs.Panel value="rubric-settings">
-                {activeTab === 'rubric-settings' && <RubricSettings />}
-              </Tabs.Panel>
-              <Tabs.Panel value="student-visibility">
-                {activeTab === 'student-visibility' && <StudentVisibility />}
+                <SubmissionSettings />
               </Tabs.Panel>
 
               {/* Button Group - directly below content */}
