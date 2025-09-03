@@ -3,7 +3,6 @@ import { create } from "zustand";
 interface ActiveAssignments {
     assignment_id: string;
     assignment_name: string;
-    published: boolean;
     regrades: boolean;
     assignment_release_date: string;
     assignment_due_date: string;
