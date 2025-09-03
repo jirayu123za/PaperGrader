@@ -27,7 +27,6 @@ interface AssignmentsList {
   assignment_id: string;
   assignment_name: string;
   assignment_sections: AssignmentsSectionList[];
-  published: boolean;
   regrades: boolean;
   submitted_by: string;
 }
@@ -35,11 +34,12 @@ interface AssignmentsList {
 interface AssignmentsSectionList {
   assignment_id: string;
   assignment_section_id: string;
+  section_id: string;
+  section_name: string;
+  published: boolean;
   release_date: string | null;
   due_date: string | null;
   cut_off_date: string | null;
-  section_id: string;
-  section_name: string;
 }
 
 interface AssignmentsListTableStore {
