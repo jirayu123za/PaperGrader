@@ -70,14 +70,28 @@ func (r *GormInstructorRepository) AddAssignmentWithFiles(CourseID uuid.UUID, as
 	})
 }
 
-func (r *GormInstructorRepository) ModifyAssignmentAndAssignmentSection(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment, sections []models.AssignmentSection) error {
+func (r *GormInstructorRepository) ModifyAssignmentSetting(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
-		if result := tx.Model(&models.Assignment{}).
-			Where("course_id = ? AND assignment_id = ?", CourseID, AssignmentID).
-			Updates(assignment); result.Error != nil {
-			return result.Error
+		updates := map[string]interface{}{
+			"assignment_name":        assignment.AssignmentName,
+			"assignment_description": assignment.AssignmentDescription,
+			"submitted_by":           assignment.SubmittedBy,
+			"late_submitted":         assignment.LateSubmitted,
+			"group_submitted":        assignment.GroupSubmitted,
+			"regrades":               assignment.Regrades,
 		}
 
+		if err := tx.Model(&models.Assignment{}).
+			Where("course_id = ? AND assignment_id = ? AND deleted_at IS NULL", CourseID, AssignmentID).
+			Updates(updates).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (r *GormInstructorRepository) ModifyAssignmentTimeSettings(CourseID uuid.UUID, AssignmentID uuid.UUID, sections []models.AssignmentSection) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
 		var existingAssignmentSections []models.AssignmentSection
 		if err := tx.Where("assignment_id = ?", AssignmentID).
 			Find(&existingAssignmentSections).Error; err != nil {
@@ -662,7 +676,7 @@ func (r *GormInstructorRepository) FindInsAssignmentByCourseID(CourseID uuid.UUI
 
 	if err := r.db.
 		Table("assignments").
-		Select("DISTINCT ON (assignments.assignment_id) assignments.assignment_id, assignments.assignment_name, assignments.submitted_by, assignments.published, assignments.regrades, assignment_sections.release_date AS assignment_release_date, assignment_sections.due_date AS assignment_due_date").
+		Select("DISTINCT ON (assignments.assignment_id) assignments.assignment_id, assignments.assignment_name, assignments.submitted_by, assignments.regrades, assignment_sections.release_date AS assignment_release_date, assignment_sections.due_date AS assignment_due_date").
 		Joins("LEFT JOIN assignment_sections ON assignments.assignment_id = assignment_sections.assignment_id AND assignment_sections.deleted_at IS NULL").
 		Where("assignments.course_id = ? AND assignments.deleted_at IS NULL", CourseID).
 		Find(&assignments).Error; err != nil {
@@ -674,7 +688,7 @@ func (r *GormInstructorRepository) FindInsAssignmentByCourseID(CourseID uuid.UUI
 
 		if err := r.db.
 			Table("assignment_sections").
-			Select("assignment_sections.assignment_id, assignment_sections.assignment_section_id, assignment_sections.release_date, assignment_sections.due_date, assignment_sections.cut_off_date, sections.section_id, sections.section_name").
+			Select("assignment_sections.assignment_id, assignment_sections.assignment_section_id, assignment_sections.published, assignment_sections.release_date, assignment_sections.due_date, assignment_sections.cut_off_date, sections.section_id, sections.section_name").
 			Joins("LEFT JOIN sections ON assignment_sections.section_id = sections.section_id").
 			Where("assignment_sections.assignment_id = ?", assignments[i].AssignmentID).
 			Find(&assignmentSections).Error; err != nil {
@@ -706,7 +720,7 @@ func (r *GormInstructorRepository) FindActiveAssignmentsByCourseID(CourseID uuid
 
 	if err := r.db.
 		Table("assignments").
-		Select("DISTINCT ON (assignments.assignment_id) assignments.assignment_id, assignments.assignment_name, assignments.assignment_description, assignments.submitted_by, assignments.published, assignments.regrades, assignments.created_at, assignment_sections.release_date AS assignment_release_date, assignment_sections.due_date AS assignment_due_date, assignment_sections.cut_off_date AS assignment_cut_off_date").
+		Select("DISTINCT ON (assignments.assignment_id) assignments.assignment_id, assignments.assignment_name, assignments.assignment_description, assignments.submitted_by, assignments.regrades, assignments.created_at, assignment_sections.release_date AS assignment_release_date, assignment_sections.due_date AS assignment_due_date, assignment_sections.cut_off_date AS assignment_cut_off_date").
 		Joins("JOIN assignment_sections ON assignments.assignment_id = assignment_sections.assignment_id").
 		Where(`
 			assignment_sections.release_date <= ?
@@ -729,7 +743,7 @@ func (r *GormInstructorRepository) FindAssignmentSettingsDetail(CourseID uuid.UU
 
 	if err := r.db.
 		Table("assignments").
-		Select("assignment_id, assignment_name, assignment_description, submitted_by, grading_type, late_submitted, published, regrades, group_submitted").
+		Select("assignment_id, assignment_name, assignment_description, submitted_by, late_submitted, regrades, group_submitted").
 		Where("course_id = ? AND assignment_id = ? AND deleted_at IS NULL", CourseID, AssignmentID).
 		First(&assignment).Error; err != nil {
 		return nil, err
@@ -739,7 +753,7 @@ func (r *GormInstructorRepository) FindAssignmentSettingsDetail(CourseID uuid.UU
 
 	if err := r.db.
 		Table("assignment_sections").
-		Select("assignment_section_id, release_date, due_date, cut_off_date, sections.section_id, sections.section_name").
+		Select("assignment_section_id, published, release_date, due_date, cut_off_date, sections.section_id, sections.section_name").
 		Joins("LEFT JOIN sections ON assignment_sections.section_id = sections.section_id").
 		Where("assignment_sections.assignment_id = ?", AssignmentID).
 		Find(&assignmentSections).Error; err != nil {
