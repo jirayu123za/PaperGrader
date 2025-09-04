@@ -9,7 +9,10 @@ import { useAssignmentSettingStore } from '@/store/modal/useAssignmentSettingMod
 import { IconSettings, IconTrash } from '@tabler/icons-react';
 import { useAssignmentSectionStore } from '@/store/table/useAssignmentsListStore';
 import { useModalAssignmentTimeSettingStore } from '@/store/modal/useAssignmentTimeSettingModal';
+import { useUpdateAssignmentPublished } from '@/hooks/AssignmentSetting/useUpdateAssignmentPublished';
 import { TimeSetting } from '@/components/Customize/TimeSetting';
+import { notifications } from '@mantine/notifications';
+import { useParams } from 'next/navigation';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -32,9 +35,12 @@ type Props = {
 };
 
 const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
+  const params = useParams();
+  const course_id = params?.course_id as string;
   const { openModal } = useModalAssignmentTimeSettingStore();
   const { addAssignmentSectionIDs, removeAssignmentSectionIDs, removeAssignmentID, setAssignmentID, selectedAssignmentSectionIDs } = useAssignmentSectionStore();
   const { selectedSectionIDs, setSectionIDs } = useAssignmentSettingStore();
+  const { mutate: updateAssignmentPublished, isPending } = useUpdateAssignmentPublished();
   const [ isLoading, setIsLoading ] = React.useState(true);
 
   React.useEffect(() => {
@@ -59,6 +65,28 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
       setSectionIDs(selectedSectionIDs.filter(id => !toRemove.has(id)));
       removeAssignmentID(assignment.assignment_id);
     }
+  };
+
+  const handleUpdateAssignmentPublished = (assignmentID: string, assignmentSectionID: string, sectionID: string, published: boolean) => {
+    updateAssignmentPublished(
+      { course_id: course_id as string, body: { assignment_id: assignmentID, assignment_section_id: assignmentSectionID, section_id: sectionID, published } },
+      {
+        onSuccess: () => {
+          notifications.show({
+            title: 'Success',
+            message: 'Assignment section publication status updated',
+            color: 'green',
+          });
+        },
+        onError: (error) => {
+          notifications.show({
+            title: 'Upload Failed',
+            message: `${error.response?.data?.error}`,
+            color: 'red',
+          });
+        },
+      }
+    );
   };
 
   if (isLoading) {
@@ -150,11 +178,21 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
                 <Table.Td ta="center">
                   <SegmentedControl
                     size="xs"
+                    disabled={isPending} 
                     value={section.published ? 'public' : 'private'}
                     data={[
                       { label: 'Public', value: "public" },
                       { label: 'Private', value: "private" },
                     ]}
+                    onChange={(val) => {
+                      const next = val === 'public';
+                        handleUpdateAssignmentPublished(
+                          assignment.assignment_id,
+                          section.assignment_section_id,
+                          section.section_id,
+                          next
+                        );
+                    }}
                   />
 
                   <Flex justify="center" mt="xs">
