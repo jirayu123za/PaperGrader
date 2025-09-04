@@ -595,3 +595,12 @@ type GradeSubQuestionJSON struct {
 	SubQuestionID string            `json:"sub_question_id"`
 	Rubrics       *RubricsBlockJSON `json:"rubrics,omitempty"`
 }
+
+// Part:1 Assignment settings
+// ---- JSON structs for publish status ----
+type UpdateAssignmentPublishedRequest struct {
+	AssignmentID        uuid.UUID `json:"assignment_id"`
+	AssignmentSectionID uuid.UUID `json:"assignment_section_id"`
+	SectionID           uuid.UUID `json:"section_id"`
+	Published           bool      `json:"published"`
+}

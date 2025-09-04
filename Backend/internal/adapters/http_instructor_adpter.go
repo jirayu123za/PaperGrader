@@ -268,6 +268,36 @@ func (h *HttpInstructorHandler) UpdateAssignmentTimeSetting(c *fiber.Ctx) error 
 	})
 }
 
+func (h *HttpInstructorHandler) UpdateAssignmentPublished(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	var request response.UpdateAssignmentPublishedRequest
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request body",
+			"error":   err.Error(),
+		})
+	}
+
+	if err := h.services.UpdateAssignmentPublished(courseID, request); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to update assignment published status",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Assignment published status was updated successfully",
+	})
+}
+
 func (h *HttpInstructorHandler) GetPDFTemplateWithURL(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)

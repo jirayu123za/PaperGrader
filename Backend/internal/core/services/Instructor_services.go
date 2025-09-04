@@ -28,6 +28,7 @@ type InstructorService interface {
 
 	UpdateAssignmentSetting(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment) error
 	UpdateAssignmentTimeSettings(CourseID uuid.UUID, AssignmentID uuid.UUID, sections []models.AssignmentSection) error
+	UpdateAssignmentPublished(CourseID uuid.UUID, payload response.UpdateAssignmentPublishedRequest) error
 
 	// CRUD operations for Roster
 	GetRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
@@ -280,6 +281,10 @@ func (s *InstructorServiceImpl) UpdateAssignmentSetting(CourseID uuid.UUID, Assi
 
 func (s *InstructorServiceImpl) UpdateAssignmentTimeSettings(CourseID uuid.UUID, AssignmentID uuid.UUID, sections []models.AssignmentSection) error {
 	return s.repo.ModifyAssignmentTimeSettings(CourseID, AssignmentID, sections)
+}
+
+func (s *InstructorServiceImpl) UpdateAssignmentPublished(CourseID uuid.UUID, payload response.UpdateAssignmentPublishedRequest) error {
+	return s.repo.ModifyAssignmentPublished(CourseID, payload)
 }
 
 // Get instructors and students by course id

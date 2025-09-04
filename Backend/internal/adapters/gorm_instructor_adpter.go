@@ -125,6 +125,46 @@ func (r *GormInstructorRepository) ModifyAssignmentTimeSettings(CourseID uuid.UU
 	})
 }
 
+func (r *GormInstructorRepository) ModifyAssignmentPublished(CourseID uuid.UUID, payload response.UpdateAssignmentPublishedRequest) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		var cnt int64
+		if err := tx.Table("assignments").
+			Where("assignment_id = ? AND course_id = ? AND deleted_at IS NULL", payload.AssignmentID, CourseID).
+			Count(&cnt).Error; err != nil {
+			return err
+		}
+		if cnt == 0 {
+			return gorm.ErrRecordNotFound
+		}
+
+		cnt = 0
+		if err := tx.Table("sections").
+			Where("section_id = ? AND course_id = ? AND deleted_at IS NULL", payload.SectionID, CourseID).
+			Count(&cnt).Error; err != nil {
+			return err
+		}
+		if cnt == 0 {
+			return gorm.ErrRecordNotFound
+		}
+
+		updates := map[string]interface{}{
+			"published":  payload.Published,
+			"updated_at": time.Now(),
+		}
+
+		txq := tx.Model(&models.AssignmentSection{}).
+			Where("assignment_section_id = ? AND assignment_id = ? AND section_id = ? AND deleted_at IS NULL", payload.AssignmentSectionID, payload.AssignmentID, payload.SectionID).
+			Updates(updates)
+		if txq.Error != nil {
+			return txq.Error
+		}
+		if txq.RowsAffected == 0 {
+			return gorm.ErrRecordNotFound
+		}
+		return nil
+	})
+}
+
 func (r *GormInstructorRepository) FindAssignmentNameTemplate(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileName string, err error) {
 	var assignmentFile models.AssignmentFile
 	if err := r.db.Table("assignment_files").
