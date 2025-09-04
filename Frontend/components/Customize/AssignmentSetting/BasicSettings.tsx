@@ -18,14 +18,14 @@ const BasicSettings: React.FC = () => {
     
     if (isLoading) {
         return (
-            <Flex justify="center" align="center" py="md" h='600px'>
+            <Flex justify="center" align="center" py="md" h='500px'>
                 <Loader color="blue" />
             </Flex>
         );
     }
     
     return (
-        <Box mih={600}>
+        <Box mih={500}>
             <Flex direction="column" gap="md">
                 <TextInput
                     label="Assignment Name"

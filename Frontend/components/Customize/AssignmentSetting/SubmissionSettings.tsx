@@ -15,14 +15,14 @@ export const SubmissionSettings = () => {
   
   if (isLoading) {
     return (
-      <Flex justify="center" align="center" py="md" h='600px'>
+      <Flex justify="center" align="center" py="md" h='500px'>
         <Loader color="blue" />
       </Flex>
     );
   }
 
   return (
-    <Flex direction="column" gap="xs" h='600px'>
+    <Flex direction="column" gap="xs" h='500px'>
       <Radio.Group
         label="Who will upload submissions?"
         required
