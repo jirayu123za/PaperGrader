@@ -32,12 +32,13 @@ const createRubric = async ({ assignment_id, question_id, sub_question_id, rubri
     return response.data;
 };
 
-export const useCreateRubric = (assignment_id: string) => {
+export const useCreateRubric = (assignment_id: string, submission_id: string) => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: createRubric,
         onSuccess: (data, variables) => {
             queryClient.invalidateQueries({ queryKey: ['rubric', assignment_id, variables.question_id, variables.sub_question_id] });
+            queryClient.invalidateQueries({ queryKey: ["rubric_grader", assignment_id, submission_id, variables.question_id, variables.sub_question_id] });
         },
         onError: (error) => {
         },

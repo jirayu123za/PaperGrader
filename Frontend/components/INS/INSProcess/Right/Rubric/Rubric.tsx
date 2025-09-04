@@ -37,10 +37,10 @@ export const Rubric = () => {
     const { questions, selectedQuestion, defaultSelectedQuestion } = useQuestionStore();
     const { isLoading: isLoadingQuestions, data: questionsData } = useFetchQuestion(assignment_id);
     const { isLoading: isLoadingRubric, data: data } = useFetchRubric(assignment_id);
-    const { mutate: createRubric, isPending: isPendingCreate } = useCreateRubric(assignment_id);
-    const { mutate: deleteRubric, isPending: isPendingDelete } = useDeleteRubric(assignment_id);
-    const { mutate: updateRubric, isPending: isPendingUpdate } = useUpdateRubric(assignment_id);
-    const { mutate: updateRubricsIndexes, isPending: isPendingUpdateIndexes } = useUpdateRubricsIndexes(assignment_id);
+    const { mutate: createRubric, isPending: isPendingCreate } = useCreateRubric(assignment_id, params.submission_id as string);
+    const { mutate: deleteRubric, isPending: isPendingDelete } = useDeleteRubric(assignment_id, params.submission_id as string);
+    const { mutate: updateRubric, isPending: isPendingUpdate } = useUpdateRubric(assignment_id, params.submission_id as string);
+    const { mutate: updateRubricsIndexes, isPending: isPendingUpdateIndexes } = useUpdateRubricsIndexes(assignment_id, params.submission_id as string);
     const { rubricData, setRubricData, rubrics, setRubrics, editingRubricID, setEditingRubricID, editingDescriptionID, setEditingDescriptionID } = useRubricStore();
     const target = selectedQuestion ?? defaultSelectedQuestion;
 

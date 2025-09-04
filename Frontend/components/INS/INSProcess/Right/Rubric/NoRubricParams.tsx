@@ -11,7 +11,7 @@ export const NoRubricParams = () => {
   const assignment_id = params.assignment_id as string;
   const question_id = params.question_id as string;
   const sub_question_id = params.sub_question_id as string | undefined;
-  const { mutate: createRubric, isPending } = useCreateRubric(assignment_id);
+  const { mutate: createRubric, isPending } = useCreateRubric(assignment_id , params.submission_id as string);
 
   const handleCreateRubric = () => {
     createRubric({ 

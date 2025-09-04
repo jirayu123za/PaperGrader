@@ -5,14 +5,16 @@ import { Flex, Image, Button, Text } from '@mantine/core'
 import { FaPlus } from 'react-icons/fa'
 import { useQuestionStore } from '@/store/question/useQuestionStore'
 import { useCreateRubric } from '@/hooks/Rubric/useCreateRubric'
+import { useParams } from 'next/navigation'
 
 type Props = {
     assignment_id: string;
 }
 
 export const NoRubric = ({ assignment_id }: Props) => {
+  const params = useParams();
   const { selectedQuestion, defaultSelectedQuestion } = useQuestionStore();
-  const { mutate: createRubric, isPending } = useCreateRubric(assignment_id);
+  const { mutate: createRubric, isPending } = useCreateRubric(assignment_id, params.submission_id as string);
   const target = selectedQuestion ?? defaultSelectedQuestion;
 
   const handleCreateRubric = () => {

@@ -213,13 +213,16 @@ const GradePdfViewer: React.FC = () => {
       style={{
         position: "relative",
         height: "100vh",
+        width: "100%",
         padding: 0,
       }}
     >
       <div
         style={{
-          overflow: "visible",
+          // overflow: "visible",
+          overflow: "hidden",
           height: "100%",
+          width: "100%",
           cursor: isDragging.current ? "grabbing" : "grab",
           display: "flex",
           alignItems: "flex-start",
@@ -254,7 +257,7 @@ const GradePdfViewer: React.FC = () => {
       <div
         style={{
           position: "absolute",
-          bottom: "10px",
+          bottom: "50px",
           right: "10px",
           display: "flex",
           gap: "0.5rem",

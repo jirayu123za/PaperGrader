@@ -21,7 +21,7 @@ export const useFetchRubricParams = (assignment_id: string, submission_id: strin
     const setRubricData = useRubricGradeStore((state) => state.setRubricData);
 
     return useQuery<Rubric, Error>({
-        queryKey: ["rubric", assignment_id, submission_id, question_id, sub_question_id],
+        queryKey: ["rubric_grader", assignment_id, submission_id, question_id, sub_question_id],
         queryFn: async () => {
             const response = await axios.get("/api/api/instructor/rubric/graded", {
                 params: {
