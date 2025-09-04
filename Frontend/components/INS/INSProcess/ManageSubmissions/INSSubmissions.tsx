@@ -118,7 +118,7 @@ export const INSSubmissions = () => {
         <Text size="lg" fw={500}>
           Submissions list
         </Text>
-        <Text size="sm" c="dimmed" mb="md">
+        <Text size="sm" c="dimmed">
           View and manage all student submissions for this assignment.
         </Text>
       </Flex>
@@ -144,7 +144,7 @@ export const INSSubmissions = () => {
             disabled={submissions.length === 0 || isLoading }
           />        
         </Flex> */}
-        <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
+        <Table highlightOnHover verticalSpacing="xs" horizontalSpacing="lg">
           <Table.Thead className='bg-gray-100'>
             <Table.Tr>
               <Table.Th>Student ID</Table.Th>
