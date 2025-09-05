@@ -3,14 +3,19 @@ import { create } from "zustand";
 interface SubmissionsResponse {
     submission_id: string;
     user_name: {
-        first_name: string;
-        last_name: string;
-        email: string;
+        first_name: string | null;
+        last_name: string | null;
+        email: string | null;
     };
-    section_name: string;
-    graded_by: string;
-    score: number;
+    section_name: string | null;
+    graded_by: string | null;
+    score: number | null;
     grade_status: boolean;
+}
+
+interface QuestionDataResponse {
+    question_title: string;
+    question_point: number;
 }
 
 interface Submissions {
@@ -20,6 +25,9 @@ interface Submissions {
 interface SubmissionsStore {
     submissions: Submissions | null;
     setSubmissions: (submissions: Submissions) => void;
+
+    questionData: QuestionDataResponse | null;
+    setQuestionData: (data: QuestionDataResponse | null) => void;
 
     searchTerm: string;
     setSearchTerm: (term: string) => void;
@@ -34,6 +42,9 @@ interface SubmissionsStore {
 export const useSubmissionsStore = create<SubmissionsStore>((set) => ({
     submissions: null,
     setSubmissions: (submissions) => set({ submissions }),
+
+    questionData: null,
+    setQuestionData: (data) => set({ questionData: data }),
 
     searchTerm: '',
     setSearchTerm: (term) => set({ searchTerm: term }),

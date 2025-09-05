@@ -8,14 +8,14 @@ export const metadata = {
 };
 
 export default async function SubmissionsMainQuestionsPage({ params }: { 
-  params: Promise<{ course_id: string; assignment_id: string; question_id: string }>
+  params: Promise<{ course_id: string; assignment_id: string; question_id: string; sub_question_id: string; }>
 }) {
-  const { course_id, assignment_id, question_id } = await params;
+  const { course_id, assignment_id, question_id, sub_question_id } = await params;
 
   return (
     <>
       <Suspense fallback={<Loader size="sm" />}>
-        <MainQuestionsListClient course_id={course_id} assignment_id={assignment_id} question_id={question_id} />
+        <MainQuestionsListClient course_id={course_id} assignment_id={assignment_id} question_id={question_id} sub_question_id={sub_question_id} />
       </Suspense>    
     </>
   )

@@ -10,17 +10,17 @@ import { useRouter } from 'next/navigation';
 import { IconArrowBigDown, IconArrowBigUp, IconFilter, IconSearch } from "@tabler/icons-react";
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
 
-export default function MainQuestionsListClient({ course_id, assignment_id, question_id }: { course_id: string; assignment_id: string; question_id: string; }) {
+export default function MainQuestionsListClient({ course_id, assignment_id, question_id, sub_question_id }: { course_id: string; assignment_id: string; question_id: string; sub_question_id: string; }) {
   const router = useRouter();
   const viewPort = useRef<HTMLDivElement>(null);
-  const { isLoading, data: submissionsData } = useFetchSubmissionsFromQuestion(course_id, assignment_id);
-  const { submissions, searchTerm, setSearchTerm, selectedSections, setSelectedSections, selectedGradeStatuses, setSelectedGradeStatuses } = useSubmissionsStore();
+  const { isLoading, data } = useFetchSubmissionsFromQuestion(course_id, assignment_id, question_id, sub_question_id);
+  const { submissions, questionData, searchTerm, setSearchTerm, selectedSections, setSelectedSections, selectedGradeStatuses, setSelectedGradeStatuses } = useSubmissionsStore();
   const scrollToBottom = () => viewPort.current!.scrollTo({ top: viewPort.current!.scrollHeight, behavior: 'smooth' });
   const scrollToTop = () => viewPort.current!.scrollTo({ top: 0, behavior: 'smooth' });
   
   const [opened, { open, close, toggle }] = useDisclosure(false);
   const sectionOptions = Array.from(new Set(submissions?.submissions
-    .map((s) => s.section_name).filter(Boolean)))
+    .map((s) => s.section_name).filter((name): name is string => typeof name === 'string' && name.length > 0)))
     .map((section) => ({
       value: section,
       label: section,
@@ -36,11 +36,11 @@ export default function MainQuestionsListClient({ course_id, assignment_id, ques
   const [debouncedSearch] = useDebouncedValue(searchTerm, 100);
   const filteredSubmissions = submissions?.submissions.filter((submission) => {
     const matchesSearch = debouncedSearch
-      ? submission.user_name?.first_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        submission.user_name?.last_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        submission.user_name?.email.toLowerCase().includes(debouncedSearch.toLowerCase())
+      ? (submission.user_name?.first_name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+         submission.user_name?.last_name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+         submission.user_name?.email?.toLowerCase().includes(debouncedSearch.toLowerCase()))
       : true;
-    const matchesSection = selectedSections.length === 0 || selectedSections.includes(submission.section_name);
+    const matchesSection = selectedSections.length === 0 || (submission.section_name !== null && selectedSections.includes(submission.section_name));
     const statusString = submission.grade_status ? "graded" : "ungraded";
     const matchesStatus = selectedGradeStatuses.length === 0 || selectedGradeStatuses.includes(statusString);
     return matchesSearch && matchesSection && matchesStatus;
@@ -54,9 +54,9 @@ export default function MainQuestionsListClient({ course_id, assignment_id, ques
             Submissions list
           </Text>
           <Text size="sm" c="dimmed">
-            Select a submission to grade the Question 1:{' '}
+            Select a submission to grade question titled:{' '}
             <Text component="span" c="black" size="md" fw={500}>
-              Mock question 1
+              {questionData?.question_title || 'Loading...'}
             </Text>.
           </Text>
         </Flex>
@@ -169,9 +169,9 @@ export default function MainQuestionsListClient({ course_id, assignment_id, ques
                         )}
                       </Table.Td>
                       <Table.Td>{submission.user_name?.email || null}</Table.Td>
-                      <Table.Td ta='center'>{submission.graded_by}</Table.Td>
-                      <Table.Td ta='center'>{submission.section_name}</Table.Td>
-                      <Table.Td ta='center'>{submission.score.toFixed(2)}</Table.Td>
+                      <Table.Td ta='center'>{submission.graded_by || null}</Table.Td>
+                      <Table.Td ta='center'>{submission.section_name || null}</Table.Td>
+                      <Table.Td ta='center'>{submission.score?.toFixed(2) || null}</Table.Td>
                       <Table.Td ta='center' align="center">
                         {submission.grade_status ? (
                           <Flex justify="center" align="center">
