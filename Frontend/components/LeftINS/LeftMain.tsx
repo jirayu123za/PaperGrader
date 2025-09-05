@@ -237,20 +237,10 @@ export default function LeftMain() {
         )}
       </Stack>
 
-      <Divider
-        style={{
-          backgroundColor: '#E9E9E9',
-          display: isCollapsed ? 'none' : 'block'
-        }}
-        size="xs"
-      />
-
       {/* Account Section */}
-      <Stack pb={0.75}>
+      <Stack>
         <AccountMenu isCollapsed={isCollapsed} />
       </Stack>
-
-
     </div>
   );
 }

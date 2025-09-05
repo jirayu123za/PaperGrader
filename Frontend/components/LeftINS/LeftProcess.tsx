@@ -315,7 +315,7 @@ export default function LeftProcess() {
       </Stack>
 
       {/* Account Section */}
-      <Stack pb={0.75}>
+      <Stack>
         <AccountMenu isCollapsed={isCollapsed} />
       </Stack>
     </Container>

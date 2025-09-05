@@ -29,6 +29,7 @@ export default function AccountMenu({ isCollapsed }: AccountMenuProps) {
           h={40}
           variant="default"
           fullWidth
+          radius="0"
           color="black"
           leftSection={iconFaUserCircle}
           rightSection={!isCollapsed ? (isCollapsed ? null : iconRiArrowDownSFill) : undefined}
