@@ -2012,7 +2012,31 @@ func (h *HttpInstructorHandler) GetSubmissionsFromQuestion(c *fiber.Ctx) error {
 		})
 	}
 
-	submissions, err := h.services.GetSubmissionsFromQuestion(courseID, assignmentID)
+	questionIDParam := c.Query("question_id")
+	questionID, err := uuid.Parse(questionIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid questionID",
+			"error":   err.Error(),
+		})
+	}
+
+	subQuestionIDParam := c.Query("sub_question_id")
+	var subQuestionID *uuid.UUID
+	if subQuestionIDParam != "" {
+		id, err := uuid.Parse(subQuestionIDParam)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"message": "Invalid sub_question_id",
+				"error":   err.Error(),
+			})
+		}
+		if id != uuid.Nil {
+			subQuestionID = &id
+		}
+	}
+
+	submissions, err := h.services.GetSubmissionsFromQuestion(courseID, assignmentID, questionID, subQuestionID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to get submissions from question",
@@ -2020,9 +2044,18 @@ func (h *HttpInstructorHandler) GetSubmissionsFromQuestion(c *fiber.Ctx) error {
 		})
 	}
 
+	questionTitleAndQuestionPoint, err := h.services.GetQuestionTitleAndQuestionPoint(assignmentID, questionID, subQuestionID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get question title",
+			"error":   err.Error(),
+		})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":          "Submissions from question are retrieved",
 		"submissions_list": submissions,
+		"question_data":    questionTitleAndQuestionPoint,
 	})
 }
 

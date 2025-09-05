@@ -484,29 +484,58 @@ type RubricDetailWithScoreBounds struct {
 	HasFloor   bool   `json:"has_floor"`
 }
 
-// Query submissions from question
+// Part 1: Query submissions from question
 type SubmissionsFromQuestionResponse struct {
 	SubmissionID uuid.UUID        `json:"submission_id"`
 	UserName     FullNameAndEmail `json:"user_name"`
-	SectionName  string           `json:"section_name"`
-	// Under line: This mock data
-	GradedBy    string `json:"graded_by"`
-	Score       int    `json:"score"`
-	GradeStatus bool   `json:"grade_status"`
+	SectionName  *string          `json:"section_name"`
+	GradedBy     *string          `json:"graded_by"`
+	Score        *float64         `json:"score"`
+	GradeStatus  bool             `json:"grade_status"`
 }
 
 type FullNameAndEmail struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
+	FirstName *string `json:"first_name"`
+	LastName  *string `json:"last_name"`
+	Email     *string `json:"email"`
 }
 
-type SubmissionsFromQuestionRaw struct {
-	SubmissionID uuid.UUID `json:"submission_id"`
-	FirstName    string    `json:"first_name"`
-	LastName     string    `json:"last_name"`
-	Email        string    `json:"email"`
-	SectionName  string    `json:"section_name"`
+type GradeDataJSON struct {
+	QuestionsData []questionJSON `json:"questions_data"`
+}
+
+type questionJSON struct {
+	QuestionID   string            `json:"question_id"`
+	Grades       *gradesJSON       `json:"grades,omitempty"`
+	Rubrics      *rubricsJSON      `json:"rubrics,omitempty"`
+	SubQuestions []subQuestionJSON `json:"sub_questions,omitempty"`
+}
+
+type subQuestionJSON struct {
+	SubQuestionID string       `json:"sub_question_id"`
+	Grades        *gradesJSON  `json:"grades,omitempty"`
+	Rubrics       *rubricsJSON `json:"rubrics,omitempty"`
+}
+
+type gradesJSON struct {
+	GradedAt  *string `json:"graded_at,omitempty"`
+	GradedBy  *string `json:"graded_by,omitempty"`
+	HasGraded bool    `json:"has_graded"`
+}
+
+type rubricsJSON struct {
+	RubricDetails []rubricDetailJSON `json:"rubric_details"`
+}
+
+type rubricDetailJSON struct {
+	HasSelected bool    `json:"has_selected"`
+	RubricPoint float64 `json:"rubric_point"`
+}
+
+// Part 2: Query submissions from question
+type QuestionTitleAndQuestionPointResponse struct {
+	QuestionTitle string  `json:"question_title"`
+	QuestionPoint float64 `json:"question_point"`
 }
 
 // Query bounding boxes data

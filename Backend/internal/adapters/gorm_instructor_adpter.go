@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"math/rand"
 	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
@@ -2237,9 +2236,7 @@ func (r *GormInstructorRepository) ModifyRubricDataOrHardDelete(assignmentID uui
 }
 
 // R submissions from question
-func (r *GormInstructorRepository) FindSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error) {
-	var rawResults []response.SubmissionsFromQuestionRaw
-
+func (r *GormInstructorRepository) FindSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID, questionID uuid.UUID, subQuestionID *uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error) {
 	subq := r.db.
 		Table("submissions AS s").
 		Select(`
@@ -2252,7 +2249,7 @@ func (r *GormInstructorRepository) FindSubmissionsFromQuestion(courseID uuid.UUI
 				PARTITION BY
 				  CASE
 					WHEN s.submitted_by = u.user_id THEN s.belongs_to
-					ELSE s.submission_id
+				  	ELSE s.submission_id
 				  END
 				ORDER BY s.submitted_at DESC
 			) AS rn
@@ -2261,41 +2258,235 @@ func (r *GormInstructorRepository) FindSubmissionsFromQuestion(courseID uuid.UUI
 		Joins(`LEFT JOIN users u ON u.email = p.email AND u.deleted_at IS NULL`).
 		Where(`s.assignment_id = ? AND s.deleted_at IS NULL`, assignmentID)
 
+	type row struct {
+		SubmissionID uuid.UUID      `gorm:"column:submission_id"`
+		FirstName    *string        `gorm:"column:first_name"`
+		LastName     *string        `gorm:"column:last_name"`
+		Email        *string        `gorm:"column:email"`
+		SectionName  *string        `gorm:"column:section_name"`
+		GradeData    datatypes.JSON `gorm:"column:grade_data"`
+	}
+
+	var rows []row
 	err := r.db.
 		Table("(?) AS s", subq).
+		Joins(`LEFT JOIN personal_data p ON p.personal_data_id = s.belongs_to AND p.deleted_at IS NULL`).
+		Joins(`LEFT JOIN enrollment_lists el ON el.personal_data_id = p.personal_data_id AND el.course_id::uuid = ? AND el.deleted_at IS NULL`, courseID).
+		Joins(`LEFT JOIN sections sec ON sec.section_id = el.section_id AND sec.deleted_at IS NULL`).
+		Joins(`LEFT JOIN grades g ON g.submission_id = s.submission_id AND g.deleted_at IS NULL`).
+		Joins(`JOIN rubrics rb ON rb.assignment_id = s.assignment_id AND rb.deleted_at IS NULL`).
+		Where(`s.rn = 1`).
 		Select(`
 			s.submission_id,
 			p.first_name,
 			p.last_name,
 			p.email,
-			sec.section_name
+			sec.section_name,
+			g.grade_data
 		`).
-		Joins(`LEFT JOIN personal_data p ON p.personal_data_id = s.belongs_to AND p.deleted_at IS NULL`).
-		Joins(`LEFT JOIN enrollment_lists el ON el.personal_data_id = p.personal_data_id AND el.course_id = ? AND el.deleted_at IS NULL`, courseID).
-		Joins(`LEFT JOIN sections sec ON sec.section_id = el.section_id AND sec.deleted_at IS NULL`).
-		Where(`s.rn = 1`).
 		Order(`s.submitted_at ASC`).
-		Scan(&rawResults).Error
+		Scan(&rows).Error
 	if err != nil {
 		return nil, err
 	}
 
-	var results []response.SubmissionsFromQuestionResponse
-	for _, r := range rawResults {
+	results := make([]response.SubmissionsFromQuestionResponse, 0, len(rows))
+	type name struct{ First, Last string }
+	needGraders := map[uuid.UUID]struct{}{}
+
+	gradeFor := func(gj datatypes.JSON) (hasGraded bool, score *float64, graderID *uuid.UUID) {
+		if len(gj) == 0 {
+			return false, nil, nil
+		}
+
+		var g response.GradeDataJSON
+		if err := json.Unmarshal(gj, &g); err != nil {
+			return false, nil, nil
+		}
+
+		qID := questionID.String()
+		for _, q := range g.QuestionsData {
+			if q.QuestionID != qID {
+				continue
+			}
+			if subQuestionID != nil {
+				sqID := subQuestionID.String()
+				for _, sq := range q.SubQuestions {
+					if sq.SubQuestionID != sqID {
+						continue
+					}
+
+					if sq.Grades != nil {
+						hasGraded = sq.Grades.HasGraded
+						if sq.Grades.GradedBy != nil {
+							if gid, err := uuid.Parse(*sq.Grades.GradedBy); err == nil {
+								graderID = &gid
+								needGraders[gid] = struct{}{}
+							}
+						}
+					}
+
+					if sq.Rubrics != nil && hasGraded {
+						var sum float64
+						for _, rd := range sq.Rubrics.RubricDetails {
+							if rd.HasSelected {
+								sum += rd.RubricPoint
+							}
+						}
+						score = &sum
+					}
+					return
+				}
+				return false, nil, nil
+			}
+
+			if q.Grades != nil {
+				hasGraded = q.Grades.HasGraded
+				if q.Grades.GradedBy != nil {
+					if gid, err := uuid.Parse(*q.Grades.GradedBy); err == nil {
+						graderID = &gid
+						needGraders[gid] = struct{}{}
+					}
+				}
+			}
+
+			if q.Rubrics != nil && hasGraded {
+				var sum float64
+				for _, rd := range q.Rubrics.RubricDetails {
+					if rd.HasSelected {
+						sum += rd.RubricPoint
+					}
+				}
+				score = &sum
+			}
+			return
+		}
+		return false, nil, nil
+	}
+
+	for _, rrow := range rows {
+		hasGraded, scorePtr, _ := gradeFor(rrow.GradeData)
 		results = append(results, response.SubmissionsFromQuestionResponse{
-			SubmissionID: r.SubmissionID,
+			SubmissionID: rrow.SubmissionID,
 			UserName: response.FullNameAndEmail{
-				FirstName: r.FirstName,
-				LastName:  r.LastName,
-				Email:     r.Email,
+				FirstName: rrow.FirstName,
+				LastName:  rrow.LastName,
+				Email:     rrow.Email,
 			},
-			SectionName: r.SectionName,
-			GradedBy:    utils.RandomGrader(),
-			Score:       rand.Intn(100),
-			GradeStatus: rand.Intn(2) == 1,
+			SectionName: rrow.SectionName,
+			GradedBy:    nil,
+			Score:       scorePtr,
+			GradeStatus: hasGraded,
 		})
 	}
+
+	if len(needGraders) > 0 {
+		ids := make([]uuid.UUID, 0, len(needGraders))
+		for id := range needGraders {
+			ids = append(ids, id)
+		}
+
+		type userRow struct {
+			UserID    uuid.UUID `gorm:"column:user_id"`
+			FirstName *string   `gorm:"column:first_name"`
+			LastName  *string   `gorm:"column:last_name"`
+		}
+
+		var urows []userRow
+		if err := r.db.
+			Table("users").
+			Select("user_id, first_name, last_name").
+			Where("deleted_at IS NULL").
+			Where("user_id IN ?", ids).
+			Scan(&urows).Error; err != nil {
+		}
+
+		nameByID := make(map[uuid.UUID]name, len(urows))
+		for _, u := range urows {
+			f, l := "", ""
+			if u.FirstName != nil {
+				f = *u.FirstName
+			}
+			if u.LastName != nil {
+				l = *u.LastName
+			}
+			nameByID[u.UserID] = name{First: f, Last: l}
+		}
+
+		for i := range rows {
+			_, _, gid := gradeFor(rows[i].GradeData)
+			if gid == nil {
+				continue
+			}
+			if nm, ok := nameByID[*gid]; ok {
+				full := strings.TrimSpace(nm.First + " " + nm.Last)
+				if full != "" {
+					results[i].GradedBy = &full
+				}
+			}
+		}
+	}
+
 	return results, nil
+}
+
+func (r *GormInstructorRepository) FindQuestionTitleAndQuestionPoint(assignmentID uuid.UUID, questionID uuid.UUID, subQuestionID *uuid.UUID) (response.QuestionTitleAndQuestionPointResponse, error) {
+	var rubric struct {
+		RubricData datatypes.JSON `gorm:"column:rubric_data"`
+	}
+	if err := r.db.
+		Table("rubrics").
+		Select("rubric_data").
+		Where("assignment_id = ? AND deleted_at IS NULL", assignmentID).
+		Take(&rubric).Error; err != nil {
+		return response.QuestionTitleAndQuestionPointResponse{}, err
+	}
+
+	type rubricRoot struct {
+		QuestionsData []struct {
+			QuestionID    string  `json:"question_id"`
+			QuestionTitle string  `json:"question_title"`
+			QuestionPoint float64 `json:"question_point"`
+
+			SubQuestions []struct {
+				SubQuestionID    string  `json:"sub_question_id"`
+				SubQuestionTitle string  `json:"sub_question_title"`
+				SubQuestionPoint float64 `json:"sub_question_point"`
+			} `json:"sub_questions,omitempty"`
+		} `json:"questions_data"`
+	}
+
+	var data rubricRoot
+	if err := json.Unmarshal(rubric.RubricData, &data); err != nil {
+		return response.QuestionTitleAndQuestionPointResponse{}, err
+	}
+
+	qid := questionID.String()
+	for _, q := range data.QuestionsData {
+		if q.QuestionID != qid {
+			continue
+		}
+
+		if subQuestionID != nil {
+			sqid := subQuestionID.String()
+			for _, sq := range q.SubQuestions {
+				if sq.SubQuestionID == sqid {
+					return response.QuestionTitleAndQuestionPointResponse{
+						QuestionTitle: sq.SubQuestionTitle,
+						QuestionPoint: sq.SubQuestionPoint,
+					}, nil
+				}
+			}
+			return response.QuestionTitleAndQuestionPointResponse{}, gorm.ErrRecordNotFound
+		}
+
+		return response.QuestionTitleAndQuestionPointResponse{
+			QuestionTitle: q.QuestionTitle,
+			QuestionPoint: q.QuestionPoint,
+		}, nil
+	}
+
+	return response.QuestionTitleAndQuestionPointResponse{}, gorm.ErrRecordNotFound
 }
 
 // R Bounding Boxes data

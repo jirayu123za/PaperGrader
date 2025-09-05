@@ -105,7 +105,10 @@ type InstructorService interface {
 	// Part 1: Grade
 	CreateGrade(assignmentID uuid.UUID, submissionID uuid.UUID, request response.CreateGradeRequest, userID uuid.UUID) error
 	// R Submission from question
-	GetSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error)
+	GetSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID, questionID uuid.UUID, subQuestionID *uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error)
+	// R question title
+	GetQuestionTitleAndQuestionPoint(assignmentID uuid.UUID, questionID uuid.UUID, subQuestionID *uuid.UUID) (response.QuestionTitleAndQuestionPointResponse, error)
+
 	// R Bounding Boxes data
 	GetBoundingBoxesData(AssignmentID uuid.UUID) (response.BoundingBoxesDataResponse, error)
 
@@ -1800,12 +1803,21 @@ func (s *InstructorServiceImpl) GetRubricAfterGraded(assignmentID uuid.UUID, sub
 }
 
 // Submission from question
-func (s *InstructorServiceImpl) GetSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error) {
-	submissions, err := s.repo.FindSubmissionsFromQuestion(courseID, assignmentID)
+func (s *InstructorServiceImpl) GetSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID, questionID uuid.UUID, subQuestionID *uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error) {
+	submissions, err := s.repo.FindSubmissionsFromQuestion(courseID, assignmentID, questionID, subQuestionID)
 	if err != nil {
 		return nil, err
 	}
 	return submissions, nil
+}
+
+// Get Question Title
+func (s *InstructorServiceImpl) GetQuestionTitleAndQuestionPoint(assignmentID uuid.UUID, questionID uuid.UUID, subQuestionID *uuid.UUID) (response.QuestionTitleAndQuestionPointResponse, error) {
+	result, err := s.repo.FindQuestionTitleAndQuestionPoint(assignmentID, questionID, subQuestionID)
+	if err != nil {
+		return response.QuestionTitleAndQuestionPointResponse{}, err
+	}
+	return result, nil
 }
 
 // Get Bounding Boxes data

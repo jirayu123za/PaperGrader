@@ -105,7 +105,9 @@ type InstructorRepository interface {
 	FindRubricBySubQuestionID(AssignmentID uuid.UUID, QuestionID uuid.UUID, SubQuestionID *uuid.UUID) (response.RubricResponse, error)
 	ModifyRubricDataOrHardDelete(assignmentID uuid.UUID, rubricData json.RawMessage) error
 	// R submissions from question
-	FindSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error)
+	FindSubmissionsFromQuestion(courseID uuid.UUID, assignmentID uuid.UUID, questionID uuid.UUID, subQuestionID *uuid.UUID) ([]response.SubmissionsFromQuestionResponse, error)
+	// R question title
+	FindQuestionTitleAndQuestionPoint(assignmentID uuid.UUID, questionID uuid.UUID, subQuestionID *uuid.UUID) (response.QuestionTitleAndQuestionPointResponse, error)
 
 	// R Bounding Boxes data
 	FindBoundingBoxesData(AssignmentID uuid.UUID) (response.BoundingBoxesDataResponse, error)
