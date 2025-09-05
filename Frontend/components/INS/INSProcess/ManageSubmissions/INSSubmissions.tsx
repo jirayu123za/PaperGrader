@@ -54,6 +54,8 @@ export const INSSubmissions = () => {
     );
   };
 
+  const isBlank = (v?: string | null) => v == null || String(v).trim() === "";
+
   if (submissions.length === 0 && !isLoading) {
     return (
       <Flex direction="column" gap="sm" p="md">
@@ -155,49 +157,51 @@ export const INSSubmissions = () => {
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {paginatedData.map((submission) => (
-              <Table.Tr key={submission.submission_id}>
-                <Table.Td>
-                  {submission.student_code === "" ? (
-                    <Text c="dimmed" size="sm">
-                      -
-                    </Text>
-                  ) : (
-                    submission.student_code
-                  )}
-                </Table.Td>
-                <Table.Td>
-                  {submission.full_name === "" ? (
-                    <Text c="dimmed" size="sm">
-                      -
-                    </Text>
-                  ) : (
-                    submission.full_name
-                  )}
-                </Table.Td>
 
-                <Table.Td pl={24}>
-                  {submission.section_name === "" ? (
-                    <Text c="dimmed" size="sm">
-                      -
-                    </Text>
-                  ) : (
-                    submission.section_name
-                  )}
-                </Table.Td>
-                <Table.Td>{new Date(submission.submitted_at).toLocaleString()}</Table.Td>
-                <Table.Td>
-                  <ActionIcon
-                    variant="transparent"
-                    aria-label="view PDF" 
-                    onClick={() => 
-                      handleViewPDF(submission.submission_id)
-                    }>
-                    {icons.submissionFile}
-                  </ActionIcon>               
-                </Table.Td>
-              </Table.Tr>
-            ))}
+            {paginatedData.map((submission) => {
+              const emptyCode = isBlank(submission.student_code);
+              const emptyName = isBlank(submission.full_name);
+              const emptySection = isBlank(submission.section_name);
+              const allUnassigned = emptyCode && emptyName && emptySection;
+              const onlyCodeMissing = emptyCode && !emptyName && !emptySection;
+              
+              return (
+                <Table.Tr key={submission.submission_id}>
+                  <Table.Td>
+                    {allUnassigned ? (
+                      <Text c="dimmed" size="sm" fs="italic">
+                        Not assigned student to this submission
+                      </Text>
+                    ) : (
+                      onlyCodeMissing ? (
+                        <Text c="dimmed" size="sm" fs="italic">
+                          Not assigned student code
+                        </Text>
+                      ) : (
+                        submission.student_code
+                      )
+                    )}
+                  </Table.Td>
+                  <Table.Td>
+                    {emptyName ? "" : submission.full_name}
+                  </Table.Td>
+                  <Table.Td pl={24}>
+                    {emptySection ? "" : submission.section_name}
+                  </Table.Td>
+                  <Table.Td>{new Date(submission.submitted_at).toLocaleString()}</Table.Td>
+                  <Table.Td>
+                    <ActionIcon
+                      variant="transparent"
+                      aria-label="view PDF" 
+                      onClick={() => 
+                        handleViewPDF(submission.submission_id)
+                      }>
+                      {icons.submissionFile}
+                    </ActionIcon>               
+                  </Table.Td>
+                </Table.Tr>
+              );
+            })}
             {filteredSubmissions.length === 0 && (
               <Table.Tr>
                 <Table.Td colSpan={5} style={{ textAlign: 'center' }}>
