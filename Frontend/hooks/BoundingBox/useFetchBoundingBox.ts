@@ -5,6 +5,11 @@ import useBoundingBoxStore from '@/store/BoundingBox/useBoundingBoxStore';
 
 
 
+const BBOX_DELETE_METHOD = (process.env.NEXT_PUBLIC_BBOX_DELETE_METHOD ?? 'DELETE').toUpperCase();
+
+
+
+
 interface BoundingBox {
   bounding_box_id?: string;
   point_x: number;
@@ -210,8 +215,14 @@ export function useDeleteBoundingBox(assignment_id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (bounding_box_id: string) => {
-      const res = await axios.delete(`/api/api/instructor/boundingBoxes/${bounding_box_id}`);
-      return res.data;
+      if (BBOX_DELETE_METHOD === 'DELETE') {
+        const res = await axios.delete(`/api/api/instructor/boundingBoxes`, {
+          params: { assignment_id },
+          data: [bounding_box_id],
+          headers: { 'Content-Type': 'application/json' },
+        });
+        return res.data;
+      } 
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['boundingBoxes', assignment_id] });
@@ -255,23 +266,30 @@ export function mapRubricToQuestionsData(
 }
 
 
-export type DeletePair = { bounding_box_id: string; question_id: string | null };
+export type DeleteEntry = string;
 
-export function useBatchDeletePairs(assignment_id: string) {
+export function useBatchDeleteBoundingBoxes(assignment_id: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationKey: ['batchDeletePairs', assignment_id],
-    mutationFn: async (pairs: DeletePair[]) => {
-      const real = (pairs ?? []).filter((p) => p.bounding_box_id && !p.bounding_box_id.startsWith('temp-'));
+    mutationKey: ['batchDeleteBoundingBoxes', assignment_id],
+    mutationFn: async (ids: string[] | string) => {
+      const list = Array.isArray(ids) ? ids : [ids];
+      const real = (list ?? []).filter((id) => id && !String(id).startsWith('temp-'));
       if (real.length === 0) return null;
 
-      await Promise.all(
-        real.map((p) => axios.delete(`/api/api/instructor/boundingBoxes`, { params: { assignment_id, bounding_box_id: p.bounding_box_id, question_id: p.question_id ?? '' } }))
-      );
+      if (BBOX_DELETE_METHOD === 'DELETE') {
+        // Attempt DELETE with JSON array body
+        await axios.delete(`/api/api/instructor/boundingBoxes`, {
+          params: { assignment_id },
+          data: real,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } 
       return true;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['template', assignment_id] });
+      queryClient.invalidateQueries({ queryKey: ['boundingBoxes', assignment_id] });
     },
   });
 }

@@ -33,7 +33,7 @@ interface RubricData {
 
 
 
-type DeletePair = { bounding_box_id: string; question_id: string | null };
+type DeleteEntry = string;
 interface BoundingBoxStore {
   boundingBoxes: BoundingBox[];
   rubricData: RubricData;
@@ -47,8 +47,8 @@ interface BoundingBoxStore {
   removeQuestion: (id: string) => void;
   setBoundingBoxesFromAPI: (data: BoundingBox[]) => void;
   setRubricDataFromAPI: (questions: Question[]) => void;
-  pendingDeletes: DeletePair[];
-  markForDelete: (pair: DeletePair) => void;
+  pendingDeletes: DeleteEntry[];
+  markForDeleteBBox: (bounding_box_id: string) => void;
   clearPendingDeletes: () => void;
 
 }
@@ -219,8 +219,8 @@ setRubricDataFromAPI: (questions) =>
     })
 ,
 
-  markForDelete: (pair) =>
-    set((s) => ({ pendingDeletes: [...s.pendingDeletes, pair] })),
+  markForDeleteBBox: (id) =>
+    set((s) => ({ pendingDeletes: [...s.pendingDeletes, id] })),
 
   clearPendingDeletes: () => set({ pendingDeletes: [] }),
 

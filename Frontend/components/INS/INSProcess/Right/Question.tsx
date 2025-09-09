@@ -19,7 +19,7 @@ import {
   mapRubricToQuestionsData,
   useFetchTemplate,
 } from '@/hooks/BoundingBox/useFetchBoundingBox';
-import { useBatchDeletePairs, mapRubricToQuestionsDataDelta, mapBoundingBoxesToApiFormatNewOnly } from '@/hooks/BoundingBox/useFetchBoundingBox';
+import { useBatchDeleteBoundingBoxes, mapRubricToQuestionsDataDelta, mapBoundingBoxesToApiFormatNewOnly } from '@/hooks/BoundingBox/useFetchBoundingBox';
 import { mapBoundingBoxesToApiFormat } from '@/hooks/BoundingBox/useFetchBoundingBox';
 import { useParams } from 'next/navigation';
 import { useAssignmentLeftProcessStore } from '@/store/useLeftProcessStore';
@@ -29,12 +29,12 @@ import React from 'react';
 export default function QuestionOutline() {
   const params = useParams();
   const assignment_id = params.assignment_id as string;
-  const { rubricData, boundingBoxes, updateQuestion, removeQuestion, pendingDeletes, markForDelete, clearPendingDeletes} = useBoundingBoxStore();
+  const { rubricData, boundingBoxes, updateQuestion, removeQuestion, pendingDeletes, markForDeleteBBox, clearPendingDeletes} = useBoundingBoxStore();
   const hasName = React.useMemo(() => (boundingBoxes ?? []).some((b: any) => b.bounding_box_type === 'name'), [boundingBoxes]);
   const hasId   = React.useMemo(() => (boundingBoxes ?? []).some((b: any) => b.bounding_box_type === 'id'), [boundingBoxes]);
 
   const { mutateAsync: upsertAll, isPending: isUpserting } = useUpsertBoundingBoxesAndQuestions(assignment_id);
-  const { mutateAsync: batchDelete } = useBatchDeletePairs(assignment_id);
+  const { mutateAsync: batchDelete } = useBatchDeleteBoundingBoxes(assignment_id);
   const { assignmentLeftProcess } = useAssignmentLeftProcessStore();
   const { data: template, isFetching: isFetchingTemplate, refetch: refetchTemplate } = useFetchTemplate(assignment_id);
   const [isSaving, setIsSaving] = React.useState(false);
@@ -51,7 +51,7 @@ const calculateTotalPoints = () =>
  
   const queueDeleteQuestion = (q: any) => {
     if (q?.bounding_box_id) {
-      markForDelete({ bounding_box_id: q.bounding_box_id, question_id: q.question_id ?? null });
+      markForDeleteBBox(q.bounding_box_id);
     }
     removeQuestion(q.question_id);
   };
