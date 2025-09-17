@@ -117,8 +117,7 @@ const GradeBottomBar: React.FC = () => {
               rightSection={
                 <Group gap={4}>
                   <Kbd size="xs">{'<'}</Kbd>
-                    <Text size="xs">or</Text>
-                  <Kbd size="xs">,</Kbd>
+
                 </Group>
               }
             >
@@ -139,8 +138,6 @@ const GradeBottomBar: React.FC = () => {
               rightSection={
                 <Group gap={4}>
                   <Kbd size="xs">{'>'}</Kbd>
-                  <Text size="xs">or</Text>
-                  <Kbd size="xs">.</Kbd>
                 </Group>
               }
             >
@@ -160,8 +157,6 @@ const GradeBottomBar: React.FC = () => {
               aria-label="Next Ungraded (Shortcut: ? or /)"
               rightSection={
                 <Group gap={4}>
-                  <Kbd size="xs">?</Kbd>
-                  <Text size="xs">or</Text>
                   <Kbd size="xs">/</Kbd>
                 </Group>
               }
