@@ -33,7 +33,7 @@ type AssignmentSection struct {
 	AssignmentSectionID uuid.UUID  `json:"assignment_section_id"`
 	SectionID           uuid.UUID  `json:"section_id"`
 	SectionName         string     `json:"section_name"`
-	Published           bool       `json:"published"`
+	PublishedGrade      bool       `json:"published_grade"`
 	ReleaseDate         *time.Time `json:"release_date"`
 	DueDate             *time.Time `json:"due_date"`
 	CutOffDate          *time.Time `json:"cut_off_date"`
@@ -51,8 +51,9 @@ type AssignmentActiveResponse struct {
 	AssignmentDescription string     `json:"assignment_description"`
 	SubmittedBy           string     `json:"submitted_by"`
 	Regrades              bool       `json:"regrades"`
+	SectionName           string     `json:"section_name"`
 	CreatedAt             time.Time  `json:"created_at"`
-	AssignmentReleaseDate time.Time  `json:"assignment_release_date"`
+	AssignmentReleaseDate *time.Time `json:"assignment_release_date"`
 	AssignmentDueDate     *time.Time `json:"assignment_due_date"`
 	AssignmentCutOffDate  *time.Time `json:"assignment_cut_off_date"`
 }
@@ -62,7 +63,7 @@ type AssignmentsResponse struct {
 	AssignmentID          uuid.UUID  `json:"assignment_id"`
 	AssignmentName        string     `json:"assignment_name"`
 	SubmittedBy           string     `json:"submitted_by"`
-	Published             bool       `json:"published"`
+	PublishedGrade        bool       `json:"published_grade"`
 	Regrades              bool       `json:"regrades"`
 	AssignmentReleaseDate *time.Time `json:"assignment_release_date"`
 	AssignmentDueDate     *time.Time `json:"assignment_due_date"`
@@ -74,7 +75,8 @@ type AssignmentSectionResponse struct {
 	AssignmentSectionID uuid.UUID  `json:"assignment_section_id"`
 	SectionID           uuid.UUID  `json:"section_id"`
 	SectionName         string     `json:"section_name"`
-	Published           bool       `json:"published"`
+	PublishedGrade      bool       `json:"published_grade"`
+	PublishedAssignment bool       `json:"published_assignment"`
 	ReleaseDate         *time.Time `json:"release_date"`
 	DueDate             *time.Time `json:"due_date"`
 	CutOffDate          *time.Time `json:"cut_off_date"`
@@ -627,9 +629,16 @@ type GradeSubQuestionJSON struct {
 
 // Part:1 Assignment settings
 // ---- JSON structs for publish status ----
-type UpdateAssignmentPublishedRequest struct {
+type UpdateAssignmentPublishedGradeRequest struct {
 	AssignmentID        uuid.UUID `json:"assignment_id"`
 	AssignmentSectionID uuid.UUID `json:"assignment_section_id"`
 	SectionID           uuid.UUID `json:"section_id"`
-	Published           bool      `json:"published"`
+	PublishedGrade      bool      `json:"published_grade"`
+}
+
+type UpdateAssignmentPublishedAssignmentRequest struct {
+	AssignmentID        uuid.UUID `json:"assignment_id"`
+	AssignmentSectionID uuid.UUID `json:"assignment_section_id"`
+	SectionID           uuid.UUID `json:"section_id"`
+	PublishedAssignment bool      `json:"published_assignment"`
 }
