@@ -3,6 +3,7 @@ package adapters
 import (
 	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/models"
+	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -126,6 +127,60 @@ func (r *GormStudentRepository) FindAssignmentNamesWithCourseIDAndAssignmentID(C
 func (r *GormStudentRepository) FindAssignmentsByCourseID(courseID uuid.UUID, userID uuid.UUID) ([]map[string]interface{}, error) {
 	rows := make([]map[string]interface{}, 0)
 
+	// enrolledSections := r.db.
+	// 	Table("enrollment_lists AS el").
+	// 	Select("el.section_id").
+	// 	Joins(`JOIN personal_data AS pd ON pd.personal_data_id = el.personal_data_id AND pd.deleted_at IS NULL`).
+	// 	Joins(`JOIN users AS u ON u.email = pd.email AND u.deleted_at IS NULL`).
+	// 	Where(`el.course_id = ? AND u.user_id = ? AND el.deleted_at IS NULL`, courseID, userID)
+
+	// personalDataIDSub := r.db.
+	// 	Table("personal_data AS pd").
+	// 	Select("pd.personal_data_id").
+	// 	Joins(`JOIN users AS u ON u.email = pd.email AND u.deleted_at IS NULL`).
+	// 	Where(`u.user_id = ? AND pd.deleted_at IS NULL`, userID)
+
+	// var hasSection int64
+	// _ = r.db.Table("(?) AS s", enrolledSections).Count(&hasSection).Error
+	// if hasSection == 0 {
+	// 	return rows, nil
+	// }
+
+	// err := r.db.
+	// 	Table("assignments").
+	// 	Select(`
+	//         assignments.assignment_id,
+	//         assignments.assignment_name,
+	//         assignments.assignment_description,
+	//         MIN(asec.release_date) AS release_date,
+	//         MIN(asec.due_date)     AS due_date,
+	//         MIN(asec.cut_off_date) AS cut_off_date,
+	//         CASE WHEN COUNT(DISTINCT sub.submission_id) > 0 THEN TRUE ELSE FALSE END AS has_submitted,
+	//         MAX(sub.submitted_at)  AS last_submitted_at
+	//     `).
+	// 	Joins(`JOIN assignment_sections AS asec
+	//         ON asec.assignment_id = assignments.assignment_id
+	//        AND asec.deleted_at IS NULL
+	//        AND asec.section_id IN (?)
+	//        AND asec.release_date IS NOT NULL
+	//        AND (asec.release_date AT TIME ZONE 'Asia/Bangkok')::date <= (now() AT TIME ZONE 'Asia/Bangkok')::date
+	//     `, enrolledSections).
+	// 	Joins(`LEFT JOIN submissions AS sub
+	//         ON sub.assignment_id = assignments.assignment_id
+	//        AND sub.deleted_at IS NULL
+	//        AND sub.belongs_to IN (?)
+	//     `, personalDataIDSub).
+	// 	Where(`assignments.course_id = ? AND assignments.deleted_at IS NULL`, courseID).
+	// 	Group(`assignments.assignment_id, assignments.assignment_name, assignments.assignment_description`).
+	// 	Order(`release_date ASC, assignments.assignment_id ASC`).
+	// 	Scan(&rows).Error
+
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// return rows, nil
+
+	now := time.Now().UTC()
 	enrolledSections := r.db.
 		Table("enrollment_lists AS el").
 		Select("el.section_id").
@@ -140,43 +195,72 @@ func (r *GormStudentRepository) FindAssignmentsByCourseID(courseID uuid.UUID, us
 		Where(`u.user_id = ? AND pd.deleted_at IS NULL`, userID)
 
 	var hasSection int64
-	_ = r.db.Table("(?) AS s", enrolledSections).Count(&hasSection).Error
+	if err := r.db.Table("(?) AS s", enrolledSections).Count(&hasSection).Error; err != nil {
+		return nil, err
+	}
 	if hasSection == 0 {
 		return rows, nil
 	}
 
-	err := r.db.
-		Table("assignments").
-		Select(`
-            assignments.assignment_id,
-            assignments.assignment_name,
-            assignments.assignment_description,
-            MIN(asec.release_date) AS release_date,
-            MIN(asec.due_date)     AS due_date,
-            MIN(asec.cut_off_date) AS cut_off_date,
-            CASE WHEN COUNT(DISTINCT sub.submission_id) > 0 THEN TRUE ELSE FALSE END AS has_submitted,
-            MAX(sub.submitted_at)  AS last_submitted_at
-        `).
-		Joins(`JOIN assignment_sections AS asec
-            ON asec.assignment_id = assignments.assignment_id
-           AND asec.deleted_at IS NULL
-           AND asec.section_id IN (?)
-           AND asec.release_date IS NOT NULL
-           AND (asec.release_date AT TIME ZONE 'Asia/Bangkok')::date <= (now() AT TIME ZONE 'Asia/Bangkok')::date
-        `, enrolledSections).
-		Joins(`LEFT JOIN submissions AS sub
-            ON sub.assignment_id = assignments.assignment_id
-           AND sub.deleted_at IS NULL
-           AND sub.belongs_to IN (?)
-        `, personalDataIDSub).
-		Where(`assignments.course_id = ? AND assignments.deleted_at IS NULL`, courseID).
-		Group(`assignments.assignment_id, assignments.assignment_name, assignments.assignment_description`).
-		Order(`release_date ASC, assignments.assignment_id ASC`).
-		Scan(&rows).Error
+	sActive := r.db.
+		Table("assignment_sections AS s").
+		Select("s.assignment_id, s.section_id, s.published_assignment, s.release_date, s.due_date, s.cut_off_date").
+		Where("s.deleted_at IS NULL").
+		Where("s.section_id IN (?)", enrolledSections).
+		Where(`
+			s.published_assignment = TRUE
+			OR (
+				s.release_date IS NOT NULL AND s.release_date <= ?
+				AND (
+					s.due_date IS NULL OR s.due_date > ?
+					OR (s.cut_off_date IS NOT NULL AND s.cut_off_date > ?)
+				)
+			)
+		`, now, now, now)
 
-	if err != nil {
+	best := r.db.
+		Table("(?) AS s", sActive).
+		Select(`
+			DISTINCT ON (s.assignment_id)
+			s.assignment_id,
+			s.release_date AS release_date,
+			s.due_date     AS due_date,
+			s.cut_off_date AS cut_off_date
+		`).
+		Order("s.assignment_id, s.published_assignment DESC, s.release_date ASC NULLS LAST")
+
+	q := r.db.
+		Table("assignments AS a").
+		Joins("JOIN (?) AS b ON b.assignment_id = a.assignment_id", best).
+		Joins(`LEFT JOIN submissions AS sub
+            ON sub.assignment_id = a.assignment_id
+           AND sub.deleted_at IS NULL
+           AND sub.belongs_to IN (?)`, personalDataIDSub).
+		Where("a.course_id = ? AND a.deleted_at IS NULL", courseID).
+		Select(`
+			a.assignment_id,
+			a.assignment_name,
+			a.assignment_description,
+			b.release_date  AS release_date,
+			b.due_date      AS due_date,
+			b.cut_off_date  AS cut_off_date,
+			CASE WHEN COUNT(DISTINCT sub.submission_id) > 0 THEN TRUE ELSE FALSE END AS has_submitted,
+			MAX(sub.submitted_at) AS last_submitted_at
+		`).
+		Group(`
+			a.assignment_id,
+			a.assignment_name,
+			a.assignment_description,
+			b.release_date,
+			b.due_date,
+			b.cut_off_date
+		`).
+		Order("b.release_date ASC NULLS LAST, a.assignment_id ASC")
+
+	if err := q.Scan(&rows).Error; err != nil {
 		return nil, err
 	}
+
 	return rows, nil
 }
 
