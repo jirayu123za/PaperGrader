@@ -1,15 +1,17 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import {Card,Title,Text,SimpleGrid,Flex,NumberInput,} from "@mantine/core";
+import { Card, Title, Text, SimpleGrid, Flex, NumberInput } from "@mantine/core";
 import { BarChart } from "@mantine/charts";
 
 interface GradeStatisticsProps {
   scores?: number[];
+  /** selector สำหรับสลับ assignment — จะถูกแสดงต่อท้ายข้อความ "Review Grades for" */
+  assignmentSelector?: React.ReactNode;
 }
 
-export default function AssignmentStatistics({ scores }: GradeStatisticsProps) {
-  // generate ~50 mock scores between 0–100 once
+export default function AssignmentStatistics({ scores, assignmentSelector }: GradeStatisticsProps) {
+  // generate ~50 mock scores between 0–100 once (ถ้าไม่ได้ส่ง scores มา)
   const mockScores = useMemo<number[]>(
     () => Array.from({ length: 50 }, () => Math.floor(Math.random() * 101)),
     []
@@ -24,9 +26,7 @@ export default function AssignmentStatistics({ scores }: GradeStatisticsProps) {
   const [binCount, setBinCount] = useState<number>(20);
 
   // calculate sorted, mean, median
-  const sorted = useMemo(() => [...dataScores].sort((a, b) => a - b), [
-    dataScores,
-  ]);
+  const sorted = useMemo(() => [...dataScores].sort((a, b) => a - b), [dataScores]);
   const mean =
     dataScores.length > 0
       ? dataScores.reduce((sum, v) => sum + v, 0) / dataScores.length
@@ -35,9 +35,7 @@ export default function AssignmentStatistics({ scores }: GradeStatisticsProps) {
     const len = sorted.length;
     if (len === 0) return 0;
     const mid = Math.floor(len / 2);
-    return len % 2 === 1
-      ? sorted[mid]
-      : (sorted[mid - 1] + sorted[mid]) / 2;
+    return len % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
   }, [sorted]);
 
   // build histogram data for 0–100
@@ -49,9 +47,7 @@ export default function AssignmentStatistics({ scores }: GradeStatisticsProps) {
       const lower = minScore + i * size;
       const upper = i === binCount - 1 ? maxScore : lower + size;
       const count = dataScores.filter((v) =>
-        i === binCount - 1
-          ? v >= lower && v <= upper
-          : v >= lower && v < upper
+        i === binCount - 1 ? v >= lower && v <= upper : v >= lower && v < upper
       ).length;
       return {
         bin: `${Math.ceil(lower)}–${Math.floor(upper)}`,
@@ -73,17 +69,22 @@ export default function AssignmentStatistics({ scores }: GradeStatisticsProps) {
 
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
+      {/* Header: "Review Grades for" + Selector (ซ้าย) และตัวปรับ Bins (ขวา) */}
       <Flex justify="space-between" align="center" mb="md">
-        <Title order={3}>Review Grades for Test</Title>
+        <Flex align="center" gap="sm">
+          <Title order={3} style={{ whiteSpace: "nowrap" }}>
+            Review Grades for
+          </Title>
+          {assignmentSelector}
+        </Flex>
+
         <Flex align="center" gap="xs">
           <Text size="xs" fw={500}>
             Bins:
           </Text>
           <NumberInput
             value={binCount}
-            onChange={(v) =>
-              setBinCount(typeof v === "number" ? v : 1)
-            }
+            onChange={(v) => setBinCount(typeof v === "number" ? v : 1)}
             min={1}
             max={FULL_SCORE}
             size="xs"
@@ -116,7 +117,7 @@ export default function AssignmentStatistics({ scores }: GradeStatisticsProps) {
       <SimpleGrid cols={4} mt="md" spacing="lg">
         {stats.map((stat) => (
           <div key={stat.label}>
-            <Text size="sm" color="dimmed">
+            <Text size="sm" c="dimmed">
               {stat.label}
             </Text>
             <Text size="xl" fw={700}>
