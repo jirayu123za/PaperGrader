@@ -9,10 +9,11 @@ import { useAssignmentSettingStore } from '@/store/modal/useAssignmentSettingMod
 import { IconSettings, IconTrash } from '@tabler/icons-react';
 import { useAssignmentSectionStore } from '@/store/table/useAssignmentsListStore';
 import { useModalAssignmentTimeSettingStore } from '@/store/modal/useAssignmentTimeSettingModal';
-import { useUpdateAssignmentPublished } from '@/hooks/AssignmentSetting/useUpdateAssignmentPublished';
+import { useUpdateAssignmentPublishedGrade } from '@/hooks/AssignmentSetting/useUpdateAssignmentPublishedGrade';
 import { TimeSetting } from '@/components/Customize/TimeSetting';
 import { notifications } from '@mantine/notifications';
 import { useParams } from 'next/navigation';
+import { useUpdateAssignmentPublishedAssignment } from '@/hooks/AssignmentSetting/useUpdateAssignmentPublishedAssignment';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -22,7 +23,8 @@ type Section = {
   assignment_section_id: string;
   section_id: string;
   section_name: string;
-  published: boolean;
+  published_grade: boolean;
+  published_assignment: boolean;
   release_date: string | null;
   due_date: string | null;
 };
@@ -40,7 +42,8 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
   const { openModal } = useModalAssignmentTimeSettingStore();
   const { addAssignmentSectionIDs, removeAssignmentSectionIDs, removeAssignmentID, setAssignmentID, selectedAssignmentSectionIDs } = useAssignmentSectionStore();
   const { selectedSectionIDs, setSectionIDs } = useAssignmentSettingStore();
-  const { mutate: updateAssignmentPublished, isPending } = useUpdateAssignmentPublished();
+  const { mutate: updateAssignmentPublishedGrade, isPending: isPendingUpdateAssignmentPublishedGrade } = useUpdateAssignmentPublishedGrade();
+  const { mutate: updateAssignmentPublishedAssignment, isPending: isPendingUpdateAssignmentPublishedAssignment } = useUpdateAssignmentPublishedAssignment();
   const [ isLoading, setIsLoading ] = React.useState(true);
 
   React.useEffect(() => {
@@ -67,9 +70,31 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
     }
   };
 
-  const handleUpdateAssignmentPublished = (assignmentID: string, assignmentSectionID: string, sectionID: string, published: boolean) => {
-    updateAssignmentPublished(
-      { course_id: course_id as string, body: { assignment_id: assignmentID, assignment_section_id: assignmentSectionID, section_id: sectionID, published } },
+  const handleUpdateAssignmentPublishedGrade = (assignmentID: string, assignmentSectionID: string, sectionID: string, published_grade: boolean) => {
+    updateAssignmentPublishedGrade(
+      { course_id: course_id as string, body: { assignment_id: assignmentID, assignment_section_id: assignmentSectionID, section_id: sectionID, published_grade } },
+      {
+        onSuccess: () => {
+          notifications.show({
+            title: 'Success',
+            message: 'Assignment section publication status updated',
+            color: 'green',
+          });
+        },
+        onError: (error) => {
+          notifications.show({
+            title: 'Upload Failed',
+            message: `${error.response?.data?.error}`,
+            color: 'red',
+          });
+        },
+      }
+    );
+  };
+
+  const handleUpdateAssignmentPublishedAssignment = (assignmentID: string, assignmentSectionID: string, sectionID: string, published_assignment: boolean) => {
+    updateAssignmentPublishedAssignment(
+      { course_id: course_id as string, body: { assignment_id: assignmentID, assignment_section_id: assignmentSectionID, section_id: sectionID, published_assignment } },
       {
         onSuccess: () => {
           notifications.show({
@@ -114,7 +139,8 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
             <Table.Th w={240} ta="center">Release date</Table.Th>
             <Table.Th w={240} ta="center">Due date</Table.Th>
             <Table.Th w={340} ta="center">Time remaining</Table.Th>
-            <Table.Th w={200} ta="center">Published</Table.Th>
+            <Table.Th w={180} ta="center">Published assignment</Table.Th>
+            <Table.Th w={200} ta="center">Published grade</Table.Th>
             <Table.Th w={100} ta="center">Actions</Table.Th>
           </Table.Tr>
         </Table.Thead>
@@ -123,7 +149,8 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
           {assignment.assignment_sections.map((section) => {
             const progress = calculateProgress(section.release_date, section.due_date);
             const isChecked = selectedAssignmentSectionIDs.includes(section.assignment_section_id);
-            const isFullPublished = section.published ? 'Grade visible to students' : 'Grade hidden from students';
+            const isFullPublishedGrade = section.published_grade ? 'Grade visible to students' : 'Grade hidden from students';
+            const isFullPublishedAssignment = section.published_assignment ? 'Assignment visible to students' : 'Assignment hidden from students';
 
             return (
               <Table.Tr
@@ -178,15 +205,15 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
                 <Table.Td ta="center">
                   <SegmentedControl
                     size="xs"
-                    disabled={isPending} 
-                    value={section.published ? 'public' : 'private'}
+                    disabled={isPendingUpdateAssignmentPublishedAssignment}
+                    value={section.published_assignment ? 'public' : 'private'}
                     data={[
                       { label: 'Public', value: "public" },
                       { label: 'Private', value: "private" },
                     ]}
                     onChange={(val) => {
                       const next = val === 'public';
-                        handleUpdateAssignmentPublished(
+                        handleUpdateAssignmentPublishedAssignment(
                           assignment.assignment_id,
                           section.assignment_section_id,
                           section.section_id,
@@ -196,14 +223,48 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
                   />
 
                   <Flex justify="center" mt="xs">
-                    <Tooltip label={isFullPublished} withArrow openDelay={200} position="top">
-                      <Badge
-                        color={section.published ? 'green' : 'gray'}
+                    <Tooltip label={isFullPublishedAssignment} withArrow openDelay={200} position="top">
+                      <Badge 
+                        color={section.published_assignment ? 'green' : 'gray'} 
                         variant="light"
-                        title={isFullPublished}
+                        title={isFullPublishedAssignment}
                         style={{ cursor: 'help' }}
                       >
-                        {isFullPublished}
+                        {isFullPublishedAssignment}
+                      </Badge>
+                    </Tooltip>
+                  </Flex>
+                </Table.Td>
+
+                <Table.Td ta="center">
+                  <SegmentedControl
+                    size="xs"
+                    disabled={isPendingUpdateAssignmentPublishedGrade}
+                    value={section.published_grade ? 'public' : 'private'}
+                    data={[
+                      { label: 'Public', value: "public" },
+                      { label: 'Private', value: "private" },
+                    ]}
+                    onChange={(val) => {
+                      const next = val === 'public';
+                        handleUpdateAssignmentPublishedGrade(
+                          assignment.assignment_id,
+                          section.assignment_section_id,
+                          section.section_id,
+                          next
+                        );
+                    }}
+                  />
+
+                  <Flex justify="center" mt="xs">
+                    <Tooltip label={isFullPublishedGrade} withArrow openDelay={200} position="top">
+                      <Badge
+                        color={section.published_grade ? 'green' : 'gray'}
+                        variant="light"
+                        title={isFullPublishedGrade}
+                        style={{ cursor: 'help' }}
+                      >
+                        {isFullPublishedGrade}
                       </Badge>
                     </Tooltip>
                   </Flex>

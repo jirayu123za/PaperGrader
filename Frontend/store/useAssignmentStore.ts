@@ -36,7 +36,8 @@ interface AssignmentsSectionList {
   assignment_section_id: string;
   section_id: string;
   section_name: string;
-  published: boolean;
+  published_grade: boolean;
+  published_assignment: boolean;
   release_date: string | null;
   due_date: string | null;
   cut_off_date: string | null;
