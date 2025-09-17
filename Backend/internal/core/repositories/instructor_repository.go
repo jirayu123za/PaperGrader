@@ -18,7 +18,8 @@ type InstructorRepository interface {
 	AddAssignmentFile(file *models.AssignmentFile) error
 	ModifyAssignmentSetting(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment) error
 	ModifyAssignmentTimeSettings(CourseID uuid.UUID, AssignmentID uuid.UUID, sections []models.AssignmentSection) error
-	ModifyAssignmentPublished(CourseID uuid.UUID, payload response.UpdateAssignmentPublishedRequest) error
+	ModifyAssignmentGradePublished(CourseID uuid.UUID, payload response.UpdateAssignmentPublishedGradeRequest) error
+	ModifyAssignmentPublishedAssignment(CourseID uuid.UUID, payload response.UpdateAssignmentPublishedAssignmentRequest) error
 
 	// CRUD operations for Roster of a course
 	FindRosterByCourseID(CourseID uuid.UUID) ([]map[string]interface{}, error)
