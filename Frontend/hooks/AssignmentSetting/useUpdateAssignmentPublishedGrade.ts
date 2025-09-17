@@ -5,22 +5,22 @@ type Body = {
     assignment_id: string;
     assignment_section_id: string;
     section_id: string;
-    published: boolean;
+    published_grade: boolean;
 };
 
-const updateAssignmentPublished = async ({ body, course_id }: { body: Body; course_id: string }) => {
-    const { data: publishedResponse } = await axios.put(`/api/api/instructor/assignment/publish`,
+const updateAssignmentPublishedGrade = async ({ body, course_id }: { body: Body; course_id: string }) => {
+    const { data: publishedResponse } = await axios.put(`/api/api/instructor/assignment/publish/grade`,
         body, {
         params: { course_id },
     });
     return publishedResponse;
 }
 
-export const useUpdateAssignmentPublished = () => {
+export const useUpdateAssignmentPublishedGrade = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: updateAssignmentPublished,
+        mutationFn: updateAssignmentPublishedGrade,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['ins_assignments'] });
         },
