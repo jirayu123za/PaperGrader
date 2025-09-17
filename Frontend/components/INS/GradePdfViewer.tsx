@@ -4,31 +4,42 @@ import dynamic from "next/dynamic";
 import "pdfjs-dist/web/pdf_viewer.css";
 import * as pdfjsLib from "pdfjs-dist";
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Container, Loader } from "@mantine/core";
+import { Button, Container } from "@mantine/core";
 import { useFetchSubmissionFile } from "@/hooks/useFetchFile";
 import { useSubmissionFileStore } from "@/store/useINS_SubmissionStore";
 import { useParams } from "next/navigation";
-import { AiOutlineZoomIn, AiOutlineZoomOut, AiOutlineReload, AiOutlineArrowLeft, AiOutlineArrowRight } from "react-icons/ai";
+import {
+  AiOutlineZoomIn,
+  AiOutlineZoomOut,
+  AiOutlineReload,
+  AiOutlineArrowLeft,
+  AiOutlineArrowRight,
+} from "react-icons/ai";
 import { useFetchGradebox } from "@/hooks/BoundingBox/useFetchGradebox";
 import { useGradeboxStore } from "@/store/BoundingBox/useGradeboxStore";
 
-
-(pdfjsLib as any).GlobalWorkerOptions.workerSrc = "https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js";
+(pdfjsLib as any).GlobalWorkerOptions.workerSrc =
+  "https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js";
 
 const BoundingBoxOverlay = dynamic(
   () => import("@/components/client/BoundingBoxOverlay"),
   { ssr: false }
 );
 
-
 const GradePdfViewer: React.FC = () => {
   const params = useParams() as Record<string, string | undefined>;
   const course_id = params.course_id!;
   const assignment_id = params.assignment_id!;
   const submission_id = params.submission_id!;
-  const { question_id, sub_question_id, } = params;
-  const { isLoading, error } = useFetchSubmissionFile(course_id, assignment_id, submission_id);
+  const { question_id, sub_question_id } = params;
+
+  const { isLoading, error } = useFetchSubmissionFile(
+    course_id,
+    assignment_id,
+    submission_id
+  );
   const { submissionFile } = useSubmissionFileStore();
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -39,33 +50,28 @@ const GradePdfViewer: React.FC = () => {
   const renderTaskRef = useRef<any>(null);
 
   const { data: fetchedBoxes } = useFetchGradebox(assignment_id);
-  const storedBoxes = useGradeboxStore(s => s.bounding_boxes_data);
+  const storedBoxes = useGradeboxStore((s) => s.bounding_boxes_data);
   const boxes = fetchedBoxes ?? storedBoxes;
 
   const [finalScale, setFinalScale] = useState(1);
 
-
   const applyZoom = (delta: number) => {
-    setScale(prev => Math.max(0.2, prev + delta));
+    setScale((prev) => Math.max(0.2, prev + delta));
   };
-
 
   const renderPDF = async (pageNum: number, baseScale: number) => {
     try {
-      const loadingTask = pdfjsLib.getDocument(
-        submissionFile.submission_file_url
-      );
+      const loadingTask = pdfjsLib.getDocument(submissionFile.submission_file_url);
       const pdf = await loadingTask.promise;
       const page = await pdf.getPage(pageNum);
       setTotalPages(pdf.numPages);
 
-      // คำนวณ scale ให้พอดีกับความสูงหน้าจอ
+      // scale ให้พอดีกับความสูงหน้าจอ
       const containerHeight = window.innerHeight;
       const unscaledVP = page.getViewport({ scale: 1 });
       const heightScale = containerHeight / unscaledVP.height;
       const computedScale = baseScale * heightScale;
 
-      // ส่งค่า scale ไปยัง overlay
       setFinalScale(computedScale);
 
       const viewport = page.getViewport({ scale: computedScale });
@@ -74,10 +80,8 @@ const GradePdfViewer: React.FC = () => {
       canvas.width = viewport.width;
       canvas.height = viewport.height;
 
-      // ยกเลิกงานเรนเดอร์เก่า (ถ้ามี)
+      // ยกเลิกงานก่อนหน้า (ถ้ามี)
       renderTaskRef.current?.cancel();
-
-
 
       const renderTask = page.render({
         canvasContext: ctx,
@@ -98,15 +102,10 @@ const GradePdfViewer: React.FC = () => {
   };
 
   useEffect(() => {
-
     if (submissionFile.submission_file_url) {
       renderPDF(currentPage, scale);
     }
-  }, [
-    submissionFile.submission_file_url,
-    currentPage,
-    scale,
-  ]);
+  }, [submissionFile.submission_file_url, currentPage, scale]);
 
   // Mouse wheel zoom
   useEffect(() => {
@@ -121,7 +120,7 @@ const GradePdfViewer: React.FC = () => {
     };
   }, []);
 
-
+  // Drag to pan
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -169,7 +168,6 @@ const GradePdfViewer: React.FC = () => {
   };
 
   const handleZoomIn = () => applyZoom(0.2);
-
   const handleZoomOut = () => applyZoom(-0.2);
 
   const handleResetZoom = () => {
@@ -177,34 +175,27 @@ const GradePdfViewer: React.FC = () => {
     setPan({ x: 0, y: 0 });
   };
 
-
-
-
-
-
+  /**
+   * ✅ ปรับ logic: Auto-jump ไปหน้าของคำถามจะทำเฉพาะ "ตอนที่เปลี่ยนการเลือกข้อ/คำถาม"
+   *    ไม่บังคับให้เด้งกลับเมื่อผู้ใช้กดลูกศรเปลี่ยนหน้าเอง
+   *    (เอา currentPage ออกจาก dependency)
+   */
   useEffect(() => {
-    if (!question_id) {
-      return;
-    }
-    // 1) หา bounding box ไม่สนหน้า
+    if (!question_id) return;
+
     const targetBox = boxes.find(
       (b) =>
         b.question_id === question_id &&
         (b.sub_question_id ?? "") === (sub_question_id ?? "")
     );
-    if (!targetBox) {
-      return;
-    }
+    if (!targetBox) return;
 
-    // 2) ถ้ากล่องอยู่คนละหน้า → เปลี่ยนหน้า PDF ก่อน แล้ว return รอ renderPDF ใหม่
     if (currentPage !== targetBox.bounding_box_page) {
+      setPan({ x: 0, y: 0 });
       setCurrentPage(targetBox.bounding_box_page);
-      return;
     }
-
-
-  }, [question_id, sub_question_id, currentPage, boxes]);
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [question_id, sub_question_id, boxes]);
 
   return (
     <Container
@@ -219,7 +210,6 @@ const GradePdfViewer: React.FC = () => {
     >
       <div
         style={{
-          // overflow: "visible",
           overflow: "hidden",
           height: "100%",
           width: "100%",
@@ -253,7 +243,7 @@ const GradePdfViewer: React.FC = () => {
         selectedSubQuestionId={sub_question_id}
       />
 
-      {/* ปุ่ม Zoom */}
+      {/* Zoom controls */}
       <div
         style={{
           position: "absolute",
@@ -277,7 +267,7 @@ const GradePdfViewer: React.FC = () => {
         </Button>
       </div>
 
-      {/* ปุ่ม Previous */}
+      {/* Previous */}
       <div
         style={{
           position: "absolute",
@@ -296,7 +286,7 @@ const GradePdfViewer: React.FC = () => {
         </Button>
       </div>
 
-      {/* ปุ่ม Next */}
+      {/* Next */}
       <div
         style={{
           position: "absolute",
