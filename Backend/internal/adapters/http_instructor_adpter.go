@@ -268,7 +268,7 @@ func (h *HttpInstructorHandler) UpdateAssignmentTimeSetting(c *fiber.Ctx) error 
 	})
 }
 
-func (h *HttpInstructorHandler) UpdateAssignmentPublished(c *fiber.Ctx) error {
+func (h *HttpInstructorHandler) UpdateAssignmentPublishedGrade(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
 	if err != nil {
@@ -278,7 +278,7 @@ func (h *HttpInstructorHandler) UpdateAssignmentPublished(c *fiber.Ctx) error {
 		})
 	}
 
-	var request response.UpdateAssignmentPublishedRequest
+	var request response.UpdateAssignmentPublishedGradeRequest
 	if err := c.BodyParser(&request); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Invalid request body",
@@ -286,15 +286,45 @@ func (h *HttpInstructorHandler) UpdateAssignmentPublished(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := h.services.UpdateAssignmentPublished(courseID, request); err != nil {
+	if err := h.services.UpdateAssignmentPublishedGrade(courseID, request); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to update assignment published status",
+			"message": "Failed to update assignment published grade status",
 			"error":   err.Error(),
 		})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Assignment published status was updated successfully",
+		"message": "Assignment published grade status was updated successfully",
+	})
+}
+
+func (h *HttpInstructorHandler) UpdateAssignmentPublishedAssignment(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	var request response.UpdateAssignmentPublishedAssignmentRequest
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request body",
+			"error":   err.Error(),
+		})
+	}
+
+	if err := h.services.UpdateAssignmentPublishedAssignment(courseID, request); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to update assignment published assignment status",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Assignment published assignment status was updated successfully",
 	})
 }
 
