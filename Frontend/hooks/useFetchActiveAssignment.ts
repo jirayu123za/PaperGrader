@@ -6,6 +6,7 @@ interface ActiveAssignments {
     assignment_id: string;
     assignment_name: string;
     regrades: boolean;
+    section_name: string[] | null;
     assignment_release_date: string;
     assignment_due_date: string;
     assignment_description: string;

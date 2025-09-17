@@ -5,11 +5,12 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { useRouter , useParams } from 'next/navigation';
-import { Progress, Table, Paper, Button, Pagination, Flex } from '@mantine/core';
+import { Progress, Table, Paper, Button, Pagination, Flex, Text, Tooltip } from '@mantine/core';
 import { MdOutlineAssignmentTurnedIn } from "react-icons/md";
 import { useActiveAssignmentStore } from '../../../store/useActiveAssignmentStore';
 import { useFetchActiveAssignments } from '../../../hooks/useFetchActiveAssignment';
 import { usePagination } from '@mantine/hooks';
+import { IoMdCheckmark, IoMdClose } from 'react-icons/io';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.tz.setDefault("Asia/Bangkok"); 
@@ -25,6 +26,7 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
   const { isLoading, error } = useFetchActiveAssignments(course_id as string);
   const { activeAssignments } = useActiveAssignmentStore();
   const iconAssignmentTurnedIn = <MdOutlineAssignmentTurnedIn size={24} />;
+  const iconsRegrade = { true: <IoMdCheckmark size={20} color="green" />, false: <IoMdClose size={20} color="red" /> };
 
   const pageSize = 10;
   const totalPages = Math.ceil(activeAssignments.length / pageSize);
@@ -98,6 +100,7 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
               <Table.Th ta="center">Time remain</Table.Th>
               <Table.Th ta="center">Due</Table.Th>
               <Table.Th ta="center">Late</Table.Th>
+              <Table.Th ta="center">Section</Table.Th>
               <Table.Th ta="center">% Submission</Table.Th>
               <Table.Th ta="center">% Graded</Table.Th>
               <Table.Th ta="center">Regrades</Table.Th>
@@ -118,40 +121,54 @@ const ActiveAssignments: React.FC<ActiveAssignmentsProps> = ({ openModal }) => {
                       router.push(`/instructor/course/${course_id}/process/${assignment.assignment_id}/create-outline`)
                     }
                   >
-                    {assignment.assignment_name}
+                    <Text lineClamp={1}>
+                      {assignment.assignment_name.charAt(0).toUpperCase() + assignment.assignment_name.slice(1)}
+                    </Text>
                   </Table.Td>
                   <Table.Td ta="center">
                     {assignment.assignment_release_date
                       ? dayjs(assignment.assignment_release_date).format('MMM D, YYYY h:mm A')
-                      : 'N/A'}
+                      : <Text c="dimmed" fs="italic" lineClamp={1}>Not assigned release date</Text>
+                    }
                   </Table.Td>
                   <Table.Td ta="center">
-                    <Progress
-                      value={calculateTimeRemaining(
-                        assignment.assignment_release_date,
-                        assignment.assignment_due_date
-                      )}
-                      color={getProgressColor(
-                        assignment.assignment_release_date,
-                        assignment.assignment_due_date
-                      )}
-                      size="md"
-                      radius="lg"
-                    />
+                    {assignment.assignment_release_date && assignment.assignment_due_date ? (
+                      <Progress
+                        value={calculateTimeRemaining(
+                          assignment.assignment_release_date,
+                          assignment.assignment_due_date
+                        )}
+                        color={getProgressColor(
+                          assignment.assignment_release_date,
+                          assignment.assignment_due_date
+                        )}
+                        size="md"
+                        radius="lg"
+                      />
+                    ) : (
+                      <Text c="dimmed" fs="italic" lineClamp={1}>Not assigned time</Text>
+                    )}
                   </Table.Td>
                   <Table.Td ta="center">
                     {assignment.assignment_due_date
                       ? dayjs(assignment.assignment_due_date).format('MMM D, YYYY h:mm A')
-                      : 'N/A'}
+                      : <Text c="dimmed" fs="italic" lineClamp={1}>Not assigned due date</Text>}
                   </Table.Td>
                   <Table.Td ta="center">
                     {assignment.assignment_cut_off_date
                       ? dayjs(assignment.assignment_cut_off_date).format('MMM D, YYYY h:mm A')
-                      : 'N/A'}
+                      : <Text c="dimmed" fs="italic" lineClamp={1}>Not assigned cut-off date</Text>}
+                  </Table.Td>
+                  <Table.Td ta="center">
+                    <Text lineClamp={1}>{assignment.section_name} </Text>
                   </Table.Td>
                   <Table.Td ta="center">0</Table.Td>
                   <Table.Td ta="center">0%</Table.Td>
-                  <Table.Td ta="center">{assignment.regrades ? 'Yes' : 'No'}</Table.Td>
+                  <Table.Td>
+                    <Flex justify="center" align="center">
+                      {iconsRegrade[String(assignment.regrades) as "true" | "false"]}
+                    </Flex>
+                  </Table.Td>
                 </Table.Tr>
               ))}
           </Table.Tbody>
