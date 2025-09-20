@@ -39,16 +39,32 @@ export default function QuestionOutline() {
   const { data: template, isFetching: isFetchingTemplate, refetch: refetchTemplate } = useFetchTemplate(assignment_id);
   const [isSaving, setIsSaving] = React.useState(false);
 
-  
-
   const [expandTitle, setExpandTitle] = React.useState(false);
-const calculateTotalPoints = () =>
+  const calculateTotalPoints = () =>
     rubricData.questions.reduce((acc, q) => acc + q.question_point, 0);
 
+  // ---------- NEW: ฟังก์ชันกันค่าว่าง ----------
+  const ensureNonEmptyTitles = () => {
+    let changed = false;
+    (rubricData.questions ?? []).forEach((q: any, qi: number) => {
+      const qTitle = (q.question_title ?? '').trim();
+      if (!qTitle) {
+        updateQuestion(q.question_id, { question_title: 'Question' });
+        changed = true;
+      }
+      (q.subquestions ?? []).forEach((s: any, si: number) => {
+        const sTitle = (s.subquestion_title ?? '').trim();
+        if (!sTitle) {
+          // ใช้ handleSubChange เพื่อคงพฤติกรรมเดิมของ store
+          handleSubChange(q, si, 'subquestion_title', 'Subquestion');
+          changed = true;
+        }
+      });
+    });
+    return changed;
+  };
+  // ---------------------------------------------
 
-
-
- 
   const queueDeleteQuestion = (q: any) => {
     if (q?.bounding_box_id) {
       markForDeleteBBox(q.bounding_box_id);
@@ -56,8 +72,6 @@ const calculateTotalPoints = () =>
     removeQuestion(q.question_id);
   };
 
-
- 
   const templateQs = (template as any)?.questions_data ?? [];
   const templateBbs = (template as any)?.bounding_boxes ?? [];
 
@@ -82,7 +96,7 @@ const calculateTotalPoints = () =>
   }, [templateBbs]);
 
   const hasEdits = React.useMemo(() => {
-
+    // ... (คงเดิม)
     for (const q of rubricData.questions) {
       const isRealQ = q.question_id && !String(q.question_id).startsWith('temp-');
       if (isRealQ) {
@@ -109,7 +123,7 @@ const calculateTotalPoints = () =>
         }
       }
     }
-  
+
     for (const b of (boundingBoxes ?? [])) {
       const isRealB = b.bounding_box_id && !String(b.bounding_box_id).startsWith('temp-');
       if (!isRealB) continue;
@@ -128,7 +142,6 @@ const calculateTotalPoints = () =>
   }, [rubricData, boundingBoxes, tQMap, tSubMap, tBbMap]);
 
   const SEND_ONLY_NEW_COMPUTED = !hasEdits;
-
 
   const countNewItems = (rubric: any) => {
     let newQuestions = 0;
@@ -175,114 +188,118 @@ const calculateTotalPoints = () =>
     return updated;
   };
 
-const handleSave = async () => {
-  if (isSaving || isUpserting || isFetchingTemplate) return;
-  setIsSaving(true);
-  let saveOk = false;
-  let didCreate = false;
-  let deleteCount = pendingDeletes?.length ?? 0;
-  try {
-    const { newQuestions, newSubs } = countNewItems(rubricData);
-    const updatesCount = countTitlePointUpdates(rubricData, template);
+  const handleSave = async () => {
+    if (isSaving || isUpserting || isFetchingTemplate) return;
 
-    const usedIds = new Set<string>();
-    rubricData.questions.forEach((qq: any) => {
-      if (qq.bounding_box_id) usedIds.add(qq.bounding_box_id);
-      (qq.subquestions ?? []).forEach((s: any) => {
-        if (s.bounding_box_id) usedIds.add(s.bounding_box_id);
+    // ---------- NEW: กันค่าว่างก่อนเซฟ ----------
+    ensureNonEmptyTitles();
+    // ---------------------------------------------
+
+    setIsSaving(true);
+    let saveOk = false;
+    let didCreate = false;
+    let deleteCount = pendingDeletes?.length ?? 0;
+    try {
+      const { newQuestions, newSubs } = countNewItems(rubricData);
+      const updatesCount = countTitlePointUpdates(rubricData, template);
+
+      const usedIds = new Set<string>();
+      rubricData.questions.forEach((qq: any) => {
+        if (qq.bounding_box_id) usedIds.add(qq.bounding_box_id);
+        (qq.subquestions ?? []).forEach((s: any) => {
+          if (s.bounding_box_id) usedIds.add(s.bounding_box_id);
+        });
       });
-    });
 
-    const deltaPayload = {
-      bounding_boxes: mapBoundingBoxesToApiFormatNewOnly(boundingBoxes, usedIds),
-      questions_data: mapRubricToQuestionsDataDelta(rubricData),
-    };
-    const isDeltaEmpty = (!deltaPayload.bounding_boxes?.length) && (!deltaPayload.questions_data?.length);
+      const deltaPayload = {
+        bounding_boxes: mapBoundingBoxesToApiFormatNewOnly(boundingBoxes, usedIds),
+        questions_data: mapRubricToQuestionsDataDelta(rubricData),
+      };
+      const isDeltaEmpty = (!deltaPayload.bounding_boxes?.length) && (!deltaPayload.questions_data?.length);
 
-    const filteredBoxes = boundingBoxes.filter((b: any) => {
-      if (b.bounding_box_type === 'question') {
-        return usedIds.has(b.bounding_box_id);
-      }
-      return true;
-    });
-    const fullPayload = {
-      bounding_boxes: mapBoundingBoxesToApiFormat(filteredBoxes, true),
-      questions_data: mapRubricToQuestionsData(rubricData, true),
-    };
-
-    const payload = isDeltaEmpty ? fullPayload : deltaPayload;
-    didCreate = !isDeltaEmpty;
-
-    console.log('UPsert payload (auto mode):', JSON.stringify(payload, null, 2));
-    await upsertAll(payload);
-    saveOk = true;
-
-    if (didCreate) {
-      notifications.show({
-        title: 'Created successfully',
-        message: `Created ${newQuestions + newSubs} item(s)`,
-        color: 'green',
+      const filteredBoxes = boundingBoxes.filter((b: any) => {
+        if (b.bounding_box_type === 'question') {
+          return usedIds.has(b.bounding_box_id);
+        }
+        return true;
       });
-    } else {
-      notifications.show({
-        title: 'Updated successfully',
-        message: updatesCount > 0 ? `Updated ${updatesCount} field(s)` : 'Already up to date',
-        color: 'green',
-      });
-    }
+      const fullPayload = {
+        bounding_boxes: mapBoundingBoxesToApiFormat(filteredBoxes, true),
+        questions_data: mapRubricToQuestionsData(rubricData, true),
+      };
 
-    await refetchTemplate();
+      const payload = isDeltaEmpty ? fullPayload : deltaPayload;
+      didCreate = !isDeltaEmpty;
 
-    if (pendingDeletes && pendingDeletes.length > 0) {
-      try {
-        await batchDelete(pendingDeletes);
+      console.log('UPsert payload (auto mode):', JSON.stringify(payload, null, 2));
+      await upsertAll(payload);
+      saveOk = true;
+
+      if (didCreate) {
         notifications.show({
-          title: 'Deleted successfully',
-          message: `Deleted ${deleteCount} item(s)`,
+          title: 'Created successfully',
+          message: `Created ${newQuestions + newSubs} item(s)`,
           color: 'green',
         });
-        clearPendingDeletes();
-      } catch (err: any) {
+      } else {
         notifications.show({
-          title: 'Delete failed',
-          message: String(err?.message ?? err),
-          color: 'red',
+          title: 'Updated successfully',
+          message: updatesCount > 0 ? `Updated ${updatesCount} field(s)` : 'Already up to date',
+          color: 'green',
         });
       }
-    }
-  } catch (error: any) {
-    notifications.show({
-      title: 'Save failed',
-      message: String(error?.message ?? error),
-      color: 'red',
-    });
-  } finally {
-    setIsSaving(false);
-  }
-};
 
+      await refetchTemplate();
+
+      if (pendingDeletes && pendingDeletes.length > 0) {
+        try {
+          await batchDelete(pendingDeletes);
+          notifications.show({
+            title: 'Deleted successfully',
+            message: `Deleted ${deleteCount} item(s)`,
+            color: 'green',
+          });
+          clearPendingDeletes();
+        } catch (err: any) {
+          notifications.show({
+            title: 'Delete failed',
+            message: String(err?.message ?? err),
+            color: 'red',
+          });
+        }
+      }
+    } catch (error: any) {
+      notifications.show({
+        title: 'Save failed',
+        message: String(error?.message ?? error),
+        color: 'red',
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="p-6 space-y-6 rounded-md max-h-[86vh] overflow-y-auto">
       <div className="space-y-2">
         <Tooltip label={(assignmentLeftProcess?.assignment_name ?? "Assignment")} withArrow>
-  <Title
-    order={2}
-    className="font-bold cursor-pointer"
-    lineClamp={expandTitle ? undefined : 1}
-    onClick={() => setExpandTitle((v) => !v)}
-  >
-    {`Outline for ${assignmentLeftProcess?.assignment_name ?? "Assignment"}`}
-  </Title>
-</Tooltip>
+          <Title
+            order={2}
+            className="font-bold cursor-pointer"
+            lineClamp={expandTitle ? undefined : 1}
+            onClick={() => setExpandTitle((v) => !v)}
+          >
+            {`Outline for ${assignmentLeftProcess?.assignment_name ?? "Assignment"}`}
+          </Title>
+        </Tooltip>
         <Group gap="sm" grow className="w-full mt-4">
-  <Button fullWidth variant="outline" color={hasName ? "red" : undefined} onClick={handleToggleNameBoundingBox} disabled={isSaving || isUpserting || isFetchingTemplate}>
-    {hasName ? "Remove Student Name" : "Student Name"}
-  </Button>
-  <Button fullWidth variant="outline" color={hasId ? "red" : undefined} onClick={handleToggleIdBoundingBox} disabled={isSaving || isUpserting || isFetchingTemplate}>
-    {hasId ? "Remove Student ID" : "Student ID"}
-  </Button>
-</Group>
+          <Button fullWidth variant="outline" color={hasName ? "red" : undefined} onClick={handleToggleNameBoundingBox} disabled={isSaving || isUpserting || isFetchingTemplate}>
+            {hasName ? "Remove Student Name" : "Student Name"}
+          </Button>
+          <Button fullWidth variant="outline" color={hasId ? "red" : undefined} onClick={handleToggleIdBoundingBox} disabled={isSaving || isUpserting || isFetchingTemplate}>
+            {hasId ? "Remove Student ID" : "Student ID"}
+          </Button>
+        </Group>
       </div>
 
       <ScrollArea>
@@ -306,12 +323,19 @@ const handleSave = async () => {
                   <Table.Td>{index + 1}</Table.Td>
                   <Table.Td>
                     <TextInput
+                      placeholder="Question"
                       value={question.question_title}
                       onChange={(e) =>
                         updateQuestion(question.question_id, {
                           question_title: e.currentTarget.value,
                         })
                       }
+                      onBlur={(e) => {
+                        const val = e.currentTarget.value.trim();
+                        if (!val) {
+                          updateQuestion(question.question_id, { question_title: 'Question' });
+                        }
+                      }}
                     />
                   </Table.Td>
                   <Table.Td>
@@ -351,6 +375,7 @@ const handleSave = async () => {
                     <Table.Td>{`${index + 1}.${idx + 1}`}</Table.Td>
                     <Table.Td>
                       <TextInput
+                        placeholder="Subquestion"
                         value={sub.subquestion_title}
                         onChange={(e) =>
                           handleSubChange(
@@ -360,6 +385,12 @@ const handleSave = async () => {
                             e.currentTarget.value
                           )
                         }
+                        onBlur={(e) => {
+                          const val = e.currentTarget.value.trim();
+                          if (!val) {
+                            handleSubChange(question, idx, 'subquestion_title', 'Subquestion');
+                          }
+                        }}
                       />
                     </Table.Td>
                     <Table.Td>
@@ -393,7 +424,9 @@ const handleSave = async () => {
         <Button variant="subtle" color="blue" onClick={handleAddQuestionAndBoundingBox}>
           + New Question
         </Button>
-        <Button color="teal" onClick={handleSave} disabled={isSaving || isUpserting || isFetchingTemplate}>{(isSaving || isUpserting || isFetchingTemplate) ? "Saving..." : "Save"}</Button>
+        <Button color="teal" onClick={handleSave} disabled={isSaving || isUpserting || isFetchingTemplate}>
+          {(isSaving || isUpserting || isFetchingTemplate) ? "Saving..." : "Save"}
+        </Button>
       </div>
     </div>
   );
