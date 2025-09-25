@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
-import { notifications } from '@mantine/notifications'; // <-- import notifications
+import { notifications } from '@mantine/notifications';
 
 interface UploadFileParams {
   assignment_id: string;
@@ -9,7 +9,6 @@ interface UploadFileParams {
 }
 
 const uploadStudentFile = async ({ assignment_id, course_id, file }: UploadFileParams) => {
-  console.log('Uploading file:', file, 'for assignment:', assignment_id, 'and course:', course_id);
   const formData = new FormData();
   formData.append('file', file);
 
@@ -18,8 +17,8 @@ const uploadStudentFile = async ({ assignment_id, course_id, file }: UploadFileP
       'Content-Type': 'multipart/form-data',
     },
     params: {
-      assignment_id: assignment_id,
-      course_id: course_id,
+      assignment_id,
+      course_id,
     },
   });
 
@@ -29,18 +28,18 @@ const uploadStudentFile = async ({ assignment_id, course_id, file }: UploadFileP
 export const useUploadStudentFile = () => {
   return useMutation({
     mutationFn: uploadStudentFile,
-    onSuccess: (data) => {
-      console.log('Upload successful:', data);
+    onSuccess: (_data, variables) => {
+      // ✅ แจ้งเตือนสำเร็จ พร้อมชื่อไฟล์
       notifications.show({
         title: '✅ File uploaded successfully!',
-        message: `Submission ID: ${data.submission.SubmissionID}`,
+        message: `📄 Submission File name: ${variables.file.name}`,
         color: 'green',
         autoClose: 5000,
         position: 'bottom-right',
       });
     },
-    onError: (error) => {
-      console.error('Upload failed:', error);
+    onError: () => {
+      // ❌ แจ้งเตือนล้มเหลว
       notifications.show({
         title: '❌ Upload failed',
         message: 'Failed to upload the file. Please try again.',
