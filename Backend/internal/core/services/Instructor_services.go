@@ -115,6 +115,9 @@ type InstructorService interface {
 
 	// Part 1: Export data
 	GetAssignmentsListForExport(CourseID uuid.UUID) ([]response.AssignmentsListResponse, error)
+
+	// Part:1 Assignment statistics
+	GetStatisticsDataBySelectAssignment(request response.GetAssignmentStatisticsRequest, courseID uuid.UUID) (response.AssignmentStatisticsResponse, error)
 }
 
 type InstructorServiceImpl struct {
@@ -1885,4 +1888,13 @@ func (s *InstructorServiceImpl) GetAssignmentsListForExport(CourseID uuid.UUID) 
 		return nil, err
 	}
 	return assignments, nil
+}
+
+// Part:1 Statistics data
+func (s *InstructorServiceImpl) GetStatisticsDataBySelectAssignment(request response.GetAssignmentStatisticsRequest, courseID uuid.UUID) (response.AssignmentStatisticsResponse, error) {
+	statisticData, err := s.repo.FindStatisticsDataBySelectAssignment(request, courseID)
+	if err != nil {
+		return response.AssignmentStatisticsResponse{}, err
+	}
+	return statisticData, nil
 }

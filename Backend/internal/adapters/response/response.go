@@ -642,3 +642,18 @@ type UpdateAssignmentPublishedAssignmentRequest struct {
 	SectionID           uuid.UUID `json:"section_id"`
 	PublishedAssignment bool      `json:"published_assignment"`
 }
+
+// Part:1 Assignment statistics
+// ---- JSON structs for assignment statistics ----
+type GetAssignmentStatisticsRequest struct {
+	AssignmentID uuid.UUID `json:"assignment_id"`
+}
+
+type AssignmentStatisticsResponse struct {
+	Minimum         float64 `json:"minimum"`
+	Median          float64 `json:"median"`
+	Maximum         float64 `json:"maximum"`
+	Mean            float64 `json:"mean"`
+	SD              float64 `json:"sd"`
+	TotalSubmission int64   `json:"total_submission"`
+}

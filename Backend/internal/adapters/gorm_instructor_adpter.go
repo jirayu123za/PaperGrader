@@ -9,6 +9,7 @@ import (
 	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
+	"sort"
 	"strings"
 	"time"
 
@@ -2962,4 +2963,149 @@ func (r *GormInstructorRepository) FindAssignmentsListForExport(CourseID uuid.UU
 	}
 
 	return assignments, nil
+}
+
+// Part:1 Statistics data
+func (r *GormInstructorRepository) FindStatisticsDataBySelectAssignment(request response.GetAssignmentStatisticsRequest, courseID uuid.UUID) (response.AssignmentStatisticsResponse, error) {
+	var TotalSubmission int64
+
+	err := r.db.
+		Table("grades g").
+		Joins("JOIN submissions s ON s.submission_id = g.submission_id").
+		Joins("JOIN assignments a ON a.assignment_id = s.assignment_id").
+		Where("a.assignment_id = ? AND a.course_id = ? AND g.deleted_at IS NULL", request.AssignmentID, courseID).
+		Where(`
+        jsonb_path_exists(g.grade_data, '$.questions_data[*].grades ? (@.has_graded == true)')
+        OR jsonb_path_exists(g.grade_data, '$.questions_data[*].sub_questions[*].grades ? (@.has_graded == true)')
+    `).
+		Distinct("g.submission_id").
+		Count(&TotalSubmission).Error
+	if err != nil {
+		return response.AssignmentStatisticsResponse{}, err
+	}
+
+	type row struct {
+		SubmissionID uuid.UUID
+		GradeData    datatypes.JSON
+	}
+	var rows []row
+
+	err = r.db.Table("grades g").
+		Select("g.submission_id, g.grade_data").
+		Joins("JOIN submissions s ON s.submission_id = g.submission_id").
+		Joins("JOIN assignments a ON a.assignment_id = s.assignment_id").
+		Where("a.assignment_id = ? AND a.course_id = ? AND g.deleted_at IS NULL", request.AssignmentID, courseID).
+		Scan(&rows).Error
+	if err != nil {
+		return response.AssignmentStatisticsResponse{}, err
+	}
+	if len(rows) == 0 {
+		return response.AssignmentStatisticsResponse{}, nil
+	}
+
+	scores := make([]float64, 0, len(rows))
+	for _, r := range rows {
+		var gd struct {
+			QuestionsData []struct {
+				QuestionID    string  `json:"question_id"`
+				QuestionPoint float64 `json:"question_point"`
+				Rubrics       struct {
+					RubricDetails []struct {
+						HasSelected bool    `json:"has_selected"`
+						RubricPoint float64 `json:"rubric_point"`
+					} `json:"rubric_details"`
+				} `json:"rubrics"`
+				SubQuestions []struct {
+					SubQuestionID    string  `json:"sub_question_id"`
+					SubQuestionPoint float64 `json:"sub_question_point"`
+					Rubrics          struct {
+						RubricDetails []struct {
+							HasSelected bool    `json:"has_selected"`
+							RubricPoint float64 `json:"rubric_point"`
+						} `json:"rubric_details"`
+					} `json:"rubrics"`
+				} `json:"sub_questions"`
+			} `json:"questions_data"`
+		}
+
+		if err := json.Unmarshal(r.GradeData, &gd); err != nil {
+			continue
+		}
+
+		totalScore := 0.0
+		for _, q := range gd.QuestionsData {
+			qScore := 0.0
+
+			for _, rd := range q.Rubrics.RubricDetails {
+				if rd.HasSelected {
+					qScore += rd.RubricPoint
+				}
+			}
+			if qScore > q.QuestionPoint {
+				qScore = q.QuestionPoint
+			}
+
+			for _, sq := range q.SubQuestions {
+				sqScore := 0.0
+				for _, rd := range sq.Rubrics.RubricDetails {
+					if rd.HasSelected {
+						sqScore += rd.RubricPoint
+					}
+				}
+				if sqScore > sq.SubQuestionPoint {
+					sqScore = sq.SubQuestionPoint
+				}
+				qScore += sqScore
+			}
+
+			if qScore > q.QuestionPoint {
+				qScore = q.QuestionPoint
+			}
+			if qScore < 0 {
+				qScore = 0
+			}
+
+			totalScore += qScore
+		}
+
+		scores = append(scores, totalScore)
+	}
+
+	if len(scores) == 0 {
+		return response.AssignmentStatisticsResponse{}, nil
+	}
+
+	sort.Float64s(scores)
+	min := scores[0]
+	max := scores[len(scores)-1]
+
+	sum := 0.0
+	for _, v := range scores {
+		sum += v
+	}
+	mean := sum / float64(len(scores))
+
+	var median float64
+	mid := len(scores) / 2
+	if len(scores)%2 == 0 {
+		median = (scores[mid-1] + scores[mid]) / 2
+	} else {
+		median = scores[mid]
+	}
+
+	variance := 0.0
+	for _, v := range scores {
+		variance += (v - mean) * (v - mean)
+	}
+	variance /= float64(len(scores))
+	sd := math.Sqrt(variance)
+
+	return response.AssignmentStatisticsResponse{
+		Minimum:         min,
+		Median:          median,
+		Maximum:         max,
+		Mean:            mean,
+		SD:              sd,
+		TotalSubmission: TotalSubmission,
+	}, nil
 }

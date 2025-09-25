@@ -2184,3 +2184,45 @@ func (h *HttpInstructorHandler) GetAssignmentsListForExport(c *fiber.Ctx) error 
 		"assignments": assignments,
 	})
 }
+
+// Statistics Handlers
+func (h *HttpInstructorHandler) GetStatisticsDataBySelectAssignment(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	var request response.GetAssignmentStatisticsRequest
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request body",
+			"error":   err.Error(),
+		})
+	}
+
+	statisticData, err := h.services.GetStatisticsDataBySelectAssignment(request, courseID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get statistics data",
+			"error":   err.Error(),
+		})
+	}
+
+	questionsData, err := h.services.GetQuestionsList(request.AssignmentID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get questions",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":        "Statistics data is retrieved",
+		"statistics":     statisticData,
+		"questions_list": questionsData,
+	})
+}

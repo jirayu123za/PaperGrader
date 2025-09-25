@@ -151,6 +151,9 @@ func RegisterRoutes(
 	// Bounding Boxes data
 	apiGroup.Get("/instructor/boundingBoxes/data", instructorHandler.GetBoundingBoxesData)
 
+	// Part:1 Assignment statistics
+	apiGroup.Get("/instructor/assignment/statistics", instructorHandler.GetStatisticsDataBySelectAssignment)
+
 	// Part-student: route
 	apiGroup.Get("/student/dashboard", studentHandler.GetCoursesAndAssignments)
 	// Files
