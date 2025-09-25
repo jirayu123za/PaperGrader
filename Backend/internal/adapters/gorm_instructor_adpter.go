@@ -3003,6 +3003,22 @@ func (r *GormInstructorRepository) FindStatisticsDataBySelectAssignment(request 
 		return response.AssignmentStatisticsResponse{}, nil
 	}
 
+	var totalAssignmentScore int64
+	{
+		var schema struct {
+			QuestionsData []struct {
+				QuestionPoint float64 `json:"question_point"`
+			} `json:"questions_data"`
+		}
+		if err := json.Unmarshal(rows[0].GradeData, &schema); err == nil {
+			tmp := 0.0
+			for _, q := range schema.QuestionsData {
+				tmp += q.QuestionPoint
+			}
+			totalAssignmentScore = int64(tmp)
+		}
+	}
+
 	scores := make([]float64, 0, len(rows))
 	for _, r := range rows {
 		var gd struct {
@@ -3101,11 +3117,14 @@ func (r *GormInstructorRepository) FindStatisticsDataBySelectAssignment(request 
 	sd := math.Sqrt(variance)
 
 	return response.AssignmentStatisticsResponse{
-		Minimum:         min,
-		Median:          median,
-		Maximum:         max,
-		Mean:            mean,
-		SD:              sd,
-		TotalSubmission: TotalSubmission,
+		Minimum:              min,
+		Median:               median,
+		Maximum:              max,
+		Mean:                 mean,
+		SD:                   sd,
+		TotalSubmission:      TotalSubmission,
+		TotalAssignmentScore: totalAssignmentScore,
+		Scores:               scores,
+		MinHistogram:         0,
 	}, nil
 }

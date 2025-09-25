@@ -126,6 +126,7 @@ type InstructorRepository interface {
 
 	// Part:1 Export data
 	FindAssignmentsListForExport(CourseID uuid.UUID) ([]response.AssignmentsListResponse, error)
+	// AddGradesToExcelFile(request response.CreateGradeToExcelFileRequest, courseID uuid.UUID) error
 
 	// Part:1 Assignment statistics
 	FindStatisticsDataBySelectAssignment(request response.GetAssignmentStatisticsRequest, courseID uuid.UUID) (response.AssignmentStatisticsResponse, error)

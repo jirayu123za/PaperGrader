@@ -2161,6 +2161,7 @@ func (h *HttpInstructorHandler) CreateGrade(c *fiber.Ctx) error {
 	})
 }
 
+// Export Handlers
 func (h *HttpInstructorHandler) GetAssignmentsListForExport(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
@@ -2184,6 +2185,44 @@ func (h *HttpInstructorHandler) GetAssignmentsListForExport(c *fiber.Ctx) error 
 		"assignments": assignments,
 	})
 }
+
+// func (h *HttpInstructorHandler) ExportGradesToExcel(c *fiber.Ctx) error {
+// 	courseIDParam := c.Query("course_id")
+// 	courseID, err := uuid.Parse(courseIDParam)
+// 	if err != nil {
+// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+// 			"message": "Invalid course_id",
+// 			"error":   err.Error(),
+// 		})
+// 	}
+
+// 	// userID, err := utils.GetUserIDFromJWT(c)
+// 	// if err != nil {
+// 	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+// 	// 		"message": "Invalid user_id in JWT",
+// 	// 		"error":   err.Error(),
+// 	// 	})
+// 	// }
+
+// 	var request response.CreateGradeToExcelFileRequest
+// 	if err := c.BodyParser(&request); err != nil {
+// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+// 			"message": "Invalid request body",
+// 			"error":   err.Error(),
+// 		})
+// 	}
+
+// 	if err := h.services.CreateGradesToExcelFile(request, courseID); err != nil {
+// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+// 			"message": "Failed to export grades to Excel",
+// 			"error":   err.Error(),
+// 		})
+// 	}
+
+// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+// 		"message": "Grades exported to CSV successfully",
+// 	})
+// }
 
 // Statistics Handlers
 func (h *HttpInstructorHandler) GetStatisticsDataBySelectAssignment(c *fiber.Ctx) error {
@@ -2222,7 +2261,39 @@ func (h *HttpInstructorHandler) GetStatisticsDataBySelectAssignment(c *fiber.Ctx
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":        "Statistics data is retrieved",
-		"statistics":     statisticData,
 		"questions_list": questionsData,
+		"statistics":     statisticData,
+	})
+}
+
+func (h *HttpInstructorHandler) GetStatisticsDataNoQuestions(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	var request response.GetAssignmentStatisticsRequest
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request body",
+			"error":   err.Error(),
+		})
+	}
+
+	statisticData, err := h.services.GetStatisticsDataBySelectAssignment(request, courseID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get statistics data",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":    "Statistics data is retrieved",
+		"statistics": statisticData,
 	})
 }

@@ -643,6 +643,12 @@ type UpdateAssignmentPublishedAssignmentRequest struct {
 	PublishedAssignment bool      `json:"published_assignment"`
 }
 
+// Part:1 Export data
+// ---- JSON structs for export data ----
+// type CreateGradeToExcelFileRequest struct {
+// 	AssignmentID uuid.UUID `json:"assignment_id"`
+// }
+
 // Part:1 Assignment statistics
 // ---- JSON structs for assignment statistics ----
 type GetAssignmentStatisticsRequest struct {
@@ -650,10 +656,13 @@ type GetAssignmentStatisticsRequest struct {
 }
 
 type AssignmentStatisticsResponse struct {
-	Minimum         float64 `json:"minimum"`
-	Median          float64 `json:"median"`
-	Maximum         float64 `json:"maximum"`
-	Mean            float64 `json:"mean"`
-	SD              float64 `json:"sd"`
-	TotalSubmission int64   `json:"total_submission"`
+	Minimum              float64   `json:"minimum"`
+	Median               float64   `json:"median"`
+	Maximum              float64   `json:"maximum"`
+	Mean                 float64   `json:"mean"`
+	SD                   float64   `json:"sd"`
+	TotalSubmission      int64     `json:"total_submission"`
+	TotalAssignmentScore int64     `json:"total_assignment_score"`
+	Scores               []float64 `json:"scores"`
+	MinHistogram         int64     `json:"min_histogram"`
 }

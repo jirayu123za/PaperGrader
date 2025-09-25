@@ -115,6 +115,7 @@ type InstructorService interface {
 
 	// Part 1: Export data
 	GetAssignmentsListForExport(CourseID uuid.UUID) ([]response.AssignmentsListResponse, error)
+	// CreateGradesToExcelFile(request response.CreateGradeToExcelFileRequest, courseID uuid.UUID) error
 
 	// Part:1 Assignment statistics
 	GetStatisticsDataBySelectAssignment(request response.GetAssignmentStatisticsRequest, courseID uuid.UUID) (response.AssignmentStatisticsResponse, error)
@@ -1889,6 +1890,10 @@ func (s *InstructorServiceImpl) GetAssignmentsListForExport(CourseID uuid.UUID) 
 	}
 	return assignments, nil
 }
+
+// func (s *InstructorServiceImpl) CreateGradesToExcelFile(request response.CreateGradeToExcelFileRequest, courseID uuid.UUID) error {
+// 	return nil
+// }
 
 // Part:1 Statistics data
 func (s *InstructorServiceImpl) GetStatisticsDataBySelectAssignment(request response.GetAssignmentStatisticsRequest, courseID uuid.UUID) (response.AssignmentStatisticsResponse, error) {
