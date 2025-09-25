@@ -11,7 +11,7 @@ interface StudentAssignment {
   due_date: string;
   release_date: string;
   section_name: string;
-  has_submitted?: boolean;       // true/false
+  has_submitted?: boolean; 
 }
 
 interface AssignmentStore {

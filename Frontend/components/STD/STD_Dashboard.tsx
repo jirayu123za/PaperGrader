@@ -92,15 +92,15 @@ const STD_Dashboard = () => {
 
   // ✅ Filter assignments
   const activeAssignments = combinedAssignmentList.filter(
-    (a) => dayjs(a.due_date).isAfter(dayjs()) && !a.is_submitted
+    (a) => dayjs(a.due_date).isAfter(dayjs()) && !a.has_submitted
   );
 
   const overdueAssignments = combinedAssignmentList.filter(
-    (a) => dayjs(a.due_date).isBefore(dayjs()) && !a.is_submitted
+    (a) => dayjs(a.due_date).isBefore(dayjs()) && !a.has_submitted
   );
 
   const completedAssignments = combinedAssignmentList.filter(
-    (a) => a.is_submitted
+    (a) => a.has_submitted
   );
 
   const paginate = (list: any[], page: number) =>

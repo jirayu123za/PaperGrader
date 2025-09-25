@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 // Part: 1
 interface Assignment {
+  [x: string]: any;
   assignment_id: string;
   assignment_name: string;
   release_date: string;
