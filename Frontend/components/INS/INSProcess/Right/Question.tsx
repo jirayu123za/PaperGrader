@@ -41,9 +41,32 @@ export default function QuestionOutline() {
 
   const [expandTitle, setExpandTitle] = React.useState(false);
   const calculateTotalPoints = () =>
-    rubricData.questions.reduce((acc, q) => acc + q.question_point, 0);
+    rubricData.questions.reduce((acc, q) => acc + Number(q.question_point ?? 0), 0);
 
-  // ---------- NEW: ฟังก์ชันกันค่าว่าง ----------
+
+  const sumSubPoints = (q: any, overrideIndex?: number, overrideValue?: number) => {
+    const subs = q.subquestions ?? [];
+    return subs.reduce((acc: number, s: any, i: number) => {
+      const v = (overrideIndex === i) ? Number(overrideValue ?? 0) : Number(s?.subquestion_point ?? 0);
+      return acc + (isNaN(v) ? 0 : v);
+    }, 0);
+  };
+
+
+  useEffect(() => {
+    (rubricData.questions ?? []).forEach((q: any) => {
+      const subs = q.subquestions ?? [];
+      if (subs.length > 0) {
+        const sum = sumSubPoints(q);
+        if (Number(q.question_point ?? 0) !== sum) {
+          updateQuestion(q.question_id, { question_point: sum });
+        }
+      }
+    });
+
+  }, [rubricData.questions]);
+
+
   const ensureNonEmptyTitles = () => {
     let changed = false;
     (rubricData.questions ?? []).forEach((q: any, qi: number) => {
@@ -55,7 +78,6 @@ export default function QuestionOutline() {
       (q.subquestions ?? []).forEach((s: any, si: number) => {
         const sTitle = (s.subquestion_title ?? '').trim();
         if (!sTitle) {
-          // ใช้ handleSubChange เพื่อคงพฤติกรรมเดิมของ store
           handleSubChange(q, si, 'subquestion_title', 'Subquestion');
           changed = true;
         }
@@ -63,8 +85,6 @@ export default function QuestionOutline() {
     });
     return changed;
   };
-  // ---------------------------------------------
-
   const queueDeleteQuestion = (q: any) => {
     if (q?.bounding_box_id) {
       markForDeleteBBox(q.bounding_box_id);
@@ -96,7 +116,6 @@ export default function QuestionOutline() {
   }, [templateBbs]);
 
   const hasEdits = React.useMemo(() => {
-    // ... (คงเดิม)
     for (const q of rubricData.questions) {
       const isRealQ = q.question_id && !String(q.question_id).startsWith('temp-');
       if (isRealQ) {
@@ -106,7 +125,7 @@ export default function QuestionOutline() {
           if (Number(tq.question_point ?? 0) !== Number(q.question_point ?? 0)) return true;
           const tQbbox = tq.bounding_box_id ?? '';
           const cQbbox = q.bounding_box_id ?? '';
-          if (tQbbox !== cQbbox) return true; 
+          if (tQbbox !== cQbbox) return true;
         }
       }
       for (const s of (q.subquestions ?? [])) {
@@ -118,7 +137,7 @@ export default function QuestionOutline() {
             if (Number(ts.sub_question_point ?? 0) !== Number(s.subquestion_point ?? 0)) return true;
             const tSbbox = ts.bounding_box_id ?? '';
             const cSbbox = s.bounding_box_id ?? '';
-            if (tSbbox != cSbbox) return true; 
+            if (tSbbox != cSbbox) return true;
           }
         }
       }
@@ -191,9 +210,9 @@ export default function QuestionOutline() {
   const handleSave = async () => {
     if (isSaving || isUpserting || isFetchingTemplate) return;
 
-    // ---------- NEW: กันค่าว่างก่อนเซฟ ----------
+
     ensureNonEmptyTitles();
-    // ---------------------------------------------
+
 
     setIsSaving(true);
     let saveOk = false;
@@ -278,6 +297,26 @@ export default function QuestionOutline() {
       setIsSaving(false);
     }
   };
+
+
+  const handleSubPointChange = (question: any, idx: number, val: number | string) => {
+    const num = typeof val === 'number' ? val : Number(val);
+    const safe = isNaN(num) ? 0 : num;
+    handleSubChange(question, idx, 'subquestion_point', safe);
+    const newSum = sumSubPoints(question, idx, safe);
+    updateQuestion(question.question_id, { question_point: newSum });
+  };
+
+  const handleSubRemove = (question: any, idx: number) => {
+    handleSubDelete(question, idx);
+    const newSum = (question.subquestions ?? []).reduce((acc: number, s: any, i: number) => {
+      if (i === idx) return acc;
+      const v = Number(s?.subquestion_point ?? 0);
+      return acc + (isNaN(v) ? 0 : v);
+    }, 0);
+    updateQuestion(question.question_id, { question_point: newSum });
+  };
+
 
   return (
     <div className="p-6 space-y-6 rounded-md max-h-[86vh] overflow-y-auto">
@@ -396,18 +435,15 @@ export default function QuestionOutline() {
                     <Table.Td>
                       <NumberInput
                         value={sub.subquestion_point}
-                        onChange={(val) =>
-                          handleSubChange(question, idx, 'subquestion_point', Number(val))
-                        }
+                        onChange={(val) => handleSubPointChange(question, idx, val as number)}
                         min={0}
-                        max={question.question_point}
                       />
                     </Table.Td>
                     <Table.Td>
                       <ActionIcon
                         color="red"
                         variant="light"
-                        onClick={() => handleSubDelete(question, idx)}
+                        onClick={() => handleSubRemove(question, idx)}
                       >
                         <FaTrash size={16} />
                       </ActionIcon>
