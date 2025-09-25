@@ -7,7 +7,7 @@ interface StudentAssignment {
   course_name?: string;
   assignment_name: string;
   assignment_description: string;
-  cut_off_date: string;
+  cut_off_date: string | null;
   due_date: string;
   release_date: string;
   section_name: string;
