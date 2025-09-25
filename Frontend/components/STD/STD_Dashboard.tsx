@@ -6,18 +6,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import { IconUpload } from "@tabler/icons-react";
-import {
-  Tabs,
-  ScrollArea,
-  Card,
-  Progress,
-  Text,
-  Skeleton,
-  Flex,
-  Pagination,
-  Button,
-  Collapse,
-} from "@mantine/core";
+import {Tabs,ScrollArea,Card,Progress,Text,Skeleton,Flex,Pagination,Button,Collapse,} from "@mantine/core";
 import { useFetchStdAssignments } from "@/hooks/Student/useFetchSTD_Assignment";
 import { useAssignmentStore } from "@/store/Student/useSTD_AssignmentStore";
 import { useSubmitAndDownloadModalStore } from "@/store/modal/useSubmitAndDownloadModal";
