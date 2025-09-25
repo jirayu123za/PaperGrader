@@ -3,10 +3,11 @@
 import React from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.tz.setDefault("Asia/Bangkok");
-import timezone from "dayjs/plugin/timezone";
+
 import { useFetchAssignments } from "../../hooks/useFetchAssignments";
 import { useAssignmentStore } from "../../store/useAssignmentStore";
 import { useStdCourseDashboardStore } from "../../store/useCourseStore";
@@ -43,9 +44,7 @@ const STD_CourseDashboard: React.FC = () => {
         <Divider my="md" />
       </div>
 
-      {!assignmentList ||
-      assignmentList.length === 0 ||
-      assignmentList === null ? (
+      {!assignmentList || assignmentList.length === 0 ? (
         <div className="text-center text-gray-500">
           This course has no assignments assigned yet.
         </div>
@@ -57,6 +56,9 @@ const STD_CourseDashboard: React.FC = () => {
               <Table.Th style={{ textAlign: "center" }}>RELEASED</Table.Th>
               <Table.Th style={{ textAlign: "center" }}>DUE</Table.Th>
               <Table.Th style={{ textAlign: "center" }}>LAST DUE</Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>
+                LAST SUBMITTED
+              </Table.Th>
               <Table.Th style={{ textAlign: "center" }}>STATUS</Table.Th>
             </Table.Tr>
           </Table.Thead>
@@ -67,14 +69,16 @@ const STD_CourseDashboard: React.FC = () => {
                   <Table.Tr className="border-b">
                     <Table.Td
                       className="py-2 px-4 cursor-pointer hover:underline"
-                      onClick={() =>
+                      onClick={() => {
+                        // ไปหน้าส่งงาน (ยังไม่มี file_url ใน API)
                         router.push(
                           `/student/overview/assignment/${assignment.assignment_id}`
-                        )
-                      }
+                        );
+                      }}
                     >
                       {assignment.assignment_name}
                     </Table.Td>
+
                     <Table.Td style={{ textAlign: "center" }}>
                       {assignment.release_date
                         ? dayjs(assignment.release_date).format(
@@ -82,6 +86,7 @@ const STD_CourseDashboard: React.FC = () => {
                           )
                         : "N/A"}
                     </Table.Td>
+
                     <Table.Td style={{ textAlign: "center" }}>
                       {assignment.due_date
                         ? dayjs(assignment.due_date).format(
@@ -89,6 +94,7 @@ const STD_CourseDashboard: React.FC = () => {
                           )
                         : "N/A"}
                     </Table.Td>
+
                     <Table.Td style={{ textAlign: "center" }}>
                       {assignment.cut_off_date
                         ? dayjs(assignment.cut_off_date).format(
@@ -96,10 +102,25 @@ const STD_CourseDashboard: React.FC = () => {
                           )
                         : "N/A"}
                     </Table.Td>
+
                     <Table.Td style={{ textAlign: "center" }}>
-                      <Badge color={"blue"} variant="filled">
-                        No submitted
-                      </Badge>
+                      {assignment.release_date
+                        ? dayjs(assignment.release_date).format(
+                            "MMM D, YYYY h:mm A"
+                          )
+                        : "N/A"}
+                    </Table.Td>
+
+                    <Table.Td style={{ textAlign: "center" }}>
+                      {assignment.has_submitted ? (
+                        <Badge color="green" variant="filled">
+                          Submitted
+                        </Badge>
+                      ) : (
+                        <Badge color="blue" variant="filled">
+                          Not Submitted
+                        </Badge>
+                      )}
                     </Table.Td>
                   </Table.Tr>
                 </React.Fragment>

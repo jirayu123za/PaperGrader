@@ -63,21 +63,7 @@ const STDSubmit: React.FC = () => {
       {
         onSuccess: () => {
           setSubmittedFileName(studentFile.name);
-          notifications.show({
-            title: "✅ File uploaded successfully!",
-            message: `📄 Submission File name: ${studentFile.name}`,
-            color: "green",
-            autoClose: 5000,
-          });
-          closeModal();
-        },
-        onError: (error) => {
-          console.error("Upload failed:", error);
-          notifications.show({
-            title: "❌ Upload failed",
-            message: "Please try again later.",
-            color: "red",
-          });
+          closeModal(); // ✅ ปิด modal หลังอัปโหลด
         },
       }
     );
@@ -104,7 +90,7 @@ const STDSubmit: React.FC = () => {
               {files.length > 0 && (
                 <div
                   style={{
-                    backgroundColor: "#ffe4e1", // เปลี่ยนตรงนี้ เป็นสีฟ้าพาสเทลสบายตา
+                    backgroundColor: "#E6F0FA",
                     padding: "12px",
                     borderRadius: "8px",
                     marginBottom: "16px",
@@ -114,12 +100,10 @@ const STDSubmit: React.FC = () => {
                     This is a template file.
                   </MantineText>
                   <div className="ml-2">
-                    {" "}
-                    {/* ห่อปุ่มด้วย div เพื่อสร้างระยะห่างเหมือน additional file */}
                     <Button
                       variant="light"
+                      color="orange"
                       onClick={() => downloadFile(files[0], fileNames[0])}
-                      className="text-blue-600 hover:underline block"
                     >
                       <IconDownload size={18} className="inline-block mr-2" />
                       {fileNames[0]}
@@ -132,13 +116,13 @@ const STDSubmit: React.FC = () => {
               {files.length > 1 && (
                 <div
                   style={{
-                    backgroundColor: "#eafcf4",
+                    backgroundColor: "#E6F0FA",
                     padding: "12px",
                     borderRadius: "8px",
                     marginBottom: "16px",
                   }}
                 >
-                  <MantineText size="sm" color="teal" className="mb-2">
+                  <MantineText size="sm" color="blue" className="mb-2">
                     This is an additional file.
                   </MantineText>
 
@@ -146,10 +130,10 @@ const STDSubmit: React.FC = () => {
                     <div key={index} className="mb-2 ml-2">
                       <Button
                         variant="light"
+                        color="green"
                         onClick={() =>
                           downloadFile(fileUrl, fileNames[index + 1])
                         }
-                        className="text-blue-600 hover:underline block"
                       >
                         <IconDownload size={18} className="inline-block mr-2" />
                         {fileNames[index + 1]}
