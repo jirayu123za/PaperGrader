@@ -153,6 +153,7 @@ func RegisterRoutes(
 
 	// Part:1 Assignment statistics
 	apiGroup.Get("/instructor/assignment/statistics", instructorHandler.GetStatisticsDataBySelectAssignment)
+	apiGroup.Get("/instructor/assignment/statistics/noQuestions", instructorHandler.GetStatisticsDataNoQuestions)
 
 	// Part-student: route
 	apiGroup.Get("/student/dashboard", studentHandler.GetCoursesAndAssignments)
