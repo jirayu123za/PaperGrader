@@ -4,7 +4,7 @@ import { useForm } from "@mantine/form";
 import AssignmentStatistics from "./AssignmentStatistics";
 import { RubricTable, type RubricItem } from "./RubricTable";
 
-/** simple seeded rng */
+
 function lcg(seed: number) {
   let s = seed >>> 0;
   return () => {
@@ -80,7 +80,6 @@ const ASSIGNMENTS = [
   },
 ];
 
-// ตัวอย่างรายการ Section (mock) — ภายหลังสามารถผูกกับ store/hook จริงได้เลย
 const SECTIONS = [
   { value: "all", label: "All sections" },
   { value: "A", label: "Section A" },
@@ -100,13 +99,11 @@ export default function ReviewSummary() {
 
   return (
     <Stack gap="sm" className="h-[calc(100vh-80px)]">
-      {/* ===== ส่วนบนสุด: Title + Selectors (Assignment + Section) ===== */}
       <Card withBorder padding="sm" radius="md">
         <Flex justify="space-between" align="center" gap="md" wrap="wrap">
           <Title order={3}>Assignment Statistics</Title>
 
           <Flex gap="sm" wrap="wrap">
-            {/* เลือก Assignment */}
             <Select
               data={ASSIGNMENTS.map((a) => ({ value: a.id, label: a.label }))}
               value={form.values.assignmentId}
@@ -119,7 +116,6 @@ export default function ReviewSummary() {
               aria-label="Select assignment"
             />
 
-            {/* เลือก Section (ไม่ใช้ SectionSelector component) */}
             <Select
               data={SECTIONS}
               value={form.values.sectionId}
@@ -135,18 +131,16 @@ export default function ReviewSummary() {
         </Flex>
       </Card>
 
-      {/* ===== กราฟ: Review Grades for {assignmentName} ===== */}
       <div className="shrink-0">
         <AssignmentStatistics
           scores={current.scores}
-          assignmentName={current.label}  // ถ้าต้องการต่อท้ายชื่อ section ค่อยปรับตรงนี้ได้
+          assignmentName={current.label} 
           initialChartHeight={220}
           initialBinCount={20}
           compact
         />
       </div>
 
-      {/* ===== ตาราง rubric ===== */}
       <div className="flex-1 min-h-0">
         <RubricTable data={current.rubric} />
       </div>
