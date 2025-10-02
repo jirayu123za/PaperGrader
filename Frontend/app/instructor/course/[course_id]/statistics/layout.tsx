@@ -1,7 +1,7 @@
 import LeftMain from '@/components/LeftINS/LeftMain';
-import HeaderCourse from '@/components/INS/Header/HeaderCourse';
 
-export default function ProcessLayout({ children }: { children: React.ReactNode }) {
+
+export default function Statisticslayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
       <LeftMain />

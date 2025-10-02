@@ -1,16 +1,20 @@
 import React from 'react';
-import ReviewSummary from "@/components/INS/INSProcess/ReviewGrade/ReviewSummary";
-
-
+import { Loader } from '@mantine/core';
+import { Suspense } from 'react';
+import StatisticsSunmary from '@/components/INS/INSStatistics/StatisticsSunmary';
 
 export const metadata = {
-  title: 'Review Grade',
-  description: 'Review Grade for assignment.',
+    title: ' Statistics ',
+    description: ' Statistics ',
 };
 
 
-export default function InsStatistics() {
-  return (
-        <ReviewSummary />
-  );
+export default async function StatisticsPage() {
+    return (
+        <div className="w-full">
+            <Suspense fallback={<Loader size="sm" />}>
+                <StatisticsSunmary  />
+            </Suspense>
+        </div>
+    );
 }
