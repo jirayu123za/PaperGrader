@@ -64,7 +64,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
       withBorder
       radius="lg"
       shadow="xs"
-      className="w-full h-[180px] flex items-center justify-center cursor-pointer border-2 border-dashed"
+      className="w-[370px] h-[180px] flex items-center justify-center cursor-pointer border-2 border-dashed"
       style={{ borderColor: theme.colors.teal[6] }}
       onClick={() => form.setFieldValue('isModalOpen', true)}
     >
