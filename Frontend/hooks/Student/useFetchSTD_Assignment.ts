@@ -13,6 +13,7 @@ interface StudentAssignment {
   due_date: string;
   release_Date: string;
   section_name: string;
+  has_submitted?: boolean; 
 }
 
 export const useFetchStdAssignments = () => {
