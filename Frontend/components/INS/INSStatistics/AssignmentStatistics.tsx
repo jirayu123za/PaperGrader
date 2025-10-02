@@ -1,17 +1,30 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { Card, Title, Text, SimpleGrid, Flex, NumberInput } from "@mantine/core";
+import React, { useMemo, useRef, useCallback } from "react";
+import { Card, Title, Text, Flex, NumberInput, SimpleGrid } from "@mantine/core";
+import { useForm } from "@mantine/form";
 import { BarChart } from "@mantine/charts";
 
 interface GradeStatisticsProps {
   scores?: number[];
-  /** selector สำหรับสลับ assignment — จะถูกแสดงต่อท้ายข้อความ "Review Grades for" */
-  assignmentSelector?: React.ReactNode;
+  assignmentName: string;
+  initialChartHeight?: number;
+  initialBinCount?: number;
+  compact?: boolean;
+  minHeight?: number;
+  maxHeight?: number;
 }
 
-export default function AssignmentStatistics({ scores, assignmentSelector }: GradeStatisticsProps) {
-  // generate ~50 mock scores between 0–100 once (ถ้าไม่ได้ส่ง scores มา)
+export default function AssignmentStatistics({
+  scores,
+  assignmentName,
+  initialChartHeight = 220,
+  initialBinCount = 20,
+  compact = true,
+  minHeight = 120,
+  maxHeight = 480,
+}: GradeStatisticsProps) {
+
   const mockScores = useMemo<number[]>(
     () => Array.from({ length: 50 }, () => Math.floor(Math.random() * 101)),
     []
@@ -22,10 +35,14 @@ export default function AssignmentStatistics({ scores, assignmentSelector }: Gra
   const minScore = 0;
   const maxScore = FULL_SCORE;
 
-  // start with 20 bins (each covers 5 points)
-  const [binCount, setBinCount] = useState<number>(20);
+  const form = useForm({
+    initialValues: {
+      binCount: initialBinCount,
+      chartHeight: initialChartHeight,
+    },
+  });
 
-  // calculate sorted, mean, median
+
   const sorted = useMemo(() => [...dataScores].sort((a, b) => a - b), [dataScores]);
   const mean =
     dataScores.length > 0
@@ -38,11 +55,10 @@ export default function AssignmentStatistics({ scores, assignmentSelector }: Gra
     return len % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
   }, [sorted]);
 
-  // build histogram data for 0–100
   const gradesData = useMemo(() => {
-    if (binCount < 1) return [];
+    const binCount = Math.max(1, form.values.binCount || 1);
     const range = maxScore - minScore;
-    const size = range / binCount; // 5 if binCount=20
+    const size = range / binCount;
     return Array.from({ length: binCount }, (_, i) => {
       const lower = minScore + i * size;
       const upper = i === binCount - 1 ? maxScore : lower + size;
@@ -54,9 +70,8 @@ export default function AssignmentStatistics({ scores, assignmentSelector }: Gra
         count,
       };
     });
-  }, [dataScores, binCount]);
+  }, [dataScores, form.values.binCount]);
 
-  // overall stats
   const stats = useMemo(
     () => [
       { label: "Minimum", value: Math.min(...dataScores, 0) },
@@ -67,60 +82,122 @@ export default function AssignmentStatistics({ scores, assignmentSelector }: Gra
     [dataScores, median, mean]
   );
 
-  return (
-    <Card shadow="sm" padding="lg" radius="md" withBorder>
-      {/* Header: "Review Grades for" + Selector (ซ้าย) และตัวปรับ Bins (ขวา) */}
-      <Flex justify="space-between" align="center" mb="md">
-        <Flex align="center" gap="sm">
-          <Title order={3} style={{ whiteSpace: "nowrap" }}>
-            Review Grades for
-          </Title>
-          {assignmentSelector}
-        </Flex>
 
-        <Flex align="center" gap="xs">
-          <Text size="xs" fw={500}>
-            Bins:
-          </Text>
-          <NumberInput
-            value={binCount}
-            onChange={(v) => setBinCount(typeof v === "number" ? v : 1)}
-            min={1}
-            max={FULL_SCORE}
-            size="xs"
-            style={{ width: 60 }}
-          />
+  const draggingRef = useRef(false);
+  const startYRef = useRef(0);
+  const startHeightRef = useRef(form.values.chartHeight);
+
+  const onMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!draggingRef.current) return;
+      const delta = e.clientY - startYRef.current;
+      const next = Math.max(
+        minHeight,
+        Math.min(maxHeight, Math.round(startHeightRef.current + delta))
+      );
+      form.setFieldValue("chartHeight", next);
+    },
+    [form, minHeight, maxHeight]
+  );
+
+  const endDrag = useCallback(() => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    window.removeEventListener("mousemove", onMouseMove);
+    window.removeEventListener("mouseup", endDrag);
+  }, [onMouseMove]);
+
+  const onHandleMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      draggingRef.current = true;
+      startYRef.current = e.clientY;
+      startHeightRef.current = form.values.chartHeight;
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("mouseup", endDrag);
+    },
+    [form.values.chartHeight, onMouseMove, endDrag]
+  );
+
+  const resetHeight = useCallback(() => {
+    form.setFieldValue("chartHeight", initialChartHeight);
+  }, [form, initialChartHeight]);
+
+  return (
+    <Card shadow="sm" padding={compact ? "md" : "lg"} radius="md" withBorder>
+
+      <Flex justify="space-between" align="center" mb={compact ? "sm" : "md"} wrap="wrap" gap="xs">
+        <Title order={compact ? 4 : 3} style={{ whiteSpace: "nowrap" }}>
+          Review Grades for {assignmentName}
+        </Title>
+
+        <Flex align="center" gap="sm" wrap="wrap">
+          <Flex align="center" gap={6}>
+            <Text size="xs" fw={500}>
+              Bins
+            </Text>
+            <NumberInput
+              value={form.values.binCount}
+              onChange={(v) => form.setFieldValue("binCount", typeof v === "number" ? v : 1)}
+              min={1}
+              max={FULL_SCORE}
+              size="xs"
+              style={{ width: 72 }}
+            />
+          </Flex>
         </Flex>
       </Flex>
 
-      <BarChart
-        h={300}
-        data={gradesData}
-        dataKey="bin"
-        series={[{ name: "count", color: "blue.6" }]}
-        gridAxis="y"
-        tickLine="y"
-        xAxisLabel="Score Range"
-        yAxisLabel="Number of Students"
-        xAxisProps={{
-          angle: -45,
-          dy: 10,
-          interval: 0,
-          height: 60,
-        }}
-        yAxisProps={{
-          domain: [0, "auto"],
-          tickCount: 6,
-        }}
-      />
 
-      <SimpleGrid cols={4} mt="md" spacing="lg">
+      <div
+        className="relative select-none rounded-md border border-transparent hover:border-gray-300"
+        style={{ paddingBottom: 10 }}
+        onDoubleClick={resetHeight}
+      >
+        <BarChart
+          h={form.values.chartHeight}
+          data={gradesData}
+          dataKey="bin"
+          series={[{ name: "count", color: "blue.6" }]}
+          gridAxis="y"
+          tickLine="y"
+          xAxisLabel="Score Range"
+          yAxisLabel="Number of Students"
+          xAxisProps={{
+            angle: -45,
+            dy: 10,
+            interval: 0,
+            height: compact ? 48 : 60,
+          }}
+          yAxisProps={{
+            domain: [0, "auto"],
+            tickCount: compact ? 5 : 6,
+          }}
+        />
+
+        <div
+          onMouseDown={onHandleMouseDown}
+          title="Drag to resize"
+          className="absolute left-0 right-0 bottom-0 h-3 flex items-center justify-center cursor-ns-resize"
+          style={{
+
+            borderTop: "1px dashed rgba(148,163,184,0.6)", 
+            userSelect: "none",
+          }}
+        >
+          <div
+            className="w-16 h-1 rounded"
+            style={{ background: "rgba(148,163,184,0.9)" }}
+          />
+        </div>
+      </div>
+
+      <SimpleGrid cols={4} mt={compact ? "sm" : "md"} spacing={compact ? "md" : "lg"}>
         {stats.map((stat) => (
           <div key={stat.label}>
-            <Text size="sm" c="dimmed">
+            <Text size={compact ? "xs" : "sm"} c="dimmed">
               {stat.label}
             </Text>
-            <Text size="xl" fw={700}>
+            <Text size={compact ? "lg" : "xl"} fw={700}>
               {stat.value.toFixed(2)}
             </Text>
           </div>
