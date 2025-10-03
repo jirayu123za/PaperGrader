@@ -198,14 +198,14 @@ type RawRubricData struct {
 type Questions struct {
 	QuestionID    uuid.UUID      `json:"question_id"`
 	QuestionTitle string         `json:"question_title"`
-	QuestionPoint int            `json:"question_point"`
+	QuestionPoint float64        `json:"question_point"`
 	SubQuestions  []SubQuestions `json:"sub_questions,omitempty"`
 }
 
 type SubQuestions struct {
 	SubQuestionID    uuid.UUID `json:"sub_question_id"`
 	SubQuestionTitle string    `json:"sub_question_title"`
-	SubQuestionPoint int       `json:"sub_question_point"`
+	SubQuestionPoint float64   `json:"sub_question_point"`
 }
 
 // Part 2: Get Questions List By Assignment Template
@@ -217,7 +217,7 @@ type UngradedSubmissions []struct {
 type SubQuestion struct {
 	SubQuestionID    uuid.UUID  `json:"sub_question_id"`
 	SubQuestionTitle string     `json:"sub_question_title"`
-	SubQuestionPoint int        `json:"sub_question_point"`
+	SubQuestionPoint float64    `json:"sub_question_point"`
 	SubmissionID     *uuid.UUID `json:"submission_id"`
 	Progress         int        `json:"progress"`
 	GradedBy         *string    `json:"graded_by"`
@@ -226,7 +226,7 @@ type SubQuestion struct {
 type Question struct {
 	QuestionID    uuid.UUID     `json:"question_id"`
 	QuestionTitle string        `json:"question_title"`
-	QuestionPoint int           `json:"question_point"`
+	QuestionPoint float64       `json:"question_point"`
 	SubmissionID  *uuid.UUID    `json:"submission_id"`
 	SubQuestions  []SubQuestion `json:"sub_questions,omitempty"`
 	Progress      int           `json:"progress"`
@@ -236,7 +236,7 @@ type Question struct {
 type QuestionNoSubmission struct {
 	QuestionID    uuid.UUID     `json:"question_id"`
 	QuestionTitle string        `json:"question_title"`
-	QuestionPoint int           `json:"question_point"`
+	QuestionPoint float64       `json:"question_point"`
 	SubQuestions  []SubQuestion `json:"sub_questions,omitempty"`
 }
 
