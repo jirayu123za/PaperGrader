@@ -79,16 +79,15 @@ func (s *CMUOAuthServiceImpl) ExchangeAndLogin(ctx context.Context, code, redire
 		}
 
 		preClaims := jwt.MapClaims{
-			"email":      email,
-			"first_name": first,
-			"last_name":  last,
-			"student_id": func() string {
+			"email":     email,
+			"firstName": first,
+			"lastName":  last,
+			"studentID": func() string {
 				if studentID == nil {
 					return ""
 				}
 				return *studentID
 			}(),
-			"aud": "cmu-pre-signup",
 			"exp": time.Now().Add(10 * time.Minute).Unix(),
 		}
 
