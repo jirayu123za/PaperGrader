@@ -46,8 +46,18 @@ export default function CmuEntraIDCallback() {
       
         if (res.ok && data?.needs_sign_up && typeof data.redirect_url === "string") {
             window.location.assign(data.redirect_url);
-        return;
-    }};
+            return;
+        }
+
+        const me = await fetch("/api/api/cmu/userGroup", { credentials: "include" });
+        if (!me.ok) {
+            router.replace("/");
+            return;
+        }
+        const { group_id } = (await me.json()) as { group_id: number };
+
+        router.replace(group_id === 1 ? "/INSCourseOverview" : group_id === 2 ? "/student/overview" : "/");
+    };
 
     Promise.resolve().then(run);
   }, [router]);
