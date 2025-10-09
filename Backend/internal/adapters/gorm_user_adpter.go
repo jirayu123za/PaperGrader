@@ -1,6 +1,7 @@
 package adapters
 
 import (
+	"errors"
 	"paperGrader/internal/models"
 
 	"github.com/google/uuid"
@@ -23,11 +24,18 @@ func (r *GormUserRepository) SaveUser(user *models.User) error {
 }
 
 func (r *GormUserRepository) FindUserByEmail(email string) (*models.User, error) {
-	var user models.User
-	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
+	var u models.User
+	err := r.db.
+		Where("email = ? AND deleted_at IS NULL", email).
+		Order("user_id").
+		Take(&u).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	if err != nil {
 		return nil, err
 	}
-	return &user, nil
+	return &u, nil
 }
 
 func (r *GormUserRepository) FindUserByGoogleID(googleID string) (*models.User, error) {
