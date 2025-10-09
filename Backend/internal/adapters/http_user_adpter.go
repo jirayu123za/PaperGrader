@@ -3,6 +3,7 @@ package adapters
 import (
 	"paperGrader/internal/core/services"
 	"paperGrader/internal/models"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -25,6 +26,10 @@ func (h *HttpUserHandler) CreateUser(c *fiber.Ctx) error {
 	var user models.User
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request payload"})
+	}
+
+	if user.GoogleID != nil && strings.TrimSpace(*user.GoogleID) == "" {
+		user.GoogleID = nil
 	}
 
 	err := h.services.CreateUser(&user)
