@@ -22,6 +22,14 @@ func (r *GormUserRepository) SaveUser(user *models.User) error {
 	return r.db.Save(user).Error
 }
 
+func (r *GormUserRepository) FindUserByEmail(email string) (*models.User, error) {
+	var user models.User
+	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 func (r *GormUserRepository) FindUserByGoogleID(googleID string) (*models.User, error) {
 	var user models.User
 	if err := r.db.Where("google_id = ?", googleID).First(&user).Error; err != nil {

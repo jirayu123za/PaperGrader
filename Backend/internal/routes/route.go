@@ -9,6 +9,7 @@ import (
 func RegisterRoutes(
 	app *fiber.App,
 	oauthHandler *adapters.HttpOAuthHandler,
+	cmuOAuthHandler *adapters.HttpCMUOAuthHandler,
 	userHandler *adapters.HttpUserHandler,
 	universityHandler *adapters.HttpUniversityHandler,
 	userGroupHandler *adapters.HttpUserGroupHandler,
@@ -28,9 +29,14 @@ func RegisterRoutes(
 		})
 	})
 
+	// OAuth routes
+	// Part: Google OAuth
 	apiGroup.Get("/google", oauthHandler.GetGoogleLoginURL)
 	apiGroup.Get("/google/callback", oauthHandler.GetGoogleCallBack)
 	apiGroup.Get("/google/callback/verify", oauthHandler.VerifyGoogleCallback)
+	// Part: CMU OAuth
+	apiGroup.Get("/cmu/authorize", cmuOAuthHandler.GetAuthorizeURL)
+	apiGroup.Post("/cmu/exchange", cmuOAuthHandler.ExchangeCode)
 
 	apiGroup.Post("/user", userHandler.CreateUser)
 	apiGroup.Get("/user/:googleID", userHandler.GetUserByID)

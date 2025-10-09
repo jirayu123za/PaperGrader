@@ -44,6 +44,9 @@ func main() {
 	// Init GoogleOAuth configured
 	oauth.InitializeGoogleOAuth()
 
+	// Init CMUOAuth configured
+	oauth.LoadCMUOAuthConfig()
+
 	// Initialize MinIO storage
 	minioClient, err := storage.MinioConnection()
 	if err != nil {
@@ -100,6 +103,10 @@ func initDependencies(app *fiber.App, db *gorm.DB, minioClient *minio.Client) {
 	oauthService := services.NewOAuthService(oauthRepo)
 	oauthHandler := adapters.NewHttpOAuthHandler(oauthService, userService)
 
+	cmuOAuthRepo := adapters.NewCMUOAuthRepository()
+	cmuOAuthService := services.NewCMUOAuthService(cmuOAuthRepo, userRepo)
+	cmuOAuthHandler := adapters.NewHttpCMUOAuthHandler(cmuOAuthService)
+
 	userHandler := adapters.NewHttpUserHandler(userService, oauthService)
 
 	universityRepo := adapters.NewGormUniversityRepository(db)
@@ -130,7 +137,7 @@ func initDependencies(app *fiber.App, db *gorm.DB, minioClient *minio.Client) {
 	studentService := services.NewStudentService(studentRepo, minioRepo)
 	studentHandler := adapters.NewHttpStudentHandler(studentService, minioService)
 
-	routes.RegisterRoutes(app, oauthHandler, userHandler, universityHandler, userGroupHandler,
+	routes.RegisterRoutes(app, oauthHandler, cmuOAuthHandler, userHandler, universityHandler, userGroupHandler,
 		sectionHandler, courseHandler, assignmentHandler,
 		instructorHandler, studentHandler,
 	)

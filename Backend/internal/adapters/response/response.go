@@ -666,3 +666,33 @@ type AssignmentStatisticsResponse struct {
 	Scores               []float64 `json:"scores"`
 	MinHistogram         int64     `json:"min_histogram"`
 }
+
+// Part: 1 CMU OAuth
+type CMUTokenResponse struct {
+	AccessToken  string `json:"access_token"`
+	ExpiresIn    int64  `json:"expires_in"`
+	RefreshToken string `json:"refresh_token"`
+	TokenType    string `json:"token_type"`
+	Scope        string `json:"scope"`
+}
+
+type CMUBasicInfo struct {
+	CMUITAccountName string `json:"cmuitaccount_name"`
+	CMUITAccount     string `json:"cmuitaccount"` // email
+	StudentID        string `json:"student_id"`
+	PreNameEN        string `json:"prename_EN"`
+	FirstNameEN      string `json:"firstname_EN"`
+	LastNameEN       string `json:"lastname_EN"`
+	OrganizationEN   string `json:"organization_name_EN"`
+	ITAccountTypeEN  string `json:"itaccounttype_EN"`
+}
+
+type LoginResult struct {
+	JWT          string       `json:"jwt"`
+	User         *models.User `json:"user"`
+	AccessToken  string       `json:"access_token"`
+	RefreshToken string       `json:"refresh_token"`
+	ExpiresIn    int64        `json:"expires_in"`
+	NeedsSignUp  bool         `json:"needs_sign_up"`
+	RedirectURL  string       `json:"redirect_url,omitempty"`
+}
