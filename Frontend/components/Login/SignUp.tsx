@@ -95,7 +95,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
     if (group_id === 1) {
       router.push("/INSCourseOverview");
     } else if (group_id === 2) {
-      router.push("/STDCourseOverview");
+      router.push("/student/overview");
     }
   };
 
