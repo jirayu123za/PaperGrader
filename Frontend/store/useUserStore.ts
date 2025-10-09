@@ -14,8 +14,8 @@ interface UserState {
   setStudentID: (student_id: string) => void;
   selectedUniversity: string;
   setSelectedUniversity: (selectedUniversity: string) => void;
-  google_id: string;
-  setGoogleId: (id: string) => void;
+  google_id: string | null;
+  setGoogleId: (id: string | null) => void;
 }
 
 // Create a combined store for all user information
@@ -32,6 +32,6 @@ export const useUserStore = create<UserState>((set) => ({
   setStudentID: (student_id) => set(() => ({ student_id })),
   selectedUniversity: '',
   setSelectedUniversity: (selectedUniversity) => set(() => ({ selectedUniversity })),
-  google_id: '',
+  google_id: null,
   setGoogleId: (id) => set(() => ({ google_id: id })),
 }));

@@ -3,7 +3,7 @@ import { useUserStore } from '../../store/usecreatestore';
 import axios from 'axios';
 
 interface CreateUserParams {
-  google_id: string;
+  google_id: string | null;
   group_id: number;
   first_name: string;
   last_name: string;
@@ -13,15 +13,11 @@ interface CreateUserParams {
   university: string;
 }
 
-// ฟังก์ชันสำหรับการสร้างผู้ใช้ใหม่
 const createUser = async (userData: CreateUserParams): Promise<any> => {
-  console.log('userData:', userData);
-
   const response = await axios.post('/api/api/user', userData);
   return response.data;
 };
 
-// การใช้ UseMutationOptions เพื่อกำหนดประเภทของ mutation
 export const useCreateUser = (
   options?: UseMutationOptions<any, Error, CreateUserParams, unknown>
 ) => {

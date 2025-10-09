@@ -101,7 +101,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
 
   const handleSubmit = (values: typeof form.values) => {
     const formData = {
-      google_id: google_id,
+      google_id: google_id ?? null,
       group_id: values.role === 'Instructor' ? 1 : 2,
       first_name: values.first_name,
       last_name: values.last_name,
