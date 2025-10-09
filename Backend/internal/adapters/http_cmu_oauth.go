@@ -63,7 +63,10 @@ func (h *HttpCMUOAuthHandler) ExchangeCode(c *fiber.Ctx) error {
 	}
 
 	if res.NeedsSignUp && res.RedirectURL != "" {
-		return c.Redirect(res.RedirectURL, fiber.StatusTemporaryRedirect)
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"needs_sign_up": true,
+			"redirect_url":  res.RedirectURL,
+		})
 	}
 
 	// Set JWT as a secure cookie
