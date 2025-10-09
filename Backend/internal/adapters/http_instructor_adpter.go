@@ -2225,6 +2225,7 @@ func (h *HttpInstructorHandler) GetAssignmentsListForExport(c *fiber.Ctx) error 
 // }
 
 // Statistics Handlers
+// ! Need to change use section to calculate statistics
 func (h *HttpInstructorHandler) GetStatisticsDataBySelectAssignment(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
@@ -2266,6 +2267,7 @@ func (h *HttpInstructorHandler) GetStatisticsDataBySelectAssignment(c *fiber.Ctx
 	})
 }
 
+// ! Need to change use section to calculate statistics
 func (h *HttpInstructorHandler) GetStatisticsDataNoQuestions(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
