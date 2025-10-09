@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useUserStore } from '../../store/useUserStore';
 import { useUniversityStore } from '../../store/useUniversityStore';
-import { Modal, Button, TextInput, Select, Title, Flex } from '@mantine/core';
+import { Modal, Button, TextInput, Select, Title, Flex, NumberInput } from '@mantine/core';
 import { useFetchUniversity } from '../../hooks/useFetchUniversities';
 import { useCreateUser } from '../../hooks/useCreate/useCreateUser';
 import { jwtDecode } from 'jwt-decode';
@@ -42,7 +42,12 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
     },
   });
 
-  const capitalizeFirstLetter = (value: string) => value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+  const normalizeName = (s: string) => {
+    const v = (s || '').trim();
+    if (!v) return '';
+    const lower = v.toLowerCase();
+    return lower.charAt(0).toUpperCase() + lower.slice(1);
+  };
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -56,11 +61,15 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
         }
 
         if (!form.values.first_name) {
-          form.setFieldValue('first_name', (decodedUser as { firstName?: string }).firstName || '');
+          form.setFieldValue('first_name', normalizeName((decodedUser as { firstName?: string }).firstName || ''));
         }
 
         if (!form.values.last_name) {
-          form.setFieldValue('last_name', (decodedUser as { lastName?: string }).lastName || '');
+          form.setFieldValue('last_name', normalizeName((decodedUser as { lastName?: string }).lastName || ''));
+        }
+
+        if (!form.values.student_id) {
+          form.setFieldValue('student_id', (decodedUser as { studentID?: string }).studentID || '');
         }
 
         setGoogleId((decodedUser as { googleID?: string }).googleID || '');
@@ -188,7 +197,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
               required
               className="flex-1"
               onBlur={(e) => {
-                form.setFieldValue('first_name', capitalizeFirstLetter(e.target.value));
+                form.setFieldValue('first_name', normalizeName(e.target.value));
               }} 
               {...form.getInputProps('first_name')}
             />
@@ -199,17 +208,18 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
               required
               className="flex-1"
               onBlur={(e) => {
-                form.setFieldValue('last_name', capitalizeFirstLetter(e.target.value));
+                form.setFieldValue('last_name', normalizeName(e.target.value));
               }}
               {...form.getInputProps('last_name')}
             />
           </div>
 
           {form.values.role === 'Student' && (
-            <TextInput
+            <NumberInput
+              hideControls
+              required
               label="Student ID"
               placeholder="Enter your Student ID"
-              required
               className="mb-2"
               {...form.getInputProps('student_id')}
             />
