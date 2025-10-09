@@ -80,7 +80,6 @@ export const TimeSetting: React.FC = () => {
       overlayProps={{ opacity: 0.55, blur: 3 }}
     >
       <form
-        
         onSubmit={(e) => {
           e.preventDefault();
           handleUpdateTimeSetting();
@@ -95,6 +94,7 @@ export const TimeSetting: React.FC = () => {
               style={{ flex: 1 }}
               label="Release date"
               placeholder="Select release date"
+              required
               value={values.releaseDate || null}
               onChange={(date) => {
                 useAssignmentSettingFormStore
@@ -129,6 +129,7 @@ export const TimeSetting: React.FC = () => {
           <DateTimePicker
             label="Cut off date"
             placeholder="Select cut off date"
+            required
             value={values.cutOffDate || null}
             onChange={(date) => {
               useAssignmentSettingFormStore
