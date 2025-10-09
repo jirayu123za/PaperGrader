@@ -2,6 +2,7 @@ package adapters
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"paperGrader/internal/core/services"
 	"time"
@@ -79,4 +80,27 @@ func (h *HttpCMUOAuthHandler) ExchangeCode(c *fiber.Ctx) error {
 		})
 	}
 	return c.JSON(res)
+}
+
+func (h *HttpCMUOAuthHandler) GetUserGroup(c *fiber.Ctx) error {
+	token := c.Cookies("user_token")
+	if token == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"message": "No token provided",
+			"error":   errors.New("no token provided"),
+		})
+	}
+
+	claims, err := h.services.GetUserGroup(token)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"message": "Invalid token",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"group_id": claims["group_id"],
+		"user_id":  claims["user_id"],
+	})
 }

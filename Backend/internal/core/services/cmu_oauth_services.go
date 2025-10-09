@@ -17,6 +17,7 @@ type CMUOAuthService interface {
 	// GenerateCMUOauthJWT(email string, first string, last string, studentID *string) (string, error)
 	AuthorizeURL(redirectURI, state string) (string, error)
 	ExchangeAndLogin(ctx context.Context, code, redirectURI string) (response.LoginResult, error)
+	GetUserGroup(tokenStr string) (jwt.MapClaims, error)
 }
 
 type CMUOAuthServiceImpl struct {
@@ -126,4 +127,23 @@ func (s *CMUOAuthServiceImpl) ExchangeAndLogin(ctx context.Context, code, redire
 		RefreshToken: token.RefreshToken,
 		ExpiresIn:    token.ExpiresIn,
 	}, nil
+}
+
+func (s *CMUOAuthServiceImpl) GetUserGroup(tokenStr string) (jwt.MapClaims, error) {
+	config.LoadEnv()
+	jwtSecret := os.Getenv("JWT_SECRET")
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
+		return []byte(jwtSecret), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return nil, errors.New("invalid token")
+	}
+	return claims, nil
 }

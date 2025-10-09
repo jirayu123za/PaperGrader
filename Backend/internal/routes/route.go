@@ -37,6 +37,7 @@ func RegisterRoutes(
 	// Part: CMU OAuth
 	apiGroup.Get("/cmu/authorize", cmuOAuthHandler.GetAuthorizeURL)
 	apiGroup.Post("/cmu/exchange", cmuOAuthHandler.ExchangeCode)
+	apiGroup.Get("/cmu/userGroup", cmuOAuthHandler.GetUserGroup)
 
 	apiGroup.Post("/user", userHandler.CreateUser)
 	apiGroup.Get("/user/:googleID", userHandler.GetUserByID)
