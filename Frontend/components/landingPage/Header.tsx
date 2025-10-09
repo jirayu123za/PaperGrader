@@ -3,10 +3,10 @@
 import { Button, Flex, Group, Text, Image } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import React from "react";
-import SignUp from "../Login/SignUp";
+import SignIn from "../Login/SignIn";
 
 export const Header = () => {
-  const [signUpOpened, { open: openSignUp, close: closeSignUp }] = useDisclosure(false);
+  const [signInOpened, { open: openSignIn, close: closeSignIn }] = useDisclosure(false);
 
   return (
     <Flex justify="space-between" align="center" px="lg" h={80}>
@@ -18,12 +18,12 @@ export const Header = () => {
         <Text component="a" href="#" className="text-gray-700">
           Get demo
         </Text>
-        <Button className="shadow-md" onClick={openSignUp}>
-          Sign Up
+        <Button color="#4877E0" className="shadow-sm" onClick={openSignIn}>
+          Sign In
         </Button>
       </Group>
 
-      <SignUp opened={signUpOpened} onClose={closeSignUp} />
+      <SignIn opened={signInOpened} onClose={closeSignIn} />
     </Flex>
   );
 };

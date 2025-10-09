@@ -3,22 +3,19 @@
 import { useEffect } from "react";
 import { AppShell } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import SignIn from "../components/Login/SignIn";
 import { Header } from "../components/landingPage/Header";
 import { HeroSection } from "../components/landingPage/HeroSection";
 import { Footer } from "../components/landingPage/Footer";
+import SignUp from "../components/Login/SignUp";
 
 export default function LandingPage() {
-  const [SignInOpened, { open: openSignIn, close: closeSignIn }] = useDisclosure(false);
+  const [SignUpOpened, { open: openSignUp, close: closeSignUp }] = useDisclosure(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get("token");
-
-    if (token) {
-      openSignIn();
-    }
-  }, [openSignIn]);
+    if (token) { openSignUp(); }
+  }, [openSignUp]);
 
   return (
     <AppShell
@@ -50,7 +47,7 @@ export default function LandingPage() {
         <Footer />
       </footer>
 
-      <SignIn opened={SignInOpened} onClose={closeSignIn} />
+      <SignUp opened={SignUpOpened} onClose={closeSignUp} />
     </AppShell>
   );
 }

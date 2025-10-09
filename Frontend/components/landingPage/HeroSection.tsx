@@ -1,9 +1,9 @@
 "use client";
 
+import React from 'react'
+import SignIn from '../Login/SignIn';
 import { Button, Card, Container, Divider, Flex, SimpleGrid, Text } from '@mantine/core'
 import { useDisclosure, useViewportSize } from '@mantine/hooks';
-import React from 'react'
-import SignUp from '../Login/SignUp';
 import { IconCookie, IconGauge, IconUser } from '@tabler/icons-react';
 
 const mockData = [
@@ -28,8 +28,8 @@ const mockData = [
 ];
 
 export const HeroSection = () => {
-  const [signUpOpened, { open: openSignUp, close: closeSignUp }] = useDisclosure(false);
-//   const { height, width } = useViewportSize(); may be used later
+  const [signInOpened, { open: openSignIn, close: closeSignIn }] = useDisclosure(false);
+  //   const { height, width } = useViewportSize(); may be used later
 
   const features = mockData.map((feature) => (
     <Card key={feature.title} shadow="md" radius="md" padding="xl">
@@ -72,7 +72,7 @@ export const HeroSection = () => {
             <Text size="xl" c="#495057" mt="md" fw={400}>
               Simplify scoring and grading in one platform with tools designed for convenience. Whether it's setting customizable rubrics, displaying detailed scores, or managing the grading system, PaperGrader supports instructors and students at every step.
             </Text>
-            <Button className='shadow-md mt-6' size="lg" radius="xl" onClick={openSignUp}>
+            <Button className='shadow-sm mt-6' color='#4877E0' size="lg" radius="xl" onClick={openSignIn}>
               Get Started
             </Button>
         </Flex>
@@ -123,7 +123,7 @@ export const HeroSection = () => {
         </SimpleGrid>
     </Container>
 
-    <SignUp opened={signUpOpened} onClose={closeSignUp} />
+    <SignIn opened={signInOpened} onClose={closeSignIn} />
     </>
   )
 }
