@@ -1,7 +1,16 @@
-import React from 'react';
-import { Modal, Button } from '@mantine/core';
-import Image from 'next/image';
-import { useGoogleLogin } from '../../hooks/useGoogleLogin';
+import { useEffect } from 'react';
+import { useUserStore } from '../../store/useUserStore';
+import { useUniversityStore } from '../../store/useUniversityStore';
+import { Modal, Button, TextInput, Select, Title, Flex } from '@mantine/core';
+import { useFetchUniversity } from '../../hooks/useFetchUniversities';
+import { useCreateUser } from '../../hooks/useCreate/useCreateUser';
+import { jwtDecode } from 'jwt-decode';
+import { useRouter } from 'next/navigation';
+import { useForm } from '@mantine/form';
+import { DatePickerInput } from '@mantine/dates';
+import { notifications } from '@mantine/notifications';
+import dayjs from 'dayjs';
+import '@mantine/dates/styles.css';
 
 interface SignUpProps {
   opened: boolean;
@@ -9,98 +18,249 @@ interface SignUpProps {
 }
 
 export default function SignUp({ opened, onClose }: SignUpProps) {
-  const { loginWithGoogle, loading, error } = useGoogleLogin();
+  const router = useRouter();
+  const { setGoogleId, google_id } = useUserStore();
+  const { universities, setUniversities } = useUniversityStore();
+  const { data: universityData, isSuccess: universitySuccess } = useFetchUniversity();
+  const createUserMutation = useCreateUser();
 
-  const handleGoogleClick = () => {
-    loginWithGoogle();
+  const form = useForm({
+    initialValues: {
+      email: '',
+      first_name: '',
+      last_name: '',
+      birth_date: null,
+      student_id: '',
+      role: 'Instructor',
+      selectedUniversity: '',
+    },
+
+    validate: {
+      first_name: (value) => (value.length < 2 ? 'First name must have at least 2 characters' : null),
+      last_name: (value) => (value.length < 2 ? 'Last name must have at least 2 characters' : null),
+      selectedUniversity: (value) => (value ? null : 'University is required'),
+    },
+  });
+
+  const capitalizeFirstLetter = (value: string) => value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
+
+    if (token) {
+      try {
+        const decodedUser = jwtDecode(token);
+        if (!form.values.email) {
+          form.setFieldValue('email', (decodedUser as { email?: string }).email || '');
+        }
+
+        if (!form.values.first_name) {
+          form.setFieldValue('first_name', (decodedUser as { firstName?: string }).firstName || '');
+        }
+
+        if (!form.values.last_name) {
+          form.setFieldValue('last_name', (decodedUser as { lastName?: string }).lastName || '');
+        }
+
+        setGoogleId((decodedUser as { googleID?: string }).googleID || '');
+        console.log("Decoded User:", decodedUser);
+      } catch (error) {
+        notifications.show({
+          title: 'Error',
+          message: 'Failed to decode token. Please try signing up again.',
+          color: 'red',
+        });
+      }
+    } else {
+    }
+  }, [setGoogleId]);
+
+  useEffect(() => {
+    if (universitySuccess && universityData) {
+      setUniversities(universityData);
+    }
+  }, [universityData, universitySuccess, setUniversities]);
+
+  const handleRoleBasedRedirect = (group_id: number) => {
+    if (group_id === 1) {
+      router.push("/INSCourseOverview");
+    } else if (group_id === 2) {
+      router.push("/STDCourseOverview");
+    }
+  };
+
+  const handleSubmit = (values: typeof form.values) => {
+    const formData = {
+      google_id: google_id,
+      group_id: values.role === 'Instructor' ? 1 : 2,
+      first_name: values.first_name,
+      last_name: values.last_name,
+      email: values.email,
+      birth_date: values.birth_date ? dayjs(values.birth_date, "YYYY-MM-DD").format("DD-MM-YYYY") : '',
+      student_id: values.role === 'Student' ? values.student_id : null,
+      university: values.selectedUniversity,
+    };
+
+    createUserMutation.mutate(formData, {
+      onSuccess: () => {
+        onClose();
+        handleRoleBasedRedirect(formData.group_id);
+        notifications.show({
+          title: 'Success',
+          message: 'Account created successfully!',
+          color: 'green',
+        });
+      },
+      onError: (error) => {
+        notifications.show({
+          title: 'Error',
+          message: 'Failed to create account. Please try again.',
+          color: 'red',
+        });
+      },
+    });
   };
 
   return (
     <Modal
       opened={opened}
       onClose={onClose}
-      title={null}
       withCloseButton={false}
       centered
       overlayProps={{
         color: 'rgba(0, 0, 0, 0.5)',
-        blur: 5,
-      }}
-      radius="lg"
-      transitionProps={{
-        transition: 'fade',
-        duration: 150,
-        timingFunction: 'ease',
+        blur: 3,
       }}
       styles={{
         content: {
-          backgroundColor: '#f5f5dc',
-          height: '280px',
-          width: '420px',
-          padding: '24px',
-          borderRadius: '12px',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
+          backgroundColor: '#F9F9F9',
+          boxShadow: '0 4px 24px rgba(72, 124, 224, 0.15)',
         },
       }}
     >
-      <div className="flex flex-col space-y-4 items-center">
-        <Button
-          className="rounded-full flex items-center justify-center shadow-lg"
-          style={{
-            backgroundColor: '#9b59b6',
-            color: '#fffffe',
-            height: '65px',
-            width: '220px',
-            fontSize: '18px',
-            fontWeight: 'bold',
-            transition: 'background-color 0.3s ease',
-          }}
-          radius="xl"
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#8e44ad')}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#9b59b6')}
-        >
-          <Image
-            src="/icon/Chiang_Mai_University.svg.png"
-            alt="CMU Logo"
-            width={28}
-            height={28}
-            className="mr-3"
-          />
-          <span>CMU Account</span>
-        </Button>
+      <Flex direction="column" align="center" p="sm">
+        <Title order={2} className="text-center mb-4 text-[#484CA3]" mb="md">Sign up</Title>
+        <Button.Group mb="md" style={{ width: '100%' }} >
+          <Button
+            fullWidth
+            variant={form.values.role === 'Instructor' ? 'filled' : 'outline'}
+            onClick={() => form.setFieldValue('role', 'Instructor')}
+            styles={{
+              root: {
+                backgroundColor: form.values.role === 'Instructor' ? '#4877E0' : 'transparent',
+                borderColor: '#4877E0',
+                color: form.values.role === 'Instructor' ? '#fff' : '#4877E0',
+                '&:hover': {
+                  backgroundColor: form.values.role === 'Instructor' ? '#4C6EF5' : '#E9E9E9',
+                },
+              },
+            }}
+          >
+            Instructor
+          </Button>
+          <Button
+            fullWidth
+            variant={form.values.role === 'Student' ? 'filled' : 'outline'}
+            onClick={() => form.setFieldValue('role', 'Student')}
+            styles={{
+              root: {
+                backgroundColor: form.values.role === 'Student' ? '#4877E0' : 'transparent',
+                borderColor: '#4877E0',
+                color: form.values.role === 'Student' ? '#fff' : '#4877E0',
+                '&:hover': {
+                  backgroundColor: form.values.role === 'Student' ? '#4C6EF5' : '#E9E9E9',
+                },
+              },
+            }}
+          >
+            Student
+          </Button>
+        </Button.Group>
 
-        <Button
-          className="rounded-full flex items-center justify-center shadow-lg"
-          style={{
-            backgroundColor: '#3457D5',
-            color: '#fffffe',
-            height: '65px',
-            width: '220px',
-            fontSize: '18px',
-            fontWeight: 'bold',
-            transition: 'background-color 0.3s ease',
-          }}
-          radius="xl"
-          onClick={handleGoogleClick}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#3457F5')}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3457D5')}
-        >
-          <Image
-            src="/icon/GoogleIcon.png"
-            alt="Google Logo"
-            width={28}
-            height={28}
-            className="mr-3"
-          />
-          <span>Google</span>
-        </Button>
+        <form onSubmit={form.onSubmit(handleSubmit)}>
+          <TextInput label="Email" value={form.values.email} readOnly className="mb-2" />
 
-        {error && <div className="text-red-500 mt-2">{error}</div>}
-      </div>
+          <div className="flex space-x-6 mb-2">
+            <TextInput
+              label="First name"
+              placeholder="Enter your first name"
+              required
+              className="flex-1"
+              onBlur={(e) => {
+                form.setFieldValue('first_name', capitalizeFirstLetter(e.target.value));
+              }} 
+              {...form.getInputProps('first_name')}
+            />
+
+            <TextInput
+              label="Last name"
+              placeholder="Enter your last name"
+              required
+              className="flex-1"
+              onBlur={(e) => {
+                form.setFieldValue('last_name', capitalizeFirstLetter(e.target.value));
+              }}
+              {...form.getInputProps('last_name')}
+            />
+          </div>
+
+          {form.values.role === 'Student' && (
+            <TextInput
+              label="Student ID"
+              placeholder="Enter your Student ID"
+              required
+              className="mb-2"
+              {...form.getInputProps('student_id')}
+            />
+          )}
+
+          <DatePickerInput
+            label="Birth date"
+            placeholder="Pick a date"
+            allowDeselect
+            clearable
+            required
+            mb="xs"
+            minDate={new Date(1980, 0, 1)}
+            maxDate={new Date()}
+            closeOnChange
+            valueFormat="DD/MM/YYYY"
+            dropdownType="popover"
+            {...form.getInputProps("birth_date")}
+          />
+
+          <Select
+            label="University"
+            placeholder="Select your University"
+            data={universities?.map((university) => ({
+              value: university.university_name,
+              label: university.university_name,
+            })) || []}
+            searchable
+            required
+            className="mb-2"
+            {...form.getInputProps('selectedUniversity')}
+          />
+
+          <Button
+            type="submit"
+            fullWidth
+            styles={{
+              root: {
+                backgroundColor: '#4877E0',
+                color: '#fff',
+                fontWeight: 500,
+                '&:hover': { backgroundColor: '#4C6EF5' },
+              },
+            }}
+            mt="lg"
+          >
+            {`Sign up as an ${form.values.role}`}
+          </Button>
+
+        </form>
+      </Flex>
     </Modal>
   );
 }
