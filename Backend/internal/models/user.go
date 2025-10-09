@@ -10,7 +10,7 @@ import (
 
 type User struct {
 	UserID      uuid.UUID `gorm:"primaryKey" json:"user_id"`
-	GoogleID    string    `gorm:"unique" json:"google_id"`
+	GoogleID    *string   `gorm:"unique;null" json:"google_id"`
 	GroupID     uint      `gorm:"not null" json:"group_id"`
 	FirstName   string    `gorm:"type:varchar(50);not null" json:"first_name"`
 	LastName    string    `gorm:"type:varchar(50);not null" json:"last_name"`
