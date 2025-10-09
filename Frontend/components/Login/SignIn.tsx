@@ -1,7 +1,8 @@
 import React from 'react';
 import Image from 'next/image';
 import { Modal, Button } from '@mantine/core';
-import { useGoogleLogin } from '../../hooks/useGoogleLogin';
+import { useGoogleLogin } from '@/hooks/useGoogleLogin';
+import { useCMULogin } from '@/hooks/useCMULogin';
 
 interface SignInProps {
   opened: boolean;
@@ -9,10 +10,15 @@ interface SignInProps {
 }
 
 export default function SignIn({ opened, onClose }: SignInProps) {
-  const { loginWithGoogle, loading, error } = useGoogleLogin();
+  const { loginWithGoogle, loading: isGoogleLoading, error: googleError } = useGoogleLogin();
+  const { loginWithCMU, loading: isCMULoading, error: cmuError } = useCMULogin();
 
   const handleGoogleClick = () => {
     loginWithGoogle();
+  };
+
+  const handleCMUClick = () => {
+    loginWithCMU();
   };
 
   return (
@@ -60,6 +66,8 @@ export default function SignIn({ opened, onClose }: SignInProps) {
             transition: 'background-color 0.3s ease',
           }}
           radius="xl"
+          onClick={handleCMUClick}
+          disabled={isCMULoading}
           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#8e44ad')}
           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#9b59b6')}
         >
@@ -86,6 +94,7 @@ export default function SignIn({ opened, onClose }: SignInProps) {
           }}
           radius="xl"
           onClick={handleGoogleClick}
+          disabled={isGoogleLoading}
           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#3457F5')}
           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3457D5')}
         >
@@ -98,8 +107,6 @@ export default function SignIn({ opened, onClose }: SignInProps) {
           />
           <span>Google</span>
         </Button>
-
-        {error && <div className="text-red-500 mt-2">{error}</div>}
       </div>
     </Modal>
   );
