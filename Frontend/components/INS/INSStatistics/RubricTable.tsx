@@ -14,15 +14,6 @@ interface RubricTableProps {
 }
 
 export function RubricTable({ data }: RubricTableProps) {
-  // Empty state
-  if (!data || data.length === 0) {
-    return (
-      <Center py="md">
-        <Text c="dimmed">No rubric data available</Text>
-      </Center>
-    );
-  }
-
   // ให้ทุกแถว (รวม subRows ทุกระดับ) มี mean ด้วยการแปลงแบบ recursive
   type RowWithMean = RubricItem & { mean: number; subRows?: RowWithMean[] };
 
@@ -38,6 +29,15 @@ export function RubricTable({ data }: RubricTableProps) {
 
     return addMean(data);
   }, [data]);
+
+  // Empty state
+  if (!data || data.length === 0) {
+    return (
+      <Center py="md">
+        <Text c="dimmed">No rubric data available</Text>
+      </Center>
+    );
+  }
 
   // Recursive renderer with numbering and indent
   const renderRows = (
