@@ -1,9 +1,9 @@
 "use client";
-import { Select, Title, Flex, Stack, Card } from "@mantine/core";
+import { Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import AssignmentStatistics from "./AssignmentStatistics";
 import { RubricTable, type RubricItem } from "./RubricTable";
-
+import StatisticHeader from "../Header/StatisticHeader";
 
 function lcg(seed: number) {
   let s = seed >>> 0;
@@ -80,13 +80,6 @@ const ASSIGNMENTS = [
   },
 ];
 
-const SECTIONS = [
-  { value: "all", label: "All sections" },
-  { value: "A", label: "Section A" },
-  { value: "B", label: "Section B" },
-  { value: "C", label: "Section C" },
-];
-
 export default function ReviewSummary() {
   const form = useForm({
     initialValues: {
@@ -97,44 +90,16 @@ export default function ReviewSummary() {
 
   const current = ASSIGNMENTS.find((a) => a.id === form.values.assignmentId)!;
 
+
   return (
     <Stack gap="sm" className="h-[calc(100vh-80px)]">
-      <Card withBorder padding="sm" radius="md">
-        <Flex justify="space-between" align="center" gap="md" wrap="wrap">
-          <Title order={3}>Assignment Statistics</Title>
-
-          <Flex gap="sm" wrap="wrap">
-            <Select
-              data={ASSIGNMENTS.map((a) => ({ value: a.id, label: a.label }))}
-              value={form.values.assignmentId}
-              onChange={(v) => v && form.setFieldValue("assignmentId", v)}
-              checkIconPosition="right"
-              size="sm"
-              comboboxProps={{ withinPortal: true }}
-              style={{ width: 320 }}
-              placeholder="Select assignment"
-              aria-label="Select assignment"
-            />
-
-            <Select
-              data={SECTIONS}
-              value={form.values.sectionId}
-              onChange={(v) => v && form.setFieldValue("sectionId", v)}
-              checkIconPosition="right"
-              size="sm"
-              comboboxProps={{ withinPortal: true }}
-              style={{ width: 220 }}
-              placeholder="Select section"
-              aria-label="Select section"
-            />
-          </Flex>
-        </Flex>
-      </Card>
+      {/* ✅ ย้ายหัวข้อ + สอง Select มาไว้ในคอมโพเนนต์ใหม่ */}
+      <StatisticHeader title="Assignment Statistics" />
 
       <div className="shrink-0">
         <AssignmentStatistics
           scores={current.scores}
-          assignmentName={current.label} 
+          assignmentName={current.label}
           initialChartHeight={220}
           initialBinCount={20}
           compact
