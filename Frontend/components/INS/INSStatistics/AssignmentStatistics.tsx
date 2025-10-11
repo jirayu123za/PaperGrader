@@ -1,107 +1,95 @@
 "use client";
 
-import React, { useMemo, useRef, useCallback } from "react";
-import { Card, Title, Text, Flex, NumberInput, SimpleGrid } from "@mantine/core";
-import { useForm } from "@mantine/form";
+import React, { useMemo, useRef, useCallback, useState } from "react";
+import { Card, Title, Text, Flex, SimpleGrid } from "@mantine/core";
 import { BarChart } from "@mantine/charts";
 
+interface QuestionStat {
+  question: string; 
+  mean: number;     
+}
+
 interface GradeStatisticsProps {
-  scores?: number[];
   assignmentName: string;
+  questions?: QuestionStat[];
   initialChartHeight?: number;
-  initialBinCount?: number;
   compact?: boolean;
   minHeight?: number;
   maxHeight?: number;
 }
 
 export default function AssignmentStatistics({
-  scores,
   assignmentName,
+  questions,
   initialChartHeight = 220,
-  initialBinCount = 20,
   compact = true,
   minHeight = 120,
   maxHeight = 480,
 }: GradeStatisticsProps) {
+  const mockData: QuestionStat[] = [
+    { question: "1", mean: 83 },
+    { question: "2", mean: 72 },
+    { question: "2.1", mean: 65 },
+    { question: "2.2", mean: 58 },
+    { question: "3", mean: 49 },
+    { question: "4", mean: 91 },
+    { question: "4.1", mean: 77 },
+    { question: "4.2", mean: 68 },
+    { question: "4.3", mean: 55 },
+    { question: "5", mean: 62 },
+    { question: "6", mean: 38 },
+    { question: "7", mean: 80 },
+    { question: "8", mean: 71 },
+    { question: "9", mean: 44 },
+    { question: "10", mean: 53 },
+  ];
 
-  const mockScores = useMemo<number[]>(
-    () => Array.from({ length: 50 }, () => Math.floor(Math.random() * 101)),
-    []
+  const data = useMemo<QuestionStat[]>(
+    () => (questions && questions.length > 0 ? questions : mockData),
+    [questions]
   );
-  const dataScores = scores && scores.length > 0 ? scores : mockScores;
 
-  const FULL_SCORE = 100;
-  const minScore = 0;
-  const maxScore = FULL_SCORE;
+  const means = useMemo(() => data.map((d) => d.mean), [data]);
+  const minimum = useMemo(() => (means.length ? Math.min(...means) : 0), [means]);
+  const maximum = useMemo(() => (means.length ? Math.max(...means) : 0), [means]);
+  const average = useMemo(
+    () => (means.length ? means.reduce((s, v) => s + v, 0) / means.length : 0),
+    [means]
+  );
 
-  const form = useForm({
-    initialValues: {
-      binCount: initialBinCount,
-      chartHeight: initialChartHeight,
-    },
-  });
-
-
-  const sorted = useMemo(() => [...dataScores].sort((a, b) => a - b), [dataScores]);
-  const mean =
-    dataScores.length > 0
-      ? dataScores.reduce((sum, v) => sum + v, 0) / dataScores.length
-      : 0;
   const median = useMemo(() => {
-    const len = sorted.length;
-    if (len === 0) return 0;
-    const mid = Math.floor(len / 2);
-    return len % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-  }, [sorted]);
+    if (!means.length) return 0;
+    const sorted = [...means].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 0
+      ? (sorted[mid - 1] + sorted[mid]) / 2
+      : sorted[mid];
+  }, [means]);
 
-  const gradesData = useMemo(() => {
-    const binCount = Math.max(1, form.values.binCount || 1);
-    const range = maxScore - minScore;
-    const size = range / binCount;
-    return Array.from({ length: binCount }, (_, i) => {
-      const lower = minScore + i * size;
-      const upper = i === binCount - 1 ? maxScore : lower + size;
-      const count = dataScores.filter((v) =>
-        i === binCount - 1 ? v >= lower && v <= upper : v >= lower && v < upper
-      ).length;
-      return {
-        bin: `${Math.ceil(lower)}–${Math.floor(upper)}`,
-        count,
-      };
-    });
-  }, [dataScores, form.values.binCount]);
-
-  const stats = useMemo(
-    () => [
-      { label: "Minimum", value: Math.min(...dataScores, 0) },
-      { label: "Median", value: median },
-      { label: "Maximum", value: Math.max(...dataScores, 0) },
-      { label: "Mean", value: mean },
-    ],
-    [dataScores, median, mean]
-  );
-
+  const stdDev = useMemo(() => {
+    if (!means.length) return 0;
+    const mu = average;
+    const variance =
+      means.reduce((acc, v) => acc + Math.pow(v - mu, 2), 0) / means.length;
+    return Math.sqrt(variance);
+  }, [means, average]);
 
   const draggingRef = useRef(false);
   const startYRef = useRef(0);
-  const startHeightRef = useRef(form.values.chartHeight);
+  const [chartHeight, setChartHeight] = useState(initialChartHeight);
 
   const onMouseMove = useCallback(
     (e: MouseEvent) => {
       if (!draggingRef.current) return;
       const delta = e.clientY - startYRef.current;
-      const next = Math.max(
-        minHeight,
-        Math.min(maxHeight, Math.round(startHeightRef.current + delta))
+      setChartHeight((prev) =>
+        Math.max(minHeight, Math.min(maxHeight, prev + delta))
       );
-      form.setFieldValue("chartHeight", next);
     },
-    [form, minHeight, maxHeight]
+    [minHeight, maxHeight]
   );
 
   const endDrag = useCallback(() => {
-    if (!draggingRef.current) return;
     draggingRef.current = false;
     window.removeEventListener("mousemove", onMouseMove);
     window.removeEventListener("mouseup", endDrag);
@@ -111,76 +99,70 @@ export default function AssignmentStatistics({
     (e: React.MouseEvent<HTMLDivElement>) => {
       draggingRef.current = true;
       startYRef.current = e.clientY;
-      startHeightRef.current = form.values.chartHeight;
       window.addEventListener("mousemove", onMouseMove);
       window.addEventListener("mouseup", endDrag);
     },
-    [form.values.chartHeight, onMouseMove, endDrag]
+    [onMouseMove, endDrag]
   );
-
-  const resetHeight = useCallback(() => {
-    form.setFieldValue("chartHeight", initialChartHeight);
-  }, [form, initialChartHeight]);
 
   return (
     <Card shadow="sm" padding={compact ? "md" : "lg"} radius="md" withBorder>
 
-      <Flex justify="space-between" align="center" mb={compact ? "sm" : "md"} wrap="wrap" gap="xs">
-        <Title order={compact ? 4 : 3} style={{ whiteSpace: "nowrap" }}>
-          Review Grades for {assignmentName}
-        </Title>
+      <style jsx global>{`
+        .pg-hover-purple .recharts-bar-rectangle:hover path,
+        .pg-hover-purple .recharts-bar-rectangle:hover rect,
+        .pg-hover-purple .recharts-rectangle:hover {
+          fill: #6665ac !important;
+        }
+      `}</style>
 
-        <Flex align="center" gap="sm" wrap="wrap">
-          <Flex align="center" gap={6}>
-            <Text size="xs" fw={500}>
-              Bins
-            </Text>
-            <NumberInput
-              value={form.values.binCount}
-              onChange={(v) => form.setFieldValue("binCount", typeof v === "number" ? v : 1)}
-              min={1}
-              max={FULL_SCORE}
-              size="xs"
-              style={{ width: 72 }}
-            />
-          </Flex>
-        </Flex>
+      <Flex justify="space-between" align="center" mb={compact ? "sm" : "md"}>
+        <Title order={compact ? 4 : 3}>Review Grades for {assignmentName}</Title>
       </Flex>
 
-
       <div
-        className="relative select-none rounded-md border border-transparent hover:border-gray-300"
+        className="relative select-none rounded-md border border-transparent hover:border-gray-300 pg-hover-purple"
         style={{ paddingBottom: 10 }}
-        onDoubleClick={resetHeight}
       >
         <BarChart
-          h={form.values.chartHeight}
-          data={gradesData}
-          dataKey="bin"
-          series={[{ name: "count", color: "blue.6" }]}
-          gridAxis="y"
-          tickLine="y"
-          xAxisLabel="Score Range"
-          yAxisLabel="Number of Students"
-          xAxisProps={{
-            angle: -45,
-            dy: 10,
-            interval: 0,
-            height: compact ? 48 : 60,
-          }}
-          yAxisProps={{
-            domain: [0, "auto"],
-            tickCount: compact ? 5 : 6,
+          h={chartHeight}
+          data={data}
+          dataKey="question"
+          series={[
+            { name: "mean", color: "violet.3" },
+          ]}
+          xAxisLabel="Question"
+          yAxisLabel="Mean (%)"
+          yAxisProps={{ domain: [0, 100], tickCount: 6 }}
+          tooltipAnimationDuration={150}
+          tooltipProps={{
+            cursor: false,
+            content: ({ label, payload }) => {
+              if (!payload?.length) return null;
+              const value = payload[0]?.value;
+              return (
+                <div
+                  style={{
+                    background: "rgba(0,0,0,0.75)",
+                    color: "white",
+                    padding: "8px 12px",
+                    borderRadius: 6,
+                    fontSize: 14,
+                  }}
+                >
+                  <div style={{ fontWeight: 500 }}>Question {label}</div>
+                  <div style={{ fontSize: 18, fontWeight: 700 }}>{value}% Mean</div>
+                </div>
+              );
+            },
           }}
         />
-
         <div
           onMouseDown={onHandleMouseDown}
           title="Drag to resize"
           className="absolute left-0 right-0 bottom-0 h-3 flex items-center justify-center cursor-ns-resize"
           style={{
-
-            borderTop: "1px dashed rgba(148,163,184,0.6)", 
+            borderTop: "1px dashed rgba(148,163,184,0.6)",
             userSelect: "none",
           }}
         >
@@ -191,17 +173,27 @@ export default function AssignmentStatistics({
         </div>
       </div>
 
-      <SimpleGrid cols={4} mt={compact ? "sm" : "md"} spacing={compact ? "md" : "lg"}>
-        {stats.map((stat) => (
-          <div key={stat.label}>
-            <Text size={compact ? "xs" : "sm"} c="dimmed">
-              {stat.label}
-            </Text>
-            <Text size={compact ? "lg" : "xl"} fw={700}>
-              {stat.value.toFixed(2)}
-            </Text>
-          </div>
-        ))}
+      <SimpleGrid cols={5} mt={compact ? "sm" : "md"} spacing={compact ? "md" : "lg"}>
+        <div>
+          <Text size={compact ? "xs" : "sm"} c="dimmed">Minimum</Text>
+          <Text size={compact ? "lg" : "xl"} fw={700}>{minimum.toFixed(2)}%</Text>
+        </div>
+        <div>
+          <Text size={compact ? "xs" : "sm"} c="dimmed">Median</Text>
+          <Text size={compact ? "lg" : "xl"} fw={700}>{median.toFixed(2)}%</Text>
+        </div>
+        <div>
+          <Text size={compact ? "xs" : "sm"} c="dimmed">Maximum</Text>
+          <Text size={compact ? "lg" : "xl"} fw={700}>{maximum.toFixed(2)}%</Text>
+        </div>
+        <div>
+          <Text size={compact ? "xs" : "sm"} c="dimmed">Mean</Text>
+          <Text size={compact ? "lg" : "xl"} fw={700}>{average.toFixed(2)}%</Text>
+        </div>
+        <div>
+          <Text size={compact ? "xs" : "sm"} c="dimmed">Std Dev</Text>
+          <Text size={compact ? "lg" : "xl"} fw={700}>{stdDev.toFixed(2)}%</Text>
+        </div>
       </SimpleGrid>
     </Card>
   );
