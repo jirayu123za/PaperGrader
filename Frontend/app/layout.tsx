@@ -3,6 +3,7 @@ import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
 import '../styles/globals.css';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
+import '@mantine/charts/styles.css';
 
 import ClientProviders from '@/components/ClientProviders';
 import { Notifications } from '@mantine/notifications';
