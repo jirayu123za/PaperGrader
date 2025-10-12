@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useGradeboxStore } from '@/store/BoundingBox/useGradeboxStore';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 export interface BoundingBox {
   bounding_box_id: string;
@@ -25,7 +26,7 @@ export const useFetchGradebox = (assignmentId: string) => {
   return useQuery<BoundingBox[], Error>({
     queryKey: ['gradeboxes', assignmentId] as const,
     queryFn: async () => {
-      const response = await axios.get('/api/api/instructor/boundingBoxes/data', {
+      const response = await axios.get(`${API_BASE}/instructor/boundingBoxes/data`, {
         params: { assignment_id: assignmentId },
       });
       if (response.status !== 200) {

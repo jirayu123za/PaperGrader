@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { usePageMetaStore } from '@/store/BoundingBox/usePageMetaStore';
 import useBoundingBoxStore from '@/store/BoundingBox/useBoundingBoxStore';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 
 
@@ -146,7 +147,7 @@ export const useFetchTemplate = (assignment_id: string) => {
     queryKey: ['template', assignment_id],
     queryFn: async () => {
       const response = await axios.get<TemplateResponse>(
-        '/api/api/instructor/assignment/template',
+        `${API_BASE}/instructor/assignment/template`,
         { params: { assignment_id } }
       );
 
@@ -201,7 +202,7 @@ export function useUpsertBoundingBoxesAndQuestions(assignment_id: string) {
       bounding_boxes?: BoundingBoxPayload[];
       questions_data?: QuestionPayload[];
     }) => {
-      const res = await axios.post(`/api/api/instructor/boundingBoxes`, payload, { params: { assignment_id } });
+      const res = await axios.post(`${API_BASE}/instructor/boundingBoxes`, payload, { params: { assignment_id } });
       return res.data;
     },
     onSuccess: () => {
@@ -216,7 +217,7 @@ export function useDeleteBoundingBox(assignment_id: string) {
   return useMutation({
     mutationFn: async (bounding_box_id: string) => {
       if (BBOX_DELETE_METHOD === 'DELETE') {
-        const res = await axios.delete(`/api/api/instructor/boundingBoxes`, {
+        const res = await axios.delete(`${API_BASE}/instructor/boundingBoxes`, {
           params: { assignment_id },
           data: [bounding_box_id],
           headers: { 'Content-Type': 'application/json' },
@@ -279,7 +280,7 @@ export function useBatchDeleteBoundingBoxes(assignment_id: string) {
 
       if (BBOX_DELETE_METHOD === 'DELETE') {
         // Attempt DELETE with JSON array body
-        await axios.delete(`/api/api/instructor/boundingBoxes`, {
+        await axios.delete(`${API_BASE}/instructor/boundingBoxes`, {
           params: { assignment_id },
           data: real,
           headers: { 'Content-Type': 'application/json' },
