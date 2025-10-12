@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { useAssignmentLeftProcessStore } from '../../store/useLeftProcessStore';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 interface AssignmentLeftProcess {
     assignment_id: string;
@@ -13,7 +14,7 @@ export const useFetchAssignmentLeft = (course_id: string, assignment_id: string)
     return useQuery<AssignmentLeftProcess, Error>({
         queryKey: ['process_left_sidebar', course_id, assignment_id],
         queryFn: async () => {
-            const response = await axios.get('/api/api/instructor/leftSidebar/process', {
+            const response = await axios.get(`${API_BASE}/instructor/leftSidebar/process`, {
                 params: { course_id: course_id, assignment_id: assignment_id },
             });
 

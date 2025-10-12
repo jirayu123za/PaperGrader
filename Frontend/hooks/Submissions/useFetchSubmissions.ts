@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useSubmissionsStore } from "@/store/Submissions/useSubmissionsStore";
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 interface SubmissionsResponse {
     submission_id: string;
@@ -31,7 +32,7 @@ export const useFetchSubmissionsFromQuestion = (course_id: string, assignment_id
     return useQuery<Submissions>({
         queryKey: ['submissions_list', course_id, assignment_id],
         queryFn: async () => {
-            const response = await axios.get(`/api/api/instructor/submissions/question`, {
+            const response = await axios.get(`${API_BASE}/instructor/submissions/question`, {
                 params: {
                     course_id,
                     assignment_id,

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { useAssignmentStore } from '@/store/Student/useSTD_AssignmentStore';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 interface StudentAssignment {
   course_id: string;
@@ -22,7 +23,7 @@ export const useFetchStdAssignments = () => {
   return useQuery<StudentAssignment[], Error>({
     queryKey: ['assignments'],
     queryFn: async () => {
-      const response = await axios.get(`/api/api/student/dashboard`);
+      const response = await axios.get(`${API_BASE}/student/dashboard`);
 
       if (response.status !== 200) {
         throw new Error('Network response was not ok');

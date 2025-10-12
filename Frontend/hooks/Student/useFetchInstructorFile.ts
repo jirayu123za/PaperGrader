@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { useSubmitAndDownloadModalStore } from '../../store/modal/useSubmitAndDownloadModal';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 export const useFetchInstructorFile = () => {
   const { assignment_id, course_id, setFiles } = useSubmitAndDownloadModalStore();
@@ -8,7 +9,7 @@ export const useFetchInstructorFile = () => {
   return useQuery({
     queryKey: ['instructorFile', course_id, assignment_id],
     queryFn: async () => {
-      const response = await axios.get('/api/api/student/files/download', {
+      const response = await axios.get(`${API_BASE}/student/files/download`, {
         params: {
           course_id: course_id,
           assignment_id: assignment_id,
