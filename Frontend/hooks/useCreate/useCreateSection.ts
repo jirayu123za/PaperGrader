@@ -1,10 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 const CreateSections = async ({ section_name, course_id }: { section_name: string[], course_id: string }) => {
   const sectionArray = section_name.map(name => ({ section_name: name }));
 
-  const { data: createSectionsResponse } = await axios.post('/api/api/sections', 
+  const { data: createSectionsResponse } = await axios.post(`${API_BASE}/sections`, 
     sectionArray, 
     {
       params: { course_id },

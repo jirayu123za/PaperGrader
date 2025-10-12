@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient, UseMutationResult } from '@tanstack/react-query';
 import axios from 'axios';
 import { useCreateCourseStore } from '../../store/useCreateCourseStore';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 interface CreateCourseParams {
   course_code: string;
@@ -14,7 +15,7 @@ interface CreateCourseParams {
 const createCourse = async (courseData: CreateCourseParams): Promise<any> => {
   console.log('courseData:', courseData);
 
-  const response = await axios.post('/api/api/course', courseData);
+  const response = await axios.post(`${API_BASE}/course`, courseData);
   return response.data;
 };
 

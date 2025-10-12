@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 const createSingleUser = async (from: FormData) => {
   const course_id = from.get('course_id');
-  const { data: response } = await axios.post('/api/api/instructor/roster',
+  const { data: response } = await axios.post(`${API_BASE}/instructor/roster`,
     from, {
     params: { course_id },
     headers: {

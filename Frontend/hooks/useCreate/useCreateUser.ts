@@ -1,6 +1,7 @@
 import { useMutation, UseMutationOptions } from '@tanstack/react-query';
 import { useUserStore } from '../../store/usecreatestore';
 import axios from 'axios';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 interface CreateUserParams {
   google_id: string | null;
@@ -14,7 +15,7 @@ interface CreateUserParams {
 }
 
 const createUser = async (userData: CreateUserParams): Promise<any> => {
-  const response = await axios.post('/api/api/user', userData);
+  const response = await axios.post(`${API_BASE}/user`, userData);
   return response.data;
 };
 
