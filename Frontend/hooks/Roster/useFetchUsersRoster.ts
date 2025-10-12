@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useRosterStore } from '../../store/useRosterStore';
 import axios from 'axios';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 interface UsersList {
     personal_data_id: string;
@@ -18,7 +19,7 @@ export const useFetchUsersRoster = (course_id: string) => {
     return useQuery<UsersList[], Error>({
         queryKey: ['roster', course_id],
         queryFn: async () => {
-            const response = await axios.get(`/api/api/instructors/roster`, {
+            const response = await axios.get(`${API_BASE}/instructors/roster`, {
                 params: { course_id: course_id },
             });
 
@@ -40,7 +41,7 @@ export const useFetchSectionUsersRoster = (course_id: string, section_id: string
     return useQuery<UsersList[], Error>({
         queryKey: ['sectionRoster', course_id, section_id],
         queryFn: async () => {
-            const response = await axios.get(`/api/api/instructor/roster/section/user`, {
+            const response = await axios.get(`${API_BASE}/instructor/roster/section/user`, {
                 params: {
                     course_id: course_id,
                     section_id: section_id,

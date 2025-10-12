@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useEditCourseMemberStore } from '../../store/useEditCourseMemberStore';
+import { API_BASE, api, qf } from '@/src/lib/api';
+
 
 interface EditCourseMemberResponse {
   email: string;
@@ -17,7 +19,7 @@ export const useFetchEditCourseMember = (course_id: string, personal_data_id: st
     return useQuery<EditCourseMemberResponse, Error>({
       queryKey: ['member', course_id, personal_data_id],
       queryFn: async (): Promise<EditCourseMemberResponse> => {
-        const response = await axios.get('/api/api/instructor/roster/personal', {
+        const response = await axios.get(`${API_BASE}/instructor/roster/personal`, {
           params: { course_id, personal_data_id },
         });
   
