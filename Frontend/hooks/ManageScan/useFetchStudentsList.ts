@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useStudentsListStore } from "../../store/ManageScan/useStudentsListStore";
 import axios from "axios";
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 interface Student {
     personal_data_id: string;
@@ -21,7 +22,7 @@ export const useFetchStudentsList = (course_id: string, assignment_id: string) =
     return useQuery<StudentSubmissionSplitResponse, Error>({
         queryKey: ['students', course_id, assignment_id],
         queryFn: async () => {
-            const response = await axios.get('/api/api/instructor/submission/studentList', {
+            const response = await axios.get(`${API_BASE}/instructor/submission/studentList`, {
                 params: { course_id: course_id, assignment_id: assignment_id },
             });
 

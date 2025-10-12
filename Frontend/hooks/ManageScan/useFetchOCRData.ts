@@ -1,6 +1,7 @@
 import { useOCRDataStore } from "@/store/ManageScan/useOCRDataStore";
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import axios from "axios";
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 interface OCRProcessData {
     submission_id: string;
@@ -15,7 +16,7 @@ export const useFetchOCRProcessing = (course_id: string, assignment_id: string, 
     return useQuery<OCRProcessData[], Error>({
         queryKey: ['ocr_data', course_id, assignment_id],
         queryFn: async () => {
-            const response = await axios.get('/api/api/instructor/ocr/process', {
+            const response = await axios.get(`${API_BASE}/instructor/ocr/process`, {
                 params: { course_id: course_id, assignment_id: assignment_id },
             });
 

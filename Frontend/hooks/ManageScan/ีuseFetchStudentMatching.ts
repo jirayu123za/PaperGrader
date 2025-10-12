@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useStudentMatchingStore } from "@/store/ManageScan/useStudentMatchingStore";
 import axios from "axios";
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 interface StudentMatchingData {
     submission_id: string;
@@ -21,7 +22,7 @@ export const useFetchStudentMatching = (course_id: string, assignment_id: string
     return useQuery<StudentMatchingData[], Error>({
         queryKey: ['submissions', course_id, assignment_id],
         queryFn: async () => {
-            const response = await axios.get('/api/api/instructor/ocr/submissions', {
+            const response = await axios.get(`${API_BASE}/instructor/ocr/submissions`, {
                 params: { course_id: course_id, assignment_id: assignment_id },
             });
 

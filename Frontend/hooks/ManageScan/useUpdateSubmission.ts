@@ -2,6 +2,7 @@ import axios from 'axios';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useFetchStudentMatching } from './ีuseFetchStudentMatching';
 import { useStudentMatchingStore } from '@/store/ManageScan/useStudentMatchingStore';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 interface updateSubmissionParams {
     submission_id: string;
@@ -11,7 +12,7 @@ interface updateSubmissionParams {
 }
 
 const updateSubmission = async ({ submission_id, assignment_id, personal_data_id, matched_by }: updateSubmissionParams) => {
-    const { data } = await axios.patch(`/api/api/instructor/submission/manage`, null, {
+    const { data } = await axios.patch(`${API_BASE}/instructor/submission/manage`, null, {
         params: {
             submission_id,
             assignment_id,

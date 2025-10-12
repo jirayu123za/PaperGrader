@@ -2,6 +2,7 @@ import axios from 'axios';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSubmissionFilesStore } from '@/store/ManageScan/useSubmissionFiles';
 import { useFetchSubmissionFiles } from './useFetchSubmissionFiles';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 interface UploadFileParams {
     assignment_id: string;
@@ -14,7 +15,7 @@ const uploadSubmissionFile = async ({ assignment_id, course_id, files }: UploadF
     const formData = new FormData();
     files.forEach((file) => formData.append('files', file));
 
-    const { data } = await axios.post(`/api/api/instructor/submission/file`, formData, {
+    const { data } = await axios.post(`${API_BASE}/instructor/submission/file`, formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
