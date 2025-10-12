@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { useAssignmentSettingFormStore } from '@/store/modal/useAssignmentSettingModal';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 interface Assignment {
   assignment_id: string;
@@ -32,7 +33,7 @@ export const useFetchAssignmentSetting = (course_id: string, assignment_id: stri
   return useQuery<AssignmentSettingResponse, Error>({
     queryKey: ['assignment_setting', course_id, assignment_id],
     queryFn: async (): Promise<AssignmentSettingResponse> => {
-      const response = await axios.get('/api/api/instructor/assignment', {
+      const response = await axios.get(`${API_BASE}/instructor/assignment`, {
         params: { course_id, assignment_id },
       });
 

@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { API_BASE, api, qf } from '@/src/lib/api';
+
 
 type Body = {
     assignment_id: string;
@@ -9,7 +11,7 @@ type Body = {
 };
 
 const updateAssignmentPublishedGrade = async ({ body, course_id }: { body: Body; course_id: string }) => {
-    const { data: publishedResponse } = await axios.put(`/api/api/instructor/assignment/publish/grade`,
+    const { data: publishedResponse } = await axios.put(`${API_BASE}/instructor/assignment/publish/grade`,
         body, {
         params: { course_id },
     });

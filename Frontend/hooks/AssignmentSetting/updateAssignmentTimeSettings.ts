@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 const updateAssignmentTimeSettings = async ({ timeData, course_id, assignment_id }: { timeData: FormData; course_id: string; assignment_id: string }) => {
-    const { data: timeSettingResponse } = await axios.put(`/api/api/instructor/assignment/time`,
+    const { data: timeSettingResponse } = await axios.put(`${API_BASE}/instructor/assignment/time`,
         timeData, {
         params: { course_id, assignment_id },
         headers: {

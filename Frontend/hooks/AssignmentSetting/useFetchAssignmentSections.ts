@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { useAssignmentSectionsStore } from '../../store/useSectionStore';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 interface SectionsList {
     section_id: string;
@@ -13,7 +14,7 @@ export const useFetchAssignmentSections = (assignment_id: string) => {
     return useQuery<SectionsList[]>({
         queryKey: ['sections', assignment_id],
         queryFn: async () => {
-            const response = await axios.get('/api/api/sections/assignment', {
+            const response = await axios.get(`${API_BASE}/sections/assignment`, {
                 params: { assignment_id: assignment_id },
             });
 
