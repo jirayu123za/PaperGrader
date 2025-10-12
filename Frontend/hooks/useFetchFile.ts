@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useForm, UseFormReturnType } from '@mantine/form';
 import { useQuery } from '@tanstack/react-query';
 import { useSubmissionFileStore } from '../store/useINS_SubmissionStore';
+import { API_BASE, api, qf } from '@/src/lib/api';
 import axios from 'axios';
 
 interface FetchFileParams {
@@ -29,7 +30,7 @@ export const useFetchFile = ({ course_id, assignment_id }: FetchFileParams): Use
 
     try {
       form.setFieldValue('loading', true);
-      const response = await axios.get('/api/api/instructor/template/url', {
+      const response = await axios.get(`${API_BASE}/instructor/template/url`, {
         params: { course_id: course_id, assignment_id: assignment_id },
       });
 
@@ -63,7 +64,7 @@ export const useFetchSubmissionFile = (course_id: string, assignment_id: string,
   return useQuery<SubmissionFileResponse>({
     queryKey: ['submission_file_url', course_id, assignment_id, submission_id],
     queryFn: async () => {
-      const response = await axios.get('/api/api/instructor/submission/fileURL', {
+      const response = await axios.get(`${API_BASE}/instructor/submission/fileURL`, {
         params: {
           course_id: course_id,
           assignment_id: assignment_id,

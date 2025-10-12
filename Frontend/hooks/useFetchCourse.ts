@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { useCourseStore, useInsCourseStore, useStdCourseDashboardStore } from '../store/useCourseStore';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 interface FetchInsCoursesResponse {
   course_id: string;
@@ -19,7 +20,7 @@ export const useFetchInsCourses = () => {
   return useQuery<FetchInsCoursesResponse[], Error>({
     queryKey: ['courses'],
     queryFn: async () => {
-      const response = await axios.get('/api/api/instructor/courses');
+      const response = await axios.get(`${API_BASE}/instructor/courses`);
 
       if (response.status !== 200) {
         throw new Error('Network response was not ok');
@@ -38,7 +39,7 @@ export const useFetchStdCourses = () => {
   return useQuery<FetchInsCoursesResponse[], Error>({
     queryKey: ['courses'],
     queryFn: async () => {
-      const response = await axios.get('/api/api/student/courses');
+      const response = await axios.get(`${API_BASE}/student/courses`);
 
       if (response.status !== 200) {
         throw new Error('Network response was not ok');
@@ -57,7 +58,7 @@ export const useFetchStdCourse = (course_id: string) => {
   return useQuery<FetchInsCoursesResponse[], Error>({
     queryKey: ['course'],
     queryFn: async () => {
-      const response = await axios.get('/api/api/student/course', {
+      const response = await axios.get(`${API_BASE}/student/course`, {
         params: { course_id: course_id },
       });
 
@@ -89,7 +90,7 @@ export const useFetchCourse = (course_id: string) => {
   return useQuery<FetchCourseResponse>({
     queryKey: ['course', course_id],
     queryFn: async () => {
-      const response = await axios.get(`/api/api/instructor/course`, {
+      const response = await axios.get(`${API_BASE}/instructor/course`, {
         params: { course_id: course_id },
       });
 

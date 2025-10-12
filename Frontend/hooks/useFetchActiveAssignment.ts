@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useActiveAssignmentStore } from "../store/useActiveAssignmentStore";
+import { API_BASE, api, qf } from '@/src/lib/api';
 import axios from "axios";
 
 interface ActiveAssignments {
@@ -18,7 +19,7 @@ export const useFetchActiveAssignments = (course_id: string) => {
     return useQuery<ActiveAssignments[], Error>({
         queryKey: ['assignments', course_id],
         queryFn: async () => {
-            const response = await axios.get(`/api/api/instructor/assignments/active`, {
+            const response = await axios.get(`${API_BASE}/instructor/assignments/active`, {
                 params: { course_id: course_id },
             });
 

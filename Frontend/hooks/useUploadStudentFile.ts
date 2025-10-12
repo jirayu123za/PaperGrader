@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { notifications } from '@mantine/notifications';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 interface UploadFileParams {
   assignment_id: string;
@@ -12,7 +13,7 @@ const uploadStudentFile = async ({ assignment_id, course_id, file }: UploadFileP
   const formData = new FormData();
   formData.append('file', file);
 
-  const { data } = await axios.post(`/api/api/student/file`, formData, {
+  const { data } = await axios.post(`${API_BASE}/student/file`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useInstructorListStore } from '../store/useInstructorListStore';
+import { API_BASE, api, qf } from '@/src/lib/api';
 import axios from 'axios';
 
 interface InstructorList {
@@ -14,7 +15,7 @@ export const useFetchInstructorList = (courseId: string) => {
     return useQuery<InstructorList[], Error>({
         queryKey: ['instructors', courseId],
         queryFn: async () => {
-            const response = await axios.get(`/api/api/instructorsList`, {
+            const response = await axios.get(`${API_BASE}/instructorsList`, {
                 params: { course_id: courseId },
             });
 

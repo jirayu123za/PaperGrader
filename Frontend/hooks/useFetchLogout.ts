@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import { API_BASE, api, qf } from '@/src/lib/api';
 import axios from 'axios';
 
 export const useFetchLogout = () => {
@@ -8,7 +9,7 @@ export const useFetchLogout = () => {
   return useMutation({
     mutationFn: async () => {
       try {
-        const response = await axios.post('/api/api/user/logout');
+        const response = await axios.post(`${API_BASE}/user/logout`);
         if (response.status !== 200) {
           throw new Error('Network response was not ok');
         }

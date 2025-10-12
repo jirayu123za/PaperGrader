@@ -1,5 +1,7 @@
 "use client";
 import { useState } from 'react';
+import { API_BASE, api, qf } from '@/src/lib/api';
+
 
 export const useCMULogin = () => {
     const [loading, setLoading] = useState(false);
@@ -13,7 +15,7 @@ export const useCMULogin = () => {
             const state = crypto.randomUUID();
             sessionStorage.setItem("cmu_oauth_state", state);
 
-            const res = await fetch(`api/api/cmu/authorize?redirect_uri=${encodeURIComponent(redirectUri)}&state=${encodeURIComponent(state)}`,
+            const res = await fetch(`${API_BASE}/cmu/authorize?redirect_uri=${encodeURIComponent(redirectUri)}&state=${encodeURIComponent(state)}`,
                 { credentials: "include" }
             );
             if (!res.ok) {

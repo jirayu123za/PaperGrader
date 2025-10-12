@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import axios from 'axios';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 export interface Assignment {
   assignment_id: string;
@@ -22,7 +23,7 @@ export function useFetchAssignments(course_id: string | null) {
         assignments: Assignment[];
         message: string;
       }>(
-        '/api/api/instructor/assignments/export',
+        `${API_BASE}/instructor/assignments/export`,
         { params: { course_id } }
       );
       if (response.status !== 200) {
@@ -48,7 +49,7 @@ export function useExportAssignments(course_id: string | null) {
     mutationFn: async ({ assignmentIds, fileType }) => {
       if (!course_id) throw new Error('Missing course_id');
       const res = await axios.post(
-        '/api/api/instructor/assignments/export',
+        `${API_BASE}/instructor/assignments/export`,
         { assignmentIds, fileType },
         { responseType: 'blob' }
       );

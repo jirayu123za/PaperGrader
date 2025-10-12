@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 export const useGoogleLogin = () => {
   const [loading, setLoading] = useState(false);
@@ -12,7 +13,7 @@ export const useGoogleLogin = () => {
     setLoading(true);
     setError(null);
     try {
-      window.location.href = '/api/api/google';
+      window.location.href = `${API_BASE}/google`;
     } catch (err) {
       setError('Failed to initiate Google login');
       console.error(err);

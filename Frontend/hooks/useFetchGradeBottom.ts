@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTotalSubmissionsStore, TTotalSubmission } from '@/store/useGradeBottomStore';
-
+import { API_BASE, api, qf } from '@/src/lib/api';
 type ApiResponse = {
   total_submissions: TTotalSubmission[];
 };
@@ -13,7 +13,7 @@ export function useFetchTotalSubmissionIDs(assignment_id?: string) {
     enabled: !!assignment_id,
     staleTime: 60_000,
     queryFn: async (): Promise<TTotalSubmission[]> => {
-      const url = `/api/api/instructor/submission/totalIDs/?assignment_id=${assignment_id}`;
+      const url = `${API_BASE}/instructor/submission/totalIDs/?assignment_id=${assignment_id}`;
       const res = await fetch(url, { credentials: 'include' });
       if (!res.ok) {
         const text = await res.text().catch(() => '');
