@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 interface CreateRubricParams {
     assignment_id: string;
@@ -17,7 +18,7 @@ interface RubricDetail {
 }
 
 const createRubric = async ({ assignment_id, question_id, sub_question_id, rubric }: CreateRubricParams) => {
-    const response = await axios.post('/api/api/instructor/rubric', {
+    const response = await axios.post(`${API_BASE}/instructor/rubric`, {
         question_id: question_id,
         sub_question_id: sub_question_id,
         rubric: {

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 interface UpdateRubricParams {
     assignment_id: string;
@@ -19,7 +20,7 @@ interface RubricDetail {
 }
 
 const updateRubricsIndexes = async ({ assignment_id, question_id, sub_question_id, rubric }: UpdateRubricParams) => {
-    const response = await axios.put('/api/api/instructor/rubrics', {
+    const response = await axios.put(`${API_BASE}/instructor/rubrics`, {
         question_id: question_id,
         sub_question_id: sub_question_id,
         rubric: {

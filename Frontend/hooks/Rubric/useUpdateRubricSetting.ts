@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 // Part 1: Update rubric scoring method
 interface UpdateRubricSettingParams {
@@ -13,7 +14,7 @@ interface UpdateRubricSettingParams {
 }
 
 const updateRubricScoringMethod = async ({ assignment_id, question_id, sub_question_id, rubric }: UpdateRubricSettingParams) => {
-    const response = await axios.put('/api/api/instructor/rubric/setting', {
+    const response = await axios.put(`${API_BASE}/instructor/rubric/setting`, {
         question_id: question_id,
         sub_question_id: sub_question_id,
         rubric: {
@@ -56,7 +57,7 @@ interface UpdateRubricScoreBounds {
 }
 
 const updateRubricScoreBounds = async ({ assignment_id, question_id, sub_question_id, rubric }: UpdateRubricScoreBounds) => {
-    const response = await axios.put('/api/api/instructor/rubric/scoreBounds', {
+    const response = await axios.put(`${API_BASE}/instructor/rubric/scoreBounds`, {
         question_id: question_id,
         sub_question_id: sub_question_id,
         rubric: {

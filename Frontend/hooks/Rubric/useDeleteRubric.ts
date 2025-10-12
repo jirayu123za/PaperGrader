@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 interface DeleteRubricParams {
     assignment_id: string;
@@ -10,7 +11,7 @@ interface DeleteRubricParams {
 }
 
 const deleteRubric = async ({ assignment_id, question_id, sub_question_id, rubric_id, rubric_detail_id }: DeleteRubricParams) => {
-    const response = await axios.delete('/api/api/instructor/rubric', {
+    const response = await axios.delete(`${API_BASE}/instructor/rubric`, {
         data: {
             question_id: question_id,
             sub_question_id: sub_question_id,

@@ -2,6 +2,7 @@ import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useRubricStore } from "@/store/rubric/useRubricStore";
 import { useQuestionStore } from "@/store/question/useQuestionStore";
+import { API_BASE, api, qf } from '@/src/lib/api';
 
 interface RubricDetail {
     rubric_detail_id: string;
@@ -27,7 +28,7 @@ export const useFetchRubric = (assignment_id: string) => {
     return useQuery<Rubric, Error>({
         queryKey: ['rubric', assignment_id, target?.question_id, target?.sub_question_id],
         queryFn: async () => {
-            const response = await axios.get('/api/api/instructor/rubric', {
+            const response = await axios.get(`${API_BASE}/instructor/rubric`, {
                 params: {
                     assignment_id: assignment_id,
                     question_id: target?.question_id,
