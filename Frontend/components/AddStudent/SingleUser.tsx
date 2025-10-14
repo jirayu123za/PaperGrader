@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { Modal, Button, TextInput, RadioGroup, Radio } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useForm } from '@mantine/form';
-import { useCreateSingleUser } from '../../hooks/useCreate/useCreateSingleUser';
+import { useCreateSingleUser } from '../../hooks/Roster/useCreateSingleUser';
 import { useSelectSectionStore } from '../../store/useSectionStore';
 import SectionSelector from '../Create/Sections/SectionSelector';
 
