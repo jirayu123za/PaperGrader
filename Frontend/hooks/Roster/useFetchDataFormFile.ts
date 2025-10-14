@@ -1,7 +1,8 @@
 import axios from 'axios';
-import useCSVdataStore from '../store/add member/useCSVdataStore';
-import useTemplateStore from '../store/BoundingBox/useTemplateStore';
+import useCSVdataStore from '../../store/add member/useCSVdataStore';
+import useTemplateStore from '../../store/BoundingBox/useTemplateStore';
 import { useMutation } from '@tanstack/react-query';
+import { API_BASE } from '@/src/lib/api';
 
 interface FileUploadParams {
     file: File;
@@ -18,9 +19,9 @@ export const useUploadFile = () => {
         let apiUri = '';
 
         if (selectedTemplate === 1) {
-            apiUri = '/api/api/instructor/roster/file';
+            apiUri = `${API_BASE}/instructor/roster/file`;
         } else if (selectedTemplate === 2) {
-            apiUri = '/api/api/instructor/roster/optionFile';
+            apiUri = `${API_BASE}/instructor/roster/optionFile`;
         } else {
             throw new Error('Invalid template selected: ' + selectedTemplate);
         }

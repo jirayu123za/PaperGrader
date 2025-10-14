@@ -1,8 +1,8 @@
 "use client";
 
 import React from 'react'
-import useCSVdataStore from '../../store/add member/useCSVdataStore';
-import useTemplateStore from '../../store/BoundingBox/useTemplateStore';
+import useCSVdataStore from '@/store/add member/useCSVdataStore';
+import useTemplateStore from '@/store/BoundingBox/useTemplateStore';
 import { useParams } from 'next/navigation';
 import { Box, Modal, Stepper, Flex, Button } from '@mantine/core'
 import { FaRegCheckCircle } from 'react-icons/fa';
@@ -13,8 +13,8 @@ import { FirstStep } from './FirstStep';
 import { SecondStep } from './SecondStep';
 import { ThirdStep } from './ThirdStep';
 import { useSetState } from '@mantine/hooks';
-import { useUploadFile } from '../../hooks/useFetchDataFormFile';
-import { useCreateMultipleUser } from '../../hooks/useCreate/useCreateMultipleUser';
+import { useUploadFile } from '@/hooks/Roster/useFetchDataFormFile';
+import { useCreateMultipleUser } from '@/hooks/useCreate/useCreateMultipleUser';
 import { notifications } from '@mantine/notifications';
 
 interface SelectMethodsProps {  

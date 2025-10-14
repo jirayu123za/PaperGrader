@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useEditCourseMemberStore } from '../../store/useEditCourseMemberStore';
-import { API_BASE, api, qf } from '@/src/lib/api';
+import { API_BASE } from '@/src/lib/api';
 
 
 interface EditCourseMemberResponse {
@@ -14,24 +14,23 @@ interface EditCourseMemberResponse {
 }
 
 export const useFetchEditCourseMember = (course_id: string, personal_data_id: string) => {
-    const setEditMember = useEditCourseMemberStore((state) => state.setEditMember);
-  
-    return useQuery<EditCourseMemberResponse, Error>({
-      queryKey: ['member', course_id, personal_data_id],
-      queryFn: async (): Promise<EditCourseMemberResponse> => {
-        const response = await axios.get(`${API_BASE}/instructor/roster/personal`, {
-          params: { course_id, personal_data_id },
-        });
-  
-        if (response.status !== 200) {
-          throw new Error('Failed to fetch personal data');
-        }
-  
-        const data = response.data.personalData[0];
-        setEditMember(data); // บันทึกข้อมูลลงใน Zustand store ที่นี่
-        return data;
-      },
-      enabled: !!course_id && !!personal_data_id,
-    });
-  };
-  
+  const setEditMember = useEditCourseMemberStore((state) => state.setEditMember);
+
+  return useQuery<EditCourseMemberResponse, Error>({
+    queryKey: ['member', course_id, personal_data_id],
+    queryFn: async (): Promise<EditCourseMemberResponse> => {
+      const response = await axios.get(`${API_BASE}/instructor/roster/personal`, {
+        params: { course_id, personal_data_id },
+      });
+
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch personal data');
+      }
+
+      const data = response.data.personalData[0];
+      setEditMember(data); // บันทึกข้อมูลลงใน Zustand store ที่นี่
+      return data;
+    },
+    enabled: !!course_id && !!personal_data_id,
+  });
+};
