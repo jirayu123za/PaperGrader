@@ -178,18 +178,23 @@ func (s *InstructorServiceImpl) CreateAssignmentWithFiles(request response.Creat
 		if err != nil {
 			return response, err
 		}
-		if !found {
+		var secID uuid.UUID
+		if found {
+			secID = section.SectionID
+		} else {
 			newSection := models.Section{
 				CourseID:    request.CourseID,
 				SectionName: sectionName,
 			}
+
 			if err := s.sectionRepo.AddSections(&newSection); err != nil {
 				return response, fmt.Errorf("create section failed: %w", err)
 			}
+			secID = newSection.SectionID
 		}
 		assignmentSections = append(assignmentSections, models.AssignmentSection{
 			AssignmentID: assignment.AssignmentID,
-			SectionID:    section.SectionID,
+			SectionID:    secID,
 		})
 	}
 	response.AssignmentSections = assignmentSections
