@@ -457,8 +457,8 @@ func (s *InstructorServiceImpl) CreateMultipleUserRoster(courseID uuid.UUID, pay
 
 		personal := models.PersonalData{
 			StudentCode: studentCodePtr,
-			FirstName:   payload.FirstName[i],
-			LastName:    payload.LastName[i],
+			FirstName:   utils.CapitalizeFirst(payload.FirstName[i]),
+			LastName:    utils.CapitalizeFirst(payload.LastName[i]),
 			Email:       payload.Email[i],
 			RoleType:    payload.RoleType,
 		}
