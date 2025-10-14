@@ -74,3 +74,55 @@ func GetUserGroupIDFromJWT(c *fiber.Ctx) (uint, error) {
 
 	return groupID, nil
 }
+
+func TTLFromJWT(token string) error {
+	config.LoadEnv()
+	jwtSecret := os.Getenv("JWT_SECRET")
+
+	parsedToken, err := jwt.ParseWithClaims(token, &jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
+		return []byte(jwtSecret), nil
+	})
+	if err != nil || !parsedToken.Valid {
+		return fmt.Errorf("invalid JWT token: %v", err)
+	}
+
+	claims, ok := parsedToken.Claims.(*jwt.MapClaims)
+	if !ok {
+		return fmt.Errorf("failed to parse JWT claims")
+	}
+
+	expValue, ok := (*claims)["exp"].(float64)
+	if !ok {
+		return fmt.Errorf("exp not found in JWT claims")
+	}
+
+	expirationTime := int64(expValue)
+	currentTime := jwt.NewNumericDate(jwt.TimeFunc()).Unix()
+	ttl := expirationTime - currentTime
+	if ttl <= 0 {
+		return fmt.Errorf("token has already expired")
+	}
+
+	return nil
+}
+
+func ExtractIDP(token string) (string, error) {
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		return "", fmt.Errorf("JWT_SECRET not set")
+	}
+
+	t, err := jwt.Parse(token, func(*jwt.Token) (interface{}, error) {
+		return []byte(secret), nil
+	})
+	if err != nil || !t.Valid {
+		return "", fmt.Errorf("invalid token: %v", err)
+	}
+
+	if claims, ok := t.Claims.(jwt.MapClaims); ok {
+		if idp, ok := claims["idp"].(string); ok {
+			return idp, nil
+		}
+	}
+	return "", fmt.Errorf("idp claim not found")
+}

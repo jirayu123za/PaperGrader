@@ -1,7 +1,12 @@
 package adapters
 
 import (
+	"fmt"
+	"net/url"
+	"os"
+	"paperGrader/internal/config"
 	"paperGrader/internal/core/services"
+	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
 	"strings"
 	"time"
@@ -25,7 +30,10 @@ func NewHttpUserHandler(services services.UserService, oauthService services.OAu
 func (h *HttpUserHandler) CreateUser(c *fiber.Ctx) error {
 	var user models.User
 	if err := c.BodyParser(&user); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request payload"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request payload",
+			"error":   err,
+		})
 	}
 
 	if user.GoogleID != nil && strings.TrimSpace(*user.GoogleID) == "" {
@@ -34,7 +42,10 @@ func (h *HttpUserHandler) CreateUser(c *fiber.Ctx) error {
 
 	err := h.services.CreateUser(&user)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create user"})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to create user",
+			"error":   err,
+		})
 	}
 
 	jwtToken, err := h.oauthService.GenerateUserJWT(user.UserID, user.GroupID)
@@ -68,34 +79,58 @@ func (h *HttpUserHandler) GetUserByID(c *fiber.Ctx) error {
 }
 
 func (h *HttpUserHandler) DeleteJWT(c *fiber.Ctx) error {
-	token := c.Cookies("user_token")
+	token := c.Cookies("jwt-token")
 	if token == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"message": "Unauthorized: token is required",
-		})
+		token = c.Cookies("user_token")
 	}
 
-	err := h.services.Logout(token)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to logout",
-			"error":   err,
-		})
+	idProvider := ""
+	if token != "" {
+		if value, err := utils.ExtractIDP(token); err == nil {
+			idProvider = value
+		}
+
+		err := h.services.Logout(token)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to logout",
+				"error":   err,
+			})
+		}
 	}
 
-	c.Cookie(&fiber.Cookie{
-		Name:    "user_token",
-		Value:   "",
-		Expires: time.Now().Add(-time.Hour * 12),
-	})
+	clear := func(name string) {
+		c.Cookie(&fiber.Cookie{
+			Name:     name,
+			Value:    "",
+			MaxAge:   -1,
+			Expires:  time.Unix(0, 0),
+			HTTPOnly: true,
+			Secure:   true,
+		})
+	}
+	clear("jwt-token")
+	clear("user_token")
+	clear("oauth_state")
 
-	c.Cookie(&fiber.Cookie{
-		Name:    "oauth_state",
-		Value:   "",
-		Expires: time.Now().Add(-time.Hour * 12),
-	})
+	response := fiber.Map{
+		"ok":      true,
+		"message": "Logged out successfully",
+	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Successfully logged out",
-	})
+	if idProvider == "cmu" {
+		config.LoadEnv()
+		tenant := os.Getenv("CMU_TENANT_ID")
+		frontendOrigin := os.Getenv("FRONTEND_ORIGIN")
+		if frontendOrigin == "" {
+			frontendOrigin = "http://localhost:5173"
+		}
+		post := url.QueryEscape(frontendOrigin)
+		response["post_logout_url"] = fmt.Sprintf(
+			"https://login.microsoftonline.com/%s/oauth2/v2.0/logout?post_logout_redirect_uri=%s",
+			tenant, post,
+		)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response)
 }

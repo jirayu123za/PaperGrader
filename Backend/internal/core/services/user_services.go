@@ -2,6 +2,7 @@ package services
 
 import (
 	"paperGrader/internal/core/repositories"
+	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
 
 	"github.com/google/uuid"
@@ -57,9 +58,12 @@ func (s *UserServiceImpl) SignUpOrSignInUser(googleUserInfo *models.GoogleUserIn
 }
 
 func (s *UserServiceImpl) Logout(token string) error {
-	err := s.repo.RemoveJWT(token)
-	if err != nil {
-		return err
+	if token != "" {
+		err := utils.TTLFromJWT(token)
+		if err != nil {
+			return err
+		}
 	}
+
 	return nil
 }

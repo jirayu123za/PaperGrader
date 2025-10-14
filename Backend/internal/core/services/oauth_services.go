@@ -71,6 +71,7 @@ func (s *OAuthServiceImpl) GenerateUserJWT(userID uuid.UUID, groupID uint) (stri
 	claims := jwt.MapClaims{
 		"user_id":  userID.String(),
 		"group_id": groupID,
+		"idp":      "google",
 		"exp":      time.Now().Add(time.Hour * 1).Unix(),
 	}
 

@@ -109,6 +109,7 @@ func (s *CMUOAuthServiceImpl) ExchangeAndLogin(ctx context.Context, code, redire
 		"user_id":  user.UserID.String(),
 		"group_id": user.GroupID,
 		"email":    user.Email,
+		"idp":      "cmu",
 		"exp":      time.Now().Add(24 * time.Hour).Unix(),
 	}
 
