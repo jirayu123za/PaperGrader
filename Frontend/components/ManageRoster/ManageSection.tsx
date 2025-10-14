@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Table, Text, Button, Paper, Pagination, Skeleton, Flex } from '@mantine/core';
+import { Table, Text, Button, Paper, Pagination, Skeleton, Flex, Image } from '@mantine/core';
 import { useParams } from 'next/navigation';
 import { useFetchSections } from '../../hooks/Roster/useFetchSections';
 import { useSectionDetailsStore } from '../../store/useRosterStore';
@@ -118,9 +118,13 @@ const ManageSection: React.FC = () => {
         </Flex>
       </Paper>
       ) : (
-        <Text ta="center" color="dimmed">
-          This course has no sections created yet.
-        </Text>
+        <Flex justify="center" gap="md" direction="column" align="center">
+          <Image alt="No sections" src="/Image/table/empty.svg" w={200} h={200} mt="lg" />
+          <Text ta="center" c="dimmed">
+            This course has no sections created yet.
+          </Text>          
+        </Flex>
+
       )}
       <ViewStudentLists />
     </>
