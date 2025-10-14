@@ -58,7 +58,3 @@ func (r *GormUserRepository) FindPersonByUserID(userID uuid.UUID) ([]map[string]
 	}
 	return personalData, nil
 }
-
-func (r *GormUserRepository) RemoveJWT(token string) error {
-	return nil
-}
