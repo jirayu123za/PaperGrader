@@ -176,7 +176,11 @@ export default function MainQuestionsListClient({ course_id, assignment_id, ques
                       <Table.Td>{submission.user_name?.email || null}</Table.Td>
                       <Table.Td ta='center'>{submission.graded_by || null}</Table.Td>
                       <Table.Td ta='center'>{submission.section_name || null}</Table.Td>
-                      <Table.Td ta="center">{submission.score == null ? ` - /${questionData?.question_point ?? ""}` : submission.score.toFixed(2)}</Table.Td>
+                      <Table.Td ta="center">
+                        {questionData?.question_point != null
+                          ? `${submission.score == null ? '-' : submission.score.toFixed(2)}/${questionData.question_point.toFixed(2)}`
+                          : (submission.score == null ? '-' : submission.score.toFixed(2))}
+                      </Table.Td>
                       <Table.Td ta='center' align="center">
                         <Flex justify="center" align="center">
                           {gradeStatusIcon[String(!!submission.grade_status) as 'true' | 'false']}
