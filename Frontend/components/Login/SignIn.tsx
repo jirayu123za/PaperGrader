@@ -1,8 +1,8 @@
 import React from 'react';
 import Image from 'next/image';
 import { Modal, Button } from '@mantine/core';
-import { useGoogleLogin } from '@/hooks/useGoogleLogin';
-import { useCMULogin } from '@/hooks/useCMULogin';
+import { useGoogleLogin } from '@/hooks/OAuth/useGoogleLogin';
+import { useCMULogin } from '@/hooks/OAuth/useCMULogin';
 
 interface SignInProps {
   opened: boolean;
