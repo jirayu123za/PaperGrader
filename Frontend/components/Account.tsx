@@ -2,6 +2,7 @@ import { FaUserCircle, FaQuestionCircle, FaEdit, FaSignOutAlt } from 'react-icon
 import { RiArrowUpSFill, RiArrowDownSFill } from "react-icons/ri";
 import { useFetchLogout } from '../hooks/useFetchLogout';
 import { Button, Text, Popover } from '@mantine/core';
+import { useDisclosure } from "@mantine/hooks";
 
 interface AccountMenuProps {
   isCollapsed: boolean;
@@ -9,6 +10,7 @@ interface AccountMenuProps {
 
 export default function AccountMenu({ isCollapsed }: AccountMenuProps) {
   const { mutate: logout } = useFetchLogout();
+  const [opened, { open, close, toggle }] = useDisclosure(false);
   const iconFaUserCircle = <FaUserCircle size={18} />;
   const iconFaQuestionCircle = <FaQuestionCircle size={16} />;
   const iconFaEdit = <FaEdit size={16} />;
@@ -22,8 +24,9 @@ export default function AccountMenu({ isCollapsed }: AccountMenuProps) {
       withArrow
       shadow="md"
       width={isCollapsed ? 160 : 260}
+      opened={opened}
+      onChange={(o) => (o ? open() : close())}
     >
-      {/* ปุ่มหลัก */}
       <Popover.Target>
         <Button
           h={40}
@@ -31,13 +34,14 @@ export default function AccountMenu({ isCollapsed }: AccountMenuProps) {
           fullWidth
           radius="0"
           color="black"
+          onClick={toggle}
           leftSection={iconFaUserCircle}
-          rightSection={!isCollapsed ? (isCollapsed ? null : iconRiArrowDownSFill) : undefined}
+          rightSection={!isCollapsed ? (opened ? iconRiArrowUpSFill : iconRiArrowDownSFill) : undefined}
           styles={{
             root: {
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'flex-center',
+              justifyContent: "space-between",
               textAlign: 'left',
               paddingLeft: isCollapsed ? '20px' : '20px',
             },
@@ -47,7 +51,6 @@ export default function AccountMenu({ isCollapsed }: AccountMenuProps) {
         </Button>
       </Popover.Target>
 
-      {/* เมนูภายใน */}
       <Popover.Dropdown p={2}>
           <Button
             variant="subtle"
