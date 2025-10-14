@@ -3,17 +3,9 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader } from "@mantine/core";
-import { useCmuExchange, useUserGroupQuery } from "@/hooks/OAuth/useCmuAuth";
-
-type ExchangeResponse = {
-    needs_sign_up?: boolean;
-    redirect_uri?: string;
-};
 
 export default function CmuEntraIDCallback() {
   const router = useRouter();
-  const exchange = useCmuExchange();
-  const userGroup = useUserGroupQuery(false);
 
   useEffect(() => {
     const run = async () => {
@@ -23,7 +15,6 @@ export default function CmuEntraIDCallback() {
 
       if (!code) {
         console.error("Missing code");
-        router.replace("/");
         return;
       }
 
@@ -34,39 +25,38 @@ export default function CmuEntraIDCallback() {
         return;
       }
 
-      const redirect_uri = process.env.NEXT_PUBLIC_CMU_REDIRECT_URL ?? "http://localhost:5173/cmuEntraIDCallback";
+      const res = await fetch("/api/cmu/exchange", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          code,
+          redirect_uri:
+            process.env.NEXT_PUBLIC_CMU_REDIRECT_URL ??
+            "http://localhost:5173/cmuEntraIDCallback",
+        }),
+      });
 
-      let data: ExchangeResponse | undefined;
-      try {
-        data = await exchange.mutateAsync({ code, redirect_uri, state });
-      } catch (e) {
-        console.error("Exchange failed:", e);
-        router.replace("/");
-        return;
-      }
-      
-      if (!data) {
-        router.replace("/");
-        return;
-      }
-
-      if ((data.needs_sign_up) && typeof data.redirect_uri === "string") {
-        window.location.assign(data.redirect_uri as string);
-        return;
-      }
-
-      try {
-        const me = await userGroup.refetch();
-        if (!me?.data) {
-          router.replace("/");
-          return;
+      const data = await res.json().catch(() => ({} as any));
+        if (!res.ok) {
+            console.error("Exchange failed:", data);
+            router.replace("/");
+            return;
         }
-        const gid = me.data.group_id;
-        router.replace(gid === 1 ? "/INSCourseOverview" : gid === 2 ? "/student/overview" : "/");
-      } catch (e) {
-        console.error("userGroup failed:", e);
-        router.replace("/");
-      }
+      
+        if (res.ok && data?.needs_sign_up && typeof data.redirect_url === "string") {
+            window.location.assign(data.redirect_url);
+            return;
+        }
+
+        const me = await fetch("/api/cmu/userGroup", { credentials: "include" });
+        if (!me.ok) {
+            router.replace("/");
+            return;
+        }
+        const { group_id } = (await me.json()) as { group_id: number };
+
+        router.replace(group_id === 1 ? "/INSCourseOverview" : group_id === 2 ? "/student/overview" : "/");
     };
 
     Promise.resolve().then(run);
