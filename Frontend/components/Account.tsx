@@ -9,7 +9,7 @@ interface AccountMenuProps {
 }
 
 export default function AccountMenu({ isCollapsed }: AccountMenuProps) {
-  const { mutate: logout } = useFetchLogout();
+  const { mutate: logout, isPending: isPendingLogout } = useFetchLogout();
   const [opened, { open, close, toggle }] = useDisclosure(false);
   const iconFaUserCircle = <FaUserCircle size={18} />;
   const iconFaQuestionCircle = <FaQuestionCircle size={16} />;
@@ -92,6 +92,7 @@ export default function AccountMenu({ isCollapsed }: AccountMenuProps) {
             fullWidth
             leftSection={iconFaSignOutAlt}
             onClick={() => logout()}
+            loading={isPendingLogout}
             styles={{
               root: {
                 display: 'flex',
