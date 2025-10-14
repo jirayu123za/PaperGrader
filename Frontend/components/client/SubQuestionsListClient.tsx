@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { Flex, Paper, Table, Text, Group, TextInput, ActionIcon, Divider, ScrollArea, MultiSelect, Transition } from "@mantine/core";
 import { NoSubmissionsList } from "@/components/INS/INSProcess/ManageSubmissions/NoSubmissionsList";
-import { IoCheckmarkSharp } from "react-icons/io5";
+import { IoMdCheckmark, IoMdClose } from 'react-icons/io';
 import { useFetchSubmissionsFromQuestion } from "@/hooks/Submissions/useFetchSubmissions";
 import { useSubmissionsStore } from "@/store/Submissions/useSubmissionsStore";
 import { useRouter } from 'next/navigation';
@@ -17,6 +17,11 @@ export default function SubQuestionsListClient({ course_id, assignment_id, quest
   const { submissions, questionData, searchTerm, setSearchTerm, selectedSections, setSelectedSections, selectedGradeStatuses, setSelectedGradeStatuses } = useSubmissionsStore();
   const scrollToBottom = () => viewPort.current!.scrollTo({ top: viewPort.current!.scrollHeight, behavior: 'smooth' });
   const scrollToTop = () => viewPort.current!.scrollTo({ top: 0, behavior: 'smooth' });
+
+  const gradeStatusIcon: Record<'true' | 'false', JSX.Element> = {
+    true: <IoMdCheckmark size={20} color="green" />,
+    false: <IoMdClose size={20} color="red" />,
+  };
 
   const [opened, { open, close, toggle }] = useDisclosure(false);
   const sectionOptions = Array.from(new Set(submissions?.submissions
@@ -170,13 +175,11 @@ export default function SubQuestionsListClient({ course_id, assignment_id, quest
                       <Table.Td>{submission.user_name?.email || null}</Table.Td>
                       <Table.Td ta='center'>{submission.graded_by || null}</Table.Td>
                       <Table.Td ta='center'>{submission.section_name || null}</Table.Td>
-                      <Table.Td ta='center'>{submission.score?.toFixed(2) || null}</Table.Td>
+                      <Table.Td ta="center">{submission.score == null ? ` - /${questionData?.question_point ?? ""}` : submission.score.toFixed(2)}</Table.Td>
                       <Table.Td ta='center' align="center">  
-                        {submission.grade_status ? (
-                          <Flex justify="center" align="center">
-                            <IoCheckmarkSharp color="green" />
-                          </Flex>
-                        ) : null}
+                        <Flex justify="center" align="center">
+                          {gradeStatusIcon[String(!!submission.grade_status) as 'true' | 'false']}
+                        </Flex>
                       </Table.Td>
                     </Table.Tr>
                   ))}
