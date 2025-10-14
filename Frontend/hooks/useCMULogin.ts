@@ -1,7 +1,6 @@
 "use client";
 import { useState } from 'react';
-import { API_BASE, api, qf } from '@/src/lib/api';
-
+import { API_BASE } from '@/src/lib/api';
 
 export const useCMULogin = () => {
     const [loading, setLoading] = useState(false);

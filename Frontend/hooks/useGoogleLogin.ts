@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from 'react';
-import { useAuthStore } from '../store/useAuthStore';
-import { API_BASE, api, qf } from '@/src/lib/api';
+import { API_BASE } from '@/src/lib/api';
 
 export const useGoogleLogin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const setToken = useAuthStore((state) => state.setToken);
-  
+
   const loginWithGoogle = async () => {
     setLoading(true);
     setError(null);
