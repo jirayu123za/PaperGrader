@@ -25,7 +25,7 @@ export default function CmuEntraIDCallback() {
         return;
       }
 
-      const res = await fetch("/api/api/cmu/exchange", {
+      const res = await fetch("/api/cmu/exchange", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -49,7 +49,7 @@ export default function CmuEntraIDCallback() {
             return;
         }
 
-        const me = await fetch("/api/api/cmu/userGroup", { credentials: "include" });
+        const me = await fetch("/api/cmu/userGroup", { credentials: "include" });
         if (!me.ok) {
             router.replace("/");
             return;
