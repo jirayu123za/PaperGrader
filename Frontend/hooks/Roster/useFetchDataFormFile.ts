@@ -1,6 +1,6 @@
 import axios from 'axios';
-import useCSVdataStore from '../../store/add member/useCSVdataStore';
-import useTemplateStore from '../../store/BoundingBox/useTemplateStore';
+import useCSVdataStore from '@/store/add member/useCSVdataStore';
+import useTemplateStore from '@/store/BoundingBox/useTemplateStore';
 import { useMutation } from '@tanstack/react-query';
 import { API_BASE } from '@/src/lib/api';
 

@@ -14,7 +14,7 @@ import { SecondStep } from './SecondStep';
 import { ThirdStep } from './ThirdStep';
 import { useSetState } from '@mantine/hooks';
 import { useUploadFile } from '@/hooks/Roster/useFetchDataFormFile';
-import { useCreateMultipleUser } from '@/hooks/useCreate/useCreateMultipleUser';
+import { useCreateMultipleUser } from '@/hooks/Roster/useCreateMultipleUser';
 import { notifications } from '@mantine/notifications';
 
 interface SelectMethodsProps {  

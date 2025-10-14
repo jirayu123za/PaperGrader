@@ -1,6 +1,6 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import { API_BASE, api, qf } from '@/src/lib/api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { API_BASE } from '@/src/lib/api';
 
 const createSingleUser = async (from: FormData) => {
   const course_id = from.get('course_id');
