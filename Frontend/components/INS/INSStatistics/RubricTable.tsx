@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
-import { Table, Progress, Text, ScrollArea, Center, Flex, Anchor, Box } from "@mantine/core";
+import { Table, Progress, Text, ScrollArea, Flex, Anchor, Box } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { VscListUnordered } from "react-icons/vsc";
-import RubricPieModal, { RubricSlice } from "./RubricPieModal";
+import RubricPieModal from "./RubricPieModal";
 
 export interface RubricItem {
   id: string;
@@ -17,8 +17,9 @@ interface RubricTableProps {
 
 export function RubricTable({ data }: RubricTableProps) {
   type RowWithMean = RubricItem & { mean: number; subRows?: RowWithMean[] };
+  const hasData = Array.isArray(data) && data.length > 0;
 
-  const mockData: RowWithMean[] = useMemo(() => {
+  const rowsWithMean: RowWithMean[] = useMemo(() => {
     const addMean = (rows: RubricItem[]): RowWithMean[] =>
       rows.map((row) => ({
         id: row.id,
@@ -27,40 +28,16 @@ export function RubricTable({ data }: RubricTableProps) {
         mean: Math.random(),
         subRows: row.subRows ? addMean(row.subRows) : undefined,
       }));
-    return addMean(data);
-  }, [data]);
+    return hasData ? addMean(data) : [];
+  }, [data, hasData]);
 
   const [opened, { open, close }] = useDisclosure(false);
   const [selectedTitle, setSelectedTitle] = useState<string>("");
-  const [chartData, setChartData] = useState<RubricSlice[]>([]);
-
-  const buildRubricChartData = (row: RowWithMean): RubricSlice[] => {
-    const seed = [...row.id].reduce((s, ch) => s + ch.charCodeAt(0), 0);
-    const rng = (i: number) => ((seed * (i + 37)) % 17) + 3; // 3..19
-
-    const labels = row.subRows?.length
-      ? row.subRows.map((r, i) => `Sub ${i + 1}: ${r.question}`)
-      : ["Excellent", "Good", "Fair", "Poor"];
-    return labels.map((label, i) => ({
-      id: `${row.id}-${i}`,
-      label,
-      value: rng(i),
-    }));
-  };
 
   const handleOpenModal = (row: RowWithMean, numberLabel: string) => {
     setSelectedTitle(`Rubric for ${numberLabel} — ${row.question}`);
-    setChartData(buildRubricChartData(row));
     open();
   };
-
-  if (!data || data.length === 0) {
-    return (
-      <Center py="md">
-        <Text c="dimmed">No rubric data available</Text>
-      </Center>
-    );
-  }
 
   const renderRows = (
     rows: RowWithMean[],
@@ -74,9 +51,9 @@ export function RubricTable({ data }: RubricTableProps) {
       const rowElement = (
         <Table.Tr
           key={row.id}
-          onClick={() => handleOpenModal(row, number)}
           style={{ cursor: "pointer" }}
-          className="group" 
+          className="group"
+          onClick={() => handleOpenModal(row, number)}
         >
           <Table.Td>
             <Flex gap="sm" align="flex-start" style={{ marginLeft: indent * 24 }}>
@@ -127,6 +104,8 @@ export function RubricTable({ data }: RubricTableProps) {
       return [rowElement, ...subRows];
     });
 
+  if (!hasData) return null;
+
   return (
     <>
       <ScrollArea style={{ height: "100%" }}>
@@ -138,11 +117,11 @@ export function RubricTable({ data }: RubricTableProps) {
               <Table.Th style={{ textAlign: "left", width: "40%" }}>Mean</Table.Th>
             </Table.Tr>
           </Table.Thead>
-          <Table.Tbody>{renderRows(mockData)}</Table.Tbody>
+          <Table.Tbody>{renderRows(rowsWithMean)}</Table.Tbody>
         </Table>
       </ScrollArea>
 
-      <RubricPieModal opened={opened} onClose={close} title={selectedTitle || "Rubric Example"} />
+      <RubricPieModal opened={opened} onClose={close} title={selectedTitle || "Rubric"} />
     </>
   );
 }

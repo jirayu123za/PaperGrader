@@ -5,8 +5,8 @@ import { Card, Title, Text, Flex, SimpleGrid } from "@mantine/core";
 import { BarChart } from "@mantine/charts";
 
 interface QuestionStat {
-  question: string; 
-  mean: number;     
+  question: string;
+  mean: number;
 }
 
 interface GradeStatisticsProps {
@@ -26,28 +26,7 @@ export default function AssignmentStatistics({
   minHeight = 120,
   maxHeight = 480,
 }: GradeStatisticsProps) {
-  const mockData: QuestionStat[] = [
-    { question: "1", mean: 83 },
-    { question: "2", mean: 72 },
-    { question: "2.1", mean: 65 },
-    { question: "2.2", mean: 58 },
-    { question: "3", mean: 49 },
-    { question: "4", mean: 91 },
-    { question: "4.1", mean: 77 },
-    { question: "4.2", mean: 68 },
-    { question: "4.3", mean: 55 },
-    { question: "5", mean: 62 },
-    { question: "6", mean: 38 },
-    { question: "7", mean: 80 },
-    { question: "8", mean: 71 },
-    { question: "9", mean: 44 },
-    { question: "10", mean: 53 },
-  ];
-
-  const data = useMemo<QuestionStat[]>(
-    () => (questions && questions.length > 0 ? questions : mockData),
-    [questions]
-  );
+  const data = questions ?? [];
 
   const means = useMemo(() => data.map((d) => d.mean), [data]);
   const minimum = useMemo(() => (means.length ? Math.min(...means) : 0), [means]);
@@ -104,10 +83,10 @@ export default function AssignmentStatistics({
     },
     [onMouseMove, endDrag]
   );
+  if (data.length === 0) return null;
 
   return (
     <Card shadow="sm" padding={compact ? "md" : "lg"} radius="md" withBorder>
-
       <style jsx global>{`
         .pg-hover-purple .recharts-bar-rectangle:hover path,
         .pg-hover-purple .recharts-bar-rectangle:hover rect,
@@ -128,9 +107,7 @@ export default function AssignmentStatistics({
           h={chartHeight}
           data={data}
           dataKey="question"
-          series={[
-            { name: "mean", color: "violet.3" },
-          ]}
+          series={[{ name: "mean", color: "violet.3" }]}
           xAxisLabel="Question"
           yAxisLabel="Mean (%)"
           yAxisProps={{ domain: [0, 100], tickCount: 6 }}
@@ -161,38 +138,52 @@ export default function AssignmentStatistics({
           onMouseDown={onHandleMouseDown}
           title="Drag to resize"
           className="absolute left-0 right-0 bottom-0 h-3 flex items-center justify-center cursor-ns-resize"
-          style={{
-            borderTop: "1px dashed rgba(148,163,184,0.6)",
-            userSelect: "none",
-          }}
+          style={{ borderTop: "1px dashed rgba(148,163,184,0.6)", userSelect: "none" }}
         >
-          <div
-            className="w-16 h-1 rounded"
-            style={{ background: "rgba(148,163,184,0.9)" }}
-          />
+          <div className="w-16 h-1 rounded" style={{ background: "rgba(148,163,184,0.9)" }} />
         </div>
       </div>
 
       <SimpleGrid cols={5} mt={compact ? "sm" : "md"} spacing={compact ? "md" : "lg"}>
         <div>
-          <Text size={compact ? "xs" : "sm"} c="dimmed">Minimum</Text>
-          <Text size={compact ? "lg" : "xl"} fw={700}>{minimum.toFixed(2)}%</Text>
+          <Text size={compact ? "xs" : "sm"} c="dimmed">
+            Minimum
+          </Text>
+          <Text size={compact ? "lg" : "xl"} fw={700}>
+            {minimum.toFixed(2)}%
+          </Text>
         </div>
         <div>
-          <Text size={compact ? "xs" : "sm"} c="dimmed">Median</Text>
-          <Text size={compact ? "lg" : "xl"} fw={700}>{median.toFixed(2)}%</Text>
+          <Text size={compact ? "xs" : "sm"} c="dimmed">
+            Median
+          </Text>
+          <Text size={compact ? "lg" : "xl"} fw={700}>
+            {median.toFixed(2)}%
+          </Text>
         </div>
         <div>
-          <Text size={compact ? "xs" : "sm"} c="dimmed">Maximum</Text>
-          <Text size={compact ? "lg" : "xl"} fw={700}>{maximum.toFixed(2)}%</Text>
+          <Text size={compact ? "xs" : "sm"} c="dimmed">
+            Maximum
+          </Text>
+          <Text size={compact ? "lg" : "xl"} fw={700}>
+            {maximum.toFixed(2)}%
+          </Text>
         </div>
         <div>
-          <Text size={compact ? "xs" : "sm"} c="dimmed">Mean</Text>
-          <Text size={compact ? "lg" : "xl"} fw={700}>{average.toFixed(2)}%</Text>
+          <Text size={compact ? "xs" : "sm"} c="dimmed">
+            Mean
+          </Text>
+          <Text size={compact ? "lg" : "xl"} fw={700}>
+            {average.toFixed(2)}%
+          </Text>
         </div>
         <div>
-          <Text size={compact ? "xs" : "sm"} c="dimmed">Std Dev</Text>
-          <Text size={compact ? "lg" : "xl"} fw={700}>{stdDev.toFixed(2)}%</Text>
+          <Text size={compact ? "xs" : "sm"} c="dimmed">
+            Std Dev
+          </Text>
+          <Text size={compact ? "lg" : "xl"} fw={700}>
+            {stdDev.toFixed(2)}%
+          </Text>
         </div>
       </SimpleGrid>
     </Card>
