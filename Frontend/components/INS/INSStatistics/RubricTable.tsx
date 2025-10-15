@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
-import { Table, Progress, Text, ScrollArea, Center, Flex } from "@mantine/core";
+import { Table, Progress, Text, ScrollArea, Center, Flex, Anchor, Box } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { VscListUnordered } from "react-icons/vsc";
 import RubricPieModal, { RubricSlice } from "./RubricPieModal";
 
 export interface RubricItem {
@@ -28,7 +29,6 @@ export function RubricTable({ data }: RubricTableProps) {
       }));
     return addMean(data);
   }, [data]);
-
 
   const [opened, { open, close }] = useDisclosure(false);
   const [selectedTitle, setSelectedTitle] = useState<string>("");
@@ -76,72 +76,73 @@ export function RubricTable({ data }: RubricTableProps) {
           key={row.id}
           onClick={() => handleOpenModal(row, number)}
           style={{ cursor: "pointer" }}
+          className="group" 
         >
           <Table.Td>
-            <Flex
-              gap="sm"
-              align="flex-start"
-              style={{ marginLeft: indent * 24 }}
-            >
+            <Flex gap="sm" align="flex-start" style={{ marginLeft: indent * 24 }}>
               <Text fw={indent === 0 ? 700 : 500}>{number}</Text>
-              <Text
-                fw={indent === 0 ? 500 : 400}
-                style={{ wordBreak: "break-word", whiteSpace: "normal" }}
-                title="คลิกเพื่อดูสัดส่วนคะแนนตาม rubric"
-              >
-                {row.question}
-              </Text>
+              <Box className="relative w-fit flex items-center gap-1">
+                <Text
+                  fw={indent === 0 ? 500 : 400}
+                  style={{ wordBreak: "break-word", whiteSpace: "normal" }}
+                >
+                  {row.question}
+                </Text>
+
+                <Anchor
+                  underline="hover"
+                  size="xs"
+                  ml="xs"
+                  className="invisible group-hover:visible"
+                  onClick={(e) => {
+                    e.stopPropagation(); 
+                    handleOpenModal(row, number);
+                  }}
+                >
+                  <Flex align="center" gap={4}>
+                    <VscListUnordered size={12} className="translate-y-[1px]" />
+                    <span>Rubric</span>
+                  </Flex>
+                </Anchor>
+              </Box>
             </Flex>
           </Table.Td>
+
           <Table.Td>
             <Text>
               {row.points} point{row.points > 1 ? "s" : ""}
             </Text>
           </Table.Td>
+
           <Table.Td>
-            <Flex
-              justify="space-between"
-              align="center"
-              style={{ width: "100%" }}
-            >
-              <Progress
-                value={percentage}
-                style={{ flex: 1, marginRight: 8 }}
-              />
+            <Flex justify="space-between" align="center" style={{ width: "100%" }}>
+              <Progress value={percentage} style={{ flex: 1, marginRight: 8 }} />
               <Text>{percentage}%</Text>
             </Flex>
           </Table.Td>
         </Table.Tr>
       );
 
-      const subRows = row.subRows
-        ? renderRows(row.subRows, indent + 1, number)
-        : [];
+      const subRows = row.subRows ? renderRows(row.subRows, indent + 1, number) : [];
       return [rowElement, ...subRows];
     });
 
   return (
     <>
       <ScrollArea style={{ height: "100%" }}>
-        <Table verticalSpacing="lg" striped highlightOnHover>
-          <Table.Thead>
+        <Table highlightOnHover verticalSpacing="xs" horizontalSpacing="lg">
+          <Table.Thead className="bg-gray-100">
             <Table.Tr>
-              <Table.Th style={{ textAlign: "left", width: "40%" }}>
-                Question
-              </Table.Th>
-              <Table.Th style={{ textAlign: "left", width: "20%" }}>
-                Points
-              </Table.Th>
-              <Table.Th style={{ textAlign: "left", width: "40%" }}>
-                Mean
-              </Table.Th>
+              <Table.Th style={{ textAlign: "left", width: "40%" }}>Question</Table.Th>
+              <Table.Th style={{ textAlign: "left", width: "20%" }}>Points</Table.Th>
+              <Table.Th style={{ textAlign: "left", width: "40%" }}>Mean</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>{renderRows(mockData)}</Table.Tbody>
         </Table>
       </ScrollArea>
 
-      <RubricPieModal opened={opened} onClose={close} title="Rubric Example" />
+      <RubricPieModal opened={opened} onClose={close} title={selectedTitle || "Rubric Example"} />
     </>
   );
 }
