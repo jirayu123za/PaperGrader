@@ -1,31 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Flex, Select, Title, MultiSelect, Loader, Text } from "@mantine/core";
 import { useParams } from "next/navigation";
 import { useFetchSections } from "../../../hooks/useFetchSelectSection";
-import {
-  useSectionsListStore,
-  useSelectSectionStore,
-} from "../../../store/useSectionStore";
+import { useSectionsListStore, useSelectSectionStore } from "../../../store/useSectionStore";
 import { useFetchAssignments } from "../../../hooks/Statistic/useFetchAssigmentStatistic";
-import {
-  useAssignmentStatisticStore,
-  type AssignmentOption,
-} from "../../../store/statistic/useAssignmentStatisticStore";
+import { useAssignmentStatisticStore, type AssignmentOption } from "../../../store/statistic/useAssignmentStatisticStore";
 
 const ALL_SENTINEL = "all section";
 
-export default function StatisticHeader({
-  title = "Assignment Statistics",
-}: {
-  title?: string;
-}) {
+export default function StatisticHeader({ title = "Assignment Statistics" }: { title?: string }) {
   const params = useParams();
   const course_id = params?.course_id as string;
+  const assignmentIdFromParam = params?.assignment_id ? String(params.assignment_id) : null;
 
-  const { isLoading: isLoadingSections, error: errorSections } =
-    useFetchSections(course_id);
+  const { isLoading: isLoadingSections, error: errorSections } = useFetchSections(course_id);
   const { sectionsList } = useSectionsListStore();
   const { selectedSections, setSelectedSections } = useSelectSectionStore();
   const [sectionSearch, setSectionSearch] = useState("");
@@ -44,16 +34,13 @@ export default function StatisticHeader({
   const hasSections = baseSectionOptions.length > 0;
 
   const sectionOptions = useMemo(
-    () =>
-      hasSections
-        ? [{ value: ALL_SENTINEL, label: "All section" }, ...baseSectionOptions]
-        : [],
+    () => (hasSections ? [{ value: ALL_SENTINEL, label: "All section" }, ...baseSectionOptions] : []),
     [hasSections, baseSectionOptions]
   );
 
   useEffect(() => {
     if (!hasSections) {
-      if (selectedSections?.length) setSelectedSections([]); // ไม่มีข้อมูล
+      if (selectedSections?.length) setSelectedSections([]);
       return;
     }
     if (!selectedSections || selectedSections.length === 0) {
@@ -65,17 +52,14 @@ export default function StatisticHeader({
     if (!hasSections) return;
 
     const allowed = new Set(sectionOptions.map((o) => String(o.value)));
-    const filtered = (next || [])
-      .map((v) => String(v).trim())
-      .filter((v) => allowed.has(v));
+    const filtered = (next || []).map((v) => String(v).trim()).filter((v) => allowed.has(v));
 
     if (!filtered.length) {
       setSelectedSections([ALL_SENTINEL]);
       return;
     }
 
-    const wasAllOnly =
-      selectedSections?.length === 1 && selectedSections[0] === ALL_SENTINEL;
+    const wasAllOnly = selectedSections?.length === 1 && selectedSections[0] === ALL_SENTINEL;
 
     if (wasAllOnly) {
       const chosen = filtered.filter((v) => v !== ALL_SENTINEL);
@@ -91,9 +75,7 @@ export default function StatisticHeader({
     setSelectedSections(filtered);
   };
 
-  const hasAnySectionSelection = !!(
-    selectedSections && selectedSections.length > 0
-  );
+  const hasAnySectionSelection = !!(selectedSections && selectedSections.length > 0);
 
   const {
     data: assignmentsRaw,
@@ -102,15 +84,9 @@ export default function StatisticHeader({
   } = useFetchAssignments(course_id);
 
   const assignmentsList = useAssignmentStatisticStore((s) => s.assignmentsList);
-  const selectedAssignmentId = useAssignmentStatisticStore(
-    (s) => s.selectedAssignmentId
-  );
-  const setAssignmentsList = useAssignmentStatisticStore(
-    (s) => s.setAssignmentsList
-  );
-  const setSelectedAssignmentId = useAssignmentStatisticStore(
-    (s) => s.setSelectedAssignmentId
-  );
+  const selectedAssignmentId = useAssignmentStatisticStore((s) => s.selectedAssignmentId);
+  const setAssignmentsList = useAssignmentStatisticStore((s) => s.setAssignmentsList);
+  const setSelectedAssignmentId = useAssignmentStatisticStore((s) => s.setSelectedAssignmentId);
 
   useEffect(() => {
     if (!assignmentsRaw) return;
@@ -122,18 +98,35 @@ export default function StatisticHeader({
   }, [assignmentsRaw, setAssignmentsList]);
 
   const hasAssignments = assignmentsList.length > 0;
+  const didInitFromParamRef = useRef(false);
+  const didClearForNoParamRef = useRef(false);
 
   useEffect(() => {
-    if (hasAssignments && !selectedAssignmentId) {
-      setSelectedAssignmentId(assignmentsList[0].value);
-    }
-    if (!hasAssignments && selectedAssignmentId) {
+    if (!hasAssignments) {
       setSelectedAssignmentId(null);
+      didInitFromParamRef.current = false;
+      didClearForNoParamRef.current = false;
+      return;
     }
+
+    if (assignmentIdFromParam && !didInitFromParamRef.current) {
+      const exists = assignmentsList.some((opt) => String(opt.value) === assignmentIdFromParam);
+      setSelectedAssignmentId(exists ? assignmentIdFromParam : null);
+      didInitFromParamRef.current = true;
+      didClearForNoParamRef.current = true;
+      return;
+    }
+
+    if (!assignmentIdFromParam && !didClearForNoParamRef.current) {
+      setSelectedAssignmentId(null);
+      didClearForNoParamRef.current = true;
+      return;
+    }
+
   }, [
     hasAssignments,
     assignmentsList,
-    selectedAssignmentId,
+    assignmentIdFromParam,
     setSelectedAssignmentId,
   ]);
 
@@ -170,18 +163,17 @@ export default function StatisticHeader({
           <Select
             data={hasAssignments ? assignmentsList : []}
             value={hasAssignments ? selectedAssignmentId : null}
-            onChange={(v) => v && setSelectedAssignmentId(v)}
+            onChange={(v) => setSelectedAssignmentId(v)}
             checkIconPosition="right"
             size="sm"
             comboboxProps={{ withinPortal: true }}
             style={{ width: 320 }}
-            placeholder={
-              hasAssignments ? "Select assignment" : "No assignments"
-            }
+            placeholder={hasAssignments ? "Select assignment" : "No assignments"}
             aria-label="Select assignment"
             disabled={!hasAssignments}
             clearable={hasAssignments}
           />
+
           <MultiSelect
             data={sectionOptions}
             value={hasSections ? selectedSections : []}
@@ -197,19 +189,9 @@ export default function StatisticHeader({
             disabled={!hasSections}
             clearable
             styles={{
-              pillsList: {
-                display: "flex",
-                flexWrap: "nowrap", 
-                overflowX: "auto", 
-                gap: 1, 
-              },
-              pill: {
-                whiteSpace: "nowrap", 
-                maxWidth: "unset",
-              },
-              input: {
-                minWidth: 0,
-              },
+              pillsList: { display: "flex", flexWrap: "nowrap", overflowX: "auto", gap: 1 },
+              pill: { whiteSpace: "nowrap", maxWidth: "unset" },
+              input: { minWidth: 0 },
             }}
           />
         </Flex>
