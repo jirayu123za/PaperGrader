@@ -652,19 +652,63 @@ type UpdateAssignmentPublishedAssignmentRequest struct {
 // Part:1 Assignment statistics
 // ---- JSON structs for assignment statistics ----
 type GetAssignmentStatisticsRequest struct {
-	AssignmentID uuid.UUID `json:"assignment_id"`
+	AssignmentID uuid.UUID   `json:"assignment_id"`
+	SectionIDs   []uuid.UUID `json:"section_ids"`
+}
+
+type StatsCore struct {
+	PercentMin           float64
+	PercentMedian        float64
+	PercentMax           float64
+	PercentMean          float64
+	PercentSD            float64
+	TotalSubmissions     int64
+	TotalAssignmentScore int64
+	QMean                map[uuid.UUID]float64
+	SQMean               map[uuid.UUID]float64
 }
 
 type AssignmentStatisticsResponse struct {
-	Minimum              float64   `json:"minimum"`
-	Median               float64   `json:"median"`
-	Maximum              float64   `json:"maximum"`
-	Mean                 float64   `json:"mean"`
-	SD                   float64   `json:"sd"`
-	TotalSubmission      int64     `json:"total_submission"`
-	TotalAssignmentScore int64     `json:"total_assignment_score"`
-	Scores               []float64 `json:"scores"`
-	MinHistogram         int64     `json:"min_histogram"`
+	Minimum              float64                           `json:"minimum"`
+	Median               float64                           `json:"median"`
+	Maximum              float64                           `json:"maximum"`
+	Mean                 float64                           `json:"mean"`
+	SD                   float64                           `json:"sd"`
+	TotalSubmissions     int64                             `json:"total_submission"`
+	TotalAssignmentScore int64                             `json:"total_assignment_score"`
+	QuestionsStatistics  []QuestionsListStatisticsResponse `json:"questions_statistics"`
+}
+
+type QuestionsListStatisticsResponse struct {
+	QuestionID     uuid.UUID                       `json:"question_id"`
+	QuestionNumber string                          `json:"question_number"`
+	PercentMean    *float64                        `json:"percent_mean,omitempty"`
+	SubQuestions   []SubQuestionStatisticsResponse `json:"sub_questions,omitempty"`
+}
+
+type SubQuestionStatisticsResponse struct {
+	SubQuestionID  uuid.UUID `json:"sub_question_id"`
+	QuestionNumber string    `json:"question_number"`
+	PercentMean    *float64  `json:"percent_mean,omitempty"`
+}
+
+type QuestionsListStatsResponse []QuestionListStatsItem
+
+type QuestionListStatsItem struct {
+	QuestionID     uuid.UUID              `json:"question_id"`
+	QuestionNumber string                 `json:"question_number"`
+	QuestionTitle  string                 `json:"question_title"`
+	QuestionPoint  float64                `json:"question_point"`
+	PercentMean    *float64               `json:"percent_mean,omitempty"`
+	SubQuestions   []SubQuestionStatsItem `json:"sub_questions,omitempty"` // children (optional)
+}
+
+type SubQuestionStatsItem struct {
+	SubQuestionID    uuid.UUID `json:"sub_question_id"`
+	QuestionNumber   string    `json:"question_number"`
+	SubQuestionTitle string    `json:"sub_question_title"`
+	SubQuestionPoint float64   `json:"sub_question_point"`
+	PercentMean      *float64  `json:"percent_mean,omitempty"`
 }
 
 // Part: 1 CMU OAuth
