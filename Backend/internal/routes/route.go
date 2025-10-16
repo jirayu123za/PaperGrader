@@ -20,7 +20,7 @@ func RegisterRoutes(
 	studentHandler *adapters.HttpStudentHandler,
 ) {
 	api := app.Group("/")
-	apiGroup := api.Group("/api")
+	apiGroup := api.Group("/api/v1")
 
 	apiGroup.Get("/check", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{

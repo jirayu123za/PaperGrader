@@ -116,7 +116,7 @@ func (h *HttpOAuthHandler) GetGoogleCallBack(c *fiber.Ctx) error {
 		Secure:   true,
 	})
 
-	return c.Redirect("/api/google/callback/verify", fiber.StatusTemporaryRedirect)
+	return c.Redirect("/api/v1/google/callback/verify", fiber.StatusTemporaryRedirect)
 }
 
 func (h *HttpOAuthHandler) VerifyGoogleCallback(c *fiber.Ctx) error {
