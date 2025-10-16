@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { API_BASE, api, qf } from '@/src/lib/api';
+import { API_BASE } from '@/src/lib/api';
 
 // Part 1: Update rubric scoring method
 interface UpdateRubricSettingParams {

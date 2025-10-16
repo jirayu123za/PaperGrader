@@ -2,7 +2,7 @@ import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useRubricStore } from "@/store/rubric/useRubricStore";
 import { useQuestionStore } from "@/store/question/useQuestionStore";
-import { API_BASE, api, qf } from '@/src/lib/api';
+import { API_BASE } from '@/src/lib/api';
 
 interface RubricDetail {
     rubric_detail_id: string;
