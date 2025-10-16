@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"paperGrader/internal/config"
+	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
 	"time"
 
@@ -128,6 +129,10 @@ func ConnectPostgres(migrate bool) *gorm.DB {
 			&models.Rubric{},
 			&models.Grade{},
 		)
+
+		if err := utils.SeedsTables(db); err != nil {
+			log.Fatal("Failed to seed static tables: ", err)
+		}
 
 		if err != nil {
 			log.Fatal("Failed to migrate database: ", err)
