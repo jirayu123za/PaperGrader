@@ -2263,6 +2263,39 @@ func (h *HttpInstructorHandler) GetStatisticsDataByAssignmentAndSections(c *fibe
 
 // Case 2: With assignment_id param
 
+// Case 3: Sections for selector
+func (h *HttpInstructorHandler) GetSectionsListForStatistics(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	var request response.SectionStatisticsRequest
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request body",
+			"error":   err.Error(),
+		})
+	}
+
+	sections, err := h.services.GetSectionListForStatistics(courseID, request)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get sections list for statistics",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":  "Sections list for statistics is retrieved",
+		"sections": sections,
+	})
+}
+
 // ! Need to change use section to calculate statistics
 // func (h *HttpInstructorHandler) GetStatisticsDataNoQuestions(c *fiber.Ctx) error {
 // 	courseIDParam := c.Query("course_id")

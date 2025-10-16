@@ -715,6 +715,7 @@ type SubQuestionStatsItem struct {
 	Rubric           *RubricStats `json:"rubric,omitempty"`
 }
 
+// Part:1.1 Rubric statistics
 type RubricDetailCount struct {
 	RubricID     uuid.UUID `json:"rubric_id"`
 	Description  string    `json:"description"`
@@ -724,6 +725,19 @@ type RubricDetailCount struct {
 type RubricStats struct {
 	TotalStudent  int64               `json:"total_student"`
 	RubricsDetail []RubricDetailCount `json:"rubrics_detail"`
+}
+
+// Part:2 Statistics
+
+// Part:3 Section statistics
+type SectionStatisticsRequest struct {
+	AssignmentID uuid.UUID `json:"assignment_id"`
+}
+
+type SectionListForStatisticsResponse struct {
+	SectionID   []uuid.UUID `json:"section_id"`
+	SectionName string      `json:"section_name"`
+	IsAll       bool        `json:"is_all,omitempty"`
 }
 
 // Part: 1 CMU OAuth

@@ -119,6 +119,7 @@ type InstructorService interface {
 
 	// Part:1 Assignment statistics
 	GetAssignmentStatsAndQuestionsList(req response.GetAssignmentStatisticsRequest, courseID uuid.UUID) (response.AssignmentStatisticsResponse, response.QuestionsListStatsResponse, error)
+	GetSectionListForStatistics(courseID uuid.UUID, req response.SectionStatisticsRequest) ([]response.SectionListForStatisticsResponse, error)
 }
 
 type InstructorServiceImpl struct {
@@ -1949,4 +1950,32 @@ func (s *InstructorServiceImpl) GetAssignmentStatsAndQuestionsList(req response.
 		QuestionsStatistics:  qstats,
 	}
 	return stats, qlist, nil
+}
+
+// Part:2 Statistics data
+
+// Part:3 Sections statistics
+func (s *InstructorServiceImpl) GetSectionListForStatistics(courseID uuid.UUID, req response.SectionStatisticsRequest) ([]response.SectionListForStatisticsResponse, error) {
+	sections, err := s.repo.FindSectionListForStatistics(courseID, req)
+	if err != nil {
+		return nil, err
+	}
+	if len(sections) == 0 {
+		return sections, nil
+	}
+
+	allIDs := make([]uuid.UUID, 0, len(sections))
+	for _, it := range sections {
+		if len(it.SectionID) > 0 {
+			allIDs = append(allIDs, it.SectionID[0])
+		}
+	}
+
+	sections = append(sections, response.SectionListForStatisticsResponse{
+		SectionID:   allIDs,
+		SectionName: "All section",
+		IsAll:       true,
+	})
+
+	return sections, nil
 }

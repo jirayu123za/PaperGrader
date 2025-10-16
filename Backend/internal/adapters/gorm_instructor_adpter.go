@@ -3414,3 +3414,33 @@ func (r *GormInstructorRepository) FindQuestionsListStatisticsWithCore(assignmen
 	}
 	return out, nil
 }
+
+func (r *GormInstructorRepository) FindSectionListForStatistics(courseID uuid.UUID, req response.SectionStatisticsRequest) ([]response.SectionListForStatisticsResponse, error) {
+	type row struct {
+		SectionID   uuid.UUID
+		SectionName string
+	}
+	var rows []row
+
+	err := r.db.
+		Table("assignment_sections AS asec").
+		Select("DISTINCT s.section_id, s.section_name").
+		Joins(`JOIN sections s ON s.section_id = asec.section_id AND s.deleted_at IS NULL`).
+		Joins(`JOIN assignments a ON a.assignment_id = asec.assignment_id AND a.deleted_at IS NULL`).
+		Where("asec.assignment_id = ? AND s.course_id = ? AND a.course_id = ?", req.AssignmentID, courseID, courseID).
+		Where("asec.deleted_at IS NULL").
+		Order("s.section_name ASC").
+		Scan(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]response.SectionListForStatisticsResponse, 0, len(rows))
+	for _, r := range rows {
+		out = append(out, response.SectionListForStatisticsResponse{
+			SectionID:   []uuid.UUID{r.SectionID},
+			SectionName: r.SectionName,
+		})
+	}
+	return out, nil
+}
