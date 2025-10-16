@@ -1,11 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo, useRef, useState, useLayoutEffect } from 'react';
 import AssignmentSetting from '../../Customize/AssignmentSetting';
 import AssignmentSecTable from './AssignmentSecTable';
 import { useParams, useRouter } from 'next/navigation';
-import { Button, Menu, Anchor, Text, Flex, Table, Paper, Pagination, ActionIcon, Image } from '@mantine/core';
-import { usePagination } from '@mantine/hooks';
+import {Button,Menu,Anchor,Text,Flex,Table,Paper,Pagination,ActionIcon,Image,} from '@mantine/core';
+import { usePagination, useViewportSize } from '@mantine/hooks';
 import { useFetchAssignmentsTable } from '@/hooks/useFetchAssignments';
 import { useAssignmentsListTableStore } from '@/store/useAssignmentStore';
 import { useModalAssignmentSettingStore } from '@/store/modal/useAssignmentSettingModal';
@@ -20,17 +20,43 @@ const AssignmentTable: React.FC = () => {
   const { isLoading: isLoadingAssignmentsList } = useFetchAssignmentsTable(course_id);
   const { assignmentList } = useAssignmentsListTableStore();
   const { expandedAssignmentIDs, toggleExpandedAssignmentID } = useExpandedAssignmentStore();
+  const { height: viewportH } = useViewportSize();
+  const sectionRef = useRef<HTMLDivElement | null>(null);
+  const theadRef = useRef<HTMLTableSectionElement | null>(null);
+  const tfootRef = useRef<HTMLTableSectionElement | null>(null);
+  const sampleRowRef = useRef<HTMLTableRowElement | null>(null);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(8);
 
-  const pageSize = 8;
-  const totalPages = assignmentList ? Math.ceil(assignmentList.length / pageSize) : 1;
+  useLayoutEffect(() => {
+    const sectionTop = sectionRef.current?.getBoundingClientRect().top ?? 0;
+    const bottomPadding = 12;
+    const availableViewport = Math.max(0, viewportH - sectionTop - bottomPadding);
+    const theadH = theadRef.current?.getBoundingClientRect().height ?? 0;
+    const tfootH = tfootRef.current?.getBoundingClientRect().height ?? 0;
+    const rowH = sampleRowRef.current?.getBoundingClientRect().height ?? 48;
+    const paperVerticalPadding = 50;
+    const dividerH = 0; 
+    const availableForRows = availableViewport - theadH - tfootH - paperVerticalPadding - dividerH;
+    const fit = Math.max(1, Math.floor(availableForRows / rowH));
+    setRowsPerPage(fit);
+  }, [viewportH, assignmentList.length]);
+
+  const totalPages = useMemo(() => {
+    return assignmentList && rowsPerPage > 0
+      ? Math.ceil(assignmentList.length / rowsPerPage)
+      : 1;
+  }, [assignmentList, rowsPerPage]);
+
   const pagination = usePagination({
     total: totalPages,
     initialPage: 1,
   });
-  const startIndex = (pagination.active - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const paginatedAssignmentsTable = assignmentList.slice(startIndex, endIndex);
-  
+
+  const startIndex = (pagination.active - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const paginatedAssignmentsTable =
+    assignmentList?.slice(startIndex, endIndex) ?? [];
+
   if (!isLoadingAssignmentsList && assignmentList.length === 0) {
     return (
       <Flex direction="column" align="center" justify="center" gap="sm" py="xl">
@@ -54,10 +80,10 @@ const AssignmentTable: React.FC = () => {
 
   return (
     <Flex direction="column" gap="md">
-      <Paper withBorder mb="md">
-        <Table.ScrollContainer minWidth="100%" maxHeight={905} className='no-scroll-padding'>
+      <div ref={sectionRef}>
+        <Paper withBorder mb="md" style={{ overflow: 'hidden' }}>
           <Table verticalSpacing="xs" horizontalSpacing="xl">
-            <Table.Thead className='bg-gray-100 h-14'>
+            <Table.Thead className="bg-gray-100 h-14" ref={theadRef}>
               <Table.Tr>
                 <Table.Th w={200}>Name</Table.Th>
                 <Table.Th w={120}>Regrades</Table.Th>
@@ -66,67 +92,100 @@ const AssignmentTable: React.FC = () => {
                 <Table.Th w={100}>Actions</Table.Th>
               </Table.Tr>
             </Table.Thead>
+
             <Table.Tbody>
               {isLoadingAssignmentsList ? (
                 <Table.Tr>
                   <Table.Td colSpan={6}>
-                    <Text ta="center">Loading...</Text>
+                    <Text ta="center">Loading.</Text>
                   </Table.Td>
                 </Table.Tr>
               ) : (
-                paginatedAssignmentsTable.map((assignment) => {
-                  return (
-                    <React.Fragment key={assignment.assignment_id}>
-                      <Table.Tr>
-                        <Table.Td>
-                          <Flex align="center">
-                            <Anchor lineClamp={1} c="black" size="sm" title={assignment.assignment_name.charAt(0).toUpperCase() + assignment.assignment_name.slice(1)} 
-                              onClick={() => router.push(`/instructor/course/${course_id}/process/${assignment.assignment_id}/create-outline`)}>
-                              {assignment.assignment_name.charAt(0).toUpperCase() + assignment.assignment_name.slice(1)}
-                            </Anchor>
-                            <ActionIcon
-                              variant="transparent"
-                              onClick={() => toggleExpandedAssignmentID(assignment.assignment_id)}
+                paginatedAssignmentsTable.map((assignment, idx) => (
+                  <React.Fragment key={assignment.assignment_id}>
+                    <Table.Tr ref={idx === 0 ? sampleRowRef : undefined}>
+                      <Table.Td>
+                        <Flex align="center">
+                          <Anchor
+                            lineClamp={1}
+                            c="black"
+                            size="sm"
+                            title={
+                              assignment.assignment_name.charAt(0).toUpperCase() +
+                              assignment.assignment_name.slice(1)
+                            }
+                            onClick={() =>
+                              router.push(
+                                `/instructor/course/${course_id}/process/${assignment.assignment_id}/create-outline`
+                              )
+                            }
+                          >
+                            {assignment.assignment_name.charAt(0).toUpperCase() +
+                              assignment.assignment_name.slice(1)}
+                          </Anchor>
+                          <ActionIcon
+                            variant="transparent"
+                            onClick={() =>
+                              toggleExpandedAssignmentID(assignment.assignment_id)
+                            }
+                          >
+                            {expandedAssignmentIDs.includes(assignment.assignment_id) ? (
+                              <FiChevronUp />
+                            ) : (
+                              <FiChevronDown />
+                            )}
+                          </ActionIcon>
+                        </Flex>
+                      </Table.Td>
+                      <Table.Td pl="50px">
+                        {assignment.regrades ? 'Yes' : 'No'}
+                      </Table.Td>
+                      <Table.Td pl="50px">
+                        {assignment.submitted_by.charAt(0).toUpperCase() +
+                          assignment.submitted_by.slice(1)}
+                      </Table.Td>
+                      <Table.Td pl="50px">
+                        {assignment.assignment_sections.length}
+                      </Table.Td>
+                      <Table.Td>
+                        <Menu shadow="md">
+                          <Menu.Target>
+                            <Button variant="transparent">•••</Button>
+                          </Menu.Target>
+                          <Menu.Dropdown>
+                            <Menu.Item
+                              leftSection={<IconSettings size={14} />}
+                              onClick={() => openModal(assignment.assignment_id)}
                             >
-                              {expandedAssignmentIDs.includes(assignment.assignment_id) ? <FiChevronUp /> : <FiChevronDown />}
-                            </ActionIcon>
-                          </Flex>
-                        </Table.Td>
-                        <Table.Td pl="50px">{assignment.regrades ? 'Yes' : 'No'}</Table.Td>
-                        <Table.Td pl="50px">{assignment.submitted_by.charAt(0).toUpperCase() + assignment.submitted_by.slice(1)}</Table.Td>
-                        <Table.Td pl="50px">{assignment.assignment_sections.length}</Table.Td>                      
-                        <Table.Td>
-                          <Menu shadow="md">
-                            <Menu.Target>
-                              <Button variant="transparent">•••</Button>
-                            </Menu.Target>
-                            <Menu.Dropdown>
-                              <Menu.Item leftSection={<IconSettings size={14} />} onClick={() => openModal(assignment.assignment_id)}>Settings</Menu.Item>
-                              <Menu.Item color="red" leftSection={<IconTrash size={14} />}>Delete</Menu.Item>
-                            </Menu.Dropdown>
-                          </Menu>
+                              Settings
+                            </Menu.Item>
+                            <Menu.Item color="red" leftSection={<IconTrash size={14} />}>
+                              Delete
+                            </Menu.Item>
+                          </Menu.Dropdown>
+                        </Menu>
+                      </Table.Td>
+                    </Table.Tr>
+
+                    {expandedAssignmentIDs.includes(assignment.assignment_id) && (
+                      <Table.Tr>
+                        <Table.Td colSpan={7} p={0} className="bg-gray-50">
+                          <AssignmentSecTable assignment={assignment} />
                         </Table.Td>
                       </Table.Tr>
-
-                      {expandedAssignmentIDs.includes(assignment.assignment_id) && (
-                        <Table.Tr>
-                          <Table.Td colSpan={7} p={0} className='bg-gray-50'>
-                            <AssignmentSecTable assignment={assignment} />
-                          </Table.Td>
-                        </Table.Tr>
-                      )}
-                    </React.Fragment>
-                  );
-                }
-              ))}
+                    )}
+                  </React.Fragment>
+                ))
+              )}
             </Table.Tbody>
-            <Table.Tfoot>
+
+            <Table.Tfoot ref={tfootRef}>
               <Table.Tr>
                 <Table.Td colSpan={7} className="border-t border-gray-300">
                   <Flex align="center" w="100%" justify="space-between">
                     <Text size="sm" c="dimmed">
                       Total assignments: {assignmentList.length}
-                    </Text>                    
+                    </Text>
                     <Pagination
                       total={totalPages}
                       siblings={1}
@@ -134,14 +193,16 @@ const AssignmentTable: React.FC = () => {
                       value={pagination.active}
                       onChange={pagination.setPage}
                       gap={0}
+                      size="sm"
                     />
                   </Flex>
                 </Table.Td>
               </Table.Tr>
             </Table.Tfoot>
-          </Table> 
-        </Table.ScrollContainer>       
-      </Paper>
+          </Table>
+        </Paper>
+      </div>
+
       <AssignmentSetting />
     </Flex>
   );
