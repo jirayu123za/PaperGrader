@@ -1912,39 +1912,29 @@ func (s *InstructorServiceImpl) GetAssignmentStatsAndQuestionsList(req response.
 		return response.AssignmentStatisticsResponse{}, nil, err
 	}
 
-	qlist, err := s.repo.FindQuestionsListStatisticsWithMeans(req.AssignmentID, core.QMean, core.SQMean)
+	qlist, err := s.repo.FindQuestionsListStatisticsWithCore(req.AssignmentID, core)
 	if err != nil {
 		return response.AssignmentStatisticsResponse{}, nil, err
 	}
 
 	qstats := make([]response.QuestionsListStatisticsResponse, 0, len(qlist))
-
 	for _, q := range qlist {
 		item := response.QuestionsListStatisticsResponse{
 			QuestionID:     q.QuestionID,
 			QuestionNumber: q.QuestionNumber,
 			PercentMean:    q.PercentMean,
 		}
-
 		if len(q.SubQuestions) > 0 {
 			children := make([]response.SubQuestionStatisticsResponse, 0, len(q.SubQuestions))
 			for _, s := range q.SubQuestions {
-				var pm *float64
-				if s.PercentMean != nil {
-					pm = s.PercentMean
-				} else {
-					defaultVal := 0.0
-					pm = &defaultVal
-				}
 				children = append(children, response.SubQuestionStatisticsResponse{
 					SubQuestionID:  s.SubQuestionID,
 					QuestionNumber: s.QuestionNumber,
-					PercentMean:    pm,
+					PercentMean:    s.PercentMean,
 				})
 			}
 			item.SubQuestions = children
 		}
-
 		qstats = append(qstats, item)
 	}
 
@@ -1958,6 +1948,5 @@ func (s *InstructorServiceImpl) GetAssignmentStatsAndQuestionsList(req response.
 		TotalAssignmentScore: core.TotalAssignmentScore,
 		QuestionsStatistics:  qstats,
 	}
-
 	return stats, qlist, nil
 }
