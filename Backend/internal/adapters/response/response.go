@@ -666,6 +666,8 @@ type StatsCore struct {
 	TotalAssignmentScore int64
 	QMean                map[uuid.UUID]float64
 	SQMean               map[uuid.UUID]float64
+	QRubric              map[uuid.UUID][]RubricDetailCount
+	SQRubric             map[uuid.UUID][]RubricDetailCount
 }
 
 type AssignmentStatisticsResponse struct {
@@ -700,15 +702,28 @@ type QuestionListStatsItem struct {
 	QuestionTitle  string                 `json:"question_title"`
 	QuestionPoint  float64                `json:"question_point"`
 	PercentMean    *float64               `json:"percent_mean,omitempty"`
+	Rubric         *RubricStats           `json:"rubric,omitempty"`
 	SubQuestions   []SubQuestionStatsItem `json:"sub_questions,omitempty"` // children (optional)
 }
 
 type SubQuestionStatsItem struct {
-	SubQuestionID    uuid.UUID `json:"sub_question_id"`
-	QuestionNumber   string    `json:"question_number"`
-	SubQuestionTitle string    `json:"sub_question_title"`
-	SubQuestionPoint float64   `json:"sub_question_point"`
-	PercentMean      *float64  `json:"percent_mean,omitempty"`
+	SubQuestionID    uuid.UUID    `json:"sub_question_id"`
+	QuestionNumber   string       `json:"question_number"`
+	SubQuestionTitle string       `json:"sub_question_title"`
+	SubQuestionPoint float64      `json:"sub_question_point"`
+	PercentMean      *float64     `json:"percent_mean,omitempty"`
+	Rubric           *RubricStats `json:"rubric,omitempty"`
+}
+
+type RubricDetailCount struct {
+	RubricID     uuid.UUID `json:"rubric_id"`
+	Description  string    `json:"description"`
+	TotalsSelect int64     `json:"totals_select"`
+}
+
+type RubricStats struct {
+	TotalStudent  int64               `json:"total_student"`
+	RubricsDetail []RubricDetailCount `json:"rubrics_detail"`
 }
 
 // Part: 1 CMU OAuth
