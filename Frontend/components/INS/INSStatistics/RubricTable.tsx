@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Table, Progress, Text, ScrollArea, Flex, Anchor, Box } from "@mantine/core";
+import { Table, Progress, Text, ScrollArea, Flex, Anchor, Box, Paper, } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { VscListUnordered } from "react-icons/vsc";
 import RubricPieModal from "./RubricPieModal";
@@ -93,7 +93,7 @@ export function RubricTable({ data }: RubricTableProps) {
 
           <Table.Td>
             <Flex justify="space-between" align="center" style={{ width: "100%" }}>
-              <Progress value={percentage} style={{ flex: 1, marginRight: 8 }} />
+              <Progress value={percentage} style={{ flex: 1, marginRight: 8 }} color="#6665AC"/>
               <Text>{percentage}%</Text>
             </Flex>
           </Table.Td>
@@ -109,6 +109,7 @@ export function RubricTable({ data }: RubricTableProps) {
   return (
     <>
       <ScrollArea style={{ height: "100%" }}>
+        <Paper withBorder radius="md" p="sm">
         <Table highlightOnHover verticalSpacing="xs" horizontalSpacing="lg">
           <Table.Thead className="bg-gray-100">
             <Table.Tr>
@@ -119,8 +120,8 @@ export function RubricTable({ data }: RubricTableProps) {
           </Table.Thead>
           <Table.Tbody>{renderRows(rowsWithMean)}</Table.Tbody>
         </Table>
+        </Paper>
       </ScrollArea>
-
       <RubricPieModal opened={opened} onClose={close} title={selectedTitle || "Rubric"} />
     </>
   );
