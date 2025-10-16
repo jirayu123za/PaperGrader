@@ -1,7 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {Modal,Group,Stack,Text,Tooltip,ScrollArea,Box,Divider,useMantineTheme,rem,} from "@mantine/core";
+import {
+  Modal,
+  Group,
+  Stack,
+  Text,
+  Tooltip,
+  ScrollArea,
+  Box,
+  Divider,
+  useMantineTheme,
+  rem,
+} from "@mantine/core";
 import { PieChart } from "@mantine/charts";
 import type { PieProps, SectorProps } from "recharts";
 import { Sector } from "recharts";
@@ -18,14 +29,14 @@ type RubricPieModalProps = {
   onClose: () => void;
   title?: string;
   data?: RubricSlice[];
-  height?: number;
+  height?: number; // ใช้เป็นขนาด (width = height) ของแผนภูมิ
 };
 
 const mockData: RubricSlice[] = [
-  { id: "r1", label: "Excellent", value: 14, color: "#845EF7" },
-  { id: "r2", label: "Good", value: 12, color: "#BE4BDB" },
-  { id: "r3", label: "Fair", value: 10, color: "#4C6EF5" },
-  { id: "r4", label: "Poor", value: 8, color: "#228BE6" },
+  { id: "r1", label: "Excellent", value: 14 },
+  { id: "r2", label: "Good", value: 12 },
+  { id: "r3", label: "Fair", value: 10 },
+  { id: "r4", label: "Poor", value: 8 },
 ];
 
 function darken(hex: string, amount = 0.15) {
@@ -45,37 +56,36 @@ export default function RubricPieModal({
   onClose,
   data,
   title = "Rubric breakdown",
-  height = 280,
+  height = 340,
 }: RubricPieModalProps) {
   const theme = useMantineTheme();
-  const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
-
+  const [hoverIndex, setHoverIndex] = useState<number | undefined>(undefined);
   const sourceData = data && data.length > 0 ? data : mockData;
 
-  const palette = useMemo(() => {
-    const order = [
-      "violet",
-      "grape",
-      "indigo",
-      "blue",
-      "cyan",
-      "teal",
-      "green",
-      "lime",
-      "orange",
-      "red",
-    ];
-    return order.map((k) => theme.colors[k]?.[6] || "#8884d8");
-  }, [theme]);
+  const customPalette = useMemo(
+    () => [
+      "#6665AC",
+      "#845EF7",
+      "#BE4BDB",
+      "#4C6EF5",
+      "#228BE6",
+      "#15AABF",
+      "#12B886",
+      "#40C057",
+      "#FAB005",
+      "#FA5252",
+    ],
+    []
+  );
 
   const chartData = useMemo(
     () =>
       sourceData.map((d, i) => ({
         name: d.label,
         value: d.value,
-        color: d.color || palette[i % palette.length],
+        color: d.color || customPalette[i % customPalette.length],
       })),
-    [sourceData, palette]
+    [sourceData, customPalette]
   );
 
   const total = useMemo(
@@ -83,15 +93,44 @@ export default function RubricPieModal({
     [sourceData]
   );
 
+  const maxIndex = useMemo(() => {
+    if (!sourceData.length) return 0;
+    return sourceData.reduce(
+      (max, d, i, arr) => (d.value > arr[max].value ? i : max),
+      0
+    );
+  }, [sourceData]);
+
+  const emphasisIndex = hoverIndex ?? maxIndex;
+
+  // === ป้องกันโดนตัดขอบตอน active ขยาย ===
+  // เพิ่ม margin ให้ตัว Recharts และคำนวณรัศมีให้มี buffer
+  const chartMargin = { top: 16, right: 24, bottom: 16, left: 24 } as const;
+  const activeDelta = 6; // ขยายเพิ่มเวลา active
+  const safePadding = Math.max(
+    chartMargin.top,
+    chartMargin.right,
+    chartMargin.bottom,
+    chartMargin.left
+  );
+  const outerRadius = Math.max(40, Math.floor(height / 2 - safePadding - activeDelta));
+  const innerRadius = Math.max(24, Math.floor(outerRadius * 0.45));
+
   const renderActive: PieProps["activeShape"] = (props: SectorProps) => {
     const fill = (props as any).fill as string;
+    const { cx, cy, startAngle, endAngle } = props;
     return (
       <g>
         <Sector
-          {...props}
-          outerRadius={(props.outerRadius as number) + 8}
-          stroke={darken(fill, 0.35)}
-          strokeWidth={2}
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius + activeDelta}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+          stroke={darken(fill, 0.2)}
+          strokeWidth={0}
         />
       </g>
     );
@@ -102,33 +141,44 @@ export default function RubricPieModal({
       opened={opened}
       onClose={onClose}
       title={<Text fw={600}>{title}</Text>}
-      size="lg"
+      size="60%"
       centered
       styles={{
-        content: { background: "#ffffff", color: "#1f2937" },
+        content: {
+          background: "#ffffff",
+          color: "#1f2937",
+          overflow: "visible",
+        },
+        body: {
+          background: "#ffffff",
+          overflow: "visible",
+        },
         header: { background: "#ffffff", borderBottom: "1px solid #e9ecef" },
-        body: { background: "#ffffff" },
       }}
       overlayProps={{ backgroundOpacity: 0.35, blur: 4 }}
     >
-      <Group align="start" wrap="nowrap">
-        <Box w="60%" style={{ minWidth: 280 }}>
+      <Group align="start" wrap="nowrap" gap="lg">
+        <Box w="65%" style={{ minWidth: 360, overflow: "visible" }}>
           <PieChart
-            key={opened ? "open" : "closed"}
             data={chartData}
             size={height}
             withTooltip
             tooltipDataSource="segment"
             paddingAngle={2}
+            // ✅ เพิ่ม margin ให้พื้นที่รอบ ๆ SVG
+            chartProps={{ margin: chartMargin }}
             pieProps={{
-              innerRadius: 40,
-              onMouseEnter: (_: any, idx: number) => setActiveIndex(idx),
-              onMouseLeave: () => setActiveIndex(undefined),
-              activeIndex,
+              cx: "50%",
+              cy: "50%",
+              innerRadius,
+              outerRadius,
+              onMouseEnter: (_: any, idx: number) => setHoverIndex(idx),
+              onMouseLeave: () => setHoverIndex(undefined),
+              activeIndex: emphasisIndex,
               activeShape: renderActive,
               isAnimationActive: false,
-              stroke: theme.colors.gray[2],
-              strokeWidth: 1,
+              stroke: "none",
+              strokeWidth: 0,
             }}
             tooltipProps={{
               labelFormatter: (label: string) => label,
@@ -149,22 +199,25 @@ export default function RubricPieModal({
           </Text>
         </Box>
 
-        <Box w="40%">
+        <Box w="35%">
           <ScrollArea.Autosize mah={height} type="auto">
             <Stack gap="xs">
               {chartData.map((item, i) => {
-                const hovered = i === activeIndex;
+                const isMax = i === maxIndex;
+                const hovered = i === hoverIndex;
+                const bg = hovered ? "#f6f8fa" : isMax ? "#f9fafb" : "transparent";
                 return (
                   <Group
                     key={i}
                     gap="sm"
-                    onMouseEnter={() => setActiveIndex(i)}
-                    onMouseLeave={() => setActiveIndex(undefined)}
+                    onMouseEnter={() => setHoverIndex(i)}
+                    onMouseLeave={() => setHoverIndex(undefined)}
                     style={{
-                      background: hovered ? "#f6f8fa" : "transparent",
+                      background: bg,
                       borderRadius: rem(8),
                       padding: rem(8),
                       cursor: "pointer",
+                      outline: isMax && !hovered ? `2px dashed ${darken(item.color, 0.35)}` : "none",
                     }}
                   >
                     <Box
@@ -172,13 +225,10 @@ export default function RubricPieModal({
                       h={12}
                       style={{
                         borderRadius: 3,
-                        background: hovered
-                          ? darken(item.color, 0.15)
-                          : item.color,
-                        outline: hovered
-                          ? `2px solid ${darken(item.color, 0.35)}`
-                          : "none",
+                        background: hovered || isMax ? darken(item.color, 0.15) : item.color,
+                        outline: hovered ? `2px solid ${darken(item.color, 0.35)}` : "none",
                       }}
+                      title={item.name}
                     />
                     <Tooltip label={item.name} withArrow withinPortal>
                       <Text
@@ -187,8 +237,9 @@ export default function RubricPieModal({
                           whiteSpace: "nowrap",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
-                          maxWidth: "16rem",
+                          maxWidth: "18rem",
                           color: "#374151",
+                          fontWeight: isMax ? 700 : 500,
                         }}
                         title={item.name}
                       >
@@ -196,7 +247,7 @@ export default function RubricPieModal({
                       </Text>
                     </Tooltip>
                     <Box style={{ marginLeft: "auto" }}>
-                      <Text size="sm" fw={700} c="dark">
+                      <Text size="sm" fw={700} c={isMax ? "dark" : undefined}>
                         {item.value}
                       </Text>
                     </Box>
