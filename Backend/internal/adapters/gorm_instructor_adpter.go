@@ -10,6 +10,7 @@ import (
 	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -2966,44 +2967,68 @@ func (r *GormInstructorRepository) FindAssignmentsListForExport(CourseID uuid.UU
 }
 
 // Part:1 Statistics data
-func (r *GormInstructorRepository) FindStatisticsDataBySelectAssignment(request response.GetAssignmentStatisticsRequest, courseID uuid.UUID) (response.AssignmentStatisticsResponse, error) {
-	var TotalSubmission int64
+func (r *GormInstructorRepository) FindGradeIDsHasGradedBySectionIDs(AssignmentID uuid.UUID, SectionIDs []uuid.UUID) ([]uuid.UUID, error) {
+	gradeIDs := []uuid.UUID{}
+	if len(SectionIDs) == 0 {
+		return gradeIDs, nil
+	}
 
 	err := r.db.
 		Table("grades g").
+		Joins("JOIN submissions s ON s.submission_id = g.submission_id AND s.deleted_at IS NULL").
+		Joins("JOIN assignments a ON a.assignment_id = s.assignment_id AND a.deleted_at IS NULL").
+		Joins("JOIN enrollment_lists el ON el.personal_data_id = s.belongs_to AND el.course_id = a.course_id AND el.deleted_at IS NULL").
+		Where("s.assignment_id = ? AND el.section_id IN ? AND g.deleted_at IS NULL", AssignmentID, SectionIDs).
+		Where(`
+			jsonb_path_exists(g.grade_data, '$.questions_data[*].grades ? (@.has_graded == true)')
+			OR jsonb_path_exists(g.grade_data, '$.questions_data[*].sub_questions[*].grades ? (@.has_graded == true)')
+		`).
+		Distinct().
+		Pluck("g.grade_id", &gradeIDs).Error
+
+	return gradeIDs, err
+}
+
+func (r *GormInstructorRepository) FindAssignmentStatsCore(req response.GetAssignmentStatisticsRequest, courseID uuid.UUID, gradeIDs []uuid.UUID) (response.StatsCore, error) {
+	out := response.StatsCore{
+		QMean:  map[uuid.UUID]float64{},
+		SQMean: map[uuid.UUID]float64{},
+	}
+	if len(gradeIDs) == 0 {
+		return out, nil
+	}
+
+	if err := r.db.
+		Table("grades g").
 		Joins("JOIN submissions s ON s.submission_id = g.submission_id").
 		Joins("JOIN assignments a ON a.assignment_id = s.assignment_id").
-		Where("a.assignment_id = ? AND a.course_id = ? AND g.deleted_at IS NULL", request.AssignmentID, courseID).
+		Where("g.grade_id IN ?", gradeIDs).
+		Where("a.assignment_id = ? AND a.course_id = ? AND g.deleted_at IS NULL", req.AssignmentID, courseID).
 		Where(`
-        jsonb_path_exists(g.grade_data, '$.questions_data[*].grades ? (@.has_graded == true)')
-        OR jsonb_path_exists(g.grade_data, '$.questions_data[*].sub_questions[*].grades ? (@.has_graded == true)')
-    `).
+			jsonb_path_exists(g.grade_data, '$.questions_data[*].grades ? (@.has_graded == true)')
+			OR jsonb_path_exists(g.grade_data, '$.questions_data[*].sub_questions[*].grades ? (@.has_graded == true)')
+		`).
 		Distinct("g.submission_id").
-		Count(&TotalSubmission).Error
-	if err != nil {
-		return response.AssignmentStatisticsResponse{}, err
+		Count(&out.TotalSubmissions).Error; err != nil {
+		return out, err
 	}
 
 	type row struct {
-		SubmissionID uuid.UUID
-		GradeData    datatypes.JSON
+		GradeID   uuid.UUID
+		GradeData datatypes.JSON
 	}
 	var rows []row
-
-	err = r.db.Table("grades g").
-		Select("g.submission_id, g.grade_data").
-		Joins("JOIN submissions s ON s.submission_id = g.submission_id").
-		Joins("JOIN assignments a ON a.assignment_id = s.assignment_id").
-		Where("a.assignment_id = ? AND a.course_id = ? AND g.deleted_at IS NULL", request.AssignmentID, courseID).
-		Scan(&rows).Error
-	if err != nil {
-		return response.AssignmentStatisticsResponse{}, err
+	if err := r.db.
+		Table("grades g").
+		Select("g.grade_id, g.grade_data").
+		Where("g.grade_id IN ? AND g.deleted_at IS NULL", gradeIDs).
+		Scan(&rows).Error; err != nil {
+		return out, err
 	}
 	if len(rows) == 0 {
-		return response.AssignmentStatisticsResponse{}, nil
+		return out, nil
 	}
 
-	var totalAssignmentScore int64
 	{
 		var schema struct {
 			QuestionsData []struct {
@@ -3015,16 +3040,27 @@ func (r *GormInstructorRepository) FindStatisticsDataBySelectAssignment(request 
 			for _, q := range schema.QuestionsData {
 				tmp += q.QuestionPoint
 			}
-			totalAssignmentScore = int64(tmp)
+			out.TotalAssignmentScore = int64(tmp)
 		}
 	}
+	if out.TotalAssignmentScore <= 0 {
+		return out, nil
+	}
 
-	scores := make([]float64, 0, len(rows))
-	for _, r := range rows {
+	type agg struct {
+		sum float64
+		cnt int
+	}
+	qAgg := map[uuid.UUID]*agg{}
+	sqAgg := map[uuid.UUID]*agg{}
+
+	percentScores := make([]float64, 0, len(rows))
+
+	for _, rrow := range rows {
 		var gd struct {
 			QuestionsData []struct {
-				QuestionID    string  `json:"question_id"`
-				QuestionPoint float64 `json:"question_point"`
+				QuestionID    uuid.UUID `json:"question_id"`
+				QuestionPoint float64   `json:"question_point"`
 				Rubrics       struct {
 					RubricDetails []struct {
 						HasSelected bool    `json:"has_selected"`
@@ -3032,8 +3068,8 @@ func (r *GormInstructorRepository) FindStatisticsDataBySelectAssignment(request 
 					} `json:"rubric_details"`
 				} `json:"rubrics"`
 				SubQuestions []struct {
-					SubQuestionID    string  `json:"sub_question_id"`
-					SubQuestionPoint float64 `json:"sub_question_point"`
+					SubQuestionID    uuid.UUID `json:"sub_question_id"`
+					SubQuestionPoint float64   `json:"sub_question_point"`
 					Rubrics          struct {
 						RubricDetails []struct {
 							HasSelected bool    `json:"has_selected"`
@@ -3043,15 +3079,13 @@ func (r *GormInstructorRepository) FindStatisticsDataBySelectAssignment(request 
 				} `json:"sub_questions"`
 			} `json:"questions_data"`
 		}
-
-		if err := json.Unmarshal(r.GradeData, &gd); err != nil {
+		if err := json.Unmarshal(rrow.GradeData, &gd); err != nil {
 			continue
 		}
 
-		totalScore := 0.0
+		total := 0.0
 		for _, q := range gd.QuestionsData {
 			qScore := 0.0
-
 			for _, rd := range q.Rubrics.RubricDetails {
 				if rd.HasSelected {
 					qScore += rd.RubricPoint
@@ -3071,60 +3105,157 @@ func (r *GormInstructorRepository) FindStatisticsDataBySelectAssignment(request 
 				if sqScore > sq.SubQuestionPoint {
 					sqScore = sq.SubQuestionPoint
 				}
+				if sq.SubQuestionPoint > 0 {
+					p := (sqScore / sq.SubQuestionPoint) * 100.0
+					if p < 0 {
+						p = 0
+					} else if p > 100 {
+						p = 100
+					}
+					a := sqAgg[sq.SubQuestionID]
+					if a == nil {
+						a = &agg{}
+						sqAgg[sq.SubQuestionID] = a
+					}
+					a.sum += p
+					a.cnt++
+				}
 				qScore += sqScore
 			}
 
-			if qScore > q.QuestionPoint {
-				qScore = q.QuestionPoint
-			}
-			if qScore < 0 {
-				qScore = 0
+			if q.QuestionPoint > 0 {
+				p := (qScore / q.QuestionPoint) * 100.0
+				if p < 0 {
+					p = 0
+				} else if p > 100 {
+					p = 100
+				}
+				a := qAgg[q.QuestionID]
+				if a == nil {
+					a = &agg{}
+					qAgg[q.QuestionID] = a
+				}
+				a.sum += p
+				a.cnt++
 			}
 
-			totalScore += qScore
+			total += qScore
 		}
 
-		scores = append(scores, totalScore)
+		pct := (total / float64(out.TotalAssignmentScore)) * 100.0
+		if pct < 0 {
+			pct = 0
+		} else if pct > 100 {
+			pct = 100
+		}
+		percentScores = append(percentScores, pct)
 	}
 
-	if len(scores) == 0 {
-		return response.AssignmentStatisticsResponse{}, nil
+	if len(percentScores) == 0 {
+		return out, nil
 	}
 
-	sort.Float64s(scores)
-	min := scores[0]
-	max := scores[len(scores)-1]
+	sort.Float64s(percentScores)
+	out.PercentMin = percentScores[0]
+	out.PercentMax = percentScores[len(percentScores)-1]
 
 	sum := 0.0
-	for _, v := range scores {
+	for _, v := range percentScores {
 		sum += v
 	}
-	mean := sum / float64(len(scores))
+	out.PercentMean = sum / float64(len(percentScores))
 
-	var median float64
-	mid := len(scores) / 2
-	if len(scores)%2 == 0 {
-		median = (scores[mid-1] + scores[mid]) / 2
+	mid := len(percentScores) / 2
+	if len(percentScores)%2 == 0 {
+		out.PercentMedian = (percentScores[mid-1] + percentScores[mid]) / 2
 	} else {
-		median = scores[mid]
+		out.PercentMedian = percentScores[mid]
 	}
 
-	variance := 0.0
-	for _, v := range scores {
-		variance += (v - mean) * (v - mean)
+	var variance float64
+	for _, v := range percentScores {
+		diff := v - out.PercentMean
+		variance += diff * diff
 	}
-	variance /= float64(len(scores))
-	sd := math.Sqrt(variance)
+	variance /= float64(len(percentScores))
+	out.PercentSD = math.Sqrt(variance)
 
-	return response.AssignmentStatisticsResponse{
-		Minimum:              min,
-		Median:               median,
-		Maximum:              max,
-		Mean:                 mean,
-		SD:                   sd,
-		TotalSubmission:      TotalSubmission,
-		TotalAssignmentScore: totalAssignmentScore,
-		Scores:               scores,
-		MinHistogram:         0,
-	}, nil
+	for id, a := range qAgg {
+		if a.cnt > 0 {
+			out.QMean[id] = a.sum / float64(a.cnt)
+		}
+	}
+	for id, a := range sqAgg {
+		if a.cnt > 0 {
+			out.SQMean[id] = a.sum / float64(a.cnt)
+		}
+	}
+
+	return out, nil
+}
+
+func (r *GormInstructorRepository) FindQuestionsListStatisticsWithMeans(assignmentID uuid.UUID, qMean map[uuid.UUID]float64, sqMean map[uuid.UUID]float64) (response.QuestionsListStatsResponse, error) {
+	var rubric struct {
+		RubricID   uuid.UUID      `gorm:"column:rubric_id"`
+		RubricData datatypes.JSON `gorm:"column:rubric_data"`
+	}
+
+	tx := r.db.
+		Table("rubrics").
+		Select("rubric_id, rubric_data").
+		Where("assignment_id = ? AND deleted_at IS NULL", assignmentID).
+		Take(&rubric)
+
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return response.QuestionsListStatsResponse{}, nil
+	}
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	var parsed response.RawRubricData
+	if err := json.Unmarshal(rubric.RubricData, &parsed); err != nil {
+		return nil, err
+	}
+
+	out := make(response.QuestionsListStatsResponse, 0, len(parsed.QuestionsData))
+	for i, q := range parsed.QuestionsData {
+		qNum := strconv.Itoa(i + 1)
+
+		var pctPtr *float64
+		if len(q.SubQuestions) == 0 {
+			if mv, ok := qMean[q.QuestionID]; ok {
+				v := mv
+				pctPtr = &v
+			}
+		}
+
+		item := response.QuestionListStatsItem{
+			QuestionID:     q.QuestionID,
+			QuestionNumber: qNum,
+			QuestionTitle:  q.QuestionTitle,
+			QuestionPoint:  q.QuestionPoint,
+			PercentMean:    pctPtr,
+			SubQuestions:   make([]response.SubQuestionStatsItem, 0, len(q.SubQuestions)),
+		}
+
+		for j, sq := range q.SubQuestions {
+			sNum := fmt.Sprintf("%d.%d", i+1, j+1)
+			var meanPtr *float64
+			if mv, ok := sqMean[sq.SubQuestionID]; ok {
+				v := mv
+				meanPtr = &v
+			}
+			item.SubQuestions = append(item.SubQuestions, response.SubQuestionStatsItem{
+				SubQuestionID:    sq.SubQuestionID,
+				QuestionNumber:   sNum,
+				SubQuestionTitle: sq.SubQuestionTitle,
+				SubQuestionPoint: sq.SubQuestionPoint,
+				PercentMean:      meanPtr,
+			})
+		}
+		out = append(out, item)
+	}
+
+	return out, nil
 }

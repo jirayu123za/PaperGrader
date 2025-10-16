@@ -118,7 +118,7 @@ type InstructorService interface {
 	// CreateGradesToExcelFile(request response.CreateGradeToExcelFileRequest, courseID uuid.UUID) error
 
 	// Part:1 Assignment statistics
-	GetStatisticsDataBySelectAssignment(request response.GetAssignmentStatisticsRequest, courseID uuid.UUID) (response.AssignmentStatisticsResponse, error)
+	GetAssignmentStatsAndQuestionsList(req response.GetAssignmentStatisticsRequest, courseID uuid.UUID) (response.AssignmentStatisticsResponse, response.QuestionsListStatsResponse, error)
 }
 
 type InstructorServiceImpl struct {
@@ -1901,10 +1901,63 @@ func (s *InstructorServiceImpl) GetAssignmentsListForExport(CourseID uuid.UUID) 
 // }
 
 // Part:1 Statistics data
-func (s *InstructorServiceImpl) GetStatisticsDataBySelectAssignment(request response.GetAssignmentStatisticsRequest, courseID uuid.UUID) (response.AssignmentStatisticsResponse, error) {
-	statisticData, err := s.repo.FindStatisticsDataBySelectAssignment(request, courseID)
+func (s *InstructorServiceImpl) GetAssignmentStatsAndQuestionsList(req response.GetAssignmentStatisticsRequest, courseID uuid.UUID) (response.AssignmentStatisticsResponse, response.QuestionsListStatsResponse, error) {
+	gradeIDs, err := s.repo.FindGradeIDsHasGradedBySectionIDs(req.AssignmentID, req.SectionIDs)
 	if err != nil {
-		return response.AssignmentStatisticsResponse{}, err
+		return response.AssignmentStatisticsResponse{}, nil, err
 	}
-	return statisticData, nil
+
+	core, err := s.repo.FindAssignmentStatsCore(req, courseID, gradeIDs)
+	if err != nil {
+		return response.AssignmentStatisticsResponse{}, nil, err
+	}
+
+	qlist, err := s.repo.FindQuestionsListStatisticsWithMeans(req.AssignmentID, core.QMean, core.SQMean)
+	if err != nil {
+		return response.AssignmentStatisticsResponse{}, nil, err
+	}
+
+	qstats := make([]response.QuestionsListStatisticsResponse, 0, len(qlist))
+
+	for _, q := range qlist {
+		item := response.QuestionsListStatisticsResponse{
+			QuestionID:     q.QuestionID,
+			QuestionNumber: q.QuestionNumber,
+			PercentMean:    q.PercentMean,
+		}
+
+		if len(q.SubQuestions) > 0 {
+			children := make([]response.SubQuestionStatisticsResponse, 0, len(q.SubQuestions))
+			for _, s := range q.SubQuestions {
+				var pm *float64
+				if s.PercentMean != nil {
+					pm = s.PercentMean
+				} else {
+					defaultVal := 0.0
+					pm = &defaultVal
+				}
+				children = append(children, response.SubQuestionStatisticsResponse{
+					SubQuestionID:  s.SubQuestionID,
+					QuestionNumber: s.QuestionNumber,
+					PercentMean:    pm,
+				})
+			}
+			item.SubQuestions = children
+		}
+
+		qstats = append(qstats, item)
+	}
+
+	stats := response.AssignmentStatisticsResponse{
+		Minimum:              core.PercentMin,
+		Median:               core.PercentMedian,
+		Maximum:              core.PercentMax,
+		Mean:                 core.PercentMean,
+		SD:                   core.PercentSD,
+		TotalSubmissions:     core.TotalSubmissions,
+		TotalAssignmentScore: core.TotalAssignmentScore,
+		QuestionsStatistics:  qstats,
+	}
+
+	return stats, qlist, nil
 }
