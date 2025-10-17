@@ -1,81 +1,140 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Flex, Select, Title, MultiSelect, Loader, Text } from "@mantine/core";
+import { Flex, Select, Title, MultiSelect, Skeleton, Text } from "@mantine/core";
 import { useParams } from "next/navigation";
-import { useFetchSections } from "../../../hooks/useFetchSelectSection";
-import { useSectionsListStore, useSelectSectionStore } from "../../../store/useSectionStore";
-import { useFetchAssignments } from "../../../hooks/Statistic/useFetchAssigmentStatistic";
-import { useAssignmentStatisticStore, type AssignmentOption } from "../../../store/statistic/useAssignmentStatisticStore";
+import {useStatisticSectionsStore,type StatisticSection,} from "@/store/statistic/useStatisticSectionsStore";
+import { useFetchStatisticSections } from "@/hooks/Statistic/useFetchStatisticSections";
+import { useFetchAssignments } from "@/hooks/Statistic/useFetchAssigmentStatistic";
+import {useAssignmentStatisticStore,type AssignmentOption,} from "@/store/statistic/useAssignmentStatisticStore";
 
-const ALL_SENTINEL = "all section";
+const ALL_VALUE = "__ALL__";
 
-export default function StatisticHeader({ title = "Assignment Statistics" }: { title?: string }) {
+export default function StatisticHeader({
+  title = "Assignment Statistics",
+}: {
+  title?: string;
+}) {
+  const [sectionSearch, setSectionSearch] = useState("");
   const params = useParams();
   const course_id = params?.course_id as string;
-  const assignmentIdFromParam = params?.assignment_id ? String(params.assignment_id) : null;
+  const assignmentIdFromParam = params?.assignment_id
+    ? String(params.assignment_id)
+    : null;
 
-  const { isLoading: isLoadingSections, error: errorSections } = useFetchSections(course_id);
-  const { sectionsList } = useSectionsListStore();
-  const { selectedSections, setSelectedSections } = useSelectSectionStore();
-  const [sectionSearch, setSectionSearch] = useState("");
-
-  const baseSectionOptions = useMemo(
-    () =>
-      (sectionsList ?? []).map(
-        (s: { section_id: string | number; section_name: string }) => ({
-          value: String(s.section_id).trim(),
-          label: String(s.section_name),
-        })
-      ),
-    [sectionsList]
+ 
+  const selectedAssignmentId = useAssignmentStatisticStore(
+    (s) => s.selectedAssignmentId
   );
 
-  const hasSections = baseSectionOptions.length > 0;
 
-  const sectionOptions = useMemo(
-    () => (hasSections ? [{ value: ALL_SENTINEL, label: "All section" }, ...baseSectionOptions] : []),
-    [hasSections, baseSectionOptions]
-  );
+  const setCourseId = useStatisticSectionsStore((s) => s.setCourseId);
+  const setAssignmentId = useStatisticSectionsStore((s) => s.setAssignmentId);
 
   useEffect(() => {
-    if (!hasSections) {
-      if (selectedSections?.length) setSelectedSections([]);
-      return;
+    setCourseId(course_id ?? null);
+  }, [course_id, setCourseId]);
+
+  useEffect(() => {
+    if (selectedAssignmentId) {
+      setAssignmentId(selectedAssignmentId);
+    } else if (assignmentIdFromParam) {
+      setAssignmentId(assignmentIdFromParam);
+    } else {
+      setAssignmentId(null);
     }
-    if (!selectedSections || selectedSections.length === 0) {
-      setSelectedSections([ALL_SENTINEL]);
+  }, [selectedAssignmentId, assignmentIdFromParam, setAssignmentId]);
+
+
+  const { isFetching: isFetchingSections, isError: isErrorSections } =
+    useFetchStatisticSections();
+  const sections = useStatisticSectionsStore((s) => s.sections);
+  const selectedSectionIds = useStatisticSectionsStore(
+    (s) => s.selectedSectionIds
+  );
+  const setSelectedByRows = useStatisticSectionsStore(
+    (s) => s.setSelectedByRows
+  );
+
+
+  const allRow = useMemo<StatisticSection | undefined>(
+    () => sections.find((s) => s.is_all),
+    [sections]
+  );
+  const allIds = allRow?.section_id ?? [];
+
+
+  const sectionOptionsBase = useMemo(
+    () =>
+      sections
+        .filter((s) => !s.is_all)
+        .map((s) => ({
+          value: String(s.section_id[0]),
+          label: String(s.section_name),
+        })),
+    [sections]
+  );
+
+  const sectionOptions = useMemo(() => {
+    if (!sections.length) return [];
+    return allRow
+      ? [{ value: ALL_VALUE, label: "All section" }, ...sectionOptionsBase]
+      : sectionOptionsBase;
+  }, [sections.length, allRow, sectionOptionsBase]);
+
+  const hasSections = sections.length > 0;
+
+
+  const msValue = useMemo(() => {
+    if (!hasSections) return [];
+    const a = new Set(selectedSectionIds);
+    const b = new Set(allIds);
+    const isAllSelected =
+      allIds.length > 0 &&
+      a.size === b.size &&
+      [...a].every((x) => b.has(x));
+    if (isAllSelected) return [ALL_VALUE];
+    const allowed = new Set(sectionOptionsBase.map((o) => o.value));
+    return selectedSectionIds.filter((id) => allowed.has(String(id)));
+  }, [hasSections, selectedSectionIds, allIds, sectionOptionsBase]);
+
+
+  useEffect(() => {
+    if (!hasSections) return;
+    if (!selectedSectionIds.length && allRow) {
+      setSelectedByRows([allRow]);
     }
-  }, [hasSections, selectedSections, setSelectedSections]);
+  }, [hasSections, selectedSectionIds.length, allRow, setSelectedByRows]);
+
+
+  const valuesToRows = (vals: string[]) =>
+    sections.filter(
+      (row) =>
+        !row.is_all &&
+        row.section_id.length === 1 &&
+        vals.includes(String(row.section_id[0]))
+    );
 
   const handleSectionsChange = (next: string[]) => {
     if (!hasSections) return;
 
-    const allowed = new Set(sectionOptions.map((o) => String(o.value)));
-    const filtered = (next || []).map((v) => String(v).trim()).filter((v) => allowed.has(v));
-
-    if (!filtered.length) {
-      setSelectedSections([ALL_SENTINEL]);
+    if (next.length === 1 && next[0] === ALL_VALUE && allRow) {
+      setSelectedByRows([allRow]);
       return;
     }
 
-    const wasAllOnly = selectedSections?.length === 1 && selectedSections[0] === ALL_SENTINEL;
-
-    if (wasAllOnly) {
-      const chosen = filtered.filter((v) => v !== ALL_SENTINEL);
-      setSelectedSections(chosen.length > 0 ? chosen : [ALL_SENTINEL]);
+    if (next.includes(ALL_VALUE)) {
+      const withoutAll = next.filter((v) => v !== ALL_VALUE);
+      const rows = valuesToRows(withoutAll);
+      setSelectedByRows(rows.length ? rows : allRow ? [allRow] : []);
       return;
     }
 
-    if (filtered.includes(ALL_SENTINEL)) {
-      setSelectedSections([ALL_SENTINEL]);
-      return;
-    }
 
-    setSelectedSections(filtered);
+    const rows = valuesToRows(next);
+    setSelectedByRows(rows.length ? rows : allRow ? [allRow] : []);
   };
 
-  const hasAnySectionSelection = !!(selectedSections && selectedSections.length > 0);
 
   const {
     data: assignmentsRaw,
@@ -84,9 +143,12 @@ export default function StatisticHeader({ title = "Assignment Statistics" }: { t
   } = useFetchAssignments(course_id);
 
   const assignmentsList = useAssignmentStatisticStore((s) => s.assignmentsList);
-  const selectedAssignmentId = useAssignmentStatisticStore((s) => s.selectedAssignmentId);
-  const setAssignmentsList = useAssignmentStatisticStore((s) => s.setAssignmentsList);
-  const setSelectedAssignmentId = useAssignmentStatisticStore((s) => s.setSelectedAssignmentId);
+  const setAssignmentsList = useAssignmentStatisticStore(
+    (s) => s.setAssignmentsList
+  );
+  const setSelectedAssignmentId = useAssignmentStatisticStore(
+    (s) => s.setSelectedAssignmentId
+  );
 
   useEffect(() => {
     if (!assignmentsRaw) return;
@@ -110,7 +172,9 @@ export default function StatisticHeader({ title = "Assignment Statistics" }: { t
     }
 
     if (assignmentIdFromParam && !didInitFromParamRef.current) {
-      const exists = assignmentsList.some((opt) => String(opt.value) === assignmentIdFromParam);
+      const exists = assignmentsList.some(
+        (opt) => String(opt.value) === assignmentIdFromParam
+      );
       setSelectedAssignmentId(exists ? assignmentIdFromParam : null);
       didInitFromParamRef.current = true;
       didClearForNoParamRef.current = true;
@@ -122,29 +186,12 @@ export default function StatisticHeader({ title = "Assignment Statistics" }: { t
       didClearForNoParamRef.current = true;
       return;
     }
-
   }, [
     hasAssignments,
     assignmentsList,
     assignmentIdFromParam,
     setSelectedAssignmentId,
   ]);
-
-  if (isLoadingSections || isLoadingAssignments) {
-    return (
-      <div className="mt-3 pt-1">
-        <Loader size="sm" />
-      </div>
-    );
-  }
-
-  if (errorSections) {
-    return (
-      <div className="mt-3 pt-1">
-        <Text c="red">Error fetching sections</Text>
-      </div>
-    );
-  }
 
   if (errorAssignments) {
     return (
@@ -153,6 +200,9 @@ export default function StatisticHeader({ title = "Assignment Statistics" }: { t
       </div>
     );
   }
+
+  const showSelectAssignmentFirst =
+    !selectedAssignmentId && !assignmentIdFromParam;
 
   return (
     <div className="mt-3 pt-1">
@@ -173,27 +223,46 @@ export default function StatisticHeader({ title = "Assignment Statistics" }: { t
             disabled={!hasAssignments}
             clearable={hasAssignments}
           />
-
-          <MultiSelect
-            data={sectionOptions}
-            value={hasSections ? selectedSections : []}
-            onChange={handleSectionsChange}
-            label={hasAnySectionSelection ? undefined : "select section"}
-            placeholder={hasSections ? "select section" : "No section"}
-            maxDropdownHeight={160}
-            comboboxProps={{ shadow: "md" }}
-            searchable
-            searchValue={sectionSearch}
-            onSearchChange={setSectionSearch}
-            style={{ width: 360 }}
-            disabled={!hasSections}
-            clearable
-            styles={{
-              pillsList: { display: "flex", flexWrap: "nowrap", overflowX: "auto", gap: 1 },
-              pill: { whiteSpace: "nowrap", maxWidth: "unset" },
-              input: { minWidth: 0 },
-            }}
-          />
+          {showSelectAssignmentFirst ? (
+            <MultiSelect
+              data={[]}
+              value={[]}
+              placeholder="Select assignment first"
+              disabled
+              style={{ width: 360 }}
+            />
+          ) : isFetchingSections ? (
+            <Skeleton height={36} width={360} radius="md" />
+          ) : isErrorSections ? (
+            <Text c="red" style={{ width: 360, lineHeight: "36px" }}>
+              Error fetching sections
+            </Text>
+          ) : (
+            <MultiSelect
+              data={sectionOptions}
+              value={hasSections ? msValue : []}
+              onChange={handleSectionsChange}
+              placeholder=""
+              disabled={!hasSections}
+              maxDropdownHeight={160}
+              comboboxProps={{ shadow: "md" }}
+              searchable
+              searchValue={sectionSearch}
+              onSearchChange={setSectionSearch}
+              style={{ width: 360 }}
+              clearable
+              styles={{
+                pillsList: {
+                  display: "flex",
+                  flexWrap: "nowrap",
+                  overflowX: "auto",
+                  gap: 1,
+                },
+                pill: { whiteSpace: "nowrap", maxWidth: "unset" },
+                input: { minWidth: 0 },
+              }}
+            />
+          )}
         </Flex>
       </Flex>
     </div>
