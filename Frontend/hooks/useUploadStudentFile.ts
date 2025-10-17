@@ -1,7 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { notifications } from '@mantine/notifications';
-import { API_BASE, api, qf } from '@/src/lib/api';
+import { API_BASE } from '@/src/lib/api';
+import { useAssignmentStore } from '@/store/Student/useSTD_AssignmentStore'; // ✅ เพิ่มบรรทัดนี้
 
 interface UploadFileParams {
   assignment_id: string;
@@ -27,10 +28,15 @@ const uploadStudentFile = async ({ assignment_id, course_id, file }: UploadFileP
 };
 
 export const useUploadStudentFile = () => {
+  const { updateAssignment } = useAssignmentStore(); // ✅ ดึงฟังก์ชันจาก store
+
   return useMutation({
     mutationFn: uploadStudentFile,
     onSuccess: (_data, variables) => {
-      // ✅ แจ้งเตือนสำเร็จ พร้อมชื่อไฟล์
+      // ✅ อัปเดตใน Zustand store
+      updateAssignment(variables.assignment_id, { has_submitted: true });
+
+      // ✅ แจ้งเตือนสำเร็จ
       notifications.show({
         title: '✅ File uploaded successfully!',
         message: `📄 Submission File name: ${variables.file.name}`,

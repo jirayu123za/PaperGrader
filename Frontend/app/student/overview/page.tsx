@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import STD_Dashboard from '@/components/STD/STD_Dashboard';
+import STD_Dashboard from '@/components/STD/Dashboard/STD_Dashboard';
 import { Loader } from '@mantine/core';
 
 export const metadata = {
