@@ -727,7 +727,7 @@ type RubricStats struct {
 	RubricsDetail []RubricDetailCount `json:"rubrics_detail"`
 }
 
-// Part:2 Statistics review grade
+// Part:2.1 Statistics review grade
 type StatisticsReviewGradeRequest struct {
 	Bin uint `json:"bin"`
 }
@@ -749,7 +749,20 @@ type StatisticsReviewGradeResponse struct {
 	TotalAssignmentScore int64      `json:"total_assignment_score"`
 	SubmissionScores     []float64  `json:"submission_scores"`
 	GradesData           []GradeBin `json:"grades_data"`
+	// Table                []SubmissionStatisticsTableResponse `json:"table"`
 }
+
+// Part:2.2 Submission statistics table
+// type SubmissionStatisticsTableResponse struct {
+// 	SubmissionID  *uuid.UUID `json:"submission_id"`
+// 	StudentName   string     `json:"student_name"`
+// 	Email         string     `json:"email"`
+// 	Sections      string     `json:"sections"`
+// 	Score         *float64   `json:"score"`
+// 	Graded        bool       `json:"graded"`
+// 	HasSubmission bool       `json:"has_submission"`
+// 	SubmittedAt   *time.Time `json:"submitted_at"`
+// }
 
 // Part:3 Section statistics
 type SectionStatisticsRequest struct {

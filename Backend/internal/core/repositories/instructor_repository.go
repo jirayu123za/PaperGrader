@@ -134,8 +134,8 @@ type InstructorRepository interface {
 	FindQuestionsListStatisticsWithMeans(assignmentID uuid.UUID, qMean map[uuid.UUID]float64, sqMean map[uuid.UUID]float64) (response.QuestionsListStatsResponse, error)
 	FindQuestionsListStatisticsWithCore(assignmentID uuid.UUID, core response.StatsCore) (response.QuestionsListStatsResponse, error)
 	// Part:2 Statistics review grade
-	// FindStatisticsDataByReviewGrade(courseID uuid.UUID, assignmentID uuid.UUID, request response.StatisticsReviewGradeRequest) (response.StatisticsReviewGradeResponse, error)
 	FindSubmissionScoresForAssignment(courseID uuid.UUID, assignmentID uuid.UUID) ([]float64, float64, error)
+	// FindSubmissionsStatisticsTable(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionStatisticsTableResponse, error)
 
 	// Part:3 Sections statistics
 	FindSectionListForStatistics(courseID uuid.UUID, req response.SectionStatisticsRequest) ([]response.SectionListForStatisticsResponse, error)

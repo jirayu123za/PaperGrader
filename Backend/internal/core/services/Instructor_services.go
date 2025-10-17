@@ -1958,11 +1958,6 @@ func (s *InstructorServiceImpl) GetAssignmentStatsAndQuestionsList(req response.
 
 // Part:2 Statistics review grade
 func (s *InstructorServiceImpl) GetStatisticsDataByReviewGrade(courseID uuid.UUID, assignmentID uuid.UUID, request response.StatisticsReviewGradeRequest) (response.StatisticsReviewGradeResponse, error) {
-	// result, err := s.repo.FindStatisticsDataByReviewGrade(courseID, assignmentID, request)
-	// if err != nil {
-	// 	return response.StatisticsReviewGradeResponse{}, err
-	// }
-
 	scores, totalFullScore, err := s.repo.FindSubmissionScoresForAssignment(courseID, assignmentID)
 	if err != nil {
 		return response.StatisticsReviewGradeResponse{}, err
@@ -1970,6 +1965,11 @@ func (s *InstructorServiceImpl) GetStatisticsDataByReviewGrade(courseID uuid.UUI
 
 	n := len(scores)
 	if n == 0 {
+		// tableRows, err := s.repo.FindSubmissionsStatisticsTable(courseID, assignmentID)
+		// if err != nil {
+		// 	return response.StatisticsReviewGradeResponse{}, err
+		// }
+
 		return response.StatisticsReviewGradeResponse{
 			Minimum:              0,
 			Median:               0,
@@ -1980,6 +1980,7 @@ func (s *InstructorServiceImpl) GetStatisticsDataByReviewGrade(courseID uuid.UUI
 			TotalAssignmentScore: int64(math.Round(totalFullScore)),
 			SubmissionScores:     []float64{},
 			GradesData:           []response.GradeBin{},
+			// Table:                tableRows,
 		}, nil
 	}
 
@@ -2015,8 +2016,13 @@ func (s *InstructorServiceImpl) GetStatisticsDataByReviewGrade(courseID uuid.UUI
 	if binCount < 1 {
 		binCount = 10
 	}
-
 	bins := utils.BuildBins(scores, 0, totalFullScore, binCount)
+
+	// tableRows, err := s.repo.FindSubmissionsStatisticsTable(courseID, assignmentID)
+	// if err != nil {
+	// 	return response.StatisticsReviewGradeResponse{}, err
+	// }
+
 	return response.StatisticsReviewGradeResponse{
 		Minimum:              min,
 		Median:               median,
@@ -2027,6 +2033,7 @@ func (s *InstructorServiceImpl) GetStatisticsDataByReviewGrade(courseID uuid.UUI
 		TotalAssignmentScore: int64(math.Round(totalFullScore)),
 		SubmissionScores:     scores,
 		GradesData:           bins,
+		// Table:                tableRows,
 	}, nil
 }
 
