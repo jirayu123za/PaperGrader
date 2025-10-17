@@ -1,0 +1,203 @@
+{
+  "message": "Statistics data is retrieved",
+  "questions_list": [
+    {
+      "question_id": "q-1",
+      "question_number": "1",
+      "question_title": "Virtualization Concepts",
+      "question_point": 8,
+      "percent_mean": 62,
+      "rubric": {
+        "total_student": 12,
+        "rubrics_detail": [
+          { "rubric_id": "r-1-1", "description": "Missing / Incorrect", "totals_select": 1 },
+          { "rubric_id": "r-1-2", "description": "Partially correct", "totals_select": 4 },
+          { "rubric_id": "r-1-3", "description": "Mostly correct", "totals_select": 5 },
+          { "rubric_id": "r-1-4", "description": "Fully correct", "totals_select": 2 }
+        ]
+      },
+      "sub_questions": [
+        {
+          "sub_question_id": "q-1-1",
+          "question_number": "1.1",
+          "sub_question_title": "Type-1 vs Type-2",
+          "sub_question_point": 3,
+          "percent_mean": 70,
+          "rubric": {
+            "total_student": 12,
+            "rubrics_detail": [
+              { "rubric_id": "r-1-1-1", "description": "Confused", "totals_select": 1 },
+              { "rubric_id": "r-1-1-2", "description": "Basic idea", "totals_select": 3 },
+              { "rubric_id": "r-1-1-3", "description": "Clear comparison", "totals_select": 5 },
+              { "rubric_id": "r-1-1-4", "description": "Excellent detail", "totals_select": 3 }
+            ]
+          }
+        },
+        {
+          "sub_question_id": "q-1-2",
+          "question_number": "1.2",
+          "sub_question_title": "Use cases",
+          "sub_question_point": 5,
+          "percent_mean": 56
+        }
+      ]
+    },
+    {
+      "question_id": "q-2",
+      "question_number": "2",
+      "question_title": "Nested Virtualization",
+      "question_point": 6,
+      "percent_mean": 48,
+      "rubric": {
+        "total_student": 12,
+        "rubrics_detail": [
+          { "rubric_id": "r-2-1", "description": "No example", "totals_select": 2 },
+          { "rubric_id": "r-2-2", "description": "Weak example", "totals_select": 4 },
+          { "rubric_id": "r-2-3", "description": "Good example", "totals_select": 4 },
+          { "rubric_id": "r-2-4", "description": "Strong example", "totals_select": 2 }
+        ]
+      }
+    },
+    {
+      "question_id": "q-3",
+      "question_number": "3",
+      "question_title": "Performance Tuning",
+      "question_point": 10,
+      "percent_mean": 33,
+      "rubric": {
+        "total_student": 12,
+        "rubrics_detail": [
+          { "rubric_id": "r-3-1", "description": "No optimization", "totals_select": 3 },
+          { "rubric_id": "r-3-2", "description": "Basic tuning", "totals_select": 5 },
+          { "rubric_id": "r-3-3", "description": "Reasonable tuning", "totals_select": 3 },
+          { "rubric_id": "r-3-4", "description": "Advanced tuning", "totals_select": 1 }
+        ]
+      },
+      "sub_questions": [
+        {
+          "sub_question_id": "q-3-1",
+          "question_number": "3.1",
+          "sub_question_title": "CPU / vCPU",
+          "sub_question_point": 4,
+          "percent_mean": 40
+        },
+        {
+          "sub_question_id": "q-3-2",
+          "question_number": "3.2",
+          "sub_question_title": "Memory / Ballooning",
+          "sub_question_point": 3,
+          "percent_mean": 28
+        },
+        {
+          "sub_question_id": "q-3-3",
+          "question_number": "3.3",
+          "sub_question_title": "Storage / IOPS",
+          "sub_question_point": 3,
+          "percent_mean": 31,
+          "rubric": {
+            "total_student": 12,
+            "rubrics_detail": [
+              { "rubric_id": "r-3-3-1", "description": "No metrics", "totals_select": 4 },
+              { "rubric_id": "r-3-3-2", "description": "Some metrics", "totals_select": 5 },
+              { "rubric_id": "r-3-3-3", "description": "Clear metrics", "totals_select": 3 }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "question_id": "q-4",
+      "question_number": "4",
+      "question_title": "Backup & Restore",
+      "question_point": 5,
+      "percent_mean": 82,
+      "rubric": {
+        "total_student": 12,
+        "rubrics_detail": [
+          { "rubric_id": "r-4-1", "description": "No plan", "totals_select": 0 },
+          { "rubric_id": "r-4-2", "description": "Partial plan", "totals_select": 2 },
+          { "rubric_id": "r-4-3", "description": "Complete plan", "totals_select": 6 },
+          { "rubric_id": "r-4-4", "description": "Automated + tested", "totals_select": 4 }
+        ]
+      }
+    },
+    {
+      "question_id": "q-5",
+      "question_number": "5",
+      "question_title": "Security & Isolation",
+      "question_point": 6,
+      "sub_questions": [
+        {
+          "sub_question_id": "q-5-1",
+          "question_number": "5.1",
+          "sub_question_title": "Network segmentation",
+          "sub_question_point": 3,
+          "percent_mean": 61
+        },
+        {
+          "sub_question_id": "q-5-2",
+          "question_number": "5.2",
+          "sub_question_title": "Secrets management",
+          "sub_question_point": 3,
+          "percent_mean": 52,
+          "rubric": {
+            "total_student": 12,
+            "rubrics_detail": [
+              { "rubric_id": "r-5-2-1", "description": "Hard-coded", "totals_select": 2 },
+              { "rubric_id": "r-5-2-2", "description": "Env vars only", "totals_select": 5 },
+              { "rubric_id": "r-5-2-3", "description": "Secrets vault", "totals_select": 5 }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "statistics": {
+    "minimum": 28,
+    "median": 56,
+    "maximum": 90,
+    "mean": 58,
+    "sd": 17.4,
+    "total_submission": 12,
+    "total_assignment_score": 35,
+    "questions_statistics": [
+      {
+        "question_id": "q-1",
+        "question_number": "1",
+        "percent_mean": 62,
+        "sub_questions": [
+          { "sub_question_id": "q-1-1", "question_number": "1.1", "percent_mean": 70 },
+          { "sub_question_id": "q-1-2", "question_number": "1.2", "percent_mean": 56 }
+        ]
+      },
+      {
+        "question_id": "q-2",
+        "question_number": "2",
+        "percent_mean": 48
+      },
+      {
+        "question_id": "q-3",
+        "question_number": "3",
+        "percent_mean": 33,
+        "sub_questions": [
+          { "sub_question_id": "q-3-1", "question_number": "3.1", "percent_mean": 40 },
+          { "sub_question_id": "q-3-2", "question_number": "3.2", "percent_mean": 28 },
+          { "sub_question_id": "q-3-3", "question_number": "3.3", "percent_mean": 31 }
+        ]
+      },
+      {
+        "question_id": "q-4",
+        "question_number": "4",
+        "percent_mean": 82
+      },
+      {
+        "question_id": "q-5",
+        "question_number": "5",
+        "sub_questions": [
+          { "sub_question_id": "q-5-1", "question_number": "5.1", "percent_mean": 61 },
+          { "sub_question_id": "q-5-2", "question_number": "5.2", "percent_mean": 52 }
+        ]
+      }
+    ]
+  }
+}
