@@ -12,7 +12,7 @@ interface StudentAssignment {
   assignment_description: string;
   cut_off_date: string;
   due_date: string;
-  release_Date: string;
+  release_date: string;
   section_name: string;
   has_submitted?: boolean; 
 }
