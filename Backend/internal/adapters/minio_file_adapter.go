@@ -17,26 +17,30 @@ import (
 )
 
 type MinIORepository struct {
-	client     *minio.Client
+	internal   *minio.Client
+	public     *minio.Client
 	bucketName string
+	presignTTL time.Duration
 }
 
-func NewMinIORepository(client *minio.Client, bucketName string) *MinIORepository {
+func NewMinIORepository(internal, public *minio.Client, bucketName string, ttl time.Duration) *MinIORepository {
 	return &MinIORepository{
-		client:     client,
+		internal:   internal,
+		public:     public,
 		bucketName: bucketName,
+		presignTTL: ttl,
 	}
 }
 
 func (r *MinIORepository) AddFileToMinIO(file multipart.File, CourseID, AssignmentID, fileName string) error {
 	ctx := context.Background()
-	exists, err := r.client.BucketExists(ctx, r.bucketName)
+	exists, err := r.internal.BucketExists(ctx, r.bucketName)
 	if err != nil {
 		return err
 	}
 
 	if !exists {
-		if err := r.client.MakeBucket(ctx, r.bucketName, minio.MakeBucketOptions{Region: "ap-southeast-1"}); err != nil {
+		if err := r.internal.MakeBucket(ctx, r.bucketName, minio.MakeBucketOptions{}); err != nil {
 			return err
 		}
 	}
@@ -57,7 +61,7 @@ func (r *MinIORepository) AddFileToMinIO(file multipart.File, CourseID, Assignme
 		contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 	}
 
-	_, err = r.client.PutObject(ctx, r.bucketName, objectName, file, -1, minio.PutObjectOptions{
+	_, err = r.internal.PutObject(ctx, r.bucketName, objectName, file, -1, minio.PutObjectOptions{
 		ContentType: contentType,
 	})
 	if err != nil {
@@ -69,13 +73,13 @@ func (r *MinIORepository) AddFileToMinIO(file multipart.File, CourseID, Assignme
 
 func (r *MinIORepository) AddCroppedImage(CourseID, AssignmentID, fileName string, fileData []byte) error {
 	ctx := context.Background()
-	exists, err := r.client.BucketExists(ctx, r.bucketName)
+	exists, err := r.internal.BucketExists(ctx, r.bucketName)
 	if err != nil {
 		return err
 	}
 
 	if !exists {
-		if err := r.client.MakeBucket(ctx, r.bucketName, minio.MakeBucketOptions{Region: "ap-southeast-1"}); err != nil {
+		if err := r.internal.MakeBucket(ctx, r.bucketName, minio.MakeBucketOptions{Region: "ap-southeast-1"}); err != nil {
 			return err
 		}
 	}
@@ -83,7 +87,7 @@ func (r *MinIORepository) AddCroppedImage(CourseID, AssignmentID, fileName strin
 	objectName := filepath.Join(CourseID, AssignmentID, "bounding-box", fileName)
 	objectName = strings.ReplaceAll(objectName, "\\", "/")
 
-	_, err = r.client.PutObject(ctx, r.bucketName, objectName, bytes.NewReader(fileData), int64(len(fileData)), minio.PutObjectOptions{
+	_, err = r.internal.PutObject(ctx, r.bucketName, objectName, bytes.NewReader(fileData), int64(len(fileData)), minio.PutObjectOptions{
 		ContentType: "image/png",
 	})
 
@@ -98,7 +102,7 @@ func (r *MinIORepository) FindSubmissionFile(CourseID, AssignmentID, fileName st
 	objectName := filepath.Join(CourseID, AssignmentID, fileName)
 	objectName = strings.ReplaceAll(objectName, "\\", "/")
 
-	object, err := r.client.GetObject(ctx, r.bucketName, objectName, minio.GetObjectOptions{})
+	object, err := r.internal.GetObject(ctx, r.bucketName, objectName, minio.GetObjectOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve file from MinIO: %v", err)
 	}
@@ -118,7 +122,7 @@ func (r *MinIORepository) FindFileFromMinIO(CourseID, AssignmentID, fileName str
 	objectName = strings.ReplaceAll(objectName, "\\", "/")
 
 	reqParams := make(url.Values)
-	presignedURL, err := r.client.PresignedGetObject(ctx, r.bucketName, objectName, time.Minute*15, reqParams)
+	presignedURL, err := r.public.PresignedGetObject(ctx, r.bucketName, objectName, time.Minute*15, reqParams)
 	if err != nil {
 		return "", err
 	}
@@ -136,7 +140,7 @@ func (r *MinIORepository) FindFilesAndNames(CourseID, AssignmentID, fileNames []
 		objectName = strings.ReplaceAll(objectName, "\\", "/")
 
 		reqParams := make(url.Values)
-		presignedURL, err := r.client.PresignedGetObject(ctx, r.bucketName, objectName, time.Minute*15, reqParams)
+		presignedURL, err := r.public.PresignedGetObject(ctx, r.bucketName, objectName, time.Minute*15, reqParams)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -154,7 +158,7 @@ func (r *MinIORepository) FindFileURLSubmissionBoxes(CourseID, AssignmentID, fil
 	objectName := filepath.Join(CourseID, AssignmentID, "bounding-box", fileName)
 	objectName = strings.ReplaceAll(objectName, "\\", "/")
 
-	presignedURL, err := r.client.PresignedGetObject(ctx, r.bucketName, objectName, time.Minute*15, reqParams)
+	presignedURL, err := r.public.PresignedGetObject(ctx, r.bucketName, objectName, time.Minute*15, reqParams)
 	if err != nil {
 		return "", err
 	}
@@ -167,7 +171,7 @@ func (r *MinIORepository) FindTemplatePageCountFromMinIO(CourseID, AssignmentID,
 	objectName = strings.ReplaceAll(objectName, "\\", "/")
 	log.Println(objectName)
 
-	object, err := r.client.GetObject(ctx, r.bucketName, objectName, minio.GetObjectOptions{})
+	object, err := r.internal.GetObject(ctx, r.bucketName, objectName, minio.GetObjectOptions{})
 	if err != nil {
 		return 0, fmt.Errorf("failed to retrieve file from MinIO: %v", err)
 	}

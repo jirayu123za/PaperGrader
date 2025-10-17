@@ -48,7 +48,7 @@ func main() {
 	oauth.LoadCMUOAuthConfig()
 
 	// Initialize MinIO storage
-	minioClient, err := storage.MinioConnection()
+	internalCli, publicCli, bucket, ttl, err := storage.NewMinioClientsFromEnv()
 	if err != nil {
 		log.Fatalf("Failed to connect to MinIO: %v", err)
 	}
@@ -66,7 +66,7 @@ func main() {
 		}
 	}()
 
-	initDependencies(app, db, minioClient)
+	initDependencies(app, db, internalCli, publicCli, bucket, ttl)
 
 	go gracefulShutdown(app)
 
@@ -91,8 +91,8 @@ func gracefulShutdown(app *fiber.App) {
 	log.Println("Server exited")
 }
 
-func initDependencies(app *fiber.App, db *gorm.DB, minioClient *minio.Client) {
-	minioRepo := adapters.NewMinIORepository(minioClient, os.Getenv("MINIO_BUCKET_NAME"))
+func initDependencies(app *fiber.App, db *gorm.DB, internalCli, publicCli *minio.Client, bucket string, ttl time.Duration) {
+	minioRepo := adapters.NewMinIORepository(internalCli, publicCli, bucket, ttl)
 	minioService := services.NewMinIOService(minioRepo)
 	_ = adapters.NewHttpMinIOHandler(minioService)
 
