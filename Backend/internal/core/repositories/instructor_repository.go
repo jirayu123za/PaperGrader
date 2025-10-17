@@ -135,7 +135,7 @@ type InstructorRepository interface {
 	FindQuestionsListStatisticsWithCore(assignmentID uuid.UUID, core response.StatsCore) (response.QuestionsListStatsResponse, error)
 	// Part:2 Statistics review grade
 	FindSubmissionScoresForAssignment(courseID uuid.UUID, assignmentID uuid.UUID) ([]float64, float64, error)
-	// FindSubmissionsStatisticsTable(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionStatisticsTableResponse, error)
+	FindSubmissionsStatisticsTable(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionStatisticsTableResponse, error)
 
 	// Part:3 Sections statistics
 	FindSectionListForStatistics(courseID uuid.UUID, req response.SectionStatisticsRequest) ([]response.SectionListForStatisticsResponse, error)

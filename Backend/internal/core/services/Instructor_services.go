@@ -1965,10 +1965,10 @@ func (s *InstructorServiceImpl) GetStatisticsDataByReviewGrade(courseID uuid.UUI
 
 	n := len(scores)
 	if n == 0 {
-		// tableRows, err := s.repo.FindSubmissionsStatisticsTable(courseID, assignmentID)
-		// if err != nil {
-		// 	return response.StatisticsReviewGradeResponse{}, err
-		// }
+		tableRows, err := s.repo.FindSubmissionsStatisticsTable(courseID, assignmentID)
+		if err != nil {
+			return response.StatisticsReviewGradeResponse{}, err
+		}
 
 		return response.StatisticsReviewGradeResponse{
 			Minimum:              0,
@@ -1980,7 +1980,7 @@ func (s *InstructorServiceImpl) GetStatisticsDataByReviewGrade(courseID uuid.UUI
 			TotalAssignmentScore: int64(math.Round(totalFullScore)),
 			SubmissionScores:     []float64{},
 			GradesData:           []response.GradeBin{},
-			// Table:                tableRows,
+			Table:                tableRows,
 		}, nil
 	}
 
@@ -2018,10 +2018,10 @@ func (s *InstructorServiceImpl) GetStatisticsDataByReviewGrade(courseID uuid.UUI
 	}
 	bins := utils.BuildBins(scores, 0, totalFullScore, binCount)
 
-	// tableRows, err := s.repo.FindSubmissionsStatisticsTable(courseID, assignmentID)
-	// if err != nil {
-	// 	return response.StatisticsReviewGradeResponse{}, err
-	// }
+	tableRows, err := s.repo.FindSubmissionsStatisticsTable(courseID, assignmentID)
+	if err != nil {
+		return response.StatisticsReviewGradeResponse{}, err
+	}
 
 	return response.StatisticsReviewGradeResponse{
 		Minimum:              min,
@@ -2033,7 +2033,7 @@ func (s *InstructorServiceImpl) GetStatisticsDataByReviewGrade(courseID uuid.UUI
 		TotalAssignmentScore: int64(math.Round(totalFullScore)),
 		SubmissionScores:     scores,
 		GradesData:           bins,
-		// Table:                tableRows,
+		Table:                tableRows,
 	}, nil
 }
 

@@ -3541,114 +3541,115 @@ func (r *GormInstructorRepository) FindSubmissionScoresForAssignment(courseID uu
 	return scores, totalFullScore, nil
 }
 
-// func (r *GormInstructorRepository) FindSubmissionsStatisticsTable(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionStatisticsTableResponse, error) {
-// 	sqlText := `
-// 		WITH elist AS (
-// 		SELECT el.personal_data_id, el.section_id
-// 		FROM enrollment_lists el
-// 		WHERE el.course_id = @courseID AND el.deleted_at IS NULL
-// 		),
-// 		pd AS (
-// 		SELECT p.personal_data_id, p.first_name, p.last_name, p.email
-// 		FROM personal_data p
-// 		WHERE p.deleted_at IS NULL
-// 		),
-// 		sec AS (
-// 		SELECT s.section_id, s.section_name
-// 		FROM sections s
-// 		WHERE s.deleted_at IS NULL
-// 		),
-// 		latest AS (
-// 		SELECT s.*,
-// 				ROW_NUMBER() OVER (PARTITION BY s.belongs_to ORDER BY s.submitted_at DESC) AS rn
-// 		FROM submissions s
-// 		WHERE s.assignment_id = @assignmentID
-// 			AND s.deleted_at IS NULL
-// 		),
-// 		chosen AS (
-// 		SELECT * FROM latest WHERE rn = 1
-// 		),
-// 		gjoin AS (
-// 		SELECT c.submission_id, c.belongs_to, c.submitted_at, g.grade_data
-// 		FROM chosen c
-// 		LEFT JOIN grades g
-// 			ON g.submission_id = c.submission_id
-// 		AND g.deleted_at IS NULL
-// 		),
-// 		main_rows AS (
-// 		SELECT
-// 			gj.submission_id,
-// 			(rd->>'rubric_point')::double precision AS point
-// 		FROM gjoin gj
-// 		CROSS JOIN LATERAL jsonb_array_elements(COALESCE(gj.grade_data->'questions_data','[]'::jsonb)) q
-// 		CROSS JOIN LATERAL jsonb_array_elements(COALESCE(q->'rubrics'->'rubric_details','[]'::jsonb)) rd
-// 		WHERE COALESCE((rd->>'has_selected')::boolean, false) = true
-// 		),
-// 		sub_rows AS (
-// 		SELECT
-// 			gj.submission_id,
-// 			(rd->>'rubric_point')::double precision AS point
-// 		FROM gjoin gj
-// 		CROSS JOIN LATERAL jsonb_array_elements(COALESCE(gj.grade_data->'questions_data','[]'::jsonb)) q
-// 		CROSS JOIN LATERAL jsonb_array_elements(COALESCE(q->'sub_questions','[]'::jsonb)) sq
-// 		CROSS JOIN LATERAL jsonb_array_elements(COALESCE(sq->'rubrics'->'rubric_details','[]'::jsonb)) rd
-// 		WHERE COALESCE((sq->'grades'->>'has_graded')::boolean, false) = true
-// 			AND COALESCE((rd->>'has_selected')::boolean, false) = true
-// 		),
-// 		agg_score AS (
-// 		SELECT submission_id, COALESCE(SUM(point),0)::double precision AS final_score
-// 		FROM (
-// 			SELECT * FROM main_rows
-// 			UNION ALL
-// 			SELECT * FROM sub_rows
-// 		) u
-// 		GROUP BY submission_id
-// 		),
-// 		graded_q AS (
-// 		SELECT DISTINCT gj.submission_id
-// 		FROM gjoin gj
-// 		CROSS JOIN LATERAL jsonb_array_elements(COALESCE(gj.grade_data->'questions_data','[]'::jsonb)) q
-// 		WHERE COALESCE((q->'grades'->>'has_graded')::boolean, false) = true
-// 		),
-// 		graded_sq AS (
-// 		SELECT DISTINCT gj.submission_id
-// 		FROM gjoin gj
-// 		CROSS JOIN LATERAL jsonb_array_elements(COALESCE(gj.grade_data->'questions_data','[]'::jsonb)) q
-// 		CROSS JOIN LATERAL jsonb_array_elements(COALESCE(q->'sub_questions','[]'::jsonb)) sq
-// 		WHERE COALESCE((sq->'grades'->>'has_graded')::boolean, false) = true
-// 		),
-// 		graded_any AS (
-// 		SELECT submission_id, true AS graded
-// 		FROM (
-// 			SELECT submission_id FROM graded_q
-// 			UNION
-// 			SELECT submission_id FROM graded_sq
-// 		) x
-// 		)
-// 		SELECT
-// 		c.submission_id,
-// 		(pd.first_name || ' ' || pd.last_name) AS student_name,
-// 		pd.email,
-// 		COALESCE(sc.section_name, '') AS sections,
-// 		ag.final_score AS score,
-// 		COALESCE(ga.graded, false) AS graded,
-// 		(c.submission_id IS NOT NULL) AS has_submission,
-// 		c.submitted_at
-// 		FROM elist el
-// 		JOIN pd ON pd.personal_data_id = el.personal_data_id
-// 		LEFT JOIN sec sc ON sc.section_id = el.section_id
-// 		LEFT JOIN chosen c ON c.belongs_to = el.personal_data_id
-// 		LEFT JOIN agg_score ag ON ag.submission_id = c.submission_id
-// 		LEFT JOIN graded_any ga ON ga.submission_id = c.submission_id
-// 		ORDER BY student_name;
-// 	`
-// 	var rows []response.SubmissionStatisticsTableResponse
-// 	if err := r.db.Raw(
-// 		sqlText,
-// 		sql.Named("courseID", courseID),
-// 		sql.Named("assignmentID", assignmentID),
-// 	).Scan(&rows).Error; err != nil {
-// 		return nil, err
-// 	}
-// 	return rows, nil
-// }
+func (r *GormInstructorRepository) FindSubmissionsStatisticsTable(courseID uuid.UUID, assignmentID uuid.UUID) ([]response.SubmissionStatisticsTableResponse, error) {
+	sqlText := `
+		WITH elist AS (
+			SELECT el.personal_data_id, el.section_id
+			FROM enrollment_lists el
+			WHERE el.course_id = @courseID AND el.deleted_at IS NULL
+		),
+		pd AS (
+			SELECT p.personal_data_id, p.first_name, p.last_name, p.email
+			FROM personal_data p
+			WHERE p.deleted_at IS NULL
+				AND p.role_type = 'STUDENT'
+		),
+		sec AS (
+			SELECT s.section_id, s.section_name
+			FROM sections s
+			WHERE s.deleted_at IS NULL
+		),
+		latest AS (
+		SELECT s.*,
+				ROW_NUMBER() OVER (PARTITION BY s.belongs_to ORDER BY s.submitted_at DESC) AS rn
+			FROM submissions s
+			WHERE s.assignment_id = @assignmentID
+				AND s.deleted_at IS NULL
+			),
+			chosen AS (
+			SELECT * FROM latest WHERE rn = 1
+		),
+		gjoin AS (
+			SELECT c.submission_id, c.belongs_to, c.submitted_at, g.grade_data
+			FROM chosen c
+			LEFT JOIN grades g
+				ON g.submission_id = c.submission_id
+			AND g.deleted_at IS NULL
+		),
+		main_rows AS (
+			SELECT
+				gj.submission_id,
+				(rd->>'rubric_point')::double precision AS point
+			FROM gjoin gj
+			CROSS JOIN LATERAL jsonb_array_elements(COALESCE(gj.grade_data->'questions_data','[]'::jsonb)) q
+			CROSS JOIN LATERAL jsonb_array_elements(COALESCE(q->'rubrics'->'rubric_details','[]'::jsonb)) rd
+			WHERE COALESCE((rd->>'has_selected')::boolean, false) = true
+			),
+		sub_rows AS (
+			SELECT
+				gj.submission_id,
+				(rd->>'rubric_point')::double precision AS point
+			FROM gjoin gj
+			CROSS JOIN LATERAL jsonb_array_elements(COALESCE(gj.grade_data->'questions_data','[]'::jsonb)) q
+			CROSS JOIN LATERAL jsonb_array_elements(COALESCE(q->'sub_questions','[]'::jsonb)) sq
+			CROSS JOIN LATERAL jsonb_array_elements(COALESCE(sq->'rubrics'->'rubric_details','[]'::jsonb)) rd
+			WHERE COALESCE((sq->'grades'->>'has_graded')::boolean, false) = true
+				AND COALESCE((rd->>'has_selected')::boolean, false) = true
+			),
+		agg_score AS (
+			SELECT submission_id, COALESCE(SUM(point),0)::double precision AS final_score
+			FROM (
+				SELECT * FROM main_rows
+				UNION ALL
+				SELECT * FROM sub_rows
+			) u
+		GROUP BY submission_id
+		),
+		graded_q AS (
+			SELECT DISTINCT gj.submission_id
+			FROM gjoin gj
+			CROSS JOIN LATERAL jsonb_array_elements(COALESCE(gj.grade_data->'questions_data','[]'::jsonb)) q
+			WHERE COALESCE((q->'grades'->>'has_graded')::boolean, false) = true
+		),
+		graded_sq AS (
+			SELECT DISTINCT gj.submission_id
+			FROM gjoin gj
+			CROSS JOIN LATERAL jsonb_array_elements(COALESCE(gj.grade_data->'questions_data','[]'::jsonb)) q
+			CROSS JOIN LATERAL jsonb_array_elements(COALESCE(q->'sub_questions','[]'::jsonb)) sq
+			WHERE COALESCE((sq->'grades'->>'has_graded')::boolean, false) = true
+		),
+		graded_any AS (
+			SELECT submission_id, true AS graded
+				FROM (
+					SELECT submission_id FROM graded_q
+					UNION
+					SELECT submission_id FROM graded_sq
+				) x
+			)
+		SELECT
+			pd.personal_data_id,
+			(pd.first_name || ' ' || pd.last_name) AS student_name,
+			pd.email,
+			COALESCE(sc.section_name, '') AS sections,
+			ag.final_score AS score,
+			COALESCE(ga.graded, false) AS graded,
+			(c.submission_id IS NOT NULL) AS has_submission,
+			c.submitted_at
+		FROM elist el
+		JOIN pd ON pd.personal_data_id = el.personal_data_id
+		LEFT JOIN sec sc ON sc.section_id = el.section_id
+		LEFT JOIN chosen c ON c.belongs_to = el.personal_data_id
+		LEFT JOIN agg_score ag ON ag.submission_id = c.submission_id
+		LEFT JOIN graded_any ga ON ga.submission_id = c.submission_id
+		ORDER BY student_name;
+	`
+	var rows []response.SubmissionStatisticsTableResponse
+	if err := r.db.Raw(
+		sqlText,
+		sql.Named("courseID", courseID),
+		sql.Named("assignmentID", assignmentID),
+	).Scan(&rows).Error; err != nil {
+		return nil, err
+	}
+	return rows, nil
+}
