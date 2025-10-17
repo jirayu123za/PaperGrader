@@ -727,7 +727,29 @@ type RubricStats struct {
 	RubricsDetail []RubricDetailCount `json:"rubrics_detail"`
 }
 
-// Part:2 Statistics
+// Part:2 Statistics review grade
+type StatisticsReviewGradeRequest struct {
+	Bin uint `json:"bin"`
+}
+
+type GradeBin struct {
+	Lower float64 `json:"lower"`
+	Upper float64 `json:"upper"`
+	Count int     `json:"count"`
+	Label string  `json:"label"`
+}
+
+type StatisticsReviewGradeResponse struct {
+	Minimum              float64    `json:"minimum"`
+	Median               float64    `json:"median"`
+	Maximum              float64    `json:"maximum"`
+	Mean                 float64    `json:"mean"`
+	SD                   float64    `json:"sd"`
+	TotalSubmissions     int64      `json:"total_submission"`
+	TotalAssignmentScore int64      `json:"total_assignment_score"`
+	SubmissionScores     []float64  `json:"submission_scores"`
+	GradesData           []GradeBin `json:"grades_data"`
+}
 
 // Part:3 Section statistics
 type SectionStatisticsRequest struct {

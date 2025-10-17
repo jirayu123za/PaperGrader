@@ -160,7 +160,7 @@ func RegisterRoutes(
 
 	// Part:1 Assignment statistics
 	apiGroup.Post("/instructor/statistics", instructorHandler.GetStatisticsDataByAssignmentAndSections)
-	// apiGroup.Post("/instructor/statistics/reviewGrade", instructorHandler.GetStatisticsDataByReviewGrade)
+	apiGroup.Post("/instructor/statistics/reviewGrade", instructorHandler.GetStatisticsDataByReviewGrade)
 	apiGroup.Post("/instructor/statistics/sections", instructorHandler.GetSectionsListForStatistics)
 
 	// Part-student: route

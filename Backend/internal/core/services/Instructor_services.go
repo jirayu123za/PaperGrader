@@ -3,12 +3,14 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/core/repositories"
 	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -120,6 +122,8 @@ type InstructorService interface {
 	// Part:1 Assignment statistics
 	GetAssignmentStatsAndQuestionsList(req response.GetAssignmentStatisticsRequest, courseID uuid.UUID) (response.AssignmentStatisticsResponse, response.QuestionsListStatsResponse, error)
 	GetSectionListForStatistics(courseID uuid.UUID, req response.SectionStatisticsRequest) ([]response.SectionListForStatisticsResponse, error)
+	// Part:2 Statistics review grade
+	GetStatisticsDataByReviewGrade(courseID uuid.UUID, assignmentID uuid.UUID, request response.StatisticsReviewGradeRequest) (response.StatisticsReviewGradeResponse, error)
 }
 
 type InstructorServiceImpl struct {
@@ -1952,7 +1956,79 @@ func (s *InstructorServiceImpl) GetAssignmentStatsAndQuestionsList(req response.
 	return stats, qlist, nil
 }
 
-// Part:2 Statistics data
+// Part:2 Statistics review grade
+func (s *InstructorServiceImpl) GetStatisticsDataByReviewGrade(courseID uuid.UUID, assignmentID uuid.UUID, request response.StatisticsReviewGradeRequest) (response.StatisticsReviewGradeResponse, error) {
+	// result, err := s.repo.FindStatisticsDataByReviewGrade(courseID, assignmentID, request)
+	// if err != nil {
+	// 	return response.StatisticsReviewGradeResponse{}, err
+	// }
+
+	scores, totalFullScore, err := s.repo.FindSubmissionScoresForAssignment(courseID, assignmentID)
+	if err != nil {
+		return response.StatisticsReviewGradeResponse{}, err
+	}
+
+	n := len(scores)
+	if n == 0 {
+		return response.StatisticsReviewGradeResponse{
+			Minimum:              0,
+			Median:               0,
+			Maximum:              0,
+			Mean:                 0,
+			SD:                   0,
+			TotalSubmissions:     0,
+			TotalAssignmentScore: int64(math.Round(totalFullScore)),
+			SubmissionScores:     []float64{},
+			GradesData:           []response.GradeBin{},
+		}, nil
+	}
+
+	sort.Float64s(scores)
+	min := scores[0]
+	max := scores[n-1]
+
+	// mean
+	var sum float64
+	for _, v := range scores {
+		sum += v
+	}
+	mean := sum / float64(n)
+
+	// median
+	var median float64
+	if n%2 == 1 {
+		median = scores[n/2]
+	} else {
+		median = (scores[n/2-1] + scores[n/2]) / 2
+	}
+
+	// sd (population)
+	var ss float64
+	for _, v := range scores {
+		d := v - mean
+		ss += d * d
+	}
+	sd := math.Sqrt(ss / float64(n))
+
+	// bins
+	binCount := int(request.Bin)
+	if binCount < 1 {
+		binCount = 10
+	}
+
+	bins := utils.BuildBins(scores, 0, totalFullScore, binCount)
+	return response.StatisticsReviewGradeResponse{
+		Minimum:              min,
+		Median:               median,
+		Maximum:              max,
+		Mean:                 mean,
+		SD:                   sd,
+		TotalSubmissions:     int64(n),
+		TotalAssignmentScore: int64(math.Round(totalFullScore)),
+		SubmissionScores:     scores,
+		GradesData:           bins,
+	}, nil
+}
 
 // Part:3 Sections statistics
 func (s *InstructorServiceImpl) GetSectionListForStatistics(courseID uuid.UUID, req response.SectionStatisticsRequest) ([]response.SectionListForStatisticsResponse, error) {

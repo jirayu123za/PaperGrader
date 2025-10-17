@@ -2,6 +2,7 @@ package adapters
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -3443,4 +3444,98 @@ func (r *GormInstructorRepository) FindSectionListForStatistics(courseID uuid.UU
 		})
 	}
 	return out, nil
+}
+
+// func (r *GormInstructorRepository) FindStatisticsDataByReviewGrade(courseID uuid.UUID, assignmentID uuid.UUID, request response.StatisticsReviewGradeRequest) (response.StatisticsReviewGradeResponse, error) {
+// 	var result response.StatisticsReviewGradeResponse
+
+// 	// Query to find the statistics data by review grade
+
+// 	return result, nil
+// }
+
+func (r *GormInstructorRepository) FindSubmissionScoresForAssignment(courseID uuid.UUID, assignmentID uuid.UUID) ([]float64, float64, error) {
+	var scores []float64
+	// 1) รวมคะแนนดิบราย submission:
+	// - ระดับคำถามหลัก: sum rubric_details.rubric_point ที่ has_selected=true
+	// - ระดับ sub_questions: sum rubric_details.rubric_point ที่ has_selected=true และ grades.has_graded=true
+	scoreSQL := `
+		WITH base AS (
+		SELECT g.submission_id, g.grade_data
+		FROM grades g
+		JOIN submissions s ON s.submission_id = g.submission_id AND s.deleted_at IS NULL
+		JOIN assignments a ON a.assignment_id = s.assignment_id AND a.deleted_at IS NULL
+		WHERE a.assignment_id = @assignmentID
+			AND a.course_id    = @courseID
+			AND g.deleted_at IS NULL
+		),
+		main_rows AS (
+		SELECT
+			b.submission_id,
+			(rd->>'rubric_point')::double precision AS point
+		FROM base b
+		CROSS JOIN LATERAL jsonb_array_elements(b.grade_data->'questions_data') q
+		CROSS JOIN LATERAL jsonb_array_elements(COALESCE(q->'rubrics'->'rubric_details','[]'::jsonb)) rd
+		WHERE COALESCE((rd->>'has_selected')::boolean, false) = true
+		),
+		sub_rows AS (
+		SELECT
+			b.submission_id,
+			(rd->>'rubric_point')::double precision AS point
+		FROM base b
+		CROSS JOIN LATERAL jsonb_array_elements(b.grade_data->'questions_data') q
+		CROSS JOIN LATERAL jsonb_array_elements(COALESCE(q->'sub_questions','[]'::jsonb)) sq
+		CROSS JOIN LATERAL jsonb_array_elements(COALESCE(sq->'rubrics'->'rubric_details','[]'::jsonb)) rd
+		WHERE COALESCE((sq->'grades'->>'has_graded')::boolean, false) = true
+			AND COALESCE((rd->>'has_selected')::boolean, false) = true
+		),
+		agg AS (
+		SELECT submission_id, COALESCE(SUM(point),0)::double precision AS final_score
+		FROM (
+			SELECT * FROM main_rows
+			UNION ALL
+			SELECT * FROM sub_rows
+		) u
+		GROUP BY submission_id
+		)
+		SELECT final_score
+		FROM agg
+		ORDER BY submission_id;
+	`
+	if err := r.db.Raw(
+		scoreSQL,
+		sql.Named("assignmentID", assignmentID),
+		sql.Named("courseID", courseID),
+	).Scan(&scores).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// Get total full score
+	var totalFullScore float64
+	fullSQL := `
+		WITH q AS (
+		SELECT (qel->>'question_point')::double precision AS qp
+		FROM rubrics r
+		CROSS JOIN LATERAL jsonb_array_elements(r.rubric_data->'questions_data') qel
+		WHERE r.assignment_id = @assignmentID AND r.deleted_at IS NULL
+		),
+		sq AS (
+		SELECT (sqel->>'sub_question_point')::double precision AS qp
+		FROM rubrics r
+		CROSS JOIN LATERAL jsonb_array_elements(r.rubric_data->'questions_data') qel
+		CROSS JOIN LATERAL jsonb_array_elements(COALESCE(qel->'sub_questions','[]'::jsonb)) sqel
+		WHERE r.assignment_id = @assignmentID AND r.deleted_at IS NULL
+		)
+		SELECT COALESCE((SELECT SUM(qp) FROM q),0)
+			+ COALESCE((SELECT SUM(qp) FROM sq),0)
+		AS total_point;
+	`
+	if err := r.db.Raw(
+		fullSQL,
+		sql.Named("assignmentID", assignmentID),
+	).Scan(&totalFullScore).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return scores, totalFullScore, nil
 }

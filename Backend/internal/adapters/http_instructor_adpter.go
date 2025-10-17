@@ -2261,7 +2261,47 @@ func (h *HttpInstructorHandler) GetStatisticsDataByAssignmentAndSections(c *fibe
 	})
 }
 
-// Case 2: With assignment_id param
+// Case 2: review grade
+func (h *HttpInstructorHandler) GetStatisticsDataByReviewGrade(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	var request response.StatisticsReviewGradeRequest
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request body",
+			"error":   err.Error(),
+		})
+	}
+
+	statistics, err := h.services.GetStatisticsDataByReviewGrade(courseID, assignmentID, request)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get statistics data by review grade",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":    "Statistics data by review grade is retrieved",
+		"statistics": statistics,
+	})
+}
 
 // Case 3: Sections for selector
 func (h *HttpInstructorHandler) GetSectionsListForStatistics(c *fiber.Ctx) error {
