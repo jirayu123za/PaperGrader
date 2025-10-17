@@ -3360,10 +3360,14 @@ func (r *GormInstructorRepository) FindQuestionsListStatisticsWithCore(assignmen
 		qNum := strconv.Itoa(i + 1)
 
 		var pctPtr *float64
+		var meanPtr *float64
 		if len(q.SubQuestions) == 0 {
 			if mv, ok := core.QMean[q.QuestionID]; ok {
 				v := mv
 				pctPtr = &v
+
+				mv2 := (*pctPtr / 100.0) * q.QuestionPoint
+				meanPtr = &mv2
 			}
 		}
 
@@ -3381,6 +3385,7 @@ func (r *GormInstructorRepository) FindQuestionsListStatisticsWithCore(assignmen
 			QuestionTitle:  q.QuestionTitle,
 			QuestionPoint:  q.QuestionPoint,
 			PercentMean:    pctPtr,
+			Mean:           meanPtr,
 			Rubric:         qRubric,
 			SubQuestions:   make([]response.SubQuestionStatsItem, 0, len(q.SubQuestions)),
 		}
@@ -3388,9 +3393,12 @@ func (r *GormInstructorRepository) FindQuestionsListStatisticsWithCore(assignmen
 		for j, sq := range q.SubQuestions {
 			num := fmt.Sprintf("%d.%d", i+1, j+1)
 			var meanPtr *float64
+			var meanPointPtr *float64
 			if mv, ok := core.SQMean[sq.SubQuestionID]; ok {
 				v := mv
 				meanPtr = &v
+				mv2 := (*meanPtr / 100.0) * sq.SubQuestionPoint
+				meanPointPtr = &mv2
 			}
 
 			var sqRubric *response.RubricStats
@@ -3407,6 +3415,7 @@ func (r *GormInstructorRepository) FindQuestionsListStatisticsWithCore(assignmen
 				SubQuestionTitle: sq.SubQuestionTitle,
 				SubQuestionPoint: sq.SubQuestionPoint,
 				PercentMean:      meanPtr,
+				Mean:             meanPointPtr,
 				Rubric:           sqRubric,
 			})
 		}

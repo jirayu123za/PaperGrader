@@ -702,6 +702,7 @@ type QuestionListStatsItem struct {
 	QuestionTitle  string                 `json:"question_title"`
 	QuestionPoint  float64                `json:"question_point"`
 	PercentMean    *float64               `json:"percent_mean,omitempty"`
+	Mean           *float64               `json:"mean,omitempty"`
 	Rubric         *RubricStats           `json:"rubric,omitempty"`
 	SubQuestions   []SubQuestionStatsItem `json:"sub_questions,omitempty"` // children (optional)
 }
@@ -711,6 +712,7 @@ type SubQuestionStatsItem struct {
 	QuestionNumber   string       `json:"question_number"`
 	SubQuestionTitle string       `json:"sub_question_title"`
 	SubQuestionPoint float64      `json:"sub_question_point"`
+	Mean             *float64     `json:"mean,omitempty"`
 	PercentMean      *float64     `json:"percent_mean,omitempty"`
 	Rubric           *RubricStats `json:"rubric,omitempty"`
 }
