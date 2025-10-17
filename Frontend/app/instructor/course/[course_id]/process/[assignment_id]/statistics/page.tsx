@@ -1,7 +1,7 @@
 import React from 'react';
 import { Loader } from '@mantine/core';
 import { Suspense } from 'react';
-import StatisticsSunmary from '@/components/INS/INSStatistics/StatisticsSunmary';
+import StatisticsSunmary from '@/components/INS/INSStatistics/StatisticsSummary';
 
 export const metadata = {
     title: ' Statistics ',
