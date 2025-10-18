@@ -4,7 +4,7 @@ import { API_BASE } from '@/src/lib/api';
 import { useStatisticsStore, type StatisticsApiResponse } from '@/store/statistic/useStatisticsStore';
 import { useStatisticSectionsStore } from '@/store/statistic/useStatisticSectionsStore';
 
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_STATS_MOCK === '1';
+
 
 export function useFetchStatistics() {
   const courseId = useStatisticsStore((s) => s.courseId);
@@ -18,12 +18,6 @@ export function useFetchStatistics() {
     queryKey: ['statistics', courseId, assignmentId, sectionIds.join(',')],
     enabled,
     queryFn: async (): Promise<StatisticsApiResponse> => {
-      if (USE_MOCK) {
-        const res = await fetch('/mocks/statisticsMock.json', { cache: 'no-store' });
-        if (!res.ok) throw new Error(`Mock not found (${res.status})`);
-        return (await res.json()) as StatisticsApiResponse;
-      }
-
       const url = `${API_BASE}/instructor/statistics?course_id=${courseId}`;
       const res = await fetch(url, {
         method: 'POST',
