@@ -18,7 +18,6 @@ export default function RubricTable({
 }: Props) {
   const hasData = Array.isArray(questions) && questions.length > 0;
 
-
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [viewH, setViewH] = useState<number | undefined>(undefined);
 
@@ -46,15 +45,15 @@ export default function RubricTable({
     };
   }, [viewportBottomPadding]);
 
-
   type FlatRow =
     | {
         kind: "q";
         id: string;
         number: string;
         title?: string | null;
-        point?: number | null;
-        percent_mean?: number | null;
+        point?: number | null;         
+        mean?: number | null;         
+        percent_mean?: number | null;  
         rubric?: RubricBlock | null;
         indent: number;
       }
@@ -63,8 +62,9 @@ export default function RubricTable({
         id: string;
         number: string;
         title?: string | null;
-        point?: number | null;
-        percent_mean?: number | null;
+        point?: number | null;         
+        mean?: number | null;          
+        percent_mean?: number | null; 
         rubric?: RubricBlock | null;
         indent: number;
       };
@@ -79,6 +79,7 @@ export default function RubricTable({
         number: q.question_number,
         title: q.question_title ?? null,
         point: q.question_point ?? null,
+        mean: (q as any).mean ?? null,
         percent_mean: q.percent_mean ?? null,
         rubric: q.rubric ?? null,
         indent: indentFromNumber(q.question_number),
@@ -91,6 +92,7 @@ export default function RubricTable({
             number: s.question_number,
             title: s.sub_question_title ?? null,
             point: s.sub_question_point ?? null,
+            mean: (s as any).mean ?? null,
             percent_mean: s.percent_mean ?? null,
             rubric: s.rubric ?? null,
             indent: indentFromNumber(s.question_number),
@@ -100,7 +102,6 @@ export default function RubricTable({
     }
     return out;
   }, [hasData, questions]);
-
 
   const [opened, { open, close }] = useDisclosure(false);
   const [selectedTitle, setSelectedTitle] = useState<string>("");
@@ -119,14 +120,8 @@ export default function RubricTable({
 
   return (
     <>
-
       <div ref={containerRef}>
-        <ScrollArea
-          h={viewH} 
-          type="always"
-          scrollbarSize={8}
-        >
-
+        <ScrollArea h={viewH} type="always" scrollbarSize={8}>
           <Paper withBorder radius="md" p={0}>
             <Table highlightOnHover verticalSpacing="xs" horizontalSpacing="lg">
               <Table.Thead className="bg-gray-100">
@@ -135,16 +130,17 @@ export default function RubricTable({
                     Question
                   </Table.Th>
                   <Table.Th style={{ textAlign: "left", width: "20%" }}>
-                    Points
+                    Points / Full marks
                   </Table.Th>
                   <Table.Th style={{ textAlign: "left", width: "40%" }}>
-                    Mean
+                    Mean %
                   </Table.Th>
                 </Table.Tr>
               </Table.Thead>
 
               <Table.Tbody>
                 {flatRows.map((row) => {
+
                   const pct =
                     typeof row.percent_mean === "number"
                       ? Math.round(row.percent_mean)
@@ -202,15 +198,14 @@ export default function RubricTable({
                           </Box>
                         </Flex>
                       </Table.Td>
-
                       <Table.Td>
                         <Text>
-                          {typeof row.point === "number"
-                            ? `${row.point} point${row.point > 1 ? "s" : ""}`
+                          {typeof row.point === "number" &&
+                          typeof row.mean === "number"
+                            ? `${row.mean.toFixed(1)} / ${row.point}`
                             : "-"}
                         </Text>
                       </Table.Td>
-
                       <Table.Td>
                         {typeof pct === "number" ? (
                           <Flex
@@ -241,7 +236,7 @@ export default function RubricTable({
       <RubricPieModal
         opened={opened}
         onClose={close}
-        rubric={selectedRubric}
+        rubric={selectedRubric} 
         title={selectedTitle || "Rubric"}
       />
     </>
