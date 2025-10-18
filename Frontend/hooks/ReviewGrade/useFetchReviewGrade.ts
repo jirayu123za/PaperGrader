@@ -1,11 +1,5 @@
-'use client';
-
-import { useQuery } from '@tanstack/react-query';
-import { API_BASE } from '@/src/lib/api';
-
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_REVIEW_GRADE_MOCK === '1';
-const MOCK_URL = '/mocks/review-grade.json';
-
+import { useQuery } from "@tanstack/react-query";
+import { API_BASE } from "@/src/lib/api";
 
 export interface ReviewGradeTableRow {
   personal_data_id: string;
@@ -43,7 +37,7 @@ export interface ReviewGradeApiResponse {
   statistics: ReviewGradeStatistics;
 }
 
-async function fetchReviewGradeReal({
+async function fetchReviewGrade({
   courseId,
   assignmentId,
   bin,
@@ -57,40 +51,34 @@ async function fetchReviewGradeReal({
   )}&assignment_id=${encodeURIComponent(assignmentId)}`;
 
   const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ bin }),
   });
+
   if (!res.ok) {
-    throw new Error(`ReviewGrade fetch failed (${res.status}): ${await res.text()}`);
+    const text = await res.text();
+    throw new Error(`ReviewGrade fetch failed (${res.status}): ${text}`);
   }
+
   return res.json();
 }
-
-async function fetchReviewGradeMock(): Promise<ReviewGradeApiResponse> {
-  const res = await fetch(MOCK_URL);
-  if (!res.ok) throw new Error(`Mock not found at ${MOCK_URL}`);
-  return res.json();
-}
-
 
 export function useFetchReviewGrade(
   courseId: string | null | undefined,
   assignmentId: string | null | undefined,
   bin: number
 ) {
-  const enabled = USE_MOCK ? true : Boolean(courseId && assignmentId && Number.isFinite(bin));
+  const enabled = Boolean(courseId && assignmentId && Number.isFinite(bin));
 
   return useQuery({
-    queryKey: ['statistics', 'reviewGrade', USE_MOCK ? 'mock' : courseId, USE_MOCK ? 'mock' : assignmentId, bin],
+    queryKey: ["statistics", "reviewGrade", courseId, assignmentId, bin],
     queryFn: () =>
-      USE_MOCK
-        ? fetchReviewGradeMock()
-        : fetchReviewGradeReal({
-            courseId: courseId as string,
-            assignmentId: assignmentId as string,
-            bin,
-          }),
+      fetchReviewGrade({
+        courseId: courseId as string,
+        assignmentId: assignmentId as string,
+        bin,
+      }),
     enabled,
   });
 }
