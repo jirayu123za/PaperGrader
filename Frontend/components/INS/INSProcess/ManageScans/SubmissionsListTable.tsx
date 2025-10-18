@@ -56,6 +56,7 @@ export const SubmissionsListTable: React.FC<Props> = ({ assignment_id }) => {
   }, [viewportH, submissionsList?.length]);
 
 
+
   const totalItems = submissionsList?.length ?? 0;
   const totalPages = useMemo(() => {
     return totalItems > 0 ? Math.ceil(totalItems / rowsPerPage) : 1;
@@ -71,7 +72,6 @@ export const SubmissionsListTable: React.FC<Props> = ({ assignment_id }) => {
   const paginatedSubmissionsTable =
     submissionsList?.slice(startIndex, endIndex) ?? [];
 
-  // ถ้าโหลดเสร็จแล้วแต่ไม่มีข้อมูล ไม่ต้องแสดงอะไร (พฤติกรรมเดิม)
   if (!isLoadingSubmissions && totalItems === 0) {
     return null;
   }
