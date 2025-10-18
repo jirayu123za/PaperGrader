@@ -7,6 +7,7 @@
       "question_title": "Virtualization Concepts",
       "question_point": 8,
       "percent_mean": 62,
+      "mean": 5.0,
       "rubric": {
         "total_student": 12,
         "rubrics_detail": [
@@ -23,6 +24,7 @@
           "sub_question_title": "Type-1 vs Type-2",
           "sub_question_point": 3,
           "percent_mean": 70,
+          "mean": 2.1,
           "rubric": {
             "total_student": 12,
             "rubrics_detail": [
@@ -38,7 +40,8 @@
           "question_number": "1.2",
           "sub_question_title": "Use cases",
           "sub_question_point": 5,
-          "percent_mean": 56
+          "percent_mean": 56,
+          "mean": 2.8
         }
       ]
     },
@@ -48,6 +51,7 @@
       "question_title": "Nested Virtualization",
       "question_point": 6,
       "percent_mean": 48,
+      "mean": 2.9,
       "rubric": {
         "total_student": 12,
         "rubrics_detail": [
@@ -64,6 +68,7 @@
       "question_title": "Performance Tuning",
       "question_point": 10,
       "percent_mean": 33,
+      "mean": 3.3,
       "rubric": {
         "total_student": 12,
         "rubrics_detail": [
@@ -79,14 +84,16 @@
           "question_number": "3.1",
           "sub_question_title": "CPU / vCPU",
           "sub_question_point": 4,
-          "percent_mean": 40
+          "percent_mean": 40,
+          "mean": 1.6
         },
         {
           "sub_question_id": "q-3-2",
           "question_number": "3.2",
           "sub_question_title": "Memory / Ballooning",
           "sub_question_point": 3,
-          "percent_mean": 28
+          "percent_mean": 28,
+          "mean": 0.8
         },
         {
           "sub_question_id": "q-3-3",
@@ -94,6 +101,7 @@
           "sub_question_title": "Storage / IOPS",
           "sub_question_point": 3,
           "percent_mean": 31,
+          "mean": 0.9,
           "rubric": {
             "total_student": 12,
             "rubrics_detail": [
@@ -111,6 +119,7 @@
       "question_title": "Backup & Restore",
       "question_point": 5,
       "percent_mean": 82,
+      "mean": 4.1,
       "rubric": {
         "total_student": 12,
         "rubrics_detail": [
@@ -132,7 +141,8 @@
           "question_number": "5.1",
           "sub_question_title": "Network segmentation",
           "sub_question_point": 3,
-          "percent_mean": 61
+          "percent_mean": 61,
+          "mean": 1.8
         },
         {
           "sub_question_id": "q-5-2",
@@ -140,6 +150,7 @@
           "sub_question_title": "Secrets management",
           "sub_question_point": 3,
           "percent_mean": 52,
+          "mean": 1.6,
           "rubric": {
             "total_student": 12,
             "rubrics_detail": [
