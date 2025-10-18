@@ -1,12 +1,12 @@
 "use client";
 
-import React from "react";
-import dayjs from 'dayjs';
+import React, { useMemo, useRef, useState, useLayoutEffect } from "react";
+import dayjs from "dayjs";
 import { useFetchSubmissionFiles } from "@/hooks/ManageScan/useFetchSubmissionFiles";
-import { Flex, Image, Loader, Pagination, Paper, Table, Text } from "@mantine/core";
+import {Flex,Loader,Pagination,Paper,Table,Text,} from "@mantine/core";
 import { FaRegFilePdf } from "react-icons/fa";
 import { useSubmissionFilesStore } from "@/store/ManageScan/useSubmissionFiles";
-import { usePagination } from "@mantine/hooks";
+import { usePagination, useViewportSize } from "@mantine/hooks";
 import { DeleteSubmission } from "./DeleteSubmission";
 
 type Props = {
@@ -14,83 +14,112 @@ type Props = {
 };
 
 export const SubmissionsListTable: React.FC<Props> = ({ assignment_id }) => {
-  const { isLoading: isLoadingSubmissions, isError: isErrorSubmissions } = useFetchSubmissionFiles(assignment_id as string);
+  const { isLoading: isLoadingSubmissions } = useFetchSubmissionFiles(
+    assignment_id as string
+  );
   const { submissionsList } = useSubmissionFilesStore();
-  
+
   const formatDate = (dateString: string) => {
-    return dayjs(dateString).format('MMM DD, YYYY [at] hh:mm A');
+    return dayjs(dateString).format("MMM DD, YYYY [at] hh:mm A");
   };
-  const pageSize = 8;
-  const totalPages = submissionsList ? Math.ceil(submissionsList.length / pageSize) : 1;
+
+
+  const { height: viewportH } = useViewportSize();
+
+  const sectionRef = useRef<HTMLDivElement | null>(null);
+  const theadRef = useRef<HTMLTableSectionElement | null>(null);
+  const tfootRef = useRef<HTMLTableSectionElement | null>(null);
+  const sampleRowRef = useRef<HTMLTableRowElement | null>(null);
+
+  const [rowsPerPage, setRowsPerPage] = useState<number>(8);
+
+  useLayoutEffect(() => {
+
+    const sectionTop = sectionRef.current?.getBoundingClientRect().top ?? 0;
+    const bottomPadding = 12;
+    const availableViewport = Math.max(0, viewportH - sectionTop - bottomPadding);
+    const theadH = theadRef.current?.getBoundingClientRect().height ?? 0;
+    const tfootH = tfootRef.current?.getBoundingClientRect().height ?? 0;
+
+
+    const fallbackRowH = 48;
+    const rowH =
+      sampleRowRef.current?.getBoundingClientRect().height ?? fallbackRowH;
+
+    const dividerH = 1;
+    const paperVerticalPadding = 50;
+    const availableForRows =
+      availableViewport - theadH - tfootH - dividerH - paperVerticalPadding;
+
+    const fit = Math.max(1, Math.floor(availableForRows / rowH));
+    setRowsPerPage(fit);
+  }, [viewportH, submissionsList?.length]);
+
+
+  const totalItems = submissionsList?.length ?? 0;
+  const totalPages = useMemo(() => {
+    return totalItems > 0 ? Math.ceil(totalItems / rowsPerPage) : 1;
+  }, [totalItems, rowsPerPage]);
+
   const pagination = usePagination({
     total: totalPages,
     initialPage: 1,
   });
-  const startIndex = (pagination.active - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const paginatedSubmissionsTable = submissionsList.slice(startIndex, endIndex);
 
-  if (!isLoadingSubmissions && submissionsList.length === 0) {
-    // return (
-    //   <Flex direction="column" align="center" justify="center" gap="sm" py="xl" w='100%'>
-    //     <Image
-    //       src="/Image/table/no_data.svg"
-    //       alt="No submissions found"
-    //       w="auto"
-    //       h={150}
-    //       fit="contain"
-    //       fallbackSrc="https://placehold.co/200x200?text=Placeholder"
-    //     />
-    //     <Text size="lg" fw={500} mt="md">
-    //       No submissions found
-    //     </Text>
-    //     <Text size="sm" c="dimmed">
-    //       You haven’t uploaded any submissions yet.
-    //     </Text>
-    //   </Flex>
-    // );
-    return null; 
+  const startIndex = (pagination.active - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const paginatedSubmissionsTable =
+    submissionsList?.slice(startIndex, endIndex) ?? [];
+
+  // ถ้าโหลดเสร็จแล้วแต่ไม่มีข้อมูล ไม่ต้องแสดงอะไร (พฤติกรรมเดิม)
+  if (!isLoadingSubmissions && totalItems === 0) {
+    return null;
   }
 
   return (
-    <Paper withBorder h="100%">
-      <Table.ScrollContainer minWidth="100%" maxHeight="495px" className='no-scroll-padding'>
+    <div ref={sectionRef}>
+      <Paper withBorder mb="md" style={{ overflow: "hidden" }}>
         <Table verticalSpacing="xs" horizontalSpacing="lg" highlightOnHover>
-          <Table.Thead className='bg-gray-100 h-14'>
+          <Table.Thead className="bg-gray-100 h-14" ref={theadRef}>
             <Table.Tr>
-              <Table.Th w='250px'>File</Table.Th>
-              <Table.Th w='350px'>Date</Table.Th>
-              <Table.Th w='240px'>Total submissions</Table.Th>
-              <Table.Th w='180px'>Submitted by</Table.Th>
-              <Table.Th w='60px'></Table.Th>
+              <Table.Th w="250px">File</Table.Th>
+              <Table.Th w="350px">Date</Table.Th>
+              <Table.Th w="240px">Total submissions</Table.Th>
+              <Table.Th w="180px">Submitted by</Table.Th>
+              <Table.Th w="60px"></Table.Th>
             </Table.Tr>
           </Table.Thead>
 
           <Table.Tbody>
             {isLoadingSubmissions ? (
-              <Table.Tr>
-                <Table.Td colSpan={4}>
+              <Table.Tr ref={sampleRowRef}>
+                <Table.Td colSpan={5}>
                   <Flex justify="center" align="center" py="42px">
-                    <Loader size="md" color="blue" type="bars"/>                                
+                    <Loader size="md" color="blue" type="bars" />
                   </Flex>
                 </Table.Td>
               </Table.Tr>
             ) : (
-              paginatedSubmissionsTable.map((submissions) => (
-                <Table.Tr key={submissions.submission_id}>
+              paginatedSubmissionsTable.map((submissions, idx) => (
+                <Table.Tr
+                  key={submissions.submission_id}
+                  ref={idx === 0 ? sampleRowRef : undefined}
+                >
                   <Table.Td>
                     <Flex align="center" gap={4}>
-                      <FaRegFilePdf size={18} color="red"/>
-                      <Text c='blue' size="sm">{submissions.file_name}</Text>                                    
+                      <FaRegFilePdf size={18} color="red" />
+                      <Text c="blue" size="sm">
+                        {submissions.file_name}
+                      </Text>
                     </Flex>
                   </Table.Td>
                   <Table.Td>{formatDate(submissions.submitted_at)}</Table.Td>
                   <Table.Td>{submissions.total_submissions}</Table.Td>
                   <Table.Td>{submissions.submitted_by}</Table.Td>
                   <Table.Td>
-                    <DeleteSubmission 
-                      assignment_id={assignment_id} 
-                      submission_id={submissions.submission_id} 
+                    <DeleteSubmission
+                      assignment_id={assignment_id}
+                      submission_id={submissions.submission_id}
                       submission_name={submissions.file_name}
                     />
                   </Table.Td>
@@ -99,7 +128,7 @@ export const SubmissionsListTable: React.FC<Props> = ({ assignment_id }) => {
             )}
           </Table.Tbody>
 
-          <Table.Tfoot>
+          <Table.Tfoot ref={tfootRef}>
             <Table.Tr>
               <Table.Td colSpan={5} className="border-t border-gray-300">
                 <Flex justify="end">
@@ -107,7 +136,7 @@ export const SubmissionsListTable: React.FC<Props> = ({ assignment_id }) => {
                     total={totalPages}
                     siblings={1}
                     boundaries={1}
-                    size={'sm'}
+                    size="sm"
                     value={pagination.active}
                     onChange={pagination.setPage}
                     gap={2}
@@ -117,8 +146,7 @@ export const SubmissionsListTable: React.FC<Props> = ({ assignment_id }) => {
             </Table.Tr>
           </Table.Tfoot>
         </Table>
-      </Table.ScrollContainer>
-    </Paper>
-  )
-
+      </Paper>
+    </div>
+  );
 };
