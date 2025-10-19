@@ -3,23 +3,20 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Flex, Select, Title, MultiSelect, Skeleton, Text } from "@mantine/core";
 import { useParams } from "next/navigation";
-import {useStatisticSectionsStore,type StatisticSection,} from "@/store/statistic/useStatisticSectionsStore";
+import { useStatisticSectionsStore, type StatisticSection } from "@/store/statistic/useStatisticSectionsStore";
 import { useFetchStatisticSections } from "@/hooks/Statistic/useFetchStatisticSections";
 import { useFetchAssignments } from "@/hooks/Statistic/useFetchAssigmentStatistic";
-import {useAssignmentStatisticStore,type AssignmentOption,} from "@/store/statistic/useAssignmentStatisticStore";
+import { useAssignmentStatisticStore, type AssignmentOption } from "@/store/statistic/useAssignmentStatisticStore";
 import { useStatisticsStore } from "@/store/statistic/useStatisticsStore";
-import { useFetchStatistics } from "@/hooks/Statistic/useFetchStatistics";
 
 const ALL_VALUE = "__ALL__";
 
 export default function StatisticHeader({ title = "Assignment Statistics" }: { title?: string }) {
   const [sectionSearch, setSectionSearch] = useState("");
 
-
   const params = useParams();
   const course_id = params?.course_id as string;
   const assignmentIdFromParam = params?.assignment_id ? String(params.assignment_id) : null;
-
 
   const selectedAssignmentId = useAssignmentStatisticStore((s) => s.selectedAssignmentId);
   const {
@@ -64,7 +61,6 @@ export default function StatisticHeader({ title = "Assignment Statistics" }: { t
       didClearForNoParamRef.current = true;
     }
   }, [hasAssignments, assignmentsList, assignmentIdFromParam, setSelectedAssignmentId]);
-
 
   const setCourseIdForSections = useStatisticSectionsStore((s) => s.setCourseId);
   const setAssignmentIdForSections = useStatisticSectionsStore((s) => s.setAssignmentId);
@@ -137,11 +133,9 @@ export default function StatisticHeader({ title = "Assignment Statistics" }: { t
     setSelectedByRows(rows.length ? rows : allRow ? [allRow] : []);
   };
 
-
   const setStatsCourseId = useStatisticsStore((s) => s.setCourseId);
   const setStatsAssignmentId = useStatisticsStore((s) => s.setAssignmentId);
   const setStatsSectionIds = useStatisticsStore((s) => s.setSectionIds);
-
 
   useEffect(() => {
     setStatsCourseId(course_id ?? null);
@@ -152,13 +146,8 @@ export default function StatisticHeader({ title = "Assignment Statistics" }: { t
   }, [selectedAssignmentId, assignmentIdFromParam, setStatsAssignmentId]);
 
   useEffect(() => {
-
     setStatsSectionIds(selectedSectionIds);
   }, [selectedSectionIds, setStatsSectionIds]);
-
-
-  useFetchStatistics();
-
 
   if (errorAssignments) {
     return (
@@ -169,7 +158,6 @@ export default function StatisticHeader({ title = "Assignment Statistics" }: { t
   }
 
   const showSelectAssignmentFirst = !selectedAssignmentId && !assignmentIdFromParam;
-
 
   return (
     <div className="mt-3 pt-1">
