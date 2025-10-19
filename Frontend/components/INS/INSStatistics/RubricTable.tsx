@@ -85,7 +85,7 @@ export default function RubricTable({
         rubric: q.rubric ?? null,
         indent: indentFromNumber(q.question_number),
         hasChildren:
-          Array.isArray(q.sub_questions) && q.sub_questions.length > 0, 
+          Array.isArray(q.sub_questions) && q.sub_questions.length > 0,
       });
       if (Array.isArray(q.sub_questions)) {
         for (const s of q.sub_questions as SubQuestionStat[]) {
@@ -113,9 +113,12 @@ export default function RubricTable({
   );
 
   const handleOpenModal = (row: FlatRow) => {
-    if (!row.rubric) return;
+    const isParentWithChildren =
+      row.kind === "q" && (row as any).hasChildren === true;
+    if (isParentWithChildren) return; 
+
     setSelectedTitle(`Rubric for ${row.number} — ${row.title ?? "-"}`);
-    setSelectedRubric(row.rubric);
+    setSelectedRubric(row.rubric ?? null);
     open();
   };
 
@@ -151,14 +154,16 @@ export default function RubricTable({
                   const isParentWithChildren =
                     row.kind === "q" && (row as any).hasChildren === true;
 
+                  const canOpen = !isParentWithChildren;
+
                   return (
                     <Table.Tr
                       key={`${row.kind}-${row.id}`}
                       style={{
-                        cursor: row.rubric ? "pointer" : "default",
+                        cursor: canOpen ? "pointer" : "default",
                       }}
                       className="group"
-                      onClick={() => handleOpenModal(row)}
+                      onClick={() => canOpen && handleOpenModal(row)}
                     >
                       <Table.Td>
                         <Flex
@@ -180,7 +185,7 @@ export default function RubricTable({
                               {row.title ?? "-"}
                             </Text>
 
-                            {row.rubric ? (
+                            {canOpen ? (
                               <Anchor
                                 underline="hover"
                                 size="xs"
@@ -203,6 +208,7 @@ export default function RubricTable({
                           </Box>
                         </Flex>
                       </Table.Td>
+
                       <Table.Td>
                         <Text>
                           {typeof row.point === "number" &&
@@ -213,6 +219,7 @@ export default function RubricTable({
                             : "-"}{" "}
                         </Text>
                       </Table.Td>
+
                       <Table.Td>
                         {typeof pct === "number" ? (
                           <Flex
@@ -228,7 +235,7 @@ export default function RubricTable({
                             <Text>{pct}%</Text>
                           </Flex>
                         ) : isParentWithChildren ? null : (
-                          <Text c="dimmed">-</Text> 
+                          <Text c="dimmed">-</Text>
                         )}
                       </Table.Td>
                     </Table.Tr>
