@@ -51,20 +51,21 @@ export default function RubricTable({
         id: string;
         number: string;
         title?: string | null;
-        point?: number | null;         
-        mean?: number | null;         
-        percent_mean?: number | null;  
+        point?: number | null;
+        mean?: number | null;
+        percent_mean?: number | null;
         rubric?: RubricBlock | null;
         indent: number;
+        hasChildren: boolean; 
       }
     | {
         kind: "sub";
         id: string;
         number: string;
         title?: string | null;
-        point?: number | null;         
-        mean?: number | null;          
-        percent_mean?: number | null; 
+        point?: number | null;
+        mean?: number | null;
+        percent_mean?: number | null;
         rubric?: RubricBlock | null;
         indent: number;
       };
@@ -83,6 +84,8 @@ export default function RubricTable({
         percent_mean: q.percent_mean ?? null,
         rubric: q.rubric ?? null,
         indent: indentFromNumber(q.question_number),
+        hasChildren:
+          Array.isArray(q.sub_questions) && q.sub_questions.length > 0, 
       });
       if (Array.isArray(q.sub_questions)) {
         for (const s of q.sub_questions as SubQuestionStat[]) {
@@ -140,11 +143,13 @@ export default function RubricTable({
 
               <Table.Tbody>
                 {flatRows.map((row) => {
-
                   const pct =
                     typeof row.percent_mean === "number"
                       ? Math.round(row.percent_mean)
                       : null;
+
+                  const isParentWithChildren =
+                    row.kind === "q" && (row as any).hasChildren === true;
 
                   return (
                     <Table.Tr
@@ -203,7 +208,9 @@ export default function RubricTable({
                           {typeof row.point === "number" &&
                           typeof row.mean === "number"
                             ? `${row.mean.toFixed(1)} / ${row.point}`
-                            : "-"}
+                            : isParentWithChildren
+                            ? "" 
+                            : "-"}{" "}
                         </Text>
                       </Table.Td>
                       <Table.Td>
@@ -220,8 +227,8 @@ export default function RubricTable({
                             />
                             <Text>{pct}%</Text>
                           </Flex>
-                        ) : (
-                          <Text c="dimmed">-</Text>
+                        ) : isParentWithChildren ? null : (
+                          <Text c="dimmed">-</Text> 
                         )}
                       </Table.Td>
                     </Table.Tr>
@@ -236,7 +243,7 @@ export default function RubricTable({
       <RubricPieModal
         opened={opened}
         onClose={close}
-        rubric={selectedRubric} 
+        rubric={selectedRubric}
         title={selectedTitle || "Rubric"}
       />
     </>
