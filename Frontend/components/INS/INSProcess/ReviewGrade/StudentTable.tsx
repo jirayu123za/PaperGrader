@@ -2,7 +2,8 @@
 
 import {Card,Table,Text,Title,Input,Group,Loader,Center,} from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
-import { IoMdCheckmark, IoMdClose } from "react-icons/io";
+import { IoMdCheckmark, IoMdClose ,IoMdPeople  } from "react-icons/io";
+
 
 const fmt = (n: number) => (Number.isInteger(n) ? n.toString() : n.toFixed(2));
 
@@ -38,7 +39,10 @@ export default function StudentTable({
       style={{ height: "100%" }}
     >
       <Group justify="space-between" mb="sm">
-        <Title order={4}>👥 {rows.length} Students</Title>
+       <Title order={4} className="flex items-center gap-2">
+          <IoMdPeople size={22} color="#6665AC" />
+          <span >{rows.length} Students</span>
+        </Title>
         <Input
           leftSection={<IconSearch size="1rem" />}
           placeholder="Search"
