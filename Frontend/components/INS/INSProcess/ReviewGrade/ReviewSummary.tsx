@@ -43,9 +43,9 @@ export default function ReviewSummary() {
     noRows;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)]">
+<div className="flex flex-col h-[calc(100vh-80px)] px-4 md:px-6 lg:px-8">
       <Flex
-        className="shrink-0 px-4 md:px-6"
+        className="shrink-0 "
         align="center"
         justify="space-between"
         mb="xs"
