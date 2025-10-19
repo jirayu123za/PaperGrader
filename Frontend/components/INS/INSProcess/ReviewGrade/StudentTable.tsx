@@ -1,7 +1,10 @@
 "use client";
 
-import { Card, Table, Text, Title, Input, Group, Loader, Center } from "@mantine/core";
+import {Card,Table,Text,Title,Input,Group,Loader,Center,} from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
+import { IoMdCheckmark, IoMdClose } from "react-icons/io";
+
+const fmt = (n: number) => (Number.isInteger(n) ? n.toString() : n.toFixed(2));
 
 export type StudentRow = {
   personal_data_id: string;
@@ -18,24 +21,43 @@ export default function StudentTable({
   rows = [],
   loading,
   errorMessage,
+  totalScore,
 }: {
   rows?: StudentRow[];
   loading?: boolean;
   errorMessage?: string;
+  totalScore?: number;
 }) {
   return (
-    <Card shadow="sm" padding="lg" radius="md" withBorder mt="lg" style={{ height: "100%" }}>
+    <Card
+      shadow="sm"
+      padding="lg"
+      radius="md"
+      withBorder
+      mt="lg"
+      style={{ height: "100%" }}
+    >
       <Group justify="space-between" mb="sm">
         <Title order={4}>👥 {rows.length} Students</Title>
-        <Input leftSection={<IconSearch size="1rem" />} placeholder="Search" w={220} />
+        <Input
+          leftSection={<IconSearch size="1rem" />}
+          placeholder="Search"
+          w={220}
+        />
       </Group>
 
       {loading ? (
-        <Center py="xl"><Loader /></Center>
+        <Center py="xl">
+          <Loader />
+        </Center>
       ) : errorMessage ? (
-        <Center py="xl"><Text c="red">Failed to load: {errorMessage}</Text></Center>
+        <Center py="xl">
+          <Text c="red">Failed to load: {errorMessage}</Text>
+        </Center>
       ) : rows.length === 0 ? (
-        <Center py="xl"><Text c="dimmed">No data</Text></Center>
+        <Center py="xl">
+          <Text c="dimmed">No data</Text>
+        </Center>
       ) : (
         <Table.ScrollContainer minWidth={800} style={{ height: "100%" }}>
           <Table striped withTableBorder>
@@ -56,9 +78,45 @@ export default function StudentTable({
                   <Table.Td>{r.student_name}</Table.Td>
                   <Table.Td>{r.email}</Table.Td>
                   <Table.Td>{r.sections ?? "-"}</Table.Td>
-                  <Table.Td>{r.score ?? "-"}</Table.Td>
-                  <Table.Td>{r.graded ? "✓" : "✘"}</Table.Td>
-                  <Table.Td>{r.has_submission ? "Yes" : "No submission"}</Table.Td>
+                  <Table.Td>
+                    {typeof totalScore === "number"
+                      ? `${r.score !== null ? fmt(r.score) : "-"} / ${fmt(
+                          totalScore
+                        )}`
+                      : r.score !== null
+                      ? fmt(r.score)
+                      : "-"}
+                  </Table.Td>
+                  <Table.Td>
+                    {r.graded ? (
+                      <IoMdCheckmark
+                        size={18}
+                        color="#2f9e44"
+                        aria-label="graded"
+                      />
+                    ) : (
+                      <IoMdClose
+                        size={18}
+                        color="#fa5252"
+                        aria-label="not graded"
+                      />
+                    )}
+                  </Table.Td>
+                  <Table.Td>
+                    {r.has_submission ? (
+                      <IoMdCheckmark
+                        size={18}
+                        color="#2f9e44"
+                        aria-label="submitted"
+                      />
+                    ) : (
+                      <IoMdClose
+                        size={18}
+                        color="#fa5252"
+                        aria-label="not submitted"
+                      />
+                    )}
+                  </Table.Td>
                   <Table.Td>{r.submitted_at ?? "-"}</Table.Td>
                 </Table.Tr>
               ))}
