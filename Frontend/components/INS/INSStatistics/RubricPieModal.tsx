@@ -6,6 +6,7 @@ import { PieChart } from "@mantine/charts";
 import type { PieProps, SectorProps } from "recharts";
 import { Sector } from "recharts";
 import type { RubricBlock } from "@/store/statistic/useStatisticsStore";
+import Image from "next/image";
 
 export type RubricSlice = { id: string; label: string; value: number; color?: string };
 
@@ -13,8 +14,8 @@ type RubricPieModalProps = {
   opened: boolean;
   onClose: () => void;
   title?: string;
-  rubric?: RubricBlock | null; 
-  data?: RubricSlice[];       
+  rubric?: RubricBlock | null;
+  data?: RubricSlice[];
   height?: number;
 };
 
@@ -38,19 +39,17 @@ export default function RubricPieModal({
 }: RubricPieModalProps) {
   const [hoverIndex, setHoverIndex] = useState<number | undefined>(undefined);
 
-  // แปลงข้อมูลจาก store -> slices
   const storeSlices: RubricSlice[] | null = useMemo(() => {
     if (!rubric || !Array.isArray(rubric.rubrics_detail)) return null;
     return rubric.rubrics_detail.map((r) => ({
-      id: String(r.rubric_id),                 
-      label: String(r.description ?? "-"),      
-      value: Number(r.totals_select ?? 0),       
+      id: String(r.rubric_id),
+      label: String(r.description ?? "-"),
+      value: Number(r.totals_select ?? 0),
     }));
   }, [rubric]);
 
- 
   const sourceData: RubricSlice[] =
-    (storeSlices && storeSlices.length > 0 ? storeSlices : (data ?? []));
+    storeSlices && storeSlices.length > 0 ? storeSlices : data ?? [];
 
   const customPalette = useMemo(
     () => [
@@ -121,6 +120,10 @@ export default function RubricPieModal({
     );
   };
 
+  const noRubric = !rubric || !Array.isArray(rubric.rubrics_detail) || rubric.rubrics_detail.length === 0;
+  const noData = sourceData.length === 0 || total === 0;
+  const showEmpty = noRubric || noData;
+
   return (
     <Modal
       opened={opened}
@@ -135,9 +138,18 @@ export default function RubricPieModal({
       }}
       overlayProps={{ backgroundOpacity: 0.35, blur: 4 }}
     >
-      {sourceData.length === 0 ? (
-        <Center mih={height}>
-          <Text c="dimmed">No rubric data</Text>
+      {showEmpty ? (
+        <Center mih={height} style={{ textAlign: "center" }}>
+          <div>
+            <Image
+              src="/Image/statistic/rubric.svg"
+              alt="No rubric"
+              width={360}
+              height={360}
+              style={{ width: 320, maxWidth: "60%", height: "auto", margin: "0 auto 12px" }}
+            />
+            <Text c="dimmed">question does not have any rubrics created yet.</Text>
+          </div>
         </Center>
       ) : (
         <Group align="start" wrap="nowrap" gap="lg">
