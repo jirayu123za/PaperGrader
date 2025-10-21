@@ -8,7 +8,11 @@ import { useRouter } from "next/navigation";
 import { useSubmitAndDownloadModalStore } from "@/store/modal/useSubmitAndDownloadModal";
 import dayjs from "dayjs";
 import "dayjs/locale/th";
-import { calculateProgress, getProgressColor, getRemainingTimeText } from "./utils/dateUtils";
+import {
+  calculateProgress,
+  getProgressColor,
+  getRemainingTimeText,
+} from "./utils/dateUtils";
 import { groupByDate, paginate, ITEMS_PER_PAGE } from "./utils/groupingUtils";
 
 dayjs.locale("en");
@@ -44,7 +48,9 @@ export default function AssignmentList({
   }
 
   if (!assignments.length) {
-    return <div className="text-center text-gray-500 py-10">Nothing Planned Yet</div>;
+    return (
+      <div className="text-center text-gray-500 py-10">Nothing Planned Yet</div>
+    );
   }
 
   const paginated = paginate(assignments, page);
@@ -62,17 +68,39 @@ export default function AssignmentList({
             const progress = calculateProgress(a.release_date, a.due_date);
             const isSubmitted = a.has_submitted;
             const isLate = dayjs(a.due_date).isBefore(dayjs());
+            const cutoffPassed = a.cut_off_date
+              ? dayjs(a.cut_off_date).isBefore(dayjs())
+              : isLate; // ✅ เช็ก cut off
 
             return (
-              <Card key={a.assignment_id} shadow="sm" padding="lg" radius="md" withBorder>
+              <Card
+                key={a.assignment_id}
+                shadow="sm"
+                padding="lg"
+                radius="md"
+                withBorder
+              >
                 <div className="flex justify-between items-center">
                   <div className="w-2/6">
                     <div className="flex items-center gap-2">
-                      {/* ✅ ปุ่ม Upload เดิม */}
+                      {/* ✅ ปุ่ม Upload */}
                       <IconUpload
                         size={18}
-                        className="cursor-pointer text-blue-600 hover:text-blue-800"
-                        onClick={() => openModal(a.assignment_id, a.course_id)}
+                        className={`${
+                          cutoffPassed
+                            ? "text-gray-400 cursor-not-allowed"
+                            : "text-blue-600 hover:text-blue-800 cursor-pointer"
+                        }`}
+                        onClick={() => {
+                          if (!cutoffPassed) {
+                            openModal(a.assignment_id, a.course_id);
+                          }
+                        }}
+                        title={
+                          cutoffPassed
+                            ? "Upload closed (cut-off date passed)"
+                            : "Upload your submission"
+                        }
                       />
 
                       {/* ✅ คลิกชื่อ assignment เพื่อดู PDF */}
@@ -80,7 +108,9 @@ export default function AssignmentList({
                         fw={500}
                         className="cursor-pointer hover:underline"
                         onClick={() =>
-                          router.push(`/student/overview/${a.course_id}/assignment/${a.assignment_id}/grade`)
+                          router.push(
+                            `/student/overview/${a.course_id}/assignment/${a.assignment_id}/grade`
+                          )
                         }
                       >
                         {a.assignment_name}
@@ -88,7 +118,11 @@ export default function AssignmentList({
                     </div>
 
                     <Link href={`/student/overview/${a.course_id}/dashboard`}>
-                      <Text size="sm" c="dimmed" className="cursor-pointer hover:underline">
+                      <Text
+                        size="sm"
+                        c="dimmed"
+                        className="cursor-pointer hover:underline"
+                      >
                         {a.course_code} - {a.course_name}
                       </Text>
                     </Link>
@@ -99,13 +133,20 @@ export default function AssignmentList({
                       <Text fw={600} c="green">
                         Submitted
                       </Text>
+                    ) : cutoffPassed ? (
+                      <Text c="red" fw={600}>
+                        Upload Closed
+                      </Text>
                     ) : isOverdue ? (
                       <Text c="red" fw={600}>
-                        DUE: {dayjs(a.due_date).format("dddd, MMMM D, YYYY HH:mm")}
+                        DUE:{" "}
+                        {dayjs(a.due_date).format("dddd, MMMM D, YYYY HH:mm")}
                       </Text>
                     ) : (
                       <>
-                        <Text size="sm">{getRemainingTimeText(a.due_date)}</Text>
+                        <Text size="sm">
+                          {getRemainingTimeText(a.due_date)}
+                        </Text>
                         <Progress
                           color={getProgressColor(a.release_date, a.due_date)}
                           value={progress}

@@ -16,13 +16,13 @@ const GradePdfViewer: React.FC<GradePdfViewerProps> = ({ courseId, assignmentId 
   useEffect(() => {
     const fetchPDF = async () => {
       try {
-        const response = await axios.get(`${API_BASE}/student/file`, {
+        // ✅ ดึง URL ของ PDF จาก backend
+        const response = await axios.get(`${API_BASE}/student/submission/url`, {
           params: { course_id: courseId, assignment_id: assignmentId },
-          responseType: "blob",
         });
 
-        const fileUrl = URL.createObjectURL(response.data);
-        setPdfUrl(fileUrl);
+        // ✅ เก็บลิงก์ PDF ไว้ใน state
+        setPdfUrl(response.data.url);
       } catch (error) {
         console.error("❌ Failed to load PDF:", error);
       } finally {
@@ -47,7 +47,7 @@ const GradePdfViewer: React.FC<GradePdfViewerProps> = ({ courseId, assignmentId 
       width="100%"
       height="800px"
       title="Student Submission PDF"
-      className="rounded-b-xl"
+      className="rounded-b-xl border"
     />
   );
 };
