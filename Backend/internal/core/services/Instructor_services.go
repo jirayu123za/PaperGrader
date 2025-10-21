@@ -117,7 +117,7 @@ type InstructorService interface {
 
 	// Part 1: Export data
 	GetAssignmentsListForExport(CourseID uuid.UUID) ([]response.AssignmentsListResponse, error)
-	// CreateGradesToExcelFile(request response.CreateGradeToExcelFileRequest, courseID uuid.UUID) error
+	CreateGradesToExcelFile(request response.CreateGradeToExcelFileRequest, courseID uuid.UUID, userID uuid.UUID) error
 
 	// Part:1 Assignment statistics
 	GetAssignmentStatsAndQuestionsList(req response.GetAssignmentStatisticsRequest, courseID uuid.UUID) (response.AssignmentStatisticsResponse, response.QuestionsListStatsResponse, error)
@@ -1901,9 +1901,18 @@ func (s *InstructorServiceImpl) GetAssignmentsListForExport(CourseID uuid.UUID) 
 	return assignments, nil
 }
 
-// func (s *InstructorServiceImpl) CreateGradesToExcelFile(request response.CreateGradeToExcelFileRequest, courseID uuid.UUID) error {
-// 	return nil
-// }
+func (s *InstructorServiceImpl) CreateGradesToExcelFile(request response.CreateGradeToExcelFileRequest, courseID uuid.UUID, userID uuid.UUID) error {
+	name, err := s.repo.FindAssignmentNameForExcelFile(courseID, request.AssignmentID)
+	if err != nil {
+		return err
+	}
+	if name == "" {
+		return fmt.Errorf("assignment not found in this course")
+	}
+
+	fileName := fmt.Sprintf("%s-score.xlsx", utils.Slugify(name))
+	return s.repo.AddGradesToExcelFile(request, courseID, userID, fileName)
+}
 
 // Part:1 Statistics data
 func (s *InstructorServiceImpl) GetAssignmentStatsAndQuestionsList(req response.GetAssignmentStatisticsRequest, courseID uuid.UUID) (response.AssignmentStatisticsResponse, response.QuestionsListStatsResponse, error) {

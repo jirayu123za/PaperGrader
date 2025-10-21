@@ -126,7 +126,8 @@ type InstructorRepository interface {
 
 	// Part:1 Export data
 	FindAssignmentsListForExport(CourseID uuid.UUID) ([]response.AssignmentsListResponse, error)
-	// AddGradesToExcelFile(request response.CreateGradeToExcelFileRequest, courseID uuid.UUID) error
+	FindAssignmentNameForExcelFile(courseID uuid.UUID, assignmentID uuid.UUID) (string, error)
+	AddGradesToExcelFile(request response.CreateGradeToExcelFileRequest, courseID uuid.UUID, userID uuid.UUID, fileName string) error
 
 	// Part:1 Assignment statistics
 	FindGradeIDsHasGradedBySectionIDs(AssignmentID uuid.UUID, SectionIDs []uuid.UUID) ([]uuid.UUID, error)

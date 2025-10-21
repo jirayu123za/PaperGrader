@@ -2187,43 +2187,43 @@ func (h *HttpInstructorHandler) GetAssignmentsListForExport(c *fiber.Ctx) error 
 	})
 }
 
-// func (h *HttpInstructorHandler) ExportGradesToExcel(c *fiber.Ctx) error {
-// 	courseIDParam := c.Query("course_id")
-// 	courseID, err := uuid.Parse(courseIDParam)
-// 	if err != nil {
-// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-// 			"message": "Invalid course_id",
-// 			"error":   err.Error(),
-// 		})
-// 	}
+func (h *HttpInstructorHandler) ExportGradesToExcel(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
 
-// 	// userID, err := utils.GetUserIDFromJWT(c)
-// 	// if err != nil {
-// 	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-// 	// 		"message": "Invalid user_id in JWT",
-// 	// 		"error":   err.Error(),
-// 	// 	})
-// 	// }
+	userID, err := utils.GetUserIDFromJWT(c)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid user_id in JWT",
+			"error":   err.Error(),
+		})
+	}
 
-// 	var request response.CreateGradeToExcelFileRequest
-// 	if err := c.BodyParser(&request); err != nil {
-// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-// 			"message": "Invalid request body",
-// 			"error":   err.Error(),
-// 		})
-// 	}
+	var request response.CreateGradeToExcelFileRequest
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request body",
+			"error":   err.Error(),
+		})
+	}
 
-// 	if err := h.services.CreateGradesToExcelFile(request, courseID); err != nil {
-// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-// 			"message": "Failed to export grades to Excel",
-// 			"error":   err.Error(),
-// 		})
-// 	}
+	if err := h.services.CreateGradesToExcelFile(request, courseID, userID); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to queue export job",
+			"error":   err.Error(),
+		})
+	}
 
-// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-// 		"message": "Grades exported to CSV successfully",
-// 	})
-// }
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Grades exported to CSV successfully",
+	})
+}
 
 // Statistics Handlers
 // ! Need to change use section to calculate statistics

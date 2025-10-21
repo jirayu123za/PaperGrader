@@ -645,9 +645,9 @@ type UpdateAssignmentPublishedAssignmentRequest struct {
 
 // Part:1 Export data
 // ---- JSON structs for export data ----
-// type CreateGradeToExcelFileRequest struct {
-// 	AssignmentID uuid.UUID `json:"assignment_id"`
-// }
+type CreateGradeToExcelFileRequest struct {
+	AssignmentID uuid.UUID `json:"assignment_id"`
+}
 
 // Part:1 Assignment statistics
 // ---- JSON structs for assignment statistics ----

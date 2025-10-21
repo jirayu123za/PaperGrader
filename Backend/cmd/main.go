@@ -9,6 +9,7 @@ import (
 	"paperGrader/internal/adapters/oauth"
 	"paperGrader/internal/config"
 	"paperGrader/internal/core/services"
+	"paperGrader/internal/core/workers"
 	"paperGrader/internal/database"
 	"paperGrader/internal/routes"
 	"paperGrader/internal/storage"
@@ -19,6 +20,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/minio/minio-go/v7"
+	"github.com/robfig/cron/v3"
 	"gorm.io/gorm"
 )
 
@@ -68,7 +70,10 @@ func main() {
 
 	initDependencies(app, db, internalCli, publicCli, bucket, ttl)
 
-	go gracefulShutdown(app)
+	exportCron := startExportGradesCron(db, internalCli, bucket)
+	defer exportCron.Stop()
+
+	go gracefulShutdown(app, exportCron)
 
 	log.Println("Server is running on port: ", port)
 	if err := app.Listen(":" + port); err != nil {
@@ -76,12 +81,15 @@ func main() {
 	}
 }
 
-func gracefulShutdown(app *fiber.App) {
+func gracefulShutdown(app *fiber.App, exportCron *cron.Cron) {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
 	log.Println("Shutting down server gracefully...")
+	if exportCron != nil {
+		exportCron.Stop()
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -141,4 +149,29 @@ func initDependencies(app *fiber.App, db *gorm.DB, internalCli, publicCli *minio
 		sectionHandler, courseHandler, assignmentHandler,
 		instructorHandler, studentHandler,
 	)
+}
+
+func startExportGradesCron(db *gorm.DB, minioInternal *minio.Client, bucket string) *cron.Cron {
+	publicEndpoint := os.Getenv("MINIO_PUBLIC_ENDPOINT")
+	publicUseSSL := os.Getenv("MINIO_PUBLIC_USE_SSL") == "true"
+
+	w := &workers.ExportGradesWorker{
+		DB:             db,
+		Minio:          minioInternal,
+		Bucket:         bucket,
+		PublicEndpoint: publicEndpoint,
+		PublicUseSSL:   publicUseSSL,
+	}
+
+	spec := os.Getenv("EXPORT_GRADES_CRON")
+	if spec == "" {
+		spec = "@every 1m"
+	}
+
+	c := cron.New()
+	_, _ = c.AddFunc(spec, func() {
+		_ = w.ProcessPendingOnce(context.Background())
+	})
+	c.Start()
+	return c
 }

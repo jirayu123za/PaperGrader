@@ -2967,6 +2967,76 @@ func (r *GormInstructorRepository) FindAssignmentsListForExport(CourseID uuid.UU
 	return assignments, nil
 }
 
+func (r *GormInstructorRepository) FindAssignmentNameForExcelFile(courseID uuid.UUID, assignmentID uuid.UUID) (string, error) {
+	var assignmentName string
+	err := r.db.
+		Table("assignments").
+		Select("assignment_name").
+		Where("assignment_id = ? AND course_id = ? AND deleted_at IS NULL", assignmentID, courseID).
+		Scan(&assignmentName).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return "", err
+	}
+	if err != nil {
+		return "", err
+	}
+	return assignmentName, nil
+}
+
+func (r *GormInstructorRepository) AddGradesToExcelFile(request response.CreateGradeToExcelFileRequest, courseID uuid.UUID, userID uuid.UUID, fileName string) error {
+	// 1) query users
+	var u struct{ Email string }
+	if err := r.db.
+		Table("users").
+		Select("email").
+		Where("user_id = ? AND deleted_at IS NULL", userID).
+		Take(&u).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("user not found")
+		}
+		return err
+	}
+
+	// 2) find personal_data_id: match course first (by enrollment_lists)
+	type pdRow struct{ PersonalDataID uuid.UUID }
+	var pd pdRow
+
+	err := r.db.
+		Table("enrollment_lists el").
+		Select("el.personal_data_id").
+		Joins("JOIN personal_data pd ON pd.personal_data_id = el.personal_data_id").
+		Where("el.course_id = ? AND pd.email = ? AND pd.deleted_at IS NULL", courseID, u.Email).
+		Limit(1).
+		Take(&pd).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		// if not found in roster of this course → fallback to find by email in personal_data
+		err = r.db.
+			Table("personal_data").
+			Select("personal_data_id").
+			Where("email = ? AND deleted_at IS NULL", u.Email).
+			Limit(1).
+			Take(&pd).Error
+	}
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("personal_data not found for email %s", u.Email)
+		}
+		return err
+	}
+
+	// 3) Create export_grades row with status pending
+	export := models.ExportGrade{
+		CourseID:       courseID,
+		AssignmentID:   request.AssignmentID,
+		PersonalDataID: pd.PersonalDataID, // ← linked to actual personal_data
+		FileName:       fileName,
+		FileStatus:     models.FileStatusPending,
+		FileURL:        "", // will be updated when worker finishes uploading
+	}
+	return r.db.Create(&export).Error
+}
+
 // Part:1 Statistics data
 func (r *GormInstructorRepository) FindGradeIDsHasGradedBySectionIDs(AssignmentID uuid.UUID, SectionIDs []uuid.UUID) ([]uuid.UUID, error) {
 	gradeIDs := []uuid.UUID{}
