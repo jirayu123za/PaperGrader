@@ -72,7 +72,7 @@ const STD_CourseDashboard: React.FC = () => {
                       onClick={() => {
                         // ไปหน้าส่งงาน (ยังไม่มี file_url ใน API)
                         router.push(
-                          `/student/overview/assignment/${assignment.assignment_id}`
+                          `/student/overview/${course_id}/assignment/${assignment.assignment_id}`
                         );
                       }}
                     >
