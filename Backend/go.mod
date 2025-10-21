@@ -12,6 +12,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/minio/minio-go/v7 v7.0.76
 	github.com/pdfcpu/pdfcpu v0.9.1
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/xuri/excelize/v2 v2.9.0
 	golang.org/x/oauth2 v0.23.0
 	gorm.io/datatypes v1.2.5
