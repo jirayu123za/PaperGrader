@@ -13,7 +13,6 @@ export default function OverdueAssignments({ isLoading }: { isLoading: boolean }
   const { assignments } = useAssignmentStore();
   const [page, setPage] = useState(1);
 
-  
   const overdue = assignments.filter(
     (a) => dayjs(a.due_date).isBefore(dayjs()) && !a.has_submitted
   );
@@ -30,7 +29,7 @@ export default function OverdueAssignments({ isLoading }: { isLoading: boolean }
           isLoading={isLoading}
           page={page}
           setPage={setPage}
-          isOverdue={true} 
+          isOverdue={true}
         />
       )}
     </ScrollArea>

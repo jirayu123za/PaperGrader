@@ -70,7 +70,7 @@ export default function AssignmentList({
             const isLate = dayjs(a.due_date).isBefore(dayjs());
             const cutoffPassed = a.cut_off_date
               ? dayjs(a.cut_off_date).isBefore(dayjs())
-              : isLate; // ✅ เช็ก cut off
+              : isLate;
 
             return (
               <Card
@@ -83,7 +83,6 @@ export default function AssignmentList({
                 <div className="flex justify-between items-center">
                   <div className="w-2/6">
                     <div className="flex items-center gap-2">
-                      {/* ✅ ปุ่ม Upload */}
                       <IconUpload
                         size={18}
                         className={`${
@@ -103,7 +102,6 @@ export default function AssignmentList({
                         }
                       />
 
-                      {/* ✅ คลิกชื่อ assignment เพื่อดู PDF */}
                       <Text
                         fw={500}
                         className="cursor-pointer hover:underline"
