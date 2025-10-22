@@ -2,7 +2,7 @@
 import markedKatex from 'marked-katex-extension';
 import DOMPurify from 'dompurify';
 import 'katex/dist/katex.min.css';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { marked } from 'marked';
 import { ActionIcon, Box, Burger, Button, Checkbox, Divider, Flex, Group, NumberInput, Progress, ScrollArea, Text, Textarea } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
@@ -25,12 +25,11 @@ import { QuestionSelectorParams } from '@/components/INS/INSProcess/Right/Rubric
 import { RubricSettingsParams } from '@/components/INS/INSProcess/Right/Rubric/RubricSettingsParams';
 import { RubricParamsLoader } from '@/components/INS/INSProcess/Right/Rubric/RubricParamsLoader';
 import { useDisclosure, useHotkeys } from '@mantine/hooks';
+import { useTotalSubmissionsStore } from '@/store/useGradeBottomStore';
+
 marked.use(markedKatex({ throwOnError: false }));
 
-interface Graded {
-    has_graded: number;
-    total_grade: number;
-}
+
 
 export const RubricGrader = () => {
   const params = useParams();
@@ -48,6 +47,11 @@ export const RubricGrader = () => {
   const { mutate: updateGrade, isPending: isPendingUpdateGrade } = useUpdateGrade();
   const { rubricData, rubrics, setRubrics, editingRubricID, setEditingRubricID, editingDescriptionID, setEditingDescriptionID } = useRubricGradeStore();
   const [opened, { toggle }] = useDisclosure(true);
+
+  const total = useTotalSubmissionsStore((s) => s.total);
+  const gradedSubmissions = total.filter((x) => x.has_grade).length;
+  const totalSubmissions = total.length;
+  const progress = totalSubmissions > 0 ? (gradedSubmissions / totalSubmissions) * 100 : 0;
 
   const handleCreateRubric = () => {
     createRubric({ 
@@ -171,10 +175,7 @@ export const RubricGrader = () => {
     })
   };
 
-  const [graded, setGraded] = useState<Graded>({
-    has_graded: 2,
-    total_grade: 10,
-  });
+
 
   const handleDragEnd = (result: DropResult) => {
     const { destination, source } = result;
@@ -299,9 +300,9 @@ export const RubricGrader = () => {
                         <QuestionSelectorParams />
                     </Flex>
 
-                    <Progress color="violet" value={100} />
+                    <Progress color="violet" value={progress} />
                     <Text size="xs" c="#495057">
-                        {graded.has_graded} of {graded.total_grade} already assigned rubrics
+                        {gradedSubmissions} of {totalSubmissions} already submission grade
                     </Text>
 
                     <Flex justify="space-between" align="flex-end" pt="md">
