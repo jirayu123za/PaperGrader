@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTotalSubmissionsStore, TTotalSubmission } from '@/store/useGradeBottomStore';
-import { API_BASE, api, qf } from '@/src/lib/api';
+import { API_BASE } from '@/src/lib/api';
 type ApiResponse = {
   total_submissions: TTotalSubmission[];
 };
