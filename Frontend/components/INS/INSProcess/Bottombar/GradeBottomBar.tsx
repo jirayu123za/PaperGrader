@@ -6,6 +6,8 @@ import { useDisclosure } from '@mantine/hooks';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useFetchTotalSubmissionIDs } from '@/hooks/useFetchGradeBottom';
 import { useTotalSubmissionsStore } from '@/store/useGradeBottomStore';
+import { useRubricGradeStore } from '@/store/rubric/useRubricGradeStore';
+
 
 const GradeBottomBar: React.FC = () => {
   const params = useParams();
@@ -26,6 +28,21 @@ const GradeBottomBar: React.FC = () => {
   const currentIndex = totalSubs.findIndex((s) => s.submission_id === submission_id);
   const prevSub = currentIndex > 0 ? totalSubs[currentIndex - 1] : undefined;
   const nextSub = currentIndex >= 0 && currentIndex < totalSubs.length - 1 ? totalSubs[currentIndex + 1] : undefined;
+
+  const editingRubricID = useRubricGradeStore((s) => s.editingRubricID);
+  const editingDescriptionID = useRubricGradeStore((s) => s.editingDescriptionID);
+
+
+const isTypingInEditable = (e: KeyboardEvent) => {
+  const t = e.target as HTMLElement | null;
+  if (!t) return false;
+  const tag = t.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+  if ((t as HTMLElement).isContentEditable) return true;
+  if (t.closest('[contenteditable="true"]')) return true;
+  if (t.closest('[role="textbox"]')) return true;
+  return false;
+};
 
   const findPrevUngraded = () => {
     if (currentIndex <= 0) return undefined;
@@ -58,17 +75,19 @@ const GradeBottomBar: React.FC = () => {
   const handleNextUng = () => nextUng && router.push(buildSHref(nextUng.submission_id));
 
   useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      const key = e.key;
-      if (key === 'm' || key === 'M') handlePrevUng();
-      if (key === ',' || key === '<') handlePrev();
-      if (key === '.' || key === '>') handleNext();
-      if (key === '/' || key === '?') handleNextUng();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [prevSub, nextSub, prevUng, nextUng]);
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (isTypingInEditable(e)) return;
+    if (editingRubricID || editingDescriptionID) return;
 
+    const key = e.key;
+    if (key === 'm' || key === 'M') handlePrevUng();
+    if (key === ',' || key === '<') handlePrev();
+    if (key === '.' || key === '>') handleNext();
+    if (key === '/' || key === '?') handleNextUng();
+  };
+  window.addEventListener('keydown', onKeyDown);
+  return () => window.removeEventListener('keydown', onKeyDown);
+}, [prevSub, nextSub, prevUng, nextUng, editingRubricID, editingDescriptionID]);
   const display = currentIndex >= 0 ? currentIndex + 1 : 0;
   const total = totalSubs.length;
 
