@@ -4,7 +4,7 @@ import DOMPurify from 'dompurify';
 import 'katex/dist/katex.min.css';
 import React, { useEffect } from 'react'
 import { marked } from 'marked';
-import { ActionIcon, Box, Burger, Button, Checkbox, Divider, Flex, Group, NumberInput, Progress, ScrollArea, Text, Textarea } from '@mantine/core';
+import { ActionIcon, Box, Burger, Button, Checkbox, Divider, Flex, Group, NumberInput, Progress, ScrollArea, Text, Textarea, Kbd, Tooltip } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { NoRubricParams } from '@/components/INS/INSProcess/Right/Rubric/NoRubricParams';
 import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea/dnd';
@@ -298,6 +298,11 @@ export const RubricGrader = () => {
                 <Box className="flex-shrink-0">
                     <Flex className="group items-center pb-1 gap-1">
                         <QuestionSelectorParams />
+                        <Tooltip label="Use left/right arrow keys to switch questions" withArrow>
+                            <Text c="dimmed" fz="xs" ml="sm" className="hidden md:inline">
+                                ?: <Kbd>←</Kbd> / <Kbd>→</Kbd>
+                            </Text>
+                        </Tooltip>
                     </Flex>
 
                     <Progress color="violet" value={progress} />
