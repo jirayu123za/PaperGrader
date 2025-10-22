@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { Anchor, Box, Flex, Popover, ScrollArea, Title } from "@mantine/core";
 import { MdExpandMore } from "react-icons/md";
@@ -46,6 +46,41 @@ export const QuestionSelectorParams = () => {
       ? `${base}/sub-questions/${sub_question_id}/${tail}/${submission_id}`
       : `${base}/${tail}/${submission_id}`;
   };
+
+  useEffect(() => {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (!["ArrowLeft", "ArrowRight"].includes(e.key)) return;
+    e.preventDefault();
+
+    const flatList: { qid: string; sid?: string }[] = [];
+    questions.forEach((q) => {
+      if (q.sub_questions && q.sub_questions.length > 0) {
+        q.sub_questions.forEach((sub) =>
+          flatList.push({ qid: q.question_id, sid: sub.sub_question_id })
+        );
+      } else {
+        flatList.push({ qid: q.question_id });
+      }
+    });
+
+    const currentIndex = flatList.findIndex(
+      (it) => it.qid === question_id && it.sid === sub_question_id
+    );
+    if (currentIndex === -1) return;
+
+    let nextIndex = currentIndex;
+    if (e.key === "ArrowRight" && currentIndex < flatList.length - 1) nextIndex++;
+    else if (e.key === "ArrowLeft" && currentIndex > 0) nextIndex--;
+
+    if (nextIndex !== currentIndex) {
+      const next = flatList[nextIndex];
+      router.push(generateHref(next.qid, next.sid));
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, [questions, question_id, sub_question_id, router]);
 
   return (
     <Popover
