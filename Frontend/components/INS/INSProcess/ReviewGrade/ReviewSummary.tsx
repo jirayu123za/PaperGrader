@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import {NumberInput,Group,Text,Title,Flex,Card,Center,Image,} from "@mantine/core";
+import {NumberInput,Group,Text,Title,Flex,Card,Center,Image,Popover,ActionIcon,} from "@mantine/core";
 import GradeStatistics from "./GradeStatistics";
 import StudentTable from "./StudentTable";
 import { useFetchReviewGrade } from "@/hooks/ReviewGrade/useFetchReviewGrade";
@@ -43,7 +43,7 @@ export default function ReviewSummary() {
     noRows;
 
   return (
-<div className="flex flex-col h-[calc(100vh-80px)] px-4 md:px-6 lg:px-8">
+    <div className="flex flex-col h-[calc(100vh-80px)] px-4 md:px-6 lg:px-8">
       <Flex
         className="shrink-0 "
         align="center"
@@ -51,25 +51,43 @@ export default function ReviewSummary() {
         mb="xs"
       >
         <Title order={3}>Review Grades</Title>
-        <Group justify="flex-end">
-          <Text size="sm" c="dimmed">
-            Bins
+
+        <Group justify="flex-end" align="center" gap="xs">
+          <Text size="sm" c="dimmed" fw={600}>
+            Bin
           </Text>
           <NumberInput
             value={bin}
-            onChange={(v) => setBin(typeof v === "number" ? v : 10)}
+            onChange={(v) => {
+              const n = typeof v === "number" ? v : 10;
+              setBin(Math.min(Math.max(n, 1), 20)); 
+            }}
             min={1}
-            max={100}
+            max={20}
             size="xs"
             maw={80}
             hideControls
+            clampBehavior="strict"
           />
+          <Popover width={280} withArrow shadow="md" position="right-start">
+            <Popover.Target>
+              <ActionIcon size="sm" variant="subtle" aria-label="Bin help">
+                <Text fw={700}>?</Text>
+              </ActionIcon>
+            </Popover.Target>
+            <Popover.Dropdown>
+              <Text size="sm">
+                You can set the bin range to 1–20. “Bin” is the number of
+                buckets used to group scores for the histogram.
+              </Text>
+            </Popover.Dropdown>
+          </Popover>
+
           <Text size="xs" c="dimmed">
             {isFetching ? "Updating…" : null}
           </Text>
         </Group>
       </Flex>
-
 
       {allZeroAndEmpty ? (
         <Card withBorder radius="md" className="flex-1 flex flex-col">
@@ -88,11 +106,9 @@ export default function ReviewSummary() {
         </Card>
       ) : (
         <>
-
           <div className="shrink-0">
             <GradeStatistics statistics={stats} />
           </div>
-
 
           <div className="flex-1 min-h-0">
             <StudentTable
