@@ -22,6 +22,8 @@ export default function AssignmentStatistics({ stats }: Props) {
     (stats as any).assignmentTitle ??
     "this assignment";
 
+    
+
   return (
     <div>
       <Group justify="space-between" mb="md">
@@ -59,10 +61,15 @@ export default function AssignmentStatistics({ stats }: Props) {
 }
 
 function StatBox({ label, value }: { label: string; value: number }) {
+  const formattedValue =
+    typeof value === "number" && !isNaN(value)
+      ? value.toFixed(2)
+      : "-";
+
   return (
     <Card withBorder radius="md" p="sm">
       <Text size="xs" c="dimmed">{label}</Text>
-      <Text fw={700}>{value}</Text>
+      <Text fw={700}>{formattedValue}</Text>
     </Card>
   );
 }
