@@ -211,6 +211,15 @@ export const RubricGrader = () => {
     }     
   }, [rubricData]);
 
+
+  const getTotalSelectedRubricPoints = (): number => {
+  if (!rubrics || rubrics.length === 0) return 0;
+  return rubrics
+    .filter((r) => r.has_selected)
+    .reduce((sum, r) => sum + (r.rubric_point || 0), 0);
+};
+
+
   const getSelectedQuestionPoint = (): number | null => {
     if (!question_id) return null;
 
@@ -315,7 +324,7 @@ export const RubricGrader = () => {
                             <Text span fw={500} c="#495057">Total question points</Text>
                             <Text fw={500} size="xl" c="#495057" style={{ fontSize: '28px', lineHeight: '1.2' }}>
                                 <Text span fw={500} c="#495057" style={{ fontSize: '28px', lineHeight: '1.2' }}>
-                                    {getSelectedQuestionPoint() !== null ? `${getSelectedQuestionPoint()?.toFixed(1)} pts` : '0.0 pts'}
+                                   {`${getTotalSelectedRubricPoints().toFixed(2)} / ${getSelectedQuestionPoint()?.toFixed(2) ?? '0.00'} pts`}
                                 </Text>
                             </Text>
                         </Box>
