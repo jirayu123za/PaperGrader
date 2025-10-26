@@ -2225,6 +2225,30 @@ func (h *HttpInstructorHandler) ExportGradesToExcel(c *fiber.Ctx) error {
 	})
 }
 
+func (h *HttpInstructorHandler) GetLatestExportList(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	exportList, err := h.services.GetLatestExportList(courseID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get latest export list",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":    "Latest export list is retrieved",
+		"exportList": exportList,
+	})
+}
+
 // Statistics Handlers
 // ! Need to change use section to calculate statistics
 // Case 1: With assignment_id request

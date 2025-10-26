@@ -153,6 +153,7 @@ func RegisterRoutes(
 	// Part:1 Export data
 	apiGroup.Get("/instructor/assignments/export", instructorHandler.GetAssignmentsListForExport)
 	apiGroup.Post("/instructor/assignment/export", instructorHandler.ExportGradesToExcel)
+	apiGroup.Get("/instructor/assignment/export/latest", instructorHandler.GetLatestExportList)
 
 	// Submissions from question
 	apiGroup.Get("/instructor/submissions/question", instructorHandler.GetSubmissionsFromQuestion)

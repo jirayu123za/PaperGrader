@@ -649,6 +649,18 @@ type CreateGradeToExcelFileRequest struct {
 	AssignmentID uuid.UUID `json:"assignment_id"`
 }
 
+type LatestExportListResponse struct {
+	ExportGradeID uuid.UUID  `json:"export_grade_id"`
+	CourseID      uuid.UUID  `json:"course_id"`
+	AssignmentID  uuid.UUID  `json:"assignment_id"`
+	FileName      string     `json:"file_name"`
+	FileStatus    string     `json:"file_status"`
+	FileURL       string     `json:"file_url"`
+	ProcessedAt   *time.Time `json:"processed_at"`
+	CreatedAt     time.Time  `json:"created_at"`
+	RequestedBy   string     `json:"requested_by"` // ← ชื่อในคอร์ส (ถ้าไม่มีชื่อ จะ fallback อีเมล)
+}
+
 // Part:1 Assignment statistics
 // ---- JSON structs for assignment statistics ----
 type GetAssignmentStatisticsRequest struct {

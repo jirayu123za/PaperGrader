@@ -3037,6 +3037,59 @@ func (r *GormInstructorRepository) AddGradesToExcelFile(request response.CreateG
 	return r.db.Create(&export).Error
 }
 
+func (r *GormInstructorRepository) FindLatestExportList(courseID uuid.UUID) ([]response.LatestExportListResponse, error) {
+	var out []response.LatestExportListResponse
+
+	err := r.db.
+		Table("export_grades eg").
+		Select(`
+			eg.export_grade_id,
+			eg.course_id,
+			eg.assignment_id,
+			eg.file_name,
+			eg.file_status,
+			eg.file_url,
+			eg.processed_at,
+			eg.created_at,
+			-- name จาก roster ถ้ามี, ไม่มีก็ใช้ PD ตรง ๆ, ว่างก็ fallback email
+			COALESCE(
+				NULLIF(
+					TRIM(CONCAT(
+						COALESCE(pdroster.first_name, COALESCE(pddirect.first_name, '')),
+						' ',
+						COALESCE(pdroster.last_name,  COALESCE(pddirect.last_name,  ''))
+					)),
+					''
+				),
+				COALESCE(pddirect.email, '')
+			) AS requested_by
+		`).
+		Joins(`
+			LEFT JOIN enrollment_lists el
+			  ON el.course_id = eg.course_id
+			 AND el.personal_data_id = eg.personal_data_id
+			 AND el.deleted_at IS NULL
+		`).
+		Joins(`
+			LEFT JOIN personal_data pdroster
+			  ON pdroster.personal_data_id = el.personal_data_id
+			 AND pdroster.deleted_at IS NULL
+		`).
+		Joins(`
+			LEFT JOIN personal_data pddirect
+			  ON pddirect.personal_data_id = eg.personal_data_id
+			 AND pddirect.deleted_at IS NULL
+		`).
+		Where("eg.course_id = ? AND eg.deleted_at IS NULL", courseID).
+		Order("eg.created_at DESC").
+		Scan(&out).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Part:1 Statistics data
 func (r *GormInstructorRepository) FindGradeIDsHasGradedBySectionIDs(AssignmentID uuid.UUID, SectionIDs []uuid.UUID) ([]uuid.UUID, error) {
 	gradeIDs := []uuid.UUID{}

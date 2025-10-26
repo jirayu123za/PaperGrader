@@ -118,6 +118,7 @@ type InstructorService interface {
 	// Part 1: Export data
 	GetAssignmentsListForExport(CourseID uuid.UUID) ([]response.AssignmentsListResponse, error)
 	CreateGradesToExcelFile(request response.CreateGradeToExcelFileRequest, courseID uuid.UUID, userID uuid.UUID) error
+	GetLatestExportList(courseID uuid.UUID) ([]response.LatestExportListResponse, error)
 
 	// Part:1 Assignment statistics
 	GetAssignmentStatsAndQuestionsList(req response.GetAssignmentStatisticsRequest, courseID uuid.UUID) (response.AssignmentStatisticsResponse, response.QuestionsListStatsResponse, error)
@@ -1912,6 +1913,14 @@ func (s *InstructorServiceImpl) CreateGradesToExcelFile(request response.CreateG
 
 	fileName := fmt.Sprintf("%s-score.xlsx", utils.Slugify(name))
 	return s.repo.AddGradesToExcelFile(request, courseID, userID, fileName)
+}
+
+func (s *InstructorServiceImpl) GetLatestExportList(courseID uuid.UUID) ([]response.LatestExportListResponse, error) {
+	exportList, err := s.repo.FindLatestExportList(courseID)
+	if err != nil {
+		return nil, err
+	}
+	return exportList, nil
 }
 
 // Part:1 Statistics data
