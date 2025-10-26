@@ -8,26 +8,15 @@ import { useFetchReviewGrade } from "@/hooks/ReviewGrade/useFetchReviewGrade";
 import { useReviewGradeStore } from "@/store/reviewgrade/useReviewGradeStore";
 
 export default function ReviewSummary() {
-  const { course_id, assignment_id } = useParams() as {
-    course_id?: string;
-    assignment_id?: string;
-  };
-
+  const { course_id, assignment_id } = useParams() as {course_id?: string; assignment_id?: string;};
   const bin = useReviewGradeStore((s) => s.bin);
   const setBin = useReviewGradeStore((s) => s.setBin);
-
-  const { data, isLoading, error, isFetching } = useFetchReviewGrade(
-    course_id ?? null,
-    assignment_id ?? null,
-    bin
-  );
+  const { data, isLoading, error, isFetching } = useFetchReviewGrade(course_id ?? null, assignment_id ?? null, bin);
 
   const stats = data?.statistics;
   const rows = stats?.table ?? [];
   const isZero = (n: number | null | undefined) => n === null || n === 0;
-  const gradesAllZero = (stats?.grades_data ?? []).every(
-    (b) => (b?.count ?? 0) === 0
-  );
+  const gradesAllZero = (stats?.grades_data ?? []).every((b) => (b?.count ?? 0) === 0);
   const noScores = (stats?.submission_scores?.length ?? 0) === 0;
   const noRows = rows.length === 0;
 

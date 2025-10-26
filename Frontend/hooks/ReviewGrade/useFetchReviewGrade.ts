@@ -9,7 +9,7 @@ export interface ReviewGradeTableRow {
   score: number | null;
   graded: boolean;
   has_submission: boolean;
-  submitted_at: string | null;
+  submitted_at: Date | null;
 }
 
 export interface ReviewGradeBin {
