@@ -5,104 +5,54 @@ import ExportModal from '@/components/INS/INSDataExport/ExportModal';
 import { RingProgressReady } from "@/components/INS/INSDataExport/RingProgressReady";
 import { RingProgressProcess } from "@/components/INS/INSDataExport/RingProgressProcess";
 import { RingProgressExpired } from "@/components/INS/INSDataExport/RingProgressExpired";
-import {Button, Divider, Table, Text, ActionIcon, Flex, Title, Checkbox, Paper, Pagination} from '@mantine/core';
+import { Button, Table, Text, ActionIcon, Flex, Title, Checkbox, Paper, Pagination } from '@mantine/core';
 import { IconTrash, IconDownload } from '@tabler/icons-react';
 import { FaFileExport } from "react-icons/fa6";
 import { usePagination, useViewportSize } from '@mantine/hooks';
 import { useExportModalStore } from '@/store/modal/useExportModalStore';
 import { useParams } from 'next/navigation';
-
-interface HistoryItem {
-  id: string;
-  fileName: string;
-  exportedAt: string;
-  exportedBy: string;
-  status: 'processing' | 'ready' | 'expired';
-  downloadUrl?: string;
-}
-
-
-const mockHistory: HistoryItem[] = [
-  { id: '1', fileName: 'export-2025-07-01.csv', exportedAt: '2025-07-01T14:30:00Z', exportedBy: 'Shweta Betgeri', status: 'ready', downloadUrl: '/downloads/export-2025-07-01.csv' },
-  { id: '2', fileName: 'export-2025-07-02.csv', exportedAt: '2025-07-02T09:15:00Z', exportedBy: 'Shweta Betgeri', status: 'processing' },
-  { id: '3', fileName: 'export-2025-07-03.pdf', exportedAt: '2025-07-03T11:45:00Z', exportedBy: 'jayant jain', status: 'expired' },
-  { id: '4', fileName: 'export-2025-07-04.csv', exportedAt: '2025-07-04T08:05:00Z', exportedBy: 'Shweta Betgeri', status: 'ready', downloadUrl: '/downloads/export-2025-07-04.csv' },
-  { id: '5', fileName: 'export-2025-07-05.pdf', exportedAt: '2025-07-05T16:20:00Z', exportedBy: 'Shweta Betgeri', status: 'ready', downloadUrl: '/downloads/export-2025-07-05.pdf' },
-  { id: '6', fileName: 'export-2025-07-06.csv', exportedAt: '2025-07-06T10:10:00Z', exportedBy: 'jayant jain', status: 'processing' },
-  { id: '7', fileName: 'export-2025-07-07.pdf', exportedAt: '2025-07-07T12:00:00Z', exportedBy: 'jayant jain', status: 'expired' },
-  { id: '8', fileName: 'export-2025-07-08.csv', exportedAt: '2025-07-08T13:30:00Z', exportedBy: 'Shweta Betgeri', status: 'ready', downloadUrl: '/downloads/export-2025-07-08.csv' },
-  { id: '9', fileName: 'export-2025-07-09.pdf', exportedAt: '2025-07-09T15:45:00Z', exportedBy: 'Shweta Betgeri', status: 'processing' },
-  { id: '21', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
-  { id: '11', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
-  { id: '12', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
-  { id: '13', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
-  { id: '14', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
-  { id: '15', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
-  { id: '16', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
-  { id: '17', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
-  { id: '18', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
-  { id: '19', fileName: 'export-2025-07-10.csv', exportedAt: '2025-07-10T09:00:00Z', exportedBy: 'jayant jain', status: 'ready', downloadUrl: '/downloads/export-2025-07-10.csv' },
-];
+import { useFetchLatestExport } from '@/hooks/ExportGrade/useExportGrades';
+import { useExportGradeStore } from '@/store/ExportGrade/useExportGradeStore';
 
 export default function ExportHistory() {
   const params = useParams();
   const course_id = params.course_id as string;
   const openModal = useExportModalStore((s) => s.openModal);
-  const data = mockHistory;
-
-
+  const { data, isLoading, error } = useFetchLatestExport(course_id);
+  const exportList = useExportGradeStore((s) => s.exportList);
   const [selected, setSelected] = useState<string[]>([]);
-  const allSelected = data.length > 0 && selected.length === data.length;
-  const indeterminate = selected.length > 0 && selected.length < data.length;
-  const toggleAll = () => setSelected(allSelected ? [] : data.map((i) => i.id));
+  const allSelected = exportList.length > 0 && selected.length === exportList.length;
+  const indeterminate = selected.length > 0 && selected.length < exportList.length;
+  const toggleAll = () => setSelected(allSelected ? [] : exportList.map((i) => i.export_grade_id));
   const toggleRow = (id: string) =>
-    setSelected((current) =>
-      current.includes(id) ? current.filter((i) => i !== id) : [...current, id]
-    );
-
-
+    setSelected((current) => current.includes(id) ? current.filter((i) => i !== id) : [...current, id]
+  );
   const { height: viewportH } = useViewportSize();
-
-
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const headerRef = useRef<HTMLDivElement | null>(null);   
   const theadRef = useRef<HTMLTableSectionElement | null>(null);
   const tfootRef = useRef<HTMLTableSectionElement | null>(null);
   const sampleRowRef = useRef<HTMLTableRowElement | null>(null);
-
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
 
   useLayoutEffect(() => {
- 
     const sectionTop = sectionRef.current?.getBoundingClientRect().top ?? 0;
-
-
     const bottomPadding = 12;
-
-
     const availableViewport = Math.max(0, viewportH - sectionTop - bottomPadding);
-
-
     const headerH = headerRef.current?.getBoundingClientRect().height ?? 0;
     const theadH = theadRef.current?.getBoundingClientRect().height ?? 0;
     const tfootH = tfootRef.current?.getBoundingClientRect().height ?? 0;
     const rowH   = sampleRowRef.current?.getBoundingClientRect().height ?? 48;
-
-  
     const dividerH = 1;
     const paperVerticalPadding = 50; 
-
-    const availableForRows =
-      availableViewport - headerH - dividerH - theadH - tfootH - paperVerticalPadding;
-
+    const availableForRows = availableViewport - headerH - dividerH - theadH - tfootH - paperVerticalPadding;
     const fit = Math.max(1, Math.floor(availableForRows / rowH));
     setRowsPerPage(fit);
-  }, [viewportH, data.length]);
-
+  }, [viewportH, exportList.length]);
 
   const totalPages = useMemo(() => {
-    return data ? Math.ceil(data.length / rowsPerPage) : 1;
-  }, [data, rowsPerPage]);
+    return exportList ? Math.ceil(exportList.length / rowsPerPage) : 1;
+  }, [exportList, rowsPerPage]);
 
   const pagination = usePagination({
     total: totalPages,
@@ -111,10 +61,10 @@ export default function ExportHistory() {
 
   const startIndex = (pagination.active - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-  const paginatedExportTable = data.slice(startIndex, endIndex);
+  const paginatedExportTable = exportList.slice(startIndex, endIndex);
 
   return (
-    <div className="p-5">
+    <div className="pl-5 pr-5">
       <div ref={sectionRef}>
 
         <div ref={headerRef} className="flex justify-between items-center mb-6">
@@ -127,9 +77,6 @@ export default function ExportHistory() {
             Export
           </Button>
         </div>
-
-        <Divider my="xs" />
-
 
         <Paper withBorder mb="md" style={{ overflow: 'hidden' }}>
           <Table highlightOnHover verticalSpacing="sm">
@@ -151,7 +98,7 @@ export default function ExportHistory() {
             </Table.Thead>
 
             <Table.Tbody>
-              {data.length === 0 ? (
+              {exportList.length === 0 ? (
                 <Table.Tr>
                   <Table.Td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>
                     <Text c="dimmed">No export history available.</Text>
@@ -159,28 +106,28 @@ export default function ExportHistory() {
                 </Table.Tr>
               ) : (
                 paginatedExportTable.map((item, idx) => (
-                  <Table.Tr key={item.id} ref={idx === 0 ? sampleRowRef : undefined}>
+                  <Table.Tr key={item.export_grade_id} ref={idx === 0 ? sampleRowRef : undefined}>
                     <Table.Td>
                       <Checkbox
-                        checked={selected.includes(item.id)}
-                        onChange={() => toggleRow(item.id)}
+                        checked={selected.includes(item.export_grade_id)}
+                        onChange={() => toggleRow(item.export_grade_id)}
                       />
                     </Table.Td>
-                    <Table.Td>{item.fileName}</Table.Td>
-                    <Table.Td>{new Date(item.exportedAt).toLocaleString()}</Table.Td>
+                    <Table.Td>{item.file_name}</Table.Td>
+                    <Table.Td>{item.processed_at}</Table.Td>
                     <Table.Td style={{ paddingLeft: 38 }}>
-                      {item.status === "processing" && <RingProgressProcess />}
-                      {item.status === "ready" && <RingProgressReady />}
-                      {item.status === "expired" && <RingProgressExpired />}
+                      {item.file_status === 'pending' && <RingProgressProcess />}
+                      {item.file_status === 'completed' && <RingProgressReady />}
+                      {item.file_status === 'failed' && <RingProgressExpired />}
                     </Table.Td>
-                    <Table.Td>{item.exportedBy}</Table.Td>
+                    <Table.Td>{item.requested_by}</Table.Td>
                     <Table.Td>
                       <Flex align="center" gap="xs">
-                        {item.status === 'ready' && item.downloadUrl && (
+                        {item.file_status === 'completed' && item.file_url && (
                           <ActionIcon
                             component="a"
                             variant="transparent"
-                            href={item.downloadUrl}
+                            href={item.file_url}
                             target="_blank"
                             size="sm"
                           >
@@ -191,7 +138,7 @@ export default function ExportHistory() {
                           variant="transparent"
                           color="red"
                           size="sm"
-                          disabled={item.status !== 'ready'}
+                          disabled={item.file_status !== 'completed'}
                         >
                           <IconTrash size={16} />
                         </ActionIcon>
@@ -207,7 +154,7 @@ export default function ExportHistory() {
                 <Table.Td colSpan={7} className="border-t border-gray-300">
                   <Flex align="center" w="100%" justify="space-between">
                     <Text size="sm" c="dimmed">
-                      Total files: {data.length}
+                      Total files: {exportList.length}
                     </Text>
                     <Pagination
                       total={totalPages}

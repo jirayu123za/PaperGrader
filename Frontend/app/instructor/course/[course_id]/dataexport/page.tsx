@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader } from '@mantine/core';
+import { Divider, Loader } from '@mantine/core';
 import { Suspense } from 'react';
 import ExportHistory from '@/components/INS/INSDataExport/ExportHistory';
 
@@ -12,6 +12,7 @@ export const metadata = {
 export default async function ExportHistoryPage() {
     return (
         <div className="w-full">
+            <Divider size="sm" mx="lg" my="md"/>
             <Suspense fallback={<Loader size="sm" />}>
                 <ExportHistory />
             </Suspense>

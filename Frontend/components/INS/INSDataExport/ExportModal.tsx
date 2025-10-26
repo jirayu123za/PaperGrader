@@ -7,16 +7,16 @@ import { BsFiletypeXlsx } from "react-icons/bs";
 import { useForm } from '@mantine/form';
 import { useQueryClient } from '@tanstack/react-query';
 import { useExportModalStore } from '@/store/modal/useExportModalStore';
-import { useFetchAssignments, useExportAssignments } from '@/hooks/useFetchExportModal';
+import { useFetchAssignments } from '@/hooks/useFetchExportModal';
+import { useExportGrades } from '@/hooks/ExportGrade/useExportGrades';
 
 const ExportModal: React.FC = () => {
   const opened = useExportModalStore((s) => s.opened);
   const closeModal = useExportModalStore((s) => s.closeModal);
   const course_id = useExportModalStore((s) => s.course_id);
-  // QueryClient for invalidating history
-  const queryClient = useQueryClient();
   const { data: assignments = [], isLoading: isLoadingAssignments, error: fetchError } = useFetchAssignments(course_id);
-  const { exportAssignments, isExporting, exportError } = useExportAssignments(course_id);
+  // Hook for exporting grades
+  const postQueueExport = useExportGrades();
 
   const form = useForm({
     initialValues: { assignments: [] as string[] },
@@ -27,34 +27,31 @@ const ExportModal: React.FC = () => {
   });
 
   const handleSubmit = form.onSubmit(async (values) => {
-    try {
-      // Call export API (business logic)
-     const blob = await exportAssignments(values.assignments, 'excel');
-      // Download the file
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `assignments.xlsx`;
-      a.click();
-      URL.revokeObjectURL(url);
-
-      // Invalidate export history query to refresh table
-      queryClient.invalidateQueries({ queryKey: ['exportHistory'] });
-      showNotification({
-        title: 'Export Success',
-        message: 'Your assignments have been exported in Excel format.',
-        color: 'green',
-        position: 'bottom-right',
-      });
-      closeModal();
-    } catch {
-      showNotification({
-        title: 'Export Failed',
-        message: 'Failed to export assignments. Please try again.',
-        color: 'red',
-        position: 'bottom-right',
-      });
-    }
+    postQueueExport.mutate(
+      {
+        params: { course_id },
+        body: { assignment_id: values.assignments.join(',') },
+      },
+      {
+        onSuccess: () => {
+          showNotification({
+            title: 'Export Success',
+            message: 'Your assignments have been exported in Excel format.',
+            color: 'green',
+            position: 'bottom-right',
+          });
+          closeModal();
+        },
+        onError: (error) => {
+          showNotification({
+            title: 'Export Failed',
+            message: `${error.response?.data?.error}`,
+            color: 'red',
+            position: 'bottom-right',
+          });
+        }
+      }
+    );
   });
 
   const options = assignments.map((a) => ({
@@ -90,7 +87,7 @@ const ExportModal: React.FC = () => {
           <Button color="red" variant="filled" onClick={closeModal}>
             Cancel
           </Button>
-          <Button type="submit" loading={isExporting}>
+          <Button type="submit" variant="filled">
             Export
           </Button>
         </Flex>
