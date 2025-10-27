@@ -32,7 +32,7 @@ export default function ReviewSummary() {
     noRows;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] px-4 md:px-6 lg:px-8">
+    <div className="flex flex-col h-[calc(100vh-80px)] px-4 md:px-6 lg:px-8 pt-4 overflow-hidden">
       <Flex
         className="shrink-0 "
         align="center"
