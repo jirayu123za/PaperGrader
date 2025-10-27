@@ -3051,7 +3051,6 @@ func (r *GormInstructorRepository) FindLatestExportList(courseID uuid.UUID) ([]r
 			eg.file_url,
 			eg.processed_at,
 			eg.created_at,
-			-- name จาก roster ถ้ามี, ไม่มีก็ใช้ PD ตรง ๆ, ว่างก็ fallback email
 			COALESCE(
 				NULLIF(
 					TRIM(CONCAT(
