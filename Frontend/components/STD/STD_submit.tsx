@@ -11,7 +11,7 @@ import {
 import { useForm } from "@mantine/form";
 import { IconDownload, IconFileText } from "@tabler/icons-react";
 import { useFetchInstructorFile } from "@/hooks/Student/useFetchInstructorFile";
-import { useUploadStudentFile } from "@/hooks/useUploadStudentFile";
+import { useSTDUploadFile } from "@/hooks/Student/useSTDUploadFile";
 import { useReceiveFileStore } from "@/store/Student/useReceiveFileStore";
 import { useSubmitAndDownloadModalStore } from "@/store/modal/useSubmitAndDownloadModal";
 import { notifications } from "@mantine/notifications";
@@ -20,7 +20,7 @@ const STDSubmit: React.FC = () => {
   const { assignment_id, course_id, opened, closeModal, files, fileNames } =
     useSubmitAndDownloadModalStore();
   const { isLoading } = useFetchInstructorFile();
-  const { mutate: uploadStudentFile } = useUploadStudentFile();
+  const { mutate: uploadStudentFile } = useSTDUploadFile();
   const { studentFile, setStudentFile } = useReceiveFileStore();
 
   const [submittedFileName, setSubmittedFileName] = useState<string | null>(

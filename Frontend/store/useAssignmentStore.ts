@@ -11,6 +11,8 @@ interface Assignment {
   published: boolean;
   regrades: boolean;
   submitted_by: string;
+  
+
 }
 
 interface AssignmentStore {
