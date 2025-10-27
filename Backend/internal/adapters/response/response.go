@@ -645,7 +645,26 @@ type UpdateAssignmentPublishedAssignmentRequest struct {
 
 // Part:1 Submission from grade-submission
 type SubmissionsFromGradeSubmissionResponse struct {
-	QuestionsDetails []QuestionDetails `json:"questions_details"`
+	QuestionsDetails  []QuestionDetails `json:"questions_details"`
+	HeaderDetails     HeaderDetails     `json:"header_details"`
+	AssignmentDetails AssignmentDetails `json:"assignment_details"`
+	Summary           ScoreSummary      `json:"summary"`
+}
+
+type HeaderDetails struct {
+	FullName string `json:"full_name"`
+	NickName string `json:"nick_name"`
+	Section  string `json:"section"`
+}
+
+type AssignmentDetails struct {
+	AssignmentName string `json:"assignment_name"`
+}
+
+type ScoreSummary struct {
+	GradeStatus          bool    `json:"grade_status"`
+	TotalAssignmentPoint float64 `json:"total_assignment_point"`
+	TotalSubmissionPoint float64 `json:"total_submission_point"`
 }
 
 type QuestionDetails struct {

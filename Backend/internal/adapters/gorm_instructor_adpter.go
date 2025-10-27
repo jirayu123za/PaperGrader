@@ -238,6 +238,22 @@ func (r *GormInstructorRepository) FindFileFormSubmission(CourseID uuid.UUID, As
 	return fileNames, nil
 }
 
+func (r *GormInstructorRepository) FindAssignmentName(CourseID uuid.UUID, AssignmentID uuid.UUID) (assignmentName string, err error) {
+	var out struct {
+		AssignmentName string `gorm:"column:assignment_name"`
+	}
+
+	err = r.db.
+		Table("assignments").
+		Select("assignment_name").
+		Where("assignment_id = ? AND course_id = ? AND deleted_at IS NULL", AssignmentID, CourseID).
+		Take(&out).Error
+	if err != nil {
+		return "", err
+	}
+	return out.AssignmentName, nil
+}
+
 func (r *GormInstructorRepository) FindSubmissionFileName(AssignmentID uuid.UUID, SubmissionID uuid.UUID) (fileName string, err error) {
 	var submissionFile models.Submission
 	if err := r.db.Table("submissions").
@@ -1107,6 +1123,45 @@ func (r *GormInstructorRepository) FindAssignmentTemplateName(AssignmentID uuid.
 		return "", err
 	}
 	return assignmentFile.AssignmentFileName, nil
+}
+
+// Part:1 Submission details from grade-submission
+func (r *GormInstructorRepository) FindSubmissionDetails(courseID uuid.UUID, assignmentID uuid.UUID, submissionID uuid.UUID) (response.HeaderDetails, error) {
+	var details response.HeaderDetails
+	err := r.db.
+		Table("submissions AS s").
+		Joins(`LEFT JOIN assignments a ON a.assignment_id = s.assignment_id AND a.deleted_at IS NULL`).
+		Joins(`LEFT JOIN personal_data pd ON pd.personal_data_id = s.belongs_to AND pd.deleted_at IS NULL`).
+		Joins(`LEFT JOIN enrollment_lists el ON el.personal_data_id = pd.personal_data_id AND el.course_id = a.course_id AND el.deleted_at IS NULL`).
+		Joins(`LEFT JOIN sections sec ON sec.section_id = el.section_id AND sec.deleted_at IS NULL`).
+		Select(`
+            COALESCE(
+                NULLIF(TRIM(
+                    COALESCE(pd.first_name, '') ||
+                    CASE
+                        WHEN COALESCE(NULLIF(pd.last_name,''),'') = '' THEN ''
+                        ELSE ' ' || pd.last_name
+                    END
+                ), ''),
+                COALESCE(pd.email,''),
+                ''
+            ) AS full_name,
+            UPPER(
+                CASE
+                    WHEN COALESCE(NULLIF(TRIM(pd.first_name), ''), '') = '' THEN ''
+                    WHEN COALESCE(NULLIF(TRIM(pd.last_name ), ''), '') = '' THEN SUBSTRING(TRIM(pd.first_name) FROM 1 FOR 2)
+                    ELSE SUBSTRING(TRIM(pd.first_name) FROM 1 FOR 1) || SUBSTRING(TRIM(pd.last_name) FROM 1 FOR 1)
+                END
+            ) AS nick_name,
+            COALESCE(sec.section_name, '') AS section
+        `).
+		Where(`s.submission_id = ? AND s.assignment_id = ? AND a.course_id = ? AND s.deleted_at IS NULL`, submissionID, assignmentID, courseID).
+		Take(&details).Error
+
+	if err != nil {
+		return response.HeaderDetails{}, err
+	}
+	return details, nil
 }
 
 // For submission box

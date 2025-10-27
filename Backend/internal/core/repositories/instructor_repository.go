@@ -14,6 +14,7 @@ type InstructorRepository interface {
 	AddAssignmentWithFiles(CourseID uuid.UUID, assignment *models.Assignment, files []models.AssignmentFile, uploads []models.Upload, assignmentSections []models.AssignmentSection) error
 	FindAssignmentNameTemplate(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileName string, err error)
 	FindFileFormSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, err error)
+	FindAssignmentName(CourseID uuid.UUID, AssignmentID uuid.UUID) (assignmentName string, err error)
 
 	AddAssignmentFile(file *models.AssignmentFile) error
 	ModifyAssignmentSetting(CourseID uuid.UUID, AssignmentID uuid.UUID, assignment *models.Assignment) error
@@ -56,15 +57,18 @@ type InstructorRepository interface {
 	FindSubmissionFileName(AssignmentID uuid.UUID, SubmissionID uuid.UUID) (fileName string, err error)
 	// Part:1
 	FindSubmissionsList(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.SubmissionsList, error)
-
+	// Part:2
 	FindStudentListForSubmission(CourseID uuid.UUID, AssignmentID uuid.UUID) (response.StudentSubmissionSplitResponse, error)
 	FindAssignmentTemplateName(AssignmentID uuid.UUID) (string, error)
 
-	//! CRUD SubmissionBox
+	// Part:1 Submission details from grade-submission
+	FindSubmissionDetails(courseID uuid.UUID, assignmentID uuid.UUID, submissionID uuid.UUID) (response.HeaderDetails, error)
+
+	// CRUD SubmissionBox
 	ADDCroppedSubmissionBox(submission models.SubmissionBox) error
 	FindSubmissionBoxBySubmissionID(submissionIDs []uuid.UUID) (map[uuid.UUID][]string, error)
 
-	//! CRUD OCR
+	// CRUD OCR
 	FindStudentsListForOCR(CourseID uuid.UUID, AssignmentID uuid.UUID) ([]response.StudentListForOCRResponse, error)
 	FindSubmissionBoxesForOCR(AssignmentID uuid.UUID) ([]response.GroupSubmissionBoxesForOCR, error)
 	FindBoundingBoxesType(AssignmentID uuid.UUID) ([]response.BoundingBoxDataResponse, error)

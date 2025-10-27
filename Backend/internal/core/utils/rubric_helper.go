@@ -249,3 +249,79 @@ func ApplySelections(questions *[]response.QuestionDetails, selected map[string]
 		}
 	}
 }
+
+func SumAssignmentPoints(questions []response.QuestionDetails) float64 {
+	var total float64
+	for _, q := range questions {
+		if len(q.SubQuestions) > 0 {
+			for _, sq := range q.SubQuestions {
+				total += sq.SubQuestionPoint
+			}
+		} else {
+			total += q.QuestionPoint
+		}
+	}
+	return total
+}
+
+func SumSelectedPoints(questions []response.QuestionDetails) float64 {
+	var total float64
+
+	addSelected := func(r *response.RubricsBlock) {
+		if r == nil {
+			return
+		}
+		for _, d := range r.RubricDetails {
+			if d.HasSelected {
+				total += d.RubricPoint
+			}
+		}
+	}
+
+	for _, q := range questions {
+		if len(q.SubQuestions) > 0 {
+			for _, sq := range q.SubQuestions {
+				addSelected(sq.Rubrics)
+			}
+		} else {
+			addSelected(q.Rubrics)
+		}
+	}
+	return total
+}
+
+func IsFullyGraded(questions []response.QuestionDetails) bool {
+	hasAnyRubric := false
+
+	isRubricGraded := func(r *response.RubricsBlock) bool {
+		if r == nil {
+			return true
+		}
+
+		hasAnyRubric = true
+		for _, d := range r.RubricDetails {
+			if d.HasSelected {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	for _, q := range questions {
+		if len(q.SubQuestions) > 0 {
+			for _, sq := range q.SubQuestions {
+				if !isRubricGraded(sq.Rubrics) {
+					return false
+				}
+			}
+		} else {
+			if !isRubricGraded(q.Rubrics) {
+				return false
+			}
+		}
+	}
+
+	_ = hasAnyRubric
+	return true
+}

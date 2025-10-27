@@ -1898,6 +1898,16 @@ func (s *InstructorServiceImpl) CreateGrade(assignmentID uuid.UUID, submissionID
 
 // Part:1 Submission from grade-submission
 func (s *InstructorServiceImpl) GetSubmissionDetailsFromGradeSubmission(courseID uuid.UUID, assignmentID uuid.UUID, submissionID uuid.UUID) (response.SubmissionsFromGradeSubmissionResponse, error) {
+	assignmentName, err := s.repo.FindAssignmentName(courseID, assignmentID)
+	if err != nil {
+		return response.SubmissionsFromGradeSubmissionResponse{}, err
+	}
+
+	header, err := s.repo.FindSubmissionDetails(courseID, assignmentID, submissionID)
+	if err != nil {
+		return response.SubmissionsFromGradeSubmissionResponse{}, err
+	}
+
 	rubricMap, err := s.repo.FindRubricDataByAssignmentID(assignmentID)
 	if err != nil {
 		return response.SubmissionsFromGradeSubmissionResponse{}, err
@@ -1919,8 +1929,21 @@ func (s *InstructorServiceImpl) GetSubmissionDetailsFromGradeSubmission(courseID
 		utils.ApplySelections(&questions, selected)
 	}
 
+	totalAssignmentPoint := utils.SumAssignmentPoints(questions)
+	totalSubmissionPoint := utils.SumSelectedPoints(questions)
+	gradeStatus := utils.IsFullyGraded(questions)
+
 	resp := response.SubmissionsFromGradeSubmissionResponse{
 		QuestionsDetails: questions,
+		HeaderDetails:    header,
+		AssignmentDetails: response.AssignmentDetails{
+			AssignmentName: assignmentName,
+		},
+		Summary: response.ScoreSummary{
+			GradeStatus:          gradeStatus,
+			TotalAssignmentPoint: totalAssignmentPoint,
+			TotalSubmissionPoint: totalSubmissionPoint,
+		},
 	}
 	return resp, nil
 }
