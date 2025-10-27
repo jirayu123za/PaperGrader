@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { API_BASE } from '@/src/lib/api';
 import {useStatisticSectionsStore,type StatisticSection,} from '@/store/statistic/useStatisticSectionsStore';
@@ -12,11 +13,13 @@ export function useFetchStatisticSections() {
   const assignmentId = useStatisticSectionsStore((s) => s.assignmentId);
   const setSections = useStatisticSectionsStore((s) => s.setSections);
 
-  return useQuery({
+  const query = useQuery<ApiResponse>({
     queryKey: ['statistics-sections', courseId, assignmentId],
     enabled: Boolean(courseId && assignmentId),
     queryFn: async (): Promise<ApiResponse> => {
-      if (!courseId || !assignmentId) throw new Error('Missing courseId or assignmentId');
+      if (!courseId || !assignmentId) {
+        throw new Error('Missing courseId or assignmentId');
+      }
 
       const url = `${API_BASE}/instructor/statistics/sections?course_id=${courseId}`;
 
@@ -28,18 +31,23 @@ export function useFetchStatisticSections() {
       });
 
       if (!res.ok) {
-        const text = await res.text().catch(() => '');
+        const text = await res.text();
         throw new Error(`Fetch sections failed (${res.status}) ${text}`);
       }
 
       const data = (await res.json()) as ApiResponse;
       return data;
     },
-    select: (data) => {
-      setSections(data.sections ?? []);
-      return data;
-    },
     retry: 0,
     staleTime: 60_000,
   });
+
+  useEffect(() => {
+    if (query.status === 'success') {
+      const safe = Array.isArray(query.data?.sections) ? query.data.sections : [];
+      setSections(safe);
+    }
+  }, [query.status, query.data, setSections]);
+
+  return query;
 }
