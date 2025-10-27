@@ -29,32 +29,31 @@ export default function LeftMain() {
   };
 
   const menuItems = [
-  {
-    key: "dashboard",
-    label: "Dashboard",
-    icon: icons.home,
-    href: `/student/overview`,
-  },
-  {
-    key: "courses",
-    label: "Courses",
-    icon: icons.book,
-    href: `/student/overview/course`,
-  },
-  {
-    key: "settings",
-    label: "Settings",
-    icon: icons.cog,
-    href: `/student/settings`,
-  },
-];
+    {
+      key: "dashboard",
+      label: "Dashboard",
+      icon: icons.home,
+      href: `/student/overview`,
+    },
+    {
+      key: "courses",
+      label: "Courses",
+      icon: icons.book,
+      href: `/student/overview/course`,
+    },
+    {
+      key: "settings",
+      label: "Settings",
+      icon: icons.cog,
+      href: `/student/settings`,
+    },
+  ];
 
   useEffect(() => {
-  if (pathname.includes("course")) setActiveOption("courses");
-  else if (pathname.includes("overview")) setActiveOption("dashboard");
-  else if (pathname.includes("settings")) setActiveOption("settings");
-}, [pathname]);
-
+    if (pathname.includes("course")) setActiveOption("courses");
+    else if (pathname.includes("overview")) setActiveOption("dashboard");
+    else if (pathname.includes("settings")) setActiveOption("settings");
+  }, [pathname]);
 
   return (
     <div
@@ -99,7 +98,7 @@ export default function LeftMain() {
           <FaRegArrowAltCircleRight
             size={24}
             style={{
-              color: isCollapsed ? "#f1f3f8" : "#f1f3f8",
+              color: "#f1f3f8",
             }}
             className={`transition-transform duration-300 ${
               isCollapsed ? "" : "transform rotate-180"
@@ -110,42 +109,44 @@ export default function LeftMain() {
 
       {/* Main Menu */}
       <Stack
-  p={16}
-  gap="xs"
-  className="grow"
-  style={() => ({
-    backgroundColor: "#6665AC",
-  })}
->
-  {menuItems.map((item) => (
-    <Button
-      key={item.key}
-      leftSection={item.icon}
-      variant="subtle"
-      styles={{
-        root: {
-          display: "flex",
-          justifyContent: isCollapsed ? "center" : "flex-start",
-          color: activeOption === item.key ? "#424242" : "#FFFFFF",
-          backgroundColor:
-            activeOption === item.key ? "#f8f9fa" : "transparent",
-          borderRadius: "8px",
-          transition: "background-color 0.3s, color 0.3s",
-        },
-        section: {
-          marginRight: isCollapsed ? 0 : 8,
-        },
-      }}
-      onClick={() => {
-        setActiveOption(item.key);
-        router.push(item.href);
-      }}
-    >
-      {!isCollapsed && <span>{item.label}</span>}
-    </Button>
-  ))}
-</Stack>
-
+        p={16}
+        gap="xs"
+        className="grow"
+        style={{
+          backgroundColor: "#6665AC",
+        }}
+      >
+        {menuItems.map((item) => (
+          <Button
+            key={item.key}
+            leftSection={item.icon}
+            variant="subtle"
+            styles={{
+              root: {
+                display: "flex",
+                justifyContent: isCollapsed ? "center" : "flex-start",
+                color: activeOption === item.key ? "#424242" : "#FFFFFF",
+                backgroundColor:
+                  activeOption === item.key ? "#f8f9fa" : "transparent",
+                borderRadius: "8px",
+                transition: "background-color 0.3s, color 0.3s",
+              },
+              section: {
+                marginRight: isCollapsed ? 0 : 8,
+              },
+            }}
+            onClick={() => {
+              setActiveOption(item.key);
+              // ปุ่ม Settings จะไม่เปลี่ยนหน้า
+              if (item.key !== "settings") {
+                router.push(item.href);
+              }
+            }}
+          >
+            {!isCollapsed && <span>{item.label}</span>}
+          </Button>
+        ))}
+      </Stack>
 
       {/* Account Section */}
       <Stack pb={0.75}>

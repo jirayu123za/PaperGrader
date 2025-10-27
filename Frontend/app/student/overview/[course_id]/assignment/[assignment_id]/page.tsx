@@ -4,6 +4,7 @@ import React from "react";
 import { useParams } from "next/navigation";
 import GradePdfViewer from "@/components/STD/GradePdfViewer"; 
 import { SidebarQuestions } from "@/components/INS/INSProcess/Right/Grade/SidebarQuestions"; //แก้เป็นของ นศ.
+import { SidebarQuestions_STD } from "@/components/STD/SidebarQuestions";
 
 const STDAssignment = () => {
   const params = useParams();
@@ -20,7 +21,7 @@ const STDAssignment = () => {
         <GradePdfViewer courseId={course_id} assignmentId={assignment_id} />
       </div>
        <div className="w-[420px] border-l bg-white shadow-md">
-        <SidebarQuestions/>
+        <SidebarQuestions_STD/>
       </div>
     </div>
   );

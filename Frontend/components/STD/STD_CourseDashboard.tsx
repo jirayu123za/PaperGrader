@@ -52,14 +52,15 @@ const STD_CourseDashboard: React.FC = () => {
         <Table highlightOnHover verticalSpacing="md">
           <Table.Thead>
             <Table.Tr className="border-b">
-              <Table.Th>NAME</Table.Th>
-              <Table.Th style={{ textAlign: "center" }}>RELEASED</Table.Th>
-              <Table.Th style={{ textAlign: "center" }}>DUE</Table.Th>
-              <Table.Th style={{ textAlign: "center" }}>LAST DUE</Table.Th>
+              <Table.Th>Name</Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>Released</Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>Due</Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>Late</Table.Th>
               <Table.Th style={{ textAlign: "center" }}>
-                LAST SUBMITTED
+                Last Submitted
               </Table.Th>
-              <Table.Th style={{ textAlign: "center" }}>STATUS</Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>Score</Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>Status</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -109,6 +110,19 @@ const STD_CourseDashboard: React.FC = () => {
                             "MMM D, YYYY h:mm A"
                           )
                         : "N/A"}
+                    </Table.Td>
+
+                    <Table.Td style={{ textAlign: "center" }}>
+                      {assignment.published_grade ? (
+                        <span>
+                          {assignment.score ?? "0"} /{" "}
+                          {assignment.max_score ?? "100"}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 italic">
+                          -
+                        </span>
+                      )}
                     </Table.Td>
 
                     <Table.Td style={{ textAlign: "center" }}>
