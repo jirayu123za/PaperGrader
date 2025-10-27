@@ -1,10 +1,10 @@
-// src/hooks/Statistic/useFetchStatistics.ts
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { API_BASE } from '@/src/lib/api';
 import { useStatisticsStore, type StatisticsApiResponse } from '@/store/statistic/useStatisticsStore';
 import { useStatisticSectionsStore } from '@/store/statistic/useStatisticSectionsStore';
 
-
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_STATS_MOCK === '0';
 
 export function useFetchStatistics() {
   const courseId = useStatisticsStore((s) => s.courseId);
@@ -14,10 +14,15 @@ export function useFetchStatistics() {
 
   const enabled = Boolean(courseId && assignmentId && sectionIds.length > 0);
 
-  return useQuery({
+  const query = useQuery<StatisticsApiResponse>({
     queryKey: ['statistics', courseId, assignmentId, sectionIds.join(',')],
     enabled,
     queryFn: async (): Promise<StatisticsApiResponse> => {
+        if (USE_MOCK) {
+        const res = await fetch('/mocks/statisticsMock.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`Mock not found (${res.status})`);
+        return (await res.json()) as StatisticsApiResponse;
+      }
       const url = `${API_BASE}/instructor/statistics?course_id=${courseId}`;
       const res = await fetch(url, {
         method: 'POST',
@@ -31,8 +36,12 @@ export function useFetchStatistics() {
       }
       return (await res.json()) as StatisticsApiResponse;
     },
-    select: (data) => { setData(data); return data; },
     retry: 0,
-    staleTime: 60_000,
+    staleTime: 60_000,   
   });
+    useEffect(() => {
+    if (query.data) setData(query.data);
+  }, [query.data, setData]);
+
+  return query;
 }
