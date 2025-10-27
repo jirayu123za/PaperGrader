@@ -12,35 +12,63 @@ import { useFetchAssignments } from "../../hooks/useFetchAssignments";
 import { useAssignmentStore } from "../../store/useAssignmentStore";
 import { useStdCourseDashboardStore } from "../../store/useCourseStore";
 import { useRouter, useParams } from "next/navigation";
-import { Badge, Divider, Table, Title } from "@mantine/core";
+import { Badge, Divider, Table, Title, Tooltip, Flex, Text } from "@mantine/core";
 import { useFetchStdCourse } from "../../hooks/useFetchCourse";
 
 const STD_CourseDashboard: React.FC = () => {
   const router = useRouter();
   const params = useParams();
   const { course_id } = params as { course_id: string };
+
   const { isLoading, error } = useFetchAssignments(course_id as string);
   const { assignments: assignmentList } = useAssignmentStore();
+
   const { isLoading: isCourseLoading, error: errorCourse } = useFetchStdCourse(
     course_id as string
   );
   const { course: courseData } = useStdCourseDashboardStore();
 
-  if (isLoading) return <div>Loading assignments...</div>;
-  if (error) return <div>Error loading assignments: {error.message}</div>;
+  if (isLoading || isCourseLoading) return <div>Loading...</div>;
+  if (error || errorCourse) return <div>Error loading course data</div>;
+
+  // จัดการชื่อวิชา (truncate + tooltip)
+  const fullName = courseData?.course_name ?? "No Course Selected";
+  const displayName = fullName.length > 30 ? `${fullName.slice(0, 30)}…` : fullName;
+  const showTooltip = fullName.length > 30;
 
   return (
     <div className="course-dashboard">
       <div className="header mb-6">
-        <Title order={2}>
-          {courseData?.course_name} | ({courseData?.semester}/
-          {courseData?.academic_year
-            ? Number(courseData.academic_year) + 543
-            : ""}
-          )
-        </Title>
+        <Flex align="center" gap="8px">
+          <Tooltip label={fullName} disabled={!showTooltip} withArrow position="bottom">
+            <Title
+              order={2}
+              fw={600}
+              style={{
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                maxWidth: "360px",
+                cursor: showTooltip ? "help" : "default",
+              }}
+            >
+              {displayName}
+            </Title>
+          </Tooltip>
 
-        <p className="text-gray-500">Course Code: {courseData?.course_code}</p>
+          <Divider size="sm" orientation="vertical" />
+
+          <Title order={2} fw={600}>
+            {courseData
+              ? `(${courseData.semester}/${Number(courseData.academic_year) + 543})`
+              : "No Course Info"}
+          </Title>
+        </Flex>
+
+        <Text size="sm" c="dimmed" className="mt-0">
+          Course code: {courseData?.course_code ?? "-"}
+        </Text>
+
         <Divider my="md" />
       </div>
 
@@ -56,13 +84,12 @@ const STD_CourseDashboard: React.FC = () => {
               <Table.Th style={{ textAlign: "center" }}>Released</Table.Th>
               <Table.Th style={{ textAlign: "center" }}>Due</Table.Th>
               <Table.Th style={{ textAlign: "center" }}>Late</Table.Th>
-              <Table.Th style={{ textAlign: "center" }}>
-                Last Submitted
-              </Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>Last Submitted</Table.Th>
               <Table.Th style={{ textAlign: "center" }}>Score</Table.Th>
               <Table.Th style={{ textAlign: "center" }}>Status</Table.Th>
             </Table.Tr>
           </Table.Thead>
+
           <Table.Tbody>
             {assignmentList.map((assignment) =>
               assignment ? (
@@ -71,7 +98,6 @@ const STD_CourseDashboard: React.FC = () => {
                     <Table.Td
                       className="py-2 px-4 cursor-pointer hover:underline"
                       onClick={() => {
-                        // ไปหน้าส่งงาน (ยังไม่มี file_url ใน API)
                         router.push(
                           `/student/overview/${course_id}/assignment/${assignment.assignment_id}`
                         );
@@ -82,46 +108,35 @@ const STD_CourseDashboard: React.FC = () => {
 
                     <Table.Td style={{ textAlign: "center" }}>
                       {assignment.release_date
-                        ? dayjs(assignment.release_date).format(
-                            "MMM D, YYYY h:mm A"
-                          )
+                        ? dayjs(assignment.release_date).format("MMM D, YYYY h:mm A")
                         : "N/A"}
                     </Table.Td>
 
                     <Table.Td style={{ textAlign: "center" }}>
                       {assignment.due_date
-                        ? dayjs(assignment.due_date).format(
-                            "MMM D, YYYY h:mm A"
-                          )
+                        ? dayjs(assignment.due_date).format("MMM D, YYYY h:mm A")
                         : "N/A"}
                     </Table.Td>
 
                     <Table.Td style={{ textAlign: "center" }}>
                       {assignment.cut_off_date
-                        ? dayjs(assignment.cut_off_date).format(
-                            "MMM D, YYYY h:mm A"
-                          )
+                        ? dayjs(assignment.cut_off_date).format("MMM D, YYYY h:mm A")
                         : "N/A"}
                     </Table.Td>
 
                     <Table.Td style={{ textAlign: "center" }}>
                       {assignment.release_date
-                        ? dayjs(assignment.release_date).format(
-                            "MMM D, YYYY h:mm A"
-                          )
+                        ? dayjs(assignment.release_date).format("MMM D, YYYY h:mm A")
                         : "N/A"}
                     </Table.Td>
 
                     <Table.Td style={{ textAlign: "center" }}>
                       {assignment.published_grade ? (
                         <span>
-                          {assignment.score ?? "0"} /{" "}
-                          {assignment.max_score ?? "100"}
+                          {assignment.score ?? "0"} / {assignment.max_score ?? "100"}
                         </span>
                       ) : (
-                        <span className="text-gray-400 italic">
-                          -
-                        </span>
+                        <span className="text-gray-400 italic">-</span>
                       )}
                     </Table.Td>
 
