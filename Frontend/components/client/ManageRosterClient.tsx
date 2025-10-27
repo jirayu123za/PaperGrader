@@ -2,8 +2,8 @@
 
 import { Tabs } from '@mantine/core'
 import React from 'react'
-import CourseRoster from '@/components/ManageRoster/CourseRoster'
-import ManageSection from '@/components/ManageRoster/ManageSection'
+import CourseRoster from '@/components/INS/INSManageRoster/CourseRoster'
+import ManageSection from '@/components/INS/INSManageRoster/ManageSection'
 
 export const ManageRosterClient = () => {
   return (
