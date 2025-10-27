@@ -5,13 +5,19 @@ import AssignmentSetting from '../../Customize/AssignmentSetting';
 import AssignmentSecTable from './AssignmentSecTable';
 import { useParams, useRouter } from 'next/navigation';
 import {Button,Menu,Anchor,Text,Flex,Table,Paper,Pagination,ActionIcon,Image,} from '@mantine/core';
-import { usePagination, useViewportSize } from '@mantine/hooks';
+import { usePagination, useViewportSize, useDisclosure } from '@mantine/hooks';
 import { useFetchAssignmentsTable } from '@/hooks/useFetchAssignments';
 import { useAssignmentsListTableStore } from '@/store/useAssignmentStore';
 import { useModalAssignmentSettingStore } from '@/store/modal/useAssignmentSettingModal';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { IconSettings, IconTrash } from '@tabler/icons-react';
 import { useExpandedAssignmentStore } from '@/store/table/useAssignmentsListStore';
+import ConfirmDeleteModal from './ConfirmDeleteModal';
+
+type SelectedAssignment = {
+  id: string;
+  name: string;
+} | null;
 
 const AssignmentTable: React.FC = () => {
   const router = useRouter();
@@ -27,6 +33,10 @@ const AssignmentTable: React.FC = () => {
   const sampleRowRef = useRef<HTMLTableRowElement | null>(null);
   const [rowsPerPage, setRowsPerPage] = useState<number>(8);
   const [containerH, setContainerH] = useState<number>(0);
+  const [deleteOpened, { open: openDelete, close: closeDelete }] = useDisclosure(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [selectedAssignment, setSelectedAssignment] = useState<SelectedAssignment>(null);
+
 
   useLayoutEffect(() => {
     const sectionTop = sectionRef.current?.getBoundingClientRect().top ?? 0;
@@ -41,11 +51,7 @@ const AssignmentTable: React.FC = () => {
     const fit = Math.max(1, Math.floor(availableForRows / rowH));
     setRowsPerPage(fit);
 
-
-    const scrollContainerHeight = Math.max(
-      0,
-      availableViewport - paperVerticalPadding
-    );
+    const scrollContainerHeight = Math.max(0, availableViewport - paperVerticalPadding);
     setContainerH(scrollContainerHeight);
   }, [viewportH, assignmentList.length]);
 
@@ -62,8 +68,7 @@ const AssignmentTable: React.FC = () => {
 
   const startIndex = (pagination.active - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-  const paginatedAssignmentsTable =
-    assignmentList?.slice(startIndex, endIndex) ?? [];
+  const paginatedAssignmentsTable = assignmentList?.slice(startIndex, endIndex) ?? [];
 
   if (!isLoadingAssignmentsList && assignmentList.length === 0) {
     return (
@@ -86,18 +91,36 @@ const AssignmentTable: React.FC = () => {
     );
   }
 
+
+  const handleAskDelete = (id: string, name: string) => {
+    setSelectedAssignment({ id, name });
+    openDelete();
+  };
+
+
+  const handleConfirmDelete = async () => {
+    if (!selectedAssignment) return;
+    setDeleteLoading(true);
+    try {
+
+    } finally {
+      setDeleteLoading(false);
+      closeDelete();
+      setSelectedAssignment(null);
+    }
+  };
+
   return (
     <Flex direction="column" gap="md">
       <div ref={sectionRef}>
         <Paper withBorder mb="md" style={{ overflow: 'hidden' }}>
-
           <Table.ScrollContainer
             minWidth="100%"
             style={{
-              height: containerH,         
+              height: containerH,
               overflow: 'auto',
-              scrollbarWidth: 'none',     
-              msOverflowStyle: 'none',     
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
             }}
             className="hide-scrollbar"
           >
@@ -178,7 +201,17 @@ const AssignmentTable: React.FC = () => {
                               >
                                 Settings
                               </Menu.Item>
-                              <Menu.Item color="red" leftSection={<IconTrash size={14} />}>
+                              <Menu.Item
+                                color="red"
+                                leftSection={<IconTrash size={14} />}
+                                onClick={() =>
+                                  handleAskDelete(
+                                    assignment.assignment_id,
+                                    assignment.assignment_name.charAt(0).toUpperCase() +
+                                      assignment.assignment_name.slice(1)
+                                  )
+                                }
+                              >
                                 Delete
                               </Menu.Item>
                             </Menu.Dropdown>
@@ -222,6 +255,21 @@ const AssignmentTable: React.FC = () => {
           </Table.ScrollContainer>
         </Paper>
       </div>
+
+
+      <ConfirmDeleteModal
+        opened={deleteOpened}
+        onClose={() => {
+          closeDelete();
+          setSelectedAssignment(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        itemName={selectedAssignment?.name}
+        requireAcknowledge={true}
+        loading={deleteLoading}
+        size="sm"
+        title="Delete confirmation"
+      />
 
       <AssignmentSetting />
     </Flex>

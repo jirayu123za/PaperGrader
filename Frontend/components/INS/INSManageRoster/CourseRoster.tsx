@@ -3,19 +3,31 @@
 import React, { useMemo, useRef, useState, useLayoutEffect, useEffect } from "react";
 import AddMember from "../../AddStudent/AddMember";
 import EditCourseMember from "../../Customize/EditCourseMember";
-import {Button,Table,Menu,Paper,Text,TextInput,Select,Skeleton,Pagination,Flex,} from "@mantine/core";
+import {
+  Button,
+  Table,
+  Menu,
+  Paper,
+  Text,
+  TextInput,
+  Select,
+  Skeleton,
+  Pagination,
+  Flex,
+} from "@mantine/core";
 import { useFetchUsersRoster } from "../../../hooks/Roster/useFetchUsersRoster";
 import { useParams } from "next/navigation";
 import { useRosterStore } from "../../../store/useRosterStore";
 import { useModalEditRosterMemberStore } from "../../../store/modal/useRosterModalStore";
-import { usePagination, useViewportSize } from "@mantine/hooks";
+import { usePagination, useViewportSize, useDisclosure } from "@mantine/hooks";
 import { IoSearch } from "react-icons/io5";
+import ConfirmDeleteModal from "./ConfirmDeleteModal"; 
 
 const FALLBACK_ROW_H = 48;
 const FALLBACK_THEAD_H = 40;
 const FALLBACK_TFOOT_H = 56;
 const BOTTOM_PADDING = 12;
-const SAFETY_GAP = 20; 
+const SAFETY_GAP = 20;
 const MIN_ROWS = 1;
 const MAX_ROWS = 100;
 
@@ -23,15 +35,33 @@ const CourseRoster: React.FC = () => {
   const params = useParams();
   const course_id = params?.course_id as string;
   const { isLoading } = useFetchUsersRoster(course_id as string);
-  const { usersList, searchTerm, setSearchTerm, roleFilter, setRoleFilter } =
-    useRosterStore();
+  const { usersList, searchTerm, setSearchTerm, roleFilter, setRoleFilter } =useRosterStore();
   const { openModal } = useModalEditRosterMemberStore();
   const searchIcon = <IoSearch />;
+  const [confirmOpened, { open: openConfirm, close: closeConfirm }] = useDisclosure(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleRemoveClick = (personal_data_id: string) => {
+    setSelectedId(personal_data_id);
+    openConfirm();
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedId) return;
+    try {
+      setDeleting(true);
+    } finally {
+      setDeleting(false);
+      closeConfirm();
+      setSelectedId(null);
+    }
+  };
+
   const handleEditClick = (personal_data_id: string) => {
     openModal(personal_data_id);
   };
 
-  // filter
   const filteredUsers = useMemo(() => {
     return usersList.filter((member) => {
       const q = searchTerm?.toLowerCase() ?? "";
@@ -46,12 +76,11 @@ const CourseRoster: React.FC = () => {
     });
   }, [usersList, searchTerm, roleFilter]);
 
-  // viewport-aware rows-per-page 
-  const { height: viewportH } = useViewportSize();
 
+  const { height: viewportH } = useViewportSize();
   const sectionRef = useRef<HTMLDivElement | null>(null);
-  const paperRef = useRef<HTMLDivElement | null>(null); 
-  const headerRef = useRef<HTMLDivElement | null>(null);  
+  const paperRef = useRef<HTMLDivElement | null>(null);
+  const headerRef = useRef<HTMLDivElement | null>(null);
   const theadRef = useRef<HTMLTableSectionElement | null>(null);
   const tfootRef = useRef<HTMLTableSectionElement | null>(null);
   const sampleRowRef = useRef<HTMLTableRowElement | null>(null);
@@ -95,7 +124,6 @@ const CourseRoster: React.FC = () => {
     const rawFit = availableForRows / rowH;
     let fit = Number.isFinite(rawFit) ? Math.floor(rawFit) : 8;
 
- 
     const remainder = availableForRows - fit * rowH;
     if (remainder < 10) fit = fit - 1;
 
@@ -146,7 +174,18 @@ const CourseRoster: React.FC = () => {
   return (
     <>
       <div ref={sectionRef}>
-        <Paper ref={paperRef} shadow="sm" radius="md" withBorder pl="xl" pr="xl" pt="xl" pb="lg" mt="xs" style={{ overflow: "hidden" }} >
+        <Paper
+          ref={paperRef}
+          shadow="sm"
+          radius="md"
+          withBorder
+          pl="xl"
+          pr="xl"
+          pt="xl"
+          pb="lg"
+          mt="xs"
+          style={{ overflow: "hidden" }}
+        >
           <Flex ref={headerRef} align="center" gap="xs" mb="md" justify="space-between">
             <TextInput
               placeholder="Search by name, email, or student ID"
@@ -249,7 +288,12 @@ const CourseRoster: React.FC = () => {
                           <Menu.Item onClick={() => handleEditClick(member.personal_data_id)}>
                             Update Information
                           </Menu.Item>
-                          <Menu.Item color="red">Remove User</Menu.Item>
+                          <Menu.Item
+                            color="red"
+                            onClick={() => handleRemoveClick(member.personal_data_id)}
+                          >
+                            Remove User
+                          </Menu.Item>
                         </Menu.Dropdown>
                       </Menu>
                     </Table.Td>
@@ -282,8 +326,14 @@ const CourseRoster: React.FC = () => {
           </Table>
         </Paper>
       </div>
-
       <EditCourseMember />
+      <ConfirmDeleteModal
+        opened={confirmOpened}
+        onClose={closeConfirm}
+        onConfirm={handleConfirmDelete}
+        loading={deleting}
+        title="Confirm Deletion"
+      />
     </>
   );
 };
