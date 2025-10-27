@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { Modal, Pagination, Skeleton, Table, Text } from '@mantine/core';
-import { useFetchSectionUsersRoster } from '../../hooks/Roster/useFetchUsersRoster';
-import { useRosterStore } from '../../store/useRosterStore';
-import { useModalStore } from '../../store/modal/useRosterModalStore';
+import { useFetchSectionUsersRoster } from '../../../hooks/Roster/useFetchUsersRoster';
+import { useRosterStore } from '../../../store/useRosterStore';
+import { useModalStore } from '../../../store/modal/useRosterModalStore';
 import { useParams } from 'next/navigation';
 import { usePagination } from '@mantine/hooks';
 

@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useMemo, useRef, useState, useLayoutEffect, useEffect } from "react";
-import AddMember from "../AddStudent/AddMember";
-import EditCourseMember from "../Customize/EditCourseMember";
+import AddMember from "../../AddStudent/AddMember";
+import EditCourseMember from "../../Customize/EditCourseMember";
 import {Button,Table,Menu,Paper,Text,TextInput,Select,Skeleton,Pagination,Flex,} from "@mantine/core";
-import { useFetchUsersRoster } from "../../hooks/Roster/useFetchUsersRoster";
+import { useFetchUsersRoster } from "../../../hooks/Roster/useFetchUsersRoster";
 import { useParams } from "next/navigation";
-import { useRosterStore } from "../../store/useRosterStore";
-import { useModalEditRosterMemberStore } from "../../store/modal/useRosterModalStore";
+import { useRosterStore } from "../../../store/useRosterStore";
+import { useModalEditRosterMemberStore } from "../../../store/modal/useRosterModalStore";
 import { usePagination, useViewportSize } from "@mantine/hooks";
 import { IoSearch } from "react-icons/io5";
 

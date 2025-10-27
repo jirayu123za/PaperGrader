@@ -3,12 +3,12 @@
 import React, { useMemo, useRef, useState, useLayoutEffect, useEffect } from 'react';
 import { Table, Text, Button, Paper, Pagination, Skeleton, Flex, Image } from '@mantine/core';
 import { useParams } from 'next/navigation';
-import { useFetchSections } from '../../hooks/Roster/useFetchSections';
-import { useSectionDetailsStore } from '../../store/useRosterStore';
-import { useModalStore } from '../../store/modal/useRosterModalStore';
+import { useFetchSections } from '../../../hooks/Roster/useFetchSections';
+import { useSectionDetailsStore } from '../../../store/useRosterStore';
+import { useModalStore } from '../../../store/modal/useRosterModalStore';
 import { usePagination, useViewportSize } from '@mantine/hooks';
 import ViewStudentLists from './ViewStudentList';
-import CreateSection from '../Create/CreateSection';
+import CreateSection from '../../Create/CreateSection';
 
 const FALLBACK_ROW_H = 48;
 const FALLBACK_THEAD_H = 40;
