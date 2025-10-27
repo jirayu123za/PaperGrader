@@ -166,10 +166,7 @@ export const Rubric = () => {
         })
     };
 
-    const [graded, setGraded] = useState<Graded>({
-        has_graded: 2,
-        total_grade: 10,
-    });
+
 
     const handleDragEnd = (result: DropResult) => {
         const { destination, source } = result;
@@ -228,10 +225,7 @@ export const Rubric = () => {
                     <QuestionSelector/>
                 </Flex>
 
-                <Progress color="violet" value={100} />
-                <Text size="xs" c="#495057">
-                    {graded.has_graded} of {graded.total_grade} already assigned rubrics
-                </Text>
+                
 
                 <Flex justify="space-between" align="flex-end" pt="md">
                     <Box>
