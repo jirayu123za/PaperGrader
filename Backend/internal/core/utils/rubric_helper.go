@@ -168,3 +168,84 @@ func isNilOrEmptyArray(v interface{}) bool {
 	}
 	return false
 }
+
+func ParseRubricQuestions(rubricMap map[string]interface{}) ([]response.QuestionDetails, error) {
+	b, err := json.Marshal(rubricMap)
+	if err != nil {
+		return nil, err
+	}
+
+	var wrap struct {
+		QuestionsData []response.QuestionDetails `json:"questions_data"`
+	}
+
+	if err := json.Unmarshal(b, &wrap); err != nil {
+		return nil, fmt.Errorf("invalid rubric_data: %w", err)
+	}
+	return wrap.QuestionsData, nil
+}
+
+func ClearAllSelections(questions *[]response.QuestionDetails) {
+	for i := range *questions {
+		q := &(*questions)[i]
+		if q.Rubrics != nil {
+			for j := range q.Rubrics.RubricDetails {
+				q.Rubrics.RubricDetails[j].HasSelected = false
+			}
+		}
+		for si := range q.SubQuestions {
+			sq := &q.SubQuestions[si]
+			if sq.Rubrics != nil {
+				for dj := range sq.Rubrics.RubricDetails {
+					sq.Rubrics.RubricDetails[dj].HasSelected = false
+				}
+			}
+		}
+	}
+}
+
+func CollectSelectedIDs(gradeMap map[string]interface{}) map[string]bool {
+	selected := map[string]bool{}
+	var walk func(v interface{})
+
+	walk = func(v interface{}) {
+		switch t := v.(type) {
+		case map[string]interface{}:
+			if id, ok := t["rubric_detail_id"].(string); ok {
+				if hs, ok := t["has_selected"].(bool); ok && hs {
+					selected[id] = true
+				}
+			}
+			for _, vv := range t {
+				walk(vv)
+			}
+		case []interface{}:
+			for _, vv := range t {
+				walk(vv)
+			}
+		}
+	}
+	walk(gradeMap)
+	return selected
+}
+
+func ApplySelections(questions *[]response.QuestionDetails, selected map[string]bool) {
+	for i := range *questions {
+		q := &(*questions)[i]
+		if q.Rubrics != nil {
+			for j := range q.Rubrics.RubricDetails {
+				id := q.Rubrics.RubricDetails[j].RubricDetailID
+				q.Rubrics.RubricDetails[j].HasSelected = selected[id.String()]
+			}
+		}
+		for si := range q.SubQuestions {
+			sq := &q.SubQuestions[si]
+			if sq.Rubrics != nil {
+				for dj := range sq.Rubrics.RubricDetails {
+					id := sq.Rubrics.RubricDetails[dj].RubricDetailID
+					sq.Rubrics.RubricDetails[dj].HasSelected = selected[id.String()]
+				}
+			}
+		}
+	}
+}

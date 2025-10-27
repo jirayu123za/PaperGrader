@@ -115,6 +115,9 @@ type InstructorService interface {
 	// R Bounding Boxes data
 	GetBoundingBoxesData(AssignmentID uuid.UUID) (response.BoundingBoxesDataResponse, error)
 
+	// Part 1: Grade review
+	GetSubmissionDetailsFromGradeSubmission(courseID uuid.UUID, assignmentID uuid.UUID, submissionID uuid.UUID) (response.SubmissionsFromGradeSubmissionResponse, error)
+
 	// Part 1: Export data
 	GetAssignmentsListForExport(CourseID uuid.UUID) ([]response.AssignmentsListResponse, error)
 	CreateGradesToExcelFile(request response.CreateGradeToExcelFileRequest, courseID uuid.UUID, userID uuid.UUID) error
@@ -1891,6 +1894,35 @@ func (s *InstructorServiceImpl) CreateGrade(assignmentID uuid.UUID, submissionID
 	} else {
 		return s.repo.AddGradeData(assignmentID, submissionID, json.RawMessage(jsonData))
 	}
+}
+
+// Part:1 Submission from grade-submission
+func (s *InstructorServiceImpl) GetSubmissionDetailsFromGradeSubmission(courseID uuid.UUID, assignmentID uuid.UUID, submissionID uuid.UUID) (response.SubmissionsFromGradeSubmissionResponse, error) {
+	rubricMap, err := s.repo.FindRubricDataByAssignmentID(assignmentID)
+	if err != nil {
+		return response.SubmissionsFromGradeSubmissionResponse{}, err
+	}
+
+	questions, err := utils.ParseRubricQuestions(rubricMap)
+	if err != nil {
+		return response.SubmissionsFromGradeSubmissionResponse{}, err
+	}
+	utils.ClearAllSelections(&questions)
+
+	gradeMap, err := s.repo.FindGradeData(assignmentID, submissionID)
+	if err != nil {
+		return response.SubmissionsFromGradeSubmissionResponse{}, err
+	}
+
+	if gradeMap != nil {
+		selected := utils.CollectSelectedIDs(gradeMap)
+		utils.ApplySelections(&questions, selected)
+	}
+
+	resp := response.SubmissionsFromGradeSubmissionResponse{
+		QuestionsDetails: questions,
+	}
+	return resp, nil
 }
 
 // Part:1 Export data

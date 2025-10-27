@@ -643,6 +643,43 @@ type UpdateAssignmentPublishedAssignmentRequest struct {
 	PublishedAssignment bool      `json:"published_assignment"`
 }
 
+// Part:1 Submission from grade-submission
+type SubmissionsFromGradeSubmissionResponse struct {
+	QuestionsDetails []QuestionDetails `json:"questions_details"`
+}
+
+type QuestionDetails struct {
+	QuestionID    uuid.UUID           `json:"question_id"`
+	QuestionTitle string              `json:"question_title"`
+	QuestionPoint float64             `json:"question_point"`
+	BoundingBoxID *string             `json:"bounding_box_id,omitempty"`
+	Rubrics       *RubricsBlock       `json:"rubrics,omitempty"`
+	SubQuestions  []SubQuestionDetail `json:"sub_questions,omitempty"`
+}
+
+type SubQuestionDetail struct {
+	SubQuestionID    uuid.UUID     `json:"sub_question_id"`
+	SubQuestionTitle string        `json:"sub_question_title"`
+	SubQuestionPoint float64       `json:"sub_question_point"`
+	BoundingBoxID    *string       `json:"bounding_box_id,omitempty"`
+	Rubrics          *RubricsBlock `json:"rubrics,omitempty"`
+}
+
+type RubricsBlock struct {
+	RubricID      uuid.UUID          `json:"rubric_id"`
+	HasFloor      bool               `json:"has_floor"`
+	HasCeiling    bool               `json:"has_ceiling"`
+	RubricSetting string             `json:"rubric_setting"`
+	RubricDetails []RubricDetailItem `json:"rubric_details"`
+}
+
+type RubricDetailItem struct {
+	RubricDetailID    uuid.UUID `json:"rubric_detail_id"`
+	HasSelected       bool      `json:"has_selected"`
+	RubricPoint       float64   `json:"rubric_point"`
+	RubricDescription string    `json:"rubric_description"`
+}
+
 // Part:1 Export data
 // ---- JSON structs for export data ----
 type CreateGradeToExcelFileRequest struct {
@@ -658,7 +695,7 @@ type LatestExportListResponse struct {
 	FileURL       string     `json:"file_url"`
 	ProcessedAt   *time.Time `json:"processed_at"`
 	CreatedAt     time.Time  `json:"created_at"`
-	RequestedBy   string     `json:"requested_by"` // ← ชื่อในคอร์ส (ถ้าไม่มีชื่อ จะ fallback อีเมล)
+	RequestedBy   string     `json:"requested_by"`
 }
 
 // Part:1 Assignment statistics

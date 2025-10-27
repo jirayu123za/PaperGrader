@@ -121,6 +121,9 @@ func RegisterRoutes(
 	// Total submissionIDs
 	apiGroup.Get("/instructor/submission/totalIDs", instructorHandler.GetTotalSubmissionIDsByHasGrade)
 
+	// Submission from grade-submission
+	apiGroup.Get("/instructor/submission/details", instructorHandler.GetSubmissionDetailsFromGradeSubmission)
+
 	// OCR data
 	apiGroup.Get("/instructor/ocr/studentsList", instructorHandler.GetStudentsListForOCR)
 	apiGroup.Get("/instructor/ocr/submissions", instructorHandler.GetSubmissionsList)
