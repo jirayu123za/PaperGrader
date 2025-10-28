@@ -1,5 +1,5 @@
 import React from "react";
-import { SubmissionPDFViewer } from "@/components/STD/SubmissionPDFViewer";
+import { SubmissionPDFViewer } from "@/components/STD/Viewer/SubmissionPDFViewer";
 import { Container } from "@mantine/core";
 
 export const metadata = {
