@@ -129,8 +129,8 @@ func (r *GormStudentRepository) FindAssignmentNamesWithCourseIDAndAssignmentID(C
 
 func (r *GormStudentRepository) FindAssignmentsByCourseID(courseID uuid.UUID, userID uuid.UUID) ([]map[string]interface{}, error) {
 	rows := make([]map[string]interface{}, 0)
-
 	now := time.Now().UTC()
+
 	enrolledSections := r.db.
 		Table("enrollment_lists AS el").
 		Select("el.section_id").
@@ -173,19 +173,29 @@ func (r *GormStudentRepository) FindAssignmentsByCourseID(courseID uuid.UUID, us
 		Select(`
 			DISTINCT ON (s.assignment_id)
 			s.assignment_id,
-			s.release_date AS release_date,
-			s.due_date     AS due_date,
-			s.cut_off_date AS cut_off_date
+			s.release_date  AS release_date,
+			s.due_date      AS due_date,
+			s.cut_off_date  AS cut_off_date
 		`).
 		Order("s.assignment_id, s.published_assignment DESC, s.release_date ASC NULLS LAST")
 
+	latestSubmission := r.db.
+		Table("submissions AS s").
+		Select(`
+			DISTINCT ON (s.assignment_id)
+			s.assignment_id,
+			s.submission_id,
+			s.submitted_at
+		`).
+		Where("s.deleted_at IS NULL").
+		Where("s.belongs_to IN (?)", personalDataIDSub).
+		Order("s.assignment_id, s.submitted_at DESC, s.submission_id DESC")
+
+	// main query
 	q := r.db.
 		Table("assignments AS a").
 		Joins("JOIN (?) AS b ON b.assignment_id = a.assignment_id", best).
-		Joins(`LEFT JOIN submissions AS sub
-            ON sub.assignment_id = a.assignment_id
-           AND sub.deleted_at IS NULL
-           AND sub.belongs_to IN (?)`, personalDataIDSub).
+		Joins("LEFT JOIN (?) AS ls ON ls.assignment_id = a.assignment_id", latestSubmission).
 		Where("a.course_id = ? AND a.deleted_at IS NULL AND COALESCE(a.submitted_by, 'student') = ?", courseID, "student").
 		Select(`
 			a.assignment_id,
@@ -194,23 +204,15 @@ func (r *GormStudentRepository) FindAssignmentsByCourseID(courseID uuid.UUID, us
 			b.release_date  AS release_date,
 			b.due_date      AS due_date,
 			b.cut_off_date  AS cut_off_date,
-			CASE WHEN COUNT(DISTINCT sub.submission_id) > 0 THEN TRUE ELSE FALSE END AS has_submitted,
-			MAX(sub.submitted_at) AS last_submitted_at
-		`).
-		Group(`
-			a.assignment_id,
-			a.assignment_name,
-			a.assignment_description,
-			b.release_date,
-			b.due_date,
-			b.cut_off_date
+			(ls.submission_id IS NOT NULL) AS has_submitted,
+			ls.submission_id AS submission_id,
+			ls.submitted_at  AS last_submitted_at
 		`).
 		Order("b.release_date ASC NULLS LAST, a.assignment_id ASC")
 
 	if err := q.Scan(&rows).Error; err != nil {
 		return nil, err
 	}
-
 	return rows, nil
 }
 
