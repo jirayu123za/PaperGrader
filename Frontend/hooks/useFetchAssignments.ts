@@ -1,10 +1,11 @@
+import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { useAssignmentStore, useAssignmentsListTableStore } from '../store/useAssignmentStore';
-import { API_BASE, api, qf } from '@/src/lib/api';
-import axios from 'axios';
+import { API_BASE } from '@/src/lib/api';
 
 interface Assignment {
   assignment_id: string;
+  submission_id: string;
   assignment_name: string;
   release_date: string;
   due_date: string;

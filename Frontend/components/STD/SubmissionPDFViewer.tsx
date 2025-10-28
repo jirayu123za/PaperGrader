@@ -1,27 +1,23 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { API_BASE } from "@/src/lib/api";
+import { useParams } from "next/navigation";
 
-interface GradePdfViewerProps {
-  courseId: string;
-  assignmentId: string;
-}
-
-const GradePdfViewer: React.FC<GradePdfViewerProps> = ({ courseId, assignmentId }) => {
+export const SubmissionPDFViewer: React.FC= () => {
+  const params = useParams();
+  const { course_id, assignment_id } = params as {course_id: string; assignment_id: string;};
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPDF = async () => {
       try {
-        // ✅ ดึง URL ของ PDF จาก backend
         const response = await axios.get(`${API_BASE}/student/submission/url`, {
-          params: { course_id: courseId, assignment_id: assignmentId },
+          params: { course_id, assignment_id },
         });
 
-        // ✅ เก็บลิงก์ PDF ไว้ใน state
         setPdfUrl(response.data.url);
       } catch (error) {
         console.error("❌ Failed to load PDF:", error);
@@ -29,9 +25,8 @@ const GradePdfViewer: React.FC<GradePdfViewerProps> = ({ courseId, assignmentId 
         setLoading(false);
       }
     };
-
     fetchPDF();
-  }, [courseId, assignmentId]);
+  }, [course_id, assignment_id]);
 
   if (loading) {
     return <p className="text-gray-600">Loading PDF...</p>;
@@ -45,11 +40,8 @@ const GradePdfViewer: React.FC<GradePdfViewerProps> = ({ courseId, assignmentId 
     <iframe
       src={pdfUrl}
       width="100%"
-      height="800px"
+      height={window.innerHeight}
       title="Student Submission PDF"
-      className="rounded-b-xl border"
     />
   );
 };
-
-export default GradePdfViewer;

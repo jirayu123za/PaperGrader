@@ -7,31 +7,26 @@ import timezone from "dayjs/plugin/timezone";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.tz.setDefault("Asia/Bangkok");
-
-import { useFetchAssignments } from "../../hooks/useFetchAssignments";
-import { useAssignmentStore } from "../../store/useAssignmentStore";
-import { useStdCourseDashboardStore } from "../../store/useCourseStore";
 import { useRouter, useParams } from "next/navigation";
 import { Badge, Divider, Table, Title, Tooltip, Flex, Text } from "@mantine/core";
-import { useFetchStdCourse } from "../../hooks/useFetchCourse";
+import { useFetchAssignments } from "@/hooks/useFetchAssignments";
+import { useAssignmentStore } from "@/store/useAssignmentStore";
+import { useStdCourseDashboardStore } from "@/store/useCourseStore";
+import { useFetchStdCourse } from "@/hooks/useFetchCourse";
 
 const STD_CourseDashboard: React.FC = () => {
   const router = useRouter();
   const params = useParams();
   const { course_id } = params as { course_id: string };
 
-  const { isLoading, error } = useFetchAssignments(course_id as string);
-  const { assignments: assignmentList } = useAssignmentStore();
-
-  const { isLoading: isCourseLoading, error: errorCourse } = useFetchStdCourse(
-    course_id as string
-  );
   const { course: courseData } = useStdCourseDashboardStore();
+  const { isLoading: isLoadingAssignments, error: errorLoadingAssignments } = useFetchAssignments(course_id as string);
+  const { assignments: assignmentList } = useAssignmentStore();
+  const { isLoading: isLoadingCourse, error: errorLoadingCourse } = useFetchStdCourse(course_id as string);
 
-  if (isLoading || isCourseLoading) return <div>Loading...</div>;
-  if (error || errorCourse) return <div>Error loading course data</div>;
+  if (isLoadingAssignments || isLoadingCourse) return <div>Loading...</div>;
+  if (errorLoadingAssignments || errorLoadingCourse) return <div>Error loading course data</div>;
 
-  // จัดการชื่อวิชา (truncate + tooltip)
   const fullName = courseData?.course_name ?? "No Course Selected";
   const displayName = fullName.length > 30 ? `${fullName.slice(0, 30)}…` : fullName;
   const showTooltip = fullName.length > 30;
@@ -98,9 +93,7 @@ const STD_CourseDashboard: React.FC = () => {
                     <Table.Td
                       className="py-2 px-4 cursor-pointer hover:underline"
                       onClick={() => {
-                        router.push(
-                          `/student/overview/${course_id}/assignment/${assignment.assignment_id}`
-                        );
+                        router.push(`/student/course/${course_id}/assignment/${assignment.assignment_id}/submission/${assignment.submission_id}`);
                       }}
                     >
                       {assignment.assignment_name}
