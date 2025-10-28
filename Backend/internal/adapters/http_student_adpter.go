@@ -332,3 +332,45 @@ func (h *HttpStudentHandler) GetSubmissionFileFormMinIO(c *fiber.Ctx) error {
 		"url":     url,
 	})
 }
+
+func (h *HttpStudentHandler) GetSubmissionDetailsFromGradeSubmission(c *fiber.Ctx) error {
+	courseIDParam := c.Query("course_id")
+	courseID, err := uuid.Parse(courseIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid course_id",
+			"error":   err.Error(),
+		})
+	}
+
+	assignmentIDParam := c.Query("assignment_id")
+	assignmentID, err := uuid.Parse(assignmentIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid assignment_id",
+			"error":   err.Error(),
+		})
+	}
+
+	submissionIDParam := c.Query("submission_id")
+	submissionID, err := uuid.Parse(submissionIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid submission_id",
+			"error":   err.Error(),
+		})
+	}
+
+	submissionDetails, err := h.services.GetSubmissionDetailsFromGradeSubmission(courseID, assignmentID, submissionID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to get submission details from grade submission",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":            "Submission details from grade submission are retrieved",
+		"submission_details": submissionDetails,
+	})
+}

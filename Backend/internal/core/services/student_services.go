@@ -1,7 +1,9 @@
 package services
 
 import (
+	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/core/repositories"
+	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
 
 	"github.com/google/uuid"
@@ -21,6 +23,8 @@ type StudentService interface {
 
 	// File services
 	GetSubmissionFileFormMinIO(AssignmentID uuid.UUID, CourseID uuid.UUID, UserID uuid.UUID) (fileURL string, err error)
+	// Submission service
+	GetSubmissionDetailsFromGradeSubmission(courseID uuid.UUID, assignmentID uuid.UUID, submissionID uuid.UUID) (response.SubmissionsFromGradeSubmissionResponse, error)
 }
 
 type StudentServiceImpl struct {
@@ -115,4 +119,56 @@ func (s *StudentServiceImpl) GetSubmissionFileFormMinIO(AssignmentID uuid.UUID, 
 		return "", err
 	}
 	return fileURL, nil
+}
+
+// Submission service
+func (s *StudentServiceImpl) GetSubmissionDetailsFromGradeSubmission(courseID uuid.UUID, assignmentID uuid.UUID, submissionID uuid.UUID) (response.SubmissionsFromGradeSubmissionResponse, error) {
+	assignmentName, err := s.repo.FindAssignmentName(courseID, assignmentID)
+	if err != nil {
+		return response.SubmissionsFromGradeSubmissionResponse{}, err
+	}
+
+	header, err := s.repo.FindSubmissionDetails(courseID, assignmentID, submissionID)
+	if err != nil {
+		return response.SubmissionsFromGradeSubmissionResponse{}, err
+	}
+
+	rubricMap, err := s.repo.FindRubricDataByAssignmentID(assignmentID)
+	if err != nil {
+		return response.SubmissionsFromGradeSubmissionResponse{}, err
+	}
+
+	questions, err := utils.ParseRubricQuestions(rubricMap)
+	if err != nil {
+		return response.SubmissionsFromGradeSubmissionResponse{}, err
+	}
+	utils.ClearAllSelections(&questions)
+
+	gradeMap, err := s.repo.FindGradeData(assignmentID, submissionID)
+	if err != nil {
+		return response.SubmissionsFromGradeSubmissionResponse{}, err
+	}
+
+	if gradeMap != nil {
+		selected := utils.CollectSelectedIDs(gradeMap)
+		utils.ApplySelections(&questions, selected)
+	}
+
+	totalAssignmentPoint := utils.SumAssignmentPoints(questions)
+	totalSubmissionPoint := utils.SumSelectedPoints(questions)
+	gradeStatus := utils.IsFullyGraded(questions)
+
+	resp := response.SubmissionsFromGradeSubmissionResponse{
+		QuestionsDetails: questions,
+		HeaderDetails:    header,
+		AssignmentDetails: response.AssignmentDetails{
+			AssignmentName: assignmentName,
+		},
+		Summary: response.ScoreSummary{
+			GradeStatus:          gradeStatus,
+			TotalAssignmentPoint: totalAssignmentPoint,
+			TotalSubmissionPoint: totalSubmissionPoint,
+		},
+	}
+	return resp, nil
 }

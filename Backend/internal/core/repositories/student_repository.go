@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/models"
 
 	"github.com/google/uuid"
@@ -22,4 +23,9 @@ type StudentRepository interface {
 
 	// File
 	FindSubmissionFileName(AssignmentID uuid.UUID, CourseID uuid.UUID, UserID uuid.UUID) (string, error)
+	// Submission
+	FindAssignmentName(CourseID uuid.UUID, AssignmentID uuid.UUID) (assignmentName string, err error)
+	FindSubmissionDetails(courseID uuid.UUID, assignmentID uuid.UUID, submissionID uuid.UUID) (response.HeaderDetails, error)
+	FindRubricDataByAssignmentID(assignmentID uuid.UUID) (map[string]interface{}, error)
+	FindGradeData(assignmentID uuid.UUID, submissionID uuid.UUID) (map[string]interface{}, error)
 }

@@ -181,4 +181,5 @@ func RegisterRoutes(
 	apiGroup.Get("/student/assignments", studentHandler.GetAssignmentsByCourseID)
 	// Submissions
 	apiGroup.Get("/student/submission/url", studentHandler.GetSubmissionFileFormMinIO)
+	apiGroup.Get("/student/submission/details", studentHandler.GetSubmissionDetailsFromGradeSubmission)
 }

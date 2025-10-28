@@ -1,11 +1,13 @@
 package adapters
 
 import (
+	"encoding/json"
 	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/models"
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -126,59 +128,6 @@ func (r *GormStudentRepository) FindAssignmentNamesWithCourseIDAndAssignmentID(C
 
 func (r *GormStudentRepository) FindAssignmentsByCourseID(courseID uuid.UUID, userID uuid.UUID) ([]map[string]interface{}, error) {
 	rows := make([]map[string]interface{}, 0)
-
-	// enrolledSections := r.db.
-	// 	Table("enrollment_lists AS el").
-	// 	Select("el.section_id").
-	// 	Joins(`JOIN personal_data AS pd ON pd.personal_data_id = el.personal_data_id AND pd.deleted_at IS NULL`).
-	// 	Joins(`JOIN users AS u ON u.email = pd.email AND u.deleted_at IS NULL`).
-	// 	Where(`el.course_id = ? AND u.user_id = ? AND el.deleted_at IS NULL`, courseID, userID)
-
-	// personalDataIDSub := r.db.
-	// 	Table("personal_data AS pd").
-	// 	Select("pd.personal_data_id").
-	// 	Joins(`JOIN users AS u ON u.email = pd.email AND u.deleted_at IS NULL`).
-	// 	Where(`u.user_id = ? AND pd.deleted_at IS NULL`, userID)
-
-	// var hasSection int64
-	// _ = r.db.Table("(?) AS s", enrolledSections).Count(&hasSection).Error
-	// if hasSection == 0 {
-	// 	return rows, nil
-	// }
-
-	// err := r.db.
-	// 	Table("assignments").
-	// 	Select(`
-	//         assignments.assignment_id,
-	//         assignments.assignment_name,
-	//         assignments.assignment_description,
-	//         MIN(asec.release_date) AS release_date,
-	//         MIN(asec.due_date)     AS due_date,
-	//         MIN(asec.cut_off_date) AS cut_off_date,
-	//         CASE WHEN COUNT(DISTINCT sub.submission_id) > 0 THEN TRUE ELSE FALSE END AS has_submitted,
-	//         MAX(sub.submitted_at)  AS last_submitted_at
-	//     `).
-	// 	Joins(`JOIN assignment_sections AS asec
-	//         ON asec.assignment_id = assignments.assignment_id
-	//        AND asec.deleted_at IS NULL
-	//        AND asec.section_id IN (?)
-	//        AND asec.release_date IS NOT NULL
-	//        AND (asec.release_date AT TIME ZONE 'Asia/Bangkok')::date <= (now() AT TIME ZONE 'Asia/Bangkok')::date
-	//     `, enrolledSections).
-	// 	Joins(`LEFT JOIN submissions AS sub
-	//         ON sub.assignment_id = assignments.assignment_id
-	//        AND sub.deleted_at IS NULL
-	//        AND sub.belongs_to IN (?)
-	//     `, personalDataIDSub).
-	// 	Where(`assignments.course_id = ? AND assignments.deleted_at IS NULL`, courseID).
-	// 	Group(`assignments.assignment_id, assignments.assignment_name, assignments.assignment_description`).
-	// 	Order(`release_date ASC, assignments.assignment_id ASC`).
-	// 	Scan(&rows).Error
-
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// return rows, nil
 
 	now := time.Now().UTC()
 	enrolledSections := r.db.
@@ -308,4 +257,92 @@ func (r *GormStudentRepository) FindSubmissionFileName(AssignmentID uuid.UUID, C
 		return "", gorm.ErrRecordNotFound
 	}
 	return row.FileName, nil
+}
+
+// Submission
+func (r *GormStudentRepository) FindAssignmentName(CourseID uuid.UUID, AssignmentID uuid.UUID) (assignmentName string, err error) {
+	var out struct {
+		AssignmentName string `gorm:"column:assignment_name"`
+	}
+
+	err = r.db.
+		Table("assignments").
+		Select("assignment_name").
+		Where("assignment_id = ? AND course_id = ? AND deleted_at IS NULL", AssignmentID, CourseID).
+		Take(&out).Error
+	if err != nil {
+		return "", err
+	}
+	return out.AssignmentName, nil
+}
+
+func (r *GormStudentRepository) FindSubmissionDetails(courseID uuid.UUID, assignmentID uuid.UUID, submissionID uuid.UUID) (response.HeaderDetails, error) {
+	var details response.HeaderDetails
+	err := r.db.
+		Table("submissions AS s").
+		Joins(`LEFT JOIN assignments a ON a.assignment_id = s.assignment_id AND a.deleted_at IS NULL`).
+		Joins(`LEFT JOIN personal_data pd ON pd.personal_data_id = s.belongs_to AND pd.deleted_at IS NULL`).
+		Joins(`LEFT JOIN enrollment_lists el ON el.personal_data_id = pd.personal_data_id AND el.course_id = a.course_id AND el.deleted_at IS NULL`).
+		Joins(`LEFT JOIN sections sec ON sec.section_id = el.section_id AND sec.deleted_at IS NULL`).
+		Select(`
+            COALESCE(
+                NULLIF(TRIM(
+                    COALESCE(pd.first_name, '') ||
+                    CASE
+                        WHEN COALESCE(NULLIF(pd.last_name,''),'') = '' THEN ''
+                        ELSE ' ' || pd.last_name
+                    END
+                ), ''),
+                COALESCE(pd.email,''),
+                ''
+            ) AS full_name,
+            UPPER(
+                CASE
+                    WHEN COALESCE(NULLIF(TRIM(pd.first_name), ''), '') = '' THEN ''
+                    WHEN COALESCE(NULLIF(TRIM(pd.last_name ), ''), '') = '' THEN SUBSTRING(TRIM(pd.first_name) FROM 1 FOR 2)
+                    ELSE SUBSTRING(TRIM(pd.first_name) FROM 1 FOR 1) || SUBSTRING(TRIM(pd.last_name) FROM 1 FOR 1)
+                END
+            ) AS nick_name,
+            COALESCE(sec.section_name, '') AS section
+        `).
+		Where(`s.submission_id = ? AND s.assignment_id = ? AND a.course_id = ? AND s.deleted_at IS NULL`, submissionID, assignmentID, courseID).
+		Take(&details).Error
+
+	if err != nil {
+		return response.HeaderDetails{}, err
+	}
+	return details, nil
+}
+
+func (r *GormStudentRepository) FindRubricDataByAssignmentID(AssignmentID uuid.UUID) (map[string]interface{}, error) {
+	var record struct {
+		RubricData datatypes.JSON `gorm:"column:rubric_data"`
+	}
+	err := r.db.
+		Table("rubrics").
+		Where("assignment_id = ? AND deleted_at IS NULL", AssignmentID).
+		Take(&record).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var rubricData map[string]interface{}
+	if err := json.Unmarshal(record.RubricData, &rubricData); err != nil {
+		return nil, err
+	}
+	return rubricData, nil
+}
+
+func (r *GormStudentRepository) FindGradeData(assignmentID uuid.UUID, submissionID uuid.UUID) (map[string]interface{}, error) {
+	var grade models.Grade
+	if err := r.db.Where("submission_id = ?", submissionID).First(&grade).Error; err != nil {
+		return nil, err
+	}
+
+	var data map[string]interface{}
+	if err := json.Unmarshal(grade.GradeData, &data); err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
