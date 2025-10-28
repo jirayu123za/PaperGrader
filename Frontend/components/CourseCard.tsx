@@ -4,7 +4,7 @@ import React from 'react';
 import CreateCourse from './Create/CreateCourse';
 import { useRouter } from 'next/navigation';
 import { useCourseStore } from '../store/useCourseStore';
-import { Anchor, ScrollArea, Card, Text, Tooltip, useMantineTheme } from '@mantine/core';
+import { Anchor, ScrollArea, Card, Text, Tooltip, useMantineTheme, Box } from '@mantine/core';
 import { useForm } from '@mantine/form';
 
 interface Course {
@@ -55,7 +55,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
 
   const selectCourse = (c: Course) => {
     setSelectedCourseId(c.course_id);
-    const base = studentMode ? '/student/overview/' : '/instructor/course/';
+    const base = studentMode ? '/student/course/' : '/instructor/course/';
     router.push(`${base}${c.course_id}/dashboard`);
   };
 
@@ -68,10 +68,10 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
       style={{ borderColor: theme.colors.teal[6] }}
       onClick={() => form.setFieldValue('isModalOpen', true)}
     >
-      <div className="text-center" style={{ color: theme.colors.teal[6] }}>
+      <Box ta="center" style={{ color: theme.colors.teal[6] }}>
         <Text size="xl" fw={700} className="mb-1">+</Text>
         <Text size="md">Create a new course</Text>
-      </div>
+      </Box>
     </Card>
   );
 
@@ -84,7 +84,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ courses = [], studentMode = fal
       className="w-full h-[180px] flex flex-col cursor-pointer transition-transform duration-150 hover:scale-105"
       onClick={() => selectCourse(course)}
     >
-      <Text size="sm" color="gray" className="mb-1">{course.course_code}</Text>
+      <Text size="sm" c="gray" className="mb-1">{course.course_code}</Text>
       <Text size="lg" fw={500} className="mb-1">{course.course_name}</Text>
       <div className="mt-auto flex flex-col gap-1">
         <Tooltip label={course.course_description} withArrow position="top">

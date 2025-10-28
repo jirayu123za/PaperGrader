@@ -1,93 +1,67 @@
 "use client";
 
-import react from "react";
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams, usePathname } from "next/navigation";
-import AccountMenu from "../../Account";
-import {
-  FaUser,
-  FaHome,
-  FaClipboardList,
-  FaRegArrowAltCircleRight,
-} from "react-icons/fa";
-import { useFetchInstructorList } from "../../../hooks/useFetchInstructorList";
-import { useStdCourseDashboardStore } from "../../../store/useCourseStore";
-import { useInstructorListStore } from "../../../store/useInstructorListStore";
-import { useFetchStdCourse } from "../../../hooks/useFetchCourse";
+import { FaUser, FaHome, FaClipboardList, FaRegArrowAltCircleRight } from "react-icons/fa";
 import { useDisclosure } from "@mantine/hooks";
-import {
-  Button,
-  Divider,
-  Flex,
-  Image,
-  Skeleton,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Button, Divider, Flex, Image, Skeleton, Stack, Text, Title} from "@mantine/core";
+import { useFetchStdCourse } from "@/hooks/useFetchCourse";
+import { useStdCourseDashboardStore } from "@/store/useCourseStore";
+import { useFetchInstructorList } from "@/hooks/useFetchInstructorList";
+import { useInstructorListStore } from "@/store/useInstructorListStore";
+import AccountMenu from "@/components/Account";
 
 export default function LeftAssignment() {
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname();
   const course_id = params?.course_id as string;
-  const [activeOption, setActiveOption] = useState("");
   const { isLoading, error } = useFetchInstructorList(course_id as string);
   const { instructorList } = useInstructorListStore();
-  const { isLoading: isCourseLoading, error: errorCourse } = useFetchStdCourse(
-    course_id as string
-  );
+  const { isLoading: isCourseLoading, error: errorCourse } = useFetchStdCourse(course_id as string);
   const { course } = useStdCourseDashboardStore();
-  const [isCollapsed, { toggle: toggleCollapse }] = useDisclosure(false);
+  const [ activeOption, setActiveOption ] = useState("");
+  const [ isCollapsed, {toggle: toggleCollapse} ] = useDisclosure(false);
+  const [ expandedName, {toggle: toggleExpandName} ] = useDisclosure(false);
 
   const icons = {
     home: <FaHome />,
     user: <FaUser />,
     clipboardList: <FaClipboardList />,
   };
-  const pathname = usePathname();
 
-useEffect(() => {
-  if (pathname.includes("dashboard")) setActiveOption("dashboard");
-  else if (pathname.includes("regrade")) setActiveOption("regrade");
-}, [pathname]);
+  useEffect(() => {
+    if (pathname.includes("dashboard")) setActiveOption("dashboard");
+    else if (pathname.includes("regrade")) setActiveOption("regrade");
+  }, [pathname]);
 
-const menuItems = [
-  {
-    key: "dashboard",
-    label: "Dashboard",
-    icon: icons.home,
-    href: `/student/overview/${course_id}/dashboard`,
-  },
-  {
-    key: "regrade",
-    label: "Regrade Requests",
-    icon: icons.clipboardList,
-    href: `/student/overview/${course_id}/regrade`,
-  },
-];
+  const menuItems = [
+    {
+      key: "dashboard",
+      label: "Dashboard",
+      icon: icons.home,
+      href: `/student/course/${course_id}/dashboard`,
+    },
+    {
+      key: "regrade",
+      label: "Regrade Requests",
+      icon: icons.clipboardList,
+      href: `/student/overview/${course_id}/regrade`,
+    },
+  ];
 
   return (
-    <div
-      className={`relative flex flex-col justify-between border-r transition-all duration-300 ${
-        isCollapsed ? "w-16" : "w-64"
-      } h-screen`}
-    >
-      <Flex
-        justify="space-between"
-        align="center"
-        p={12}
+    <div className={`relative flex flex-col justify-between border-r transition-all duration-300 ${isCollapsed ? "w-16" : "w-64"} h-screen`}>
+      <Flex justify="space-between" align="center" p={12}
         style={{
-          backgroundColor: "#6665AC",
+          backgroundColor: '#6665AC',
         }}
       >
         {/* Header and Course Name */}
         {!isCollapsed && (
           <Image
             src="/Image/logo-ppgd2.png"
-            alt="logo"
-            w={200}
-            h={60}
-            p={2}
+            alt="logo" w={200} h={60} p={2}
             style={{ cursor: "pointer" }}
             onClick={() => {
               router.push(`/student/overview`);
@@ -120,31 +94,36 @@ const menuItems = [
 
 
       {/* Course Information */}
-      <Flex
-        direction="column"
-        align="start"
-        p={16}
+      <Flex direction="column" align="start" p={16}
         style={{
           backgroundColor: "#6665AC",
         }}
       >
         {course ? (
-          <>
-            <Title
-              order={2}
-              style={{ color: "#F9F9F9" }}
-              className={`${isCollapsed ? "hidden" : "block"}`}
-            >
-              {course.course_name}
-            </Title>
-            <Text
-              size="sm"
-              style={{ color: "#E9E9E9" }}
-              className={`${isCollapsed ? "hidden" : "block"}`}
-            >
-              Introduction to {course.course_name}
-            </Text>
-          </>
+          !isCollapsed && (
+            <>
+              <Title
+                textWrap="balance"
+                order={2}
+                size={20} 
+                px="xs"
+                style={{ color: "#F9F9F9", cursor: "pointer" }}
+                lineClamp={expandedName ? undefined : 1}
+                onClick={toggleExpandName}
+              >
+                {course.course_name}
+              </Title>
+              <Text
+                size="sm"
+                px="xs"
+                pt="xs"
+                style={{ color: "#E9E9E9" }}
+                className={`${isCollapsed ? "hidden" : "block"}`}
+              >
+                Introduction to {course.course_name}
+              </Text>
+            </>
+          )
         ) : (
           <>
             <Title
@@ -184,41 +163,41 @@ const menuItems = [
           pr={16}
         />
 
-       {menuItems.map((item) => (
-  <Button
-    key={item.key}
-    leftSection={item.icon}
-    variant="subtle"
-    styles={{
-      root: {
-        display: "flex",
-        justifyContent: isCollapsed ? "center" : "flex-start",
-        color: activeOption === item.key ? "#424242" : "#FFFFFF",
-        backgroundColor:
-          activeOption === item.key ? "#f8f9fa" : "transparent",
-        borderRadius: "8px",
-        transition: "background-color 0.3s, color 0.3s",
-      },
-      section: {
-        marginRight: isCollapsed ? 0 : 8,
-      },
-    }}
-    onClick={() => {
-      setActiveOption(item.key);
-      router.push(item.href);
-    }}
-  >
-    {!isCollapsed && <span>{item.label}</span>}
-  </Button>
-))}
+        {menuItems.map((item) => (
+          <Button
+            key={item.key}
+            leftSection={item.icon}
+            variant="subtle"
+            fullWidth
+            styles={{
+              root: {
+                display: "flex",
+                alignItems: 'center',
+                justifyContent: isCollapsed ? "center" : "flex-start",
+                color: activeOption === item.key ? "#424242" : "#FFFFFF",
+                backgroundColor: activeOption === item.key ? "#f8f9fa" : "transparent",
+                borderRadius: "8px",
+                transition: "background-color 0.3s, color 0.3s",
+                paddingLeft: isCollapsed ? 0 : 16,
+                paddingRight: isCollapsed ? 0 : 16,
+              },
+              section: {
+                marginRight: isCollapsed ? 0 : 8,
+              },
+            }}
+            onClick={() => {
+              setActiveOption(item.key);
+              router.push(item.href);
+            }}
+          >
+            {!isCollapsed && <span>{item.label}</span>}
+          </Button>
+        ))}
 
-
-        <Divider
+        <Divider color="#E9E9E9" size="xs"
           style={{
-            backgroundColor: "#E9E9E9",
             display: isCollapsed ? "none" : "block",
           }}
-          size="xs"
         />
 
         {!isCollapsed && (

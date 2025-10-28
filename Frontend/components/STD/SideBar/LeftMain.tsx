@@ -2,23 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  FaHome,
-  FaBook,
-  FaCog,
-  FaUser,
-  FaRegArrowAltCircleRight,
-} from "react-icons/fa";
-import { useDisclosure } from "@mantine/hooks";
-import { Button, Flex, Image, Stack } from "@mantine/core";
-import AccountMenu from "../../Account";
 import { usePathname } from "next/navigation";
+import { FaHome, FaBook, FaCog, FaUser, FaRegArrowAltCircleRight } from "react-icons/fa";
+import { useDisclosure } from "@mantine/hooks";
+import { Button, Divider, Flex, Image, Stack } from "@mantine/core";
+import AccountMenu from "@/components/Account";
 
 export default function LeftMain() {
   const router = useRouter();
-  const [isCollapsed, { toggle: toggleCollapse }] = useDisclosure(false);
   const pathname = usePathname();
-
+  const [isCollapsed, { toggle: toggleCollapse }] = useDisclosure(false);
   const [activeOption, setActiveOption] = useState("");
 
   const icons = {
@@ -69,7 +62,7 @@ export default function LeftMain() {
           backgroundColor: "#6665AC",
         }}
       >
-        {/* Header and Course Name */}
+        {/* Header */}
         {!isCollapsed && (
           <Image
             src="/Image/logo-ppgd2.png"
@@ -107,6 +100,8 @@ export default function LeftMain() {
         </Button>
       </Flex>
 
+      <Divider c="#E9E9E9" size="xs"/>
+
       {/* Main Menu */}
       <Stack
         p={16}
@@ -124,12 +119,14 @@ export default function LeftMain() {
             styles={{
               root: {
                 display: "flex",
+                alignItems: 'center',
                 justifyContent: isCollapsed ? "center" : "flex-start",
                 color: activeOption === item.key ? "#424242" : "#FFFFFF",
-                backgroundColor:
-                  activeOption === item.key ? "#f8f9fa" : "transparent",
+                backgroundColor: activeOption === item.key ? "#f8f9fa" : "transparent",
                 borderRadius: "8px",
                 transition: "background-color 0.3s, color 0.3s",
+                paddingLeft: isCollapsed ? 0 : 16,
+                paddingRight: isCollapsed ? 0 : 16,
               },
               section: {
                 marginRight: isCollapsed ? 0 : 8,
@@ -137,7 +134,6 @@ export default function LeftMain() {
             }}
             onClick={() => {
               setActiveOption(item.key);
-              // ปุ่ม Settings จะไม่เปลี่ยนหน้า
               if (item.key !== "settings") {
                 router.push(item.href);
               }
