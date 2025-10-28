@@ -31,8 +31,6 @@ export const useFetchAssignments = (course_id: string) => {
 
       const data = response.data.assignments;
       const normalizedData = Array.isArray(data) ? data : [data];
-      console.log("Assignments Data:", normalizedData);
-
       setAssignments(normalizedData || []);
       return normalizedData || [];
     },
