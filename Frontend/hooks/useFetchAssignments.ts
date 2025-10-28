@@ -10,9 +10,9 @@ interface Assignment {
   release_date: string;
   due_date: string;
   cut_off_date: string;
-  published: boolean;
-  regrades: boolean;
-  submitted_by: string;
+  score: number | null;
+  total_score: number | null;
+  has_submitted: boolean;
 }
 
 export const useFetchAssignments = (course_id: string) => {

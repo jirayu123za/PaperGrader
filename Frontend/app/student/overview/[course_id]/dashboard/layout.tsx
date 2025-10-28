@@ -1,14 +1,17 @@
 import React from 'react'
 import LeftAssignment from '@/components/STD/SideBar/LeftCourse'
+import { Container, Flex } from '@mantine/core'
 
 export default function StudentCourseDashboard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen">
+    <Container fluid>
+      <Flex>
         <LeftAssignment/>
-        <main className="flex-1">
+        <main className="flex-grow min-h-screen">
           {children}
         </main>
-    </div>
+      </Flex>
+    </Container>
   )
 }
 

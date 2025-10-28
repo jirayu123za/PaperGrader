@@ -2,17 +2,15 @@ import { create } from 'zustand';
 
 // Part: 1
 interface Assignment {
-  [x: string]: any;
   assignment_id: string;
+  submission_id: string;
   assignment_name: string;
   release_date: string;
   due_date: string;
   cut_off_date: string;
-  published: boolean;
-  regrades: boolean;
-  submitted_by: string;
-  
-
+  score: number | null;
+  total_score: number | null;
+  has_submitted: boolean;
 }
 
 interface AssignmentStore {
