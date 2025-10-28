@@ -83,7 +83,8 @@ func (r *GormStudentRepository) FindCoursesAndAssignments(UserID uuid.UUID) ([]m
 			AND sections.deleted_at IS NULL
 			AND assignment_sections.due_date IS NOT NULL 
 			AND assignment_sections.release_date IS NOT NULL
-		`, UserID).
+			AND assignments.submitted_by = ?
+		`, UserID, "student").
 		Find(&courses).Error; err != nil {
 		return nil, err
 	}
