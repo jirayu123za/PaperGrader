@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import STD_Dashboard from '@/components/STD/Dashboard/STD_Dashboard';
+import Dashboard from '@/components/STD/Dashboard/Dashboard';
 import { Loader } from '@mantine/core';
 
 export const metadata = {
@@ -10,7 +10,7 @@ export const metadata = {
 export default async function STDDashboard() {
   return (
     <Suspense fallback={<Loader size="sm" />}>
-      <STD_Dashboard /> 
+      <Dashboard /> 
     </Suspense>
   );
 };

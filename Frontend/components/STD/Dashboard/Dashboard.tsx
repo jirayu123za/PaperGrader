@@ -7,7 +7,7 @@ import ActiveAssignments from "./ActiveAssignments";
 import OverdueAssignments from "./OverdueAssignments";
 import { useFetchStdAssignments } from "@/hooks/Student/useFetchSTD_Assignment";
 
-export default function STD_Dashboard() {
+export default function Dashboard() {
   const { isLoading, error } = useFetchStdAssignments();
 
   if (error) return <div>Error loading assignments: {error.message}</div>;

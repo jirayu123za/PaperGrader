@@ -1,21 +1,15 @@
 "use client";
 
 import React from "react";
-import { Card, Progress, Skeleton, Text, Pagination } from "@mantine/core";
 import Link from "next/link";
+import dayjs from "dayjs";
+import "dayjs/locale/th";
+import { Card, Progress, Skeleton, Text, Pagination } from "@mantine/core";
 import { IconUpload } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useSubmitAndDownloadModalStore } from "@/store/modal/useSubmitAndDownloadModal";
-import dayjs from "dayjs";
-import "dayjs/locale/th";
-import {
-  calculateProgress,
-  getProgressColor,
-  getRemainingTimeText,
-} from "./utils/dateUtils";
+import { calculateProgress, getProgressColor, getRemainingTimeText } from "./utils/dateUtils";
 import { groupByDate, paginate, ITEMS_PER_PAGE } from "./utils/groupingUtils";
-
-dayjs.locale("en");
 
 interface Props {
   assignments: any[];
@@ -25,13 +19,7 @@ interface Props {
   isOverdue?: boolean;
 }
 
-export default function AssignmentList({
-  assignments,
-  isLoading,
-  page,
-  setPage,
-  isOverdue = false,
-}: Props) {
+export default function AssignmentList({ assignments, isLoading, page, setPage, isOverdue = false }: Props) {
   const { openModal } = useSubmitAndDownloadModalStore();
   const router = useRouter();
 
@@ -40,7 +28,7 @@ export default function AssignmentList({
       <div className="space-y-4">
         {Array.from({ length: 5 }).map((_, i) => (
           <Card key={i} shadow="sm" padding="lg" radius="md" withBorder>
-            <Skeleton height={20} width="70%" />
+            <Skeleton height={40} width="100%" />
           </Card>
         ))}
       </div>
@@ -105,9 +93,11 @@ export default function AssignmentList({
                       <Text
                         fw={500}
                         className="cursor-pointer hover:underline"
+                        lineClamp={1}
                         onClick={() =>
+                          //! Need submission_id to view specific submission
                           router.push(
-                            `/student/overview/${a.course_id}/assignment/${a.assignment_id}/grade`
+                            `/student/course/${a.course_id}/assignment/${a.assignment_id}/submission/${a.submission_id}`
                           )
                         }
                       >
@@ -115,10 +105,11 @@ export default function AssignmentList({
                       </Text>
                     </div>
 
-                    <Link href={`/student/overview/${a.course_id}/dashboard`}>
+                    <Link href={`/student/course/${a.course_id}/dashboard`}>
                       <Text
                         size="sm"
                         c="dimmed"
+                        lineClamp={1}
                         className="cursor-pointer hover:underline"
                       >
                         {a.course_code} - {a.course_name}
