@@ -185,7 +185,7 @@ func (r *GormStudentRepository) FindAssignmentsByCourseID(courseID uuid.UUID, us
             ON sub.assignment_id = a.assignment_id
            AND sub.deleted_at IS NULL
            AND sub.belongs_to IN (?)`, personalDataIDSub).
-		Where("a.course_id = ? AND a.deleted_at IS NULL", courseID).
+		Where("a.course_id = ? AND a.deleted_at IS NULL AND COALESCE(a.submitted_by, 'student') = ?", courseID, "student").
 		Select(`
 			a.assignment_id,
 			a.assignment_name,
