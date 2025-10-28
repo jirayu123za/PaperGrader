@@ -50,6 +50,7 @@ services:
       - CMU_USERINFO_URL=${CMU_USERINFO_URL}
       - FRONTEND_ORIGIN=${FRONTEND_ORIGIN}
       - JWT_SECRET=${JWT_SECRET}
+      - EXPORT_GRADES_CRON=${EXPORT_GRADES_CRON}
       - TESSDATA_PREFIX=/usr/share/tessdata
     ports:
       - "${PORT:-3000}:3000"
