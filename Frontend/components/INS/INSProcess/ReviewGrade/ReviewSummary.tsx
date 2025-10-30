@@ -1,14 +1,14 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import {NumberInput,Group,Text,Title,Flex,Card,Center,Image,Popover,ActionIcon,} from "@mantine/core";
+import { NumberInput, Group, Text, Title, Flex, Card, Center, Image, Popover, ActionIcon, } from "@mantine/core";
 import GradeStatistics from "./GradeStatistics";
 import StudentTable from "./StudentTable";
 import { useFetchReviewGrade } from "@/hooks/ReviewGrade/useFetchReviewGrade";
 import { useReviewGradeStore } from "@/store/reviewgrade/useReviewGradeStore";
 
 export default function ReviewSummary() {
-  const { course_id, assignment_id } = useParams() as {course_id?: string; assignment_id?: string;};
+  const { course_id, assignment_id } = useParams() as { course_id?: string; assignment_id?: string; };
   const bin = useReviewGradeStore((s) => s.bin);
   const setBin = useReviewGradeStore((s) => s.setBin);
   const { data, isLoading, error, isFetching } = useFetchReviewGrade(course_id ?? null, assignment_id ?? null, bin);
@@ -43,20 +43,24 @@ export default function ReviewSummary() {
 
         <Group justify="flex-end" align="center" gap="xs">
           <Text size="sm" c="dimmed" fw={600}>
-            Bin
+          NO. Bin
           </Text>
           <NumberInput
-            value={bin}
-            onChange={(v) => {
-              const n = typeof v === "number" ? v : 10;
-              setBin(Math.min(Math.max(n, 1), 20)); 
-            }}
+            defaultValue={bin}
             min={1}
-            max={20}
+            max={25}
             size="xs"
             maw={80}
             hideControls
             clampBehavior="strict"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                const raw = (e.currentTarget as HTMLInputElement).value;
+                const n = Number.parseInt(raw, 10);
+                const safe = Number.isFinite(n) ? n : 10;
+                setBin(Math.min(Math.max(safe, 1), 25));
+              }
+            }}
           />
           <Popover width={280} withArrow shadow="md" position="right-start">
             <Popover.Target>
@@ -66,7 +70,7 @@ export default function ReviewSummary() {
             </Popover.Target>
             <Popover.Dropdown>
               <Text size="sm">
-                You can set the bin range to 1–20. “Bin” is the number of
+                You can set the bin range to 1–25. Press Enter to apply. “Bin” is the number of
                 buckets used to group scores for the histogram.
               </Text>
             </Popover.Dropdown>
