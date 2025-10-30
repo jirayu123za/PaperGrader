@@ -28,10 +28,10 @@ export const QuestionSelectorParams = () => {
     const questionIndex = questions.indexOf(question);
 
     if (sub_question_id) {
-        const sub = question.sub_questions?.find(sq => sq.sub_question_id === sub_question_id);
-        if (!sub) return `${questionIndex + 1}: Invalid sub-question`;
-        const subIndex = (question.sub_questions ?? []).indexOf(sub);
-        return `${questionIndex + 1}.${subIndex + 1}: ${sub.sub_question_title}`;
+      const sub = question.sub_questions?.find(sq => sq.sub_question_id === sub_question_id);
+      if (!sub) return `${questionIndex + 1}: Invalid sub-question`;
+      const subIndex = (question.sub_questions ?? []).indexOf(sub);
+      return `${questionIndex + 1}.${subIndex + 1}: ${sub.sub_question_title}`;
     }
     return `${questionIndex + 1}: ${question.question_title}`;
   };
@@ -48,39 +48,39 @@ export const QuestionSelectorParams = () => {
   };
 
   useEffect(() => {
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (!["ArrowLeft", "ArrowRight"].includes(e.key)) return;
-    e.preventDefault();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!["ArrowUp", "ArrowDown"].includes(e.key)) return;
+      e.preventDefault();
 
-    const flatList: { qid: string; sid?: string }[] = [];
-    questions.forEach((q) => {
-      if (q.sub_questions && q.sub_questions.length > 0) {
-        q.sub_questions.forEach((sub) =>
-          flatList.push({ qid: q.question_id, sid: sub.sub_question_id })
-        );
-      } else {
-        flatList.push({ qid: q.question_id });
+      const flatList: { qid: string; sid?: string }[] = [];
+      questions.forEach((q) => {
+        if (q.sub_questions && q.sub_questions.length > 0) {
+          q.sub_questions.forEach((sub) =>
+            flatList.push({ qid: q.question_id, sid: sub.sub_question_id })
+          );
+        } else {
+          flatList.push({ qid: q.question_id });
+        }
+      });
+
+      const currentIndex = flatList.findIndex(
+        (it) => it.qid === question_id && it.sid === sub_question_id
+      );
+      if (currentIndex === -1) return;
+
+      let nextIndex = currentIndex;
+      if (e.key === "ArrowDown" && currentIndex < flatList.length - 1) nextIndex++;
+      else if (e.key === "ArrowUp" && currentIndex > 0) nextIndex--;
+
+      if (nextIndex !== currentIndex) {
+        const next = flatList[nextIndex];
+        router.push(generateHref(next.qid, next.sid));
       }
-    });
+    };
 
-    const currentIndex = flatList.findIndex(
-      (it) => it.qid === question_id && it.sid === sub_question_id
-    );
-    if (currentIndex === -1) return;
-
-    let nextIndex = currentIndex;
-    if (e.key === "ArrowRight" && currentIndex < flatList.length - 1) nextIndex++;
-    else if (e.key === "ArrowLeft" && currentIndex > 0) nextIndex--;
-
-    if (nextIndex !== currentIndex) {
-      const next = flatList[nextIndex];
-      router.push(generateHref(next.qid, next.sid));
-    }
-  };
-
-  window.addEventListener("keydown", handleKeyDown);
-  return () => window.removeEventListener("keydown", handleKeyDown);
-}, [questions, question_id, sub_question_id, router]);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [questions, question_id, sub_question_id, router]);
 
   return (
     <Popover
@@ -113,9 +113,9 @@ export const QuestionSelectorParams = () => {
                 onClick={() => {
                   if (q.sub_questions && q.sub_questions.length > 0) return;
                   router.push(generateHref(q.question_id))
-                  }}
+                }}
                 c={
-                    question_id === q.question_id && !sub_question_id
+                  question_id === q.question_id && !sub_question_id
                     ? "blue" : "dark"
                 }
               >
@@ -135,7 +135,7 @@ export const QuestionSelectorParams = () => {
                     lineClamp={1}
                     onClick={() => router.push(generateHref(q.question_id, sub.sub_question_id))}
                     c={
-                        question_id === q.question_id && sub_question_id === sub.sub_question_id
+                      question_id === q.question_id && sub_question_id === sub.sub_question_id
                         ? "blue" : "dark"
                     }
                   >
