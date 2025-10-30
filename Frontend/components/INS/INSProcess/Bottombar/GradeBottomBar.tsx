@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from 'react';
-import {Group, Button, Text, Tooltip, Kbd, Popover, ActionIcon, Table,} from '@mantine/core';
+import { Group, Button, Text, Tooltip, Kbd, Popover, ActionIcon, Table, } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useFetchTotalSubmissionIDs } from '@/hooks/useFetchGradeBottom';
@@ -33,16 +33,16 @@ const GradeBottomBar: React.FC = () => {
   const editingDescriptionID = useRubricGradeStore((s) => s.editingDescriptionID);
 
 
-const isTypingInEditable = (e: KeyboardEvent) => {
-  const t = e.target as HTMLElement | null;
-  if (!t) return false;
-  const tag = t.tagName;
-  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
-  if ((t as HTMLElement).isContentEditable) return true;
-  if (t.closest('[contenteditable="true"]')) return true;
-  if (t.closest('[role="textbox"]')) return true;
-  return false;
-};
+  const isTypingInEditable = (e: KeyboardEvent) => {
+    const t = e.target as HTMLElement | null;
+    if (!t) return false;
+    const tag = t.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+    if ((t as HTMLElement).isContentEditable) return true;
+    if (t.closest('[contenteditable="true"]')) return true;
+    if (t.closest('[role="textbox"]')) return true;
+    return false;
+  };
 
   const findPrevUngraded = () => {
     if (currentIndex <= 0) return undefined;
@@ -75,19 +75,19 @@ const isTypingInEditable = (e: KeyboardEvent) => {
   const handleNextUng = () => nextUng && router.push(buildSHref(nextUng.submission_id));
 
   useEffect(() => {
-  const onKeyDown = (e: KeyboardEvent) => {
-    if (isTypingInEditable(e)) return;
-    if (editingRubricID || editingDescriptionID) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (isTypingInEditable(e)) return;
+      if (editingRubricID || editingDescriptionID) return;
 
-    const key = e.key;
-    if (key === 'm' || key === 'M') handlePrevUng();
-    if (key === ',' || key === '<') handlePrev();
-    if (key === '.' || key === '>') handleNext();
-    if (key === '/' || key === '?') handleNextUng();
-  };
-  window.addEventListener('keydown', onKeyDown);
-  return () => window.removeEventListener('keydown', onKeyDown);
-}, [prevSub, nextSub, prevUng, nextUng, editingRubricID, editingDescriptionID]);
+      const key = e.key;
+      if (key === 'm' || key === 'M') handlePrevUng();
+      if (key === 'ArrowLeft') handlePrev();
+      if (key === 'ArrowRight') handleNext();
+      if (key === '/' || key === '?') handleNextUng();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [prevSub, nextSub, prevUng, nextUng, editingRubricID, editingDescriptionID]);
   const display = currentIndex >= 0 ? currentIndex + 1 : 0;
   const total = totalSubs.length;
 
@@ -124,47 +124,59 @@ const isTypingInEditable = (e: KeyboardEvent) => {
           </Wrap>
         </Tooltip>
 
-        <Tooltip label="Shortcut: <  or  ," withArrow>
-          <Wrap>
+        <Tooltip
+          label="Go to previous submission (same question). Shortcut: ←"
+          withArrow
+          withinPortal
+          zIndex={5000}
+          position="top"
+          openDelay={150}
+        >
+          <span style={{ display: 'inline-block', pointerEvents: 'auto' }}>
             <Button
               variant="outline"
               color="violet"
               size="xs"
               disabled={!prevSub}
               onClick={handlePrev}
-              aria-label="Prev (Shortcut: < or ,)"
+              aria-label="Go to previous submission (same question). Shortcut: Left Arrow"
               rightSection={
                 <Group gap={4}>
-                  <Kbd size="xs">{'<'}</Kbd>
-
+                  <Kbd size="xs">{'←'}</Kbd>
                 </Group>
               }
             >
               ‹ Prev
             </Button>
-          </Wrap>
+          </span>
         </Tooltip>
 
-        <Tooltip label="Shortcut: >  or  ." withArrow>
-          <Wrap>
+        <Tooltip
+          label="Go to next submission (same question). Shortcut: →"
+          withArrow
+          withinPortal
+          zIndex={5000}
+          position="top"
+          openDelay={150}
+        >
+          <span style={{ display: 'inline-block', pointerEvents: 'auto' }}>
             <Button
               variant="outline"
               color="violet"
               size="xs"
               disabled={!nextSub}
               onClick={handleNext}
-              aria-label="Next (Shortcut: > or .)"
+              aria-label="Go to next submission (same question). Shortcut: Right Arrow"
               rightSection={
                 <Group gap={4}>
-                  <Kbd size="xs">{'>'}</Kbd>
+                  <Kbd size="xs">{'→'}</Kbd>
                 </Group>
               }
             >
-              Next ›
+              Next →
             </Button>
-          </Wrap>
+          </span>
         </Tooltip>
-
         <Tooltip label="Shortcut: ?  or  /" withArrow>
           <Wrap>
             <Button
@@ -225,9 +237,7 @@ const isTypingInEditable = (e: KeyboardEvent) => {
                   <Table.Td>Prev</Table.Td>
                   <Table.Td>
                     <Group gap={6}>
-                      <Kbd>{'<'}</Kbd>
-                      <Text size="xs">or</Text>
-                      <Kbd>,</Kbd>
+                      <Kbd>{'←'}</Kbd>
                     </Group>
                   </Table.Td>
                 </Table.Tr>
@@ -235,9 +245,7 @@ const isTypingInEditable = (e: KeyboardEvent) => {
                   <Table.Td>Next</Table.Td>
                   <Table.Td>
                     <Group gap={6}>
-                      <Kbd>{'>'}</Kbd>
-                      <Text size="xs">or</Text>
-                      <Kbd>.</Kbd>
+                      <Kbd>{'→'}</Kbd>
                     </Group>
                   </Table.Td>
                 </Table.Tr>
