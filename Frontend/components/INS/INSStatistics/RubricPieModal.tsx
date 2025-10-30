@@ -136,7 +136,7 @@ export default function RubricPieModal({
         body: { background: "#ffffff", overflow: "visible" },
         header: { background: "#ffffff", borderBottom: "1px solid #e9ecef" },
       }}
-      overlayProps={{ backgroundOpacity: 0.35, blur: 4 }}
+      overlayProps={{ backgroundOpacity: 0.35, blur: 0 }}
     >
       {showEmpty ? (
         <Center mih={height} style={{ textAlign: "center" }}>
