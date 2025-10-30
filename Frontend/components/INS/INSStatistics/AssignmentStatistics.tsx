@@ -69,7 +69,7 @@ function StatBox({ label, value }: { label: string; value: number }) {
   return (
     <Card withBorder radius="md" p="sm">
       <Text size="xs" c="dimmed">{label}</Text>
-      <Text fw={700}>{formattedValue}</Text>
+      <Text fw={700}>{formattedValue}%</Text>
     </Card>
   );
 }
