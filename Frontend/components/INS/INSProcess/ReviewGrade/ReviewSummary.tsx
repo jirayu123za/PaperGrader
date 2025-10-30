@@ -43,7 +43,7 @@ export default function ReviewSummary() {
 
         <Group justify="flex-end" align="center" gap="xs">
           <Text size="sm" c="dimmed" fw={600}>
-          NO. Bin
+          No. of Bin
           </Text>
           <NumberInput
             defaultValue={bin}
