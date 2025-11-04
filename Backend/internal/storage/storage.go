@@ -12,7 +12,7 @@ import (
 )
 
 func NewMinioClientsFromEnv() (internal *minio.Client, public *minio.Client, bucket string, ttl time.Duration, err error) {
-	endpointInternal := os.Getenv("MINIO_ENDPOINT")
+	endpointInternal := os.Getenv("MINIO_PRIVATE_ENDPOINT")
 	endpointPublic := os.Getenv("MINIO_PUBLIC_ENDPOINT")
 	if endpointPublic == "" {
 		endpointPublic = endpointInternal
