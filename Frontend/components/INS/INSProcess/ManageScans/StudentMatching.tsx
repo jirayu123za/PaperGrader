@@ -2,7 +2,7 @@
 import React from 'react'
 import dayjs from 'dayjs';
 import SubmissionBoxes from './SubmissionBoxes';
-import { Box, Flex, Select, Table, Text, TextInput, ActionIcon, Autocomplete, Alert, Skeleton, Tooltip, Stack, Pagination } from '@mantine/core';
+import { Box, Flex, Select, Table, Text, TextInput, ActionIcon, Autocomplete, Alert, Skeleton, Tooltip, Stack, Pagination, Title } from '@mantine/core';
 import { IconEdit, IconSearch } from '@tabler/icons-react';
 import { FaTrash } from "react-icons/fa";
 import { TfiReload } from "react-icons/tfi";
@@ -60,7 +60,6 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
     });
   }
     
-
   const formatDate = (dateString: string) => {
     return dayjs(dateString).format('MMM DD, YYYY [at] hh:mm A');
   };
@@ -188,10 +187,18 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                     <Table highlightOnHover>
                         <Table.Thead>
                             <Table.Tr>
-                                <Table.Th w={420}>Name & ID Region</Table.Th>
-                                <Table.Th pl={80}>Match with</Table.Th>
-                                <Table.Th pl={80}>Auto matching</Table.Th>
-                                <Table.Th pl={80}>Submission time</Table.Th>
+                                <Table.Th w="40%">
+                                    <Title order={6} lineClamp={1}>Name & ID Region</Title>
+                                </Table.Th>
+                                <Table.Th pl={80}>
+                                    <Title order={6} lineClamp={1}>Match with</Title>
+                                </Table.Th>
+                                <Table.Th pl={80}>
+                                    <Title order={6} lineClamp={1}>Auto matching</Title>
+                                </Table.Th>
+                                <Table.Th pl={80}>
+                                    <Title order={6} lineClamp={1}>Submission time</Title>
+                                </Table.Th>
                             </Table.Tr>
                         </Table.Thead>
                         
@@ -232,7 +239,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
                                         className="group"
                                     >
                                         {/* Image x2 */}
-                                        <Table.Td maw="260px">
+                                        <Table.Td maw="300px">
                                             <SubmissionBoxes submissionBoxesURL={[item.url_file_id, item.url_file_name]} />
                                         </Table.Td>
 
@@ -316,21 +323,21 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
 
                                         <Table.Td pl={80}>
                                             {item.has_assigned !== true ? (
-                                                <Text size="sm" fw={500} c="red">Not Matched</Text>
+                                                <Text size="sm" fw={500} c="red" lineClamp={1}>Not Matched</Text>
                                             ) : (
                                                 <Flex direction="column" gap="xs">
                                                       <Flex align="center" gap='2px'>
-                                                        <Text size="sm" fw={500} c="green">Matched</Text>
-                                                        <Text size="xs" c="dimmed">({item.matched_by})</Text>
+                                                        <Text size="sm" fw={500} c="green" lineClamp={1}>Matched</Text>
+                                                        <Text size="xs" c="dimmed" lineClamp={1}>({item.matched_by})</Text>
                                                     </Flex>
-                                                    <Text size="sm" c="dimmed">Section submitted: {item.section_name}</Text>
+                                                    <Text size="sm" c="dimmed" lineClamp={1}>Section submitted: {item.section_name}</Text>
                                                 </Flex>
                                             )}
                                         </Table.Td>
                        
                                         {/* Submission Time */}
                                         <Table.Td pl={80}>
-                                            <Text size="sm">{formatDate(item.submitted_at)}</Text>
+                                            <Text size="sm" lineClamp={1}>{formatDate(item.submitted_at)}</Text>
                                         </Table.Td>
 
                                        {/* Trash Icon */}

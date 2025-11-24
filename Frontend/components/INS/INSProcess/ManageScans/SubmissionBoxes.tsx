@@ -7,7 +7,6 @@ interface SubmissionBoxesProps {
 }
 
 const SubmissionBoxes: React.FC<SubmissionBoxesProps> = ({ submissionBoxesURL }) => {
-  console.log("SubmissionBoxes component rendered with URLs:", submissionBoxesURL);
   const validURLs = submissionBoxesURL.filter((url) => typeof url === 'string' && url.trim() !== '');
 
   return (
@@ -23,17 +22,14 @@ const SubmissionBoxes: React.FC<SubmissionBoxesProps> = ({ submissionBoxesURL })
           {submissionBoxesURL.map((url, index) => (
             <Box
               key={index}
-              w={200}
-              h={100}
-              style={{
-                overflow: 'hidden',
-              }}
+              mih={100}
             >
               <Image
                 src={url}
                 alt={`submission-box-${index + 1}`}
-                width="100%"
-                height="100%"
+                w="100%"
+                h="100%"
+                fit="contain"
                 loading="lazy"
                 fallbackSrc="https://placehold.co/200x100?text=No+Image"
               />
