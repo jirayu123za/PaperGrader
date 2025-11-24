@@ -1,6 +1,8 @@
 package adapters
 
 import (
+	"os"
+	"paperGrader/internal/config"
 	"paperGrader/internal/core/services"
 	"paperGrader/internal/core/utils"
 	"time"
@@ -94,7 +96,14 @@ func (h *HttpOAuthHandler) GetGoogleCallBack(c *fiber.Ctx) error {
 			})
 		}
 
-		redirectURL := "http://localhost:5173/?token=" + jwtToken
+		config.LoadEnv()
+		redirectFrontendURL := os.Getenv("FRONTEND_TOKEN")
+		if redirectFrontendURL == "" {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "FRONTEND_TOKEN is not set in environment variables",
+			})
+		}
+		redirectURL := redirectFrontendURL + jwtToken
 		return c.Redirect(redirectURL, fiber.StatusTemporaryRedirect)
 
 	}
@@ -128,11 +137,24 @@ func (h *HttpOAuthHandler) VerifyGoogleCallback(c *fiber.Ctx) error {
 		})
 	}
 
+	config.LoadEnv()
+	frontendInstructorURL := os.Getenv("FRONTEND_INSTRUCTOR_URL")
+	if frontendInstructorURL == "" {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "FRONTEND_INSTRUCTOR_URL is not set in environment variables",
+		})
+	}
+	frontendStudentURL := os.Getenv("FRONTEND_STUDENT_URL")
+	if frontendStudentURL == "" {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "FRONTEND_STUDENT_URL is not set in environment variables",
+		})
+	}
 	switch groupID {
 	case 1:
-		return c.Redirect("http://localhost:5173/INSCourseOverview", fiber.StatusTemporaryRedirect)
+		return c.Redirect(frontendInstructorURL, fiber.StatusTemporaryRedirect)
 	case 2:
-		return c.Redirect("http://localhost:5173/student/overview", fiber.StatusTemporaryRedirect)
+		return c.Redirect(frontendStudentURL, fiber.StatusTemporaryRedirect)
 	default:
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Invalid group ID",

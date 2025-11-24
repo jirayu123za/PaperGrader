@@ -98,9 +98,14 @@ func (s *CMUOAuthServiceImpl) ExchangeAndLogin(ctx context.Context, code, redire
 			return response.LoginResult{}, err
 		}
 
+		config.LoadEnv()
+		redirectFrontendURL := os.Getenv("FRONTEND_TOKEN")
+		if redirectFrontendURL == "" {
+			return response.LoginResult{}, errors.New("FRONTEND_TOKEN is not set in environment variables")
+		}
 		return response.LoginResult{
 			NeedsSignUp: true,
-			RedirectURL: "http://localhost:5173/?token=" + preToken,
+			RedirectURL: redirectFrontendURL + "?token=" + preToken,
 		}, nil
 	}
 

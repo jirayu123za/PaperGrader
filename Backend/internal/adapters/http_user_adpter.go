@@ -121,13 +121,21 @@ func (h *HttpUserHandler) DeleteJWT(c *fiber.Ctx) error {
 	if idProvider == "cmu" {
 		config.LoadEnv()
 		tenant := os.Getenv("CMU_TENANT_ID")
-		frontendOrigin := os.Getenv("FRONTEND_ORIGIN")
-		if frontendOrigin == "" {
-			frontendOrigin = "http://localhost:5173"
+		if tenant == "" {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to load CMU_TENANT_ID from environment",
+			})
 		}
+		logout_url := os.Getenv("CMU_LOGOUT_URL")
+		if logout_url == "" {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to load CMU_LOGOUT_URL from environment",
+			})
+		}
+		frontendOrigin := os.Getenv("FRONTEND_ORIGIN")
 		post := url.QueryEscape(frontendOrigin)
 		response["post_logout_url"] = fmt.Sprintf(
-			"https://login.microsoftonline.com/%s/oauth2/v2.0/logout?post_logout_redirect_uri=%s",
+			logout_url,
 			tenant, post,
 		)
 	}
