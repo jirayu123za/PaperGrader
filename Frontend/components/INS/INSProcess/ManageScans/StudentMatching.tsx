@@ -120,7 +120,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
     <Box maw='100%'>
         <Flex align="center" mb="sm" justify="space-between">
             <Flex align="center" gap="xs">
-                <Text pl="xs">
+                <Text pl="xs" lineClamp={1}>
                     <Text span fw={700}>{`${studentMatchingData.length}`}</Text> Submissions - 
                     <Text span fw={700}>{hasAssigned}</Text> Students Have Been Matched
                 </Text>
