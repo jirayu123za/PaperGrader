@@ -8,7 +8,7 @@ import { FaTrash } from "react-icons/fa";
 import { TfiReload } from "react-icons/tfi";
 import { useStudentsListStore } from '@/store/ManageScan/useStudentsListStore';
 import { useStudentMatchingStore } from '@/store/ManageScan/useStudentMatchingStore';
-import { useFetchStudentMatching } from '@/hooks/ManageScan/ีuseFetchStudentMatching';
+import { useFetchStudentMatching } from '@/hooks/ManageScan/useFetchStudentMatching';
 import { useManageSubmissionStore } from '@/store/ManageScan/useManageSubmissionStore ';
 import { useUpdateSubmission } from '@/hooks/ManageScan/useUpdateSubmission';
 import { useFetchStudentsList } from '@/hooks/ManageScan/useFetchStudentsList';
@@ -26,7 +26,7 @@ export const StudentMatching: React.FC<Props> = ({ course_id, assignment_id })  
   const { withSubmission, withoutSubmission } = useStudentsListStore();
   const { isFetching: isFetchingStudentMatchingData, refetch: refetchStudentMatchingData, isLoading: isLoadingStudentMatchingData, error: errorStudentMatchingData } = useFetchStudentMatching(course_id, assignment_id);
   const { studentMatchingData, searchQuery, setSearchQuery, filterStatus, setFilterStatus, pageSize, setPageSize, setIsPageChanging, isPageChanging } = useStudentMatchingStore();
-  const { isFetching: isFetchingOCRData, refetch: refetchOCRData, isLoading: isLoadingOCRData } = useFetchOCRProcessing(course_id, assignment_id, { queryKey: ['ocr_data', course_id, assignment_id], enabled: false });
+  const { isFetching: isFetchingOCRData, refetch: refetchOCRData, isLoading: isLoadingOCRData } = useFetchOCRProcessing(course_id as string, assignment_id as string);
   const { ocrProcessingData } = useOCRDataStore();
   const { editableSubmissionID, setEditableSubmissionID } = useManageSubmissionStore();
   const { mutate: updateSubmission, isPending } = useUpdateSubmission(course_id, assignment_id);

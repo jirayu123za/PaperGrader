@@ -1,7 +1,8 @@
-import { useOCRDataStore } from "@/store/ManageScan/useOCRDataStore";
-import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import axios from "axios";
-import { API_BASE, api, qf } from '@/src/lib/api';
+import { useOCRDataStore } from "@/store/ManageScan/useOCRDataStore";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { API_BASE } from '@/src/lib/api';
+import { useEffect } from "react";
 
 interface OCRProcessData {
     submission_id: string;
@@ -10,14 +11,15 @@ interface OCRProcessData {
     best_match_id: string;
 }
 
-export const useFetchOCRProcessing = (course_id: string, assignment_id: string, options?: UseQueryOptions) => {
+export const useFetchOCRProcessing = (course_id: string, assignment_id: string) => {
     const setOCRProcessingData = useOCRDataStore((state) => state.setOCRProcessingData);
+    const queryClient = useQueryClient();
 
-    return useQuery<OCRProcessData[], Error>({
+    const query = useQuery<OCRProcessData[], Error>({
         queryKey: ['ocr_data', course_id, assignment_id],
         queryFn: async () => {
             const response = await axios.get(`${API_BASE}/instructor/ocr/process`, {
-                params: { course_id: course_id, assignment_id: assignment_id },
+                params: { course_id, assignment_id },
             });
 
             if (response.status !== 200) {
@@ -28,7 +30,17 @@ export const useFetchOCRProcessing = (course_id: string, assignment_id: string, 
             setOCRProcessingData(data || []);
             return data || [];
         },
-        enabled: !!course_id && !!assignment_id && options?.enabled !== false,
+        enabled: false,
         refetchOnWindowFocus: false,
     });
+
+    useEffect(() => {
+        if (query.isSuccess) {
+            queryClient.invalidateQueries({
+                queryKey: ['submissions', course_id, assignment_id],
+            });
+        }
+    }, [query.isSuccess, queryClient, course_id, assignment_id]);
+
+    return query;
 }

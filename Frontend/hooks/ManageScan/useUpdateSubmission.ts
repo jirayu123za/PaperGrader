@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useFetchStudentMatching } from './ีuseFetchStudentMatching';
+import { useFetchStudentMatching } from './useFetchStudentMatching';
 import { useStudentMatchingStore } from '@/store/ManageScan/useStudentMatchingStore';
-import { API_BASE, api, qf } from '@/src/lib/api';
+import { API_BASE } from '@/src/lib/api';
 
 interface updateSubmissionParams {
     submission_id: string;

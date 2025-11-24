@@ -1,7 +1,7 @@
+import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useStudentMatchingStore } from "@/store/ManageScan/useStudentMatchingStore";
-import axios from "axios";
-import { API_BASE, api, qf } from '@/src/lib/api';
+import { API_BASE } from '@/src/lib/api';
 
 interface StudentMatchingData {
     submission_id: string;
