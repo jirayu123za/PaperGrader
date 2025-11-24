@@ -1978,7 +1978,7 @@ func (s *InstructorServiceImpl) GetLatestExportList(courseID uuid.UUID) ([]respo
 	return exportList, nil
 }
 
-// Part:1 Statistics data
+// Part:1 Statistics data (sections)
 func (s *InstructorServiceImpl) GetAssignmentStatsAndQuestionsList(req response.GetAssignmentStatisticsRequest, courseID uuid.UUID) (response.AssignmentStatisticsResponse, response.QuestionsListStatsResponse, error) {
 	gradeIDs, err := s.repo.FindGradeIDsHasGradedBySectionIDs(req.AssignmentID, req.SectionIDs)
 	if err != nil {
@@ -2050,7 +2050,7 @@ func (s *InstructorServiceImpl) GetStatisticsDataByReviewGrade(courseID uuid.UUI
 			Mean:                 0,
 			SD:                   0,
 			TotalSubmissions:     0,
-			TotalAssignmentScore: int64(math.Round(totalFullScore)),
+			TotalAssignmentScore: totalFullScore,
 			SubmissionScores:     []float64{},
 			GradesData:           []response.GradeBin{},
 			Table:                tableRows,
@@ -2103,7 +2103,7 @@ func (s *InstructorServiceImpl) GetStatisticsDataByReviewGrade(courseID uuid.UUI
 		Mean:                 mean,
 		SD:                   sd,
 		TotalSubmissions:     int64(n),
-		TotalAssignmentScore: int64(math.Round(totalFullScore)),
+		TotalAssignmentScore: totalFullScore,
 		SubmissionScores:     scores,
 		GradesData:           bins,
 		Table:                tableRows,

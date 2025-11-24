@@ -731,7 +731,7 @@ type StatsCore struct {
 	PercentMean          float64
 	PercentSD            float64
 	TotalSubmissions     int64
-	TotalAssignmentScore int64
+	TotalAssignmentScore float64
 	QMean                map[uuid.UUID]float64
 	SQMean               map[uuid.UUID]float64
 	QRubric              map[uuid.UUID][]RubricDetailCount
@@ -745,7 +745,7 @@ type AssignmentStatisticsResponse struct {
 	Mean                 float64                           `json:"mean"`
 	SD                   float64                           `json:"sd"`
 	TotalSubmissions     int64                             `json:"total_submission"`
-	TotalAssignmentScore int64                             `json:"total_assignment_score"`
+	TotalAssignmentScore float64                           `json:"total_assignment_score"`
 	QuestionsStatistics  []QuestionsListStatisticsResponse `json:"questions_statistics"`
 }
 
@@ -816,7 +816,7 @@ type StatisticsReviewGradeResponse struct {
 	Mean                 float64                             `json:"mean"`
 	SD                   float64                             `json:"sd"`
 	TotalSubmissions     int64                               `json:"total_submission"`
-	TotalAssignmentScore int64                               `json:"total_assignment_score"`
+	TotalAssignmentScore float64                             `json:"total_assignment_score"`
 	SubmissionScores     []float64                           `json:"submission_scores"`
 	GradesData           []GradeBin                          `json:"grades_data"`
 	Table                []SubmissionStatisticsTableResponse `json:"table"`

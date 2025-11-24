@@ -3213,14 +3213,28 @@ func (r *GormInstructorRepository) FindAssignmentStatsCore(req response.GetAssig
 		var schema struct {
 			QuestionsData []struct {
 				QuestionPoint float64 `json:"question_point"`
+				SubQuestions  []struct {
+					SubQuestionPoint float64 `json:"sub_question_point"`
+				} `json:"sub_questions"`
 			} `json:"questions_data"`
 		}
+
 		if err := json.Unmarshal(rows[0].GradeData, &schema); err == nil {
 			tmp := 0.0
+
 			for _, q := range schema.QuestionsData {
-				tmp += q.QuestionPoint
+				subTotal := 0.0
+				for _, sq := range q.SubQuestions {
+					subTotal += sq.SubQuestionPoint
+				}
+
+				if q.QuestionPoint > 0 {
+					tmp += q.QuestionPoint
+				} else {
+					tmp += subTotal
+				}
 			}
-			out.TotalAssignmentScore = int64(tmp)
+			out.TotalAssignmentScore = tmp
 		}
 	}
 	if out.TotalAssignmentScore <= 0 {
@@ -3634,9 +3648,6 @@ func (r *GormInstructorRepository) FindSectionListForStatistics(courseID uuid.UU
 
 func (r *GormInstructorRepository) FindSubmissionScoresForAssignment(courseID uuid.UUID, assignmentID uuid.UUID) ([]float64, float64, error) {
 	var scores []float64
-	// 1) รวมคะแนนดิบราย submission:
-	// - ระดับคำถามหลัก: sum rubric_details.rubric_point ที่ has_selected=true
-	// - ระดับ sub_questions: sum rubric_details.rubric_point ที่ has_selected=true และ grades.has_graded=true
 	scoreSQL := `
 		WITH base AS (
 		SELECT g.submission_id, g.grade_data
@@ -3691,22 +3702,33 @@ func (r *GormInstructorRepository) FindSubmissionScoresForAssignment(courseID uu
 	// Get total full score
 	var totalFullScore float64
 	fullSQL := `
-		WITH q AS (
-		SELECT (qel->>'question_point')::double precision AS qp
-		FROM rubrics r
-		CROSS JOIN LATERAL jsonb_array_elements(r.rubric_data->'questions_data') qel
-		WHERE r.assignment_id = @assignmentID AND r.deleted_at IS NULL
+		WITH base AS (
+			SELECT jsonb_array_elements(r.rubric_data->'questions_data') AS qel
+			FROM rubrics r
+			WHERE r.assignment_id = @assignmentID
+			AND r.deleted_at IS NULL
 		),
-		sq AS (
-		SELECT (sqel->>'sub_question_point')::double precision AS qp
-		FROM rubrics r
-		CROSS JOIN LATERAL jsonb_array_elements(r.rubric_data->'questions_data') qel
-		CROSS JOIN LATERAL jsonb_array_elements(COALESCE(qel->'sub_questions','[]'::jsonb)) sqel
-		WHERE r.assignment_id = @assignmentID AND r.deleted_at IS NULL
+		q AS (
+			SELECT
+				COALESCE((qel->>'question_point')::double precision, 0) AS qp,
+				COALESCE(
+					(
+						SELECT SUM((sqel->>'sub_question_point')::double precision)
+						FROM jsonb_array_elements(
+							COALESCE(qel->'sub_questions', '[]'::jsonb)
+						) sqel
+					),
+					0
+				) AS sqp
+			FROM base
 		)
-		SELECT COALESCE((SELECT SUM(qp) FROM q),0)
-			+ COALESCE((SELECT SUM(qp) FROM sq),0)
-		AS total_point;
+		SELECT COALESCE(SUM(
+			CASE
+				WHEN q.qp > 0 THEN q.qp
+				ELSE q.sqp
+			END
+		), 0) AS total_point
+		FROM q;
 	`
 	if err := r.db.Raw(
 		fullSQL,
