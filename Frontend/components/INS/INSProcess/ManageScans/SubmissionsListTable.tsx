@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useMemo, useRef, useState, useLayoutEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import dayjs from "dayjs";
 import { useFetchSubmissionFiles } from "@/hooks/ManageScan/useFetchSubmissionFiles";
-import {Flex,Loader,Pagination,Paper,Table,Text,} from "@mantine/core";
+import {Flex,Loader,Pagination,Paper,Table,Text, Title,} from "@mantine/core";
 import { FaRegFilePdf } from "react-icons/fa";
 import { useSubmissionFilesStore } from "@/store/ManageScan/useSubmissionFiles";
 import { usePagination, useViewportSize } from "@mantine/hooks";
@@ -23,41 +23,15 @@ export const SubmissionsListTable: React.FC<Props> = ({ assignment_id }) => {
     return dayjs(dateString).format("MMM DD, YYYY [at] hh:mm A");
   };
 
-
   const { height: viewportH } = useViewportSize();
-
-  const sectionRef = useRef<HTMLDivElement | null>(null);
-  const theadRef = useRef<HTMLTableSectionElement | null>(null);
-  const tfootRef = useRef<HTMLTableSectionElement | null>(null);
-  const sampleRowRef = useRef<HTMLTableRowElement | null>(null);
-
-  const [rowsPerPage, setRowsPerPage] = useState<number>(8);
-
-  useLayoutEffect(() => {
-
-    const sectionTop = sectionRef.current?.getBoundingClientRect().top ?? 0;
-    const bottomPadding = 12;
-    const availableViewport = Math.max(0, viewportH - sectionTop - bottomPadding);
-    const theadH = theadRef.current?.getBoundingClientRect().height ?? 0;
-    const tfootH = tfootRef.current?.getBoundingClientRect().height ?? 0;
-
-
-    const fallbackRowH = 48;
-    const rowH =
-      sampleRowRef.current?.getBoundingClientRect().height ?? fallbackRowH;
-
-    const dividerH = 1;
-    const paperVerticalPadding = 50;
-    const availableForRows =
-      availableViewport - theadH - tfootH - dividerH - paperVerticalPadding;
-
-    const fit = Math.max(1, Math.floor(availableForRows / rowH));
-    setRowsPerPage(fit);
-  }, [viewportH, submissionsList?.length]);
-
-
-
   const totalItems = submissionsList?.length ?? 0;
+    
+  const rowsPerPage = useMemo(() => {
+    if (viewportH < 700) return 4;
+    if (viewportH < 900) return 6;
+    return 10;
+  }, [viewportH]);
+
   const totalPages = useMemo(() => {
     return totalItems > 0 ? Math.ceil(totalItems / rowsPerPage) : 1;
   }, [totalItems, rowsPerPage]);
@@ -67,32 +41,51 @@ export const SubmissionsListTable: React.FC<Props> = ({ assignment_id }) => {
     initialPage: 1,
   });
 
+  useEffect(() => {
+    if (pagination.active > totalPages) {
+      pagination.setPage(totalPages);
+    }
+  }, [totalPages, pagination.active]);
+
   const startIndex = (pagination.active - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-  const paginatedSubmissionsTable =
-    submissionsList?.slice(startIndex, endIndex) ?? [];
+  const paginatedSubmissionsTable = submissionsList?.slice(startIndex, endIndex) ?? [];
 
   if (!isLoadingSubmissions && totalItems === 0) {
     return null;
   }
 
   return (
-    <div ref={sectionRef}>
-      <Paper withBorder mb="md" style={{ overflow: "hidden" }}>
-        <Table verticalSpacing="xs" horizontalSpacing="lg" highlightOnHover>
-          <Table.Thead className="bg-gray-100 h-14" ref={theadRef}>
+      <Paper withBorder mb="md"
+        style={{
+          overflow: "hidden",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <Table verticalSpacing="xs" horizontalSpacing="lg" highlightOnHover style={{ flex: 1, overflowY: "auto" }}>
+          <Table.Thead className="bg-gray-100 h-14">
             <Table.Tr>
-              <Table.Th w="250px">File</Table.Th>
-              <Table.Th w="350px">Date</Table.Th>
-              <Table.Th w="240px">Total submissions</Table.Th>
-              <Table.Th w="180px">Submitted by</Table.Th>
-              <Table.Th w="60px"></Table.Th>
+              <Table.Th w="30%">
+                <Title order={6} lineClamp={1}>File</Title>
+              </Table.Th>
+              <Table.Th w="25%">
+                <Title order={6} lineClamp={1}>Date</Title>
+              </Table.Th>
+              <Table.Th w="15%" ta="center">
+                <Title order={6} lineClamp={1}>Total submissions</Title>
+              </Table.Th>
+              <Table.Th w="15%" ta="center">
+                <Title order={6} lineClamp={1}>Submitted by</Title>
+              </Table.Th>
+              <Table.Th w="15%" ta="center"></Table.Th>
             </Table.Tr>
           </Table.Thead>
 
           <Table.Tbody>
             {isLoadingSubmissions ? (
-              <Table.Tr ref={sampleRowRef}>
+              <Table.Tr>
                 <Table.Td colSpan={5}>
                   <Flex justify="center" align="center" py="42px">
                     <Loader size="md" color="blue" type="bars" />
@@ -103,20 +96,25 @@ export const SubmissionsListTable: React.FC<Props> = ({ assignment_id }) => {
               paginatedSubmissionsTable.map((submissions, idx) => (
                 <Table.Tr
                   key={submissions.submission_id}
-                  ref={idx === 0 ? sampleRowRef : undefined}
                 >
                   <Table.Td>
                     <Flex align="center" gap={4}>
                       <FaRegFilePdf size={18} color="red" />
-                      <Text c="blue" size="sm">
+                      <Text c="blue" size="sm" lineClamp={1}>
                         {submissions.file_name}
                       </Text>
                     </Flex>
                   </Table.Td>
-                  <Table.Td>{formatDate(submissions.submitted_at)}</Table.Td>
-                  <Table.Td>{submissions.total_submissions}</Table.Td>
-                  <Table.Td>{submissions.submitted_by}</Table.Td>
                   <Table.Td>
+                    <Text size="sm" lineClamp={1}>{formatDate(submissions.submitted_at)}</Text>
+                  </Table.Td>
+                  <Table.Td ta="center">
+                    <Text size="sm" lineClamp={1}>{submissions.total_submissions}</Text>
+                  </Table.Td>
+                  <Table.Td ta="center">
+                    <Text size="sm" lineClamp={1}>{submissions.submitted_by}</Text>
+                  </Table.Td>
+                  <Table.Td ta="center">
                     <DeleteSubmission
                       assignment_id={assignment_id}
                       submission_id={submissions.submission_id}
@@ -128,7 +126,7 @@ export const SubmissionsListTable: React.FC<Props> = ({ assignment_id }) => {
             )}
           </Table.Tbody>
 
-          <Table.Tfoot ref={tfootRef}>
+          <Table.Tfoot>
             <Table.Tr>
               <Table.Td colSpan={5} className="border-t border-gray-300">
                 <Flex justify="end">
@@ -147,6 +145,5 @@ export const SubmissionsListTable: React.FC<Props> = ({ assignment_id }) => {
           </Table.Tfoot>
         </Table>
       </Paper>
-    </div>
   );
 };

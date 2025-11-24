@@ -13,16 +13,16 @@ export const AlertForSubmission = () => {
             mb={4}
         >
             <Flex align="center">
-            <Text size="sm" mr={6}>
+            <Text size="sm" mr={6} lineClamp={1}>
                 Proposed scan splits: 
             </Text>
-            <Text size="sm">
+            <Text size="sm" lineClamp={1}>
                 Proposed scan splits will likely be more accurate if you first set up the{' '}
                 <Anchor
                     // href={`/courses/${course_id}/process/${assignment_id}/CreateOutline`}
                     style={{ textDecoration: 'underline', fontSize: '0.80rem' }}
                 >
-                Assignment Outline
+                Assignment outline
                 </Anchor>
                 .
             </Text>
@@ -36,16 +36,16 @@ export const AlertForSubmission = () => {
             mb="xs"
         >
             <Flex align="center">
-            <Text size="sm" mr={6}>
+            <Text size="sm" mr={6} lineClamp={1}>
                 Scanning tips:
             </Text>
-            <Text size="sm">
+            <Text size="sm" lineClamp={1}>
                 For more information on scanning best practices, see our{' '}
                 <Anchor 
                 href="/scanning-tips" 
                 style={{ textDecoration: 'underline', fontSize: '0.80rem' }}
                 >
-                scanning tips
+                Scanning tips
                 </Anchor>
                 .
             </Text>

@@ -1,6 +1,6 @@
 "use client";
 import React from 'react';
-import { Flex, Image, Text } from '@mantine/core';
+import { Box, Flex, Image, Text } from '@mantine/core';
 import { SubmissionsListTable } from './SubmissionsListTable';
 import { AlertForSubmission } from './AlertForSubmission';
 import { DropFilesBox } from './DropFilesBox';
@@ -16,12 +16,16 @@ const UploadFiles: React.FC<Props> = ({ course_id, assignment_id }) => {
   const hasSubmissions = submissionsList.length > 0;
 
   return (
-    <Flex direction="column" gap="md">
+    <Flex direction="column" gap="md" h="100%">
       {/* Top: Submissions Table */}
-      {hasSubmissions && <SubmissionsListTable assignment_id={assignment_id} />}
+      {hasSubmissions && (
+        <Box className='flex-1'>
+          <SubmissionsListTable assignment_id={assignment_id} />
+        </Box>
+      )}
 
       {/* Bottom: Drop zone and alert aligned vertically */}
-      <Flex direction="row" gap="md">
+      <Flex direction="row" gap="md" style={{ flexShrink: 0 }}>
         <DropFilesBox course_id={course_id} assignment_id={assignment_id} />
         <AlertForSubmission />
       </Flex>

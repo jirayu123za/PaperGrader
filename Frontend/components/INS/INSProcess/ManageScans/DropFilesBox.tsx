@@ -70,10 +70,10 @@ export const DropFilesBox: React.FC<Props> = ({ course_id, assignment_id }) => {
         </Dropzone.Idle>
 
         <div>
-          <Text size="xl" inline>
+          <Text size="xl" inline lineClamp={1}>
             {'Drag PDFs here or click to select files'}
           </Text>
-          <Text size="sm" c="dimmed" inline mt={7}>
+          <Text size="sm" c="dimmed" inline mt={7} lineClamp={1}>
             Attach as many files as you like, each file should not exceed 50MB
           </Text>
         </div>
