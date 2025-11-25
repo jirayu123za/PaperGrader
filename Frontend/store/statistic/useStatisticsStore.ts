@@ -1,50 +1,54 @@
 import { create } from "zustand";
 
-
-export type RubricDetail = {
+// Interfaces for Statistics API Response
+// 1.1: Questions_list
+interface RubricDetail {
   rubric_id: string;
   description?: string | null;
   totals_select: number;
-};
+}
 
-export type RubricBlock = {
+interface Rubrics {
   total_student: number;
   rubrics_detail: RubricDetail[];
-};
+}
 
-export type SubQuestionStat = {
+interface SubQuestions {
   sub_question_id: string;
-  question_number: string;        
+  question_number: string;
   sub_question_title?: string | null;
   sub_question_point?: number | null;
-  mean?: number | null;              
-  percent_mean?: number | null;     
-  rubric?: RubricBlock | null;
-};
+  mean?: number | null;
+  percent_mean?: number | null;
+  rubric?: Rubrics | null;
+}
 
-export type QuestionItem = {
+interface Questions {
   question_id: string;
-  question_number: string;          
+  question_number: string;
   question_title?: string | null;
   question_point?: number | null;
-  mean?: number | null;         
-  percent_mean?: number | null;    
-  rubric?: RubricBlock | null;
-  sub_questions?: SubQuestionStat[];
-};
+  mean?: number | null;
+  percent_mean?: number | null;
+  rubric?: Rubrics | null;
+  sub_questions?: SubQuestions[];
+}
 
-export type QuestionsStatisticsIndex = {
+// 1.2: Statistics
+export interface SubQuestionsStat {
+  sub_question_id: string;
+  question_number: string;
+  percent_mean?: number | null;
+}
+
+export interface Question {
   question_id: string;
   question_number: string;
   percent_mean?: number | null;
-  sub_questions?: Array<{
-    sub_question_id: string;
-    question_number: string;
-    percent_mean?: number | null;
-  }>;
+  sub_questions?: SubQuestionsStat[];
 };
 
-export type AssignmentStatisticsPayload = {
+interface StatisticsOverview {
   minimum: number;
   median: number;
   maximum: number;
@@ -52,51 +56,32 @@ export type AssignmentStatisticsPayload = {
   sd: number;
   total_submission: number;
   total_assignment_score: number;
-  questions_statistics: QuestionsStatisticsIndex[];
-  [k: string]: any;
-};
+  questions_statistics: Question[];
+}
 
-export type StatisticsApiResponse = {
-  message?: string;
-  questions_list: QuestionItem[];
-  statistics: AssignmentStatisticsPayload;
-};
+export interface statisticsData {
+  questions_list: Questions[];
+  statistics: StatisticsOverview;
+}
 
+interface StatisticsStore {
+  assignmentID: string | null;
+  sectionIDs: string[];
 
-type StatisticsStore = {
-  courseId: string | null;
-  assignmentId: string | null;
-  sectionIds: string[];
+  setAssignmentID: (id: string | null) => void;
+  setSectionIDs: (ids: string[]) => void;
 
-  data: StatisticsApiResponse | null;
-  isLoading: boolean;
-  isError: boolean;
-  errorMsg: string | null;
-
-  setCourseId: (id: string | null) => void;
-  setAssignmentId: (id: string | null) => void;
-  setSectionIds: (ids: string[]) => void;
-
-  setLoading: (v: boolean) => void;
-  setError: (msg: string | null) => void;
-  setData: (payload: StatisticsApiResponse | null) => void;
+  statisticsData: statisticsData | null;
+  setStatisticsData: (data: statisticsData) => void;
 };
 
 export const useStatisticsStore = create<StatisticsStore>((set) => ({
-  courseId: null,
-  assignmentId: null,
-  sectionIds: [],
+  assignmentID: null,
+  sectionIDs: [],
 
-  data: null,
-  isLoading: false,
-  isError: false,
-  errorMsg: null,
+  setAssignmentID: (id) => set({ assignmentID: id }),
+  setSectionIDs: (ids) => set({ sectionIDs: ids }),
 
-  setCourseId: (id) => set({ courseId: id }),
-  setAssignmentId: (id) => set({ assignmentId: id }),
-  setSectionIds: (ids) => set({ sectionIds: ids }),
-
-  setLoading: (v) => set({ isLoading: v, isError: v ? false : undefined, errorMsg: v ? null : undefined }),
-  setError: (msg) => set({ isError: !!msg, errorMsg: msg ?? null, isLoading: false }),
-  setData: (payload) => set({ data: payload, isLoading: false, isError: false, errorMsg: null }),
+  statisticsData: null,
+  setStatisticsData: (data) => set({ statisticsData: data }),
 }));

@@ -1,47 +1,34 @@
-import { useEffect } from 'react';
+import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { API_BASE } from '@/src/lib/api';
-import { useStatisticsStore, type StatisticsApiResponse } from '@/store/statistic/useStatisticsStore';
+import { useStatisticsStore, statisticsData } from '@/store/statistic/useStatisticsStore';
 import { useStatisticSectionsStore } from '@/store/statistic/useStatisticSectionsStore';
 
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_STATS_MOCK === '0';
+export const useFetchStatistics = (course_id: string, assignment_id: string | null) => {
+  const sectionIDs = useStatisticSectionsStore((s) => s.selectedSectionIDs);
+  const { assignmentID: assignmentIDFromStore, setStatisticsData } = useStatisticsStore((s) => ({
+    assignmentID: s.assignmentID,
+    setStatisticsData: s.setStatisticsData,
+  }));
+  const assignmentID = assignment_id ?? assignmentIDFromStore;
 
-export function useFetchStatistics() {
-  const courseId = useStatisticsStore((s) => s.courseId);
-  const assignmentId = useStatisticsStore((s) => s.assignmentId);
-  const sectionIds = useStatisticSectionsStore((s) => s.selectedSectionIds);
-  const setData = useStatisticsStore((s) => s.setData);
-
-  const enabled = Boolean(courseId && assignmentId && sectionIds.length > 0);
-
-  const query = useQuery<StatisticsApiResponse>({
-    queryKey: ['statistics', courseId, assignmentId, sectionIds.join(',')],
-    enabled,
-    queryFn: async (): Promise<StatisticsApiResponse> => {
-        if (USE_MOCK) {
-        const res = await fetch('/mocks/statisticsMock.json', { cache: 'no-store' });
-        if (!res.ok) throw new Error(`Mock not found (${res.status})`);
-        return (await res.json()) as StatisticsApiResponse;
-      }
-      const url = `${API_BASE}/instructor/statistics?course_id=${courseId}`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ assignment_id: assignmentId, section_ids: sectionIds }),
+  return useQuery<statisticsData>({
+    queryKey: ['statistics', course_id, assignmentID, sectionIDs.join(',')],
+    queryFn: async (): Promise<statisticsData> => {
+      const url = `${API_BASE}/instructor/statistics?course_id=${course_id}`;
+      const res = await axios.post(url, {
+        assignment_id: assignmentID,
+        section_ids: sectionIDs,
       });
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(`Fetch statistics failed (${res.status}) ${text}`);
-      }
-      return (await res.json()) as StatisticsApiResponse;
-    },
-    retry: 0,
-    staleTime: 60_000,   
-  });
-    useEffect(() => {
-    if (query.data) setData(query.data);
-  }, [query.data, setData]);
 
-  return query;
+      if (res.status !== 200) {
+        throw new Error('Network response was not ok');
+      }
+      const data = res.data;
+      setStatisticsData(data);
+      return data;
+    },
+    enabled: !!course_id && !!assignmentID && sectionIDs.length > 0,
+    refetchOnWindowFocus: false,
+  });
 }

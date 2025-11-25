@@ -4,19 +4,19 @@ export type AssignmentOption = { value: string; label: string };
 
 type State = {
   assignmentsList: AssignmentOption[];
-  selectedAssignmentId: string | null;
+  selectedAssignmentID: string | null;
 };
 
 type Actions = {
   setAssignmentsList: (list: AssignmentOption[]) => void;
-  setSelectedAssignmentId: (id: string | null) => void;
+  setSelectedAssignmentID: (id: string | null) => void;
   reset: () => void;
 };
 
 export const useAssignmentStatisticStore = create<State & Actions>((set) => ({
   assignmentsList: [],
-  selectedAssignmentId: null,
+  selectedAssignmentID: null,
   setAssignmentsList: (list) => set({ assignmentsList: list }),
-  setSelectedAssignmentId: (id) => set({ selectedAssignmentId: id }),
-  reset: () => set({ assignmentsList: [], selectedAssignmentId: null }),
+  setSelectedAssignmentID: (id) => set({ selectedAssignmentID: id }),
+  reset: () => set({ assignmentsList: [], selectedAssignmentID: null }),
 }));

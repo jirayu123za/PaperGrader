@@ -7,42 +7,60 @@ export type StatisticSection = {
 };
 
 type State = {
-  courseId: string | null;
-  assignmentId: string | null;
+  assignmentID: string | null;
   sections: StatisticSection[];
-  selectedSectionIds: string[];
+  selectedSections: StatisticSection[];
+  selectedSectionIDs: string[];
+
+  setAssignmentID: (id: string | null) => void;
+  setSections: (rows: StatisticSection[]) => void;
+  setSelectedSections: (rows: StatisticSection[]) => void;
 };
 
-type Actions = {
-  setCourseId: (id: string | null) => void;
-  setAssignmentId: (id: string | null) => void;
-  setSections: (s: StatisticSection[]) => void;
-  setSelectedByRows: (rows: StatisticSection[]) => void;
-  selectAllIfExists: () => void;
-  clearSelection: () => void;
-};
 
-export const useStatisticSectionsStore = create<State & Actions>((set, get) => ({
-  courseId: null,
-  assignmentId: null,
+export const useStatisticSectionsStore = create<State>((set) => ({
+  assignmentID: null,
   sections: [],
-  selectedSectionIds: [],
+  selectedSections: [],
+  selectedSectionIDs: [],
 
-  setCourseId: (id) => set({ courseId: id }),
-  setAssignmentId: (id) => set({ assignmentId: id }),
-  setSections: (s) => set({ sections: s }),
+  setAssignmentID: (id) =>
+    set({
+      assignmentID: id,
+      sections: [],
+      selectedSections: [],
+      selectedSectionIDs: [],
+    }),
 
-  setSelectedByRows: (rows) => {
-    const ids = rows.flatMap((r) => r.section_id);
-    set({ selectedSectionIds: ids });
-  },
-
-  selectAllIfExists: () => {
-    const allRow = get().sections.find((s) => s.is_all);
+  setSections: (rows) => {
+    const allRow = rows.find((r) => r.is_all);
     if (allRow) {
-      set({ selectedSectionIds: allRow.section_id });
+      set({
+        sections: rows,
+        selectedSections: [allRow],
+        selectedSectionIDs: allRow.section_id.map(String),
+      });
+    } else {
+      set({
+        sections: rows,
+        selectedSections: [],
+        selectedSectionIDs: [],
+      });
     }
   },
 
-  clearSelection: () => set({ selectedSectionIds: [] }),
+  setSelectedSections: (rows) => {
+    const allRow = rows.find((r) => r.is_all);
+    if (allRow) {
+      set({
+        selectedSections: [allRow],
+        selectedSectionIDs: allRow.section_id.map(String),
+      });
+    } else {
+      set({
+        selectedSections: rows,
+        selectedSectionIDs: rows.map((r) => String(r.section_id[0])),
+      });
+    }
+  },
 }));
