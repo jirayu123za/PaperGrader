@@ -1,7 +1,6 @@
 import LeftMain from '@/components/LeftINS/LeftMain';
 
-
-export default function Statisticslayout({ children }: { children: React.ReactNode }) {
+export default function StatisticsLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
       <LeftMain />

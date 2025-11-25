@@ -1,7 +1,7 @@
 import React from 'react';
 import { Loader } from '@mantine/core';
 import { Suspense } from 'react';
-import StatisticsSunmary from '@/components/INS/INSStatistics/StatisticsSummary';
+import StatisticsSummary from '@/components/INS/INSStatistics/StatisticsSummary';
 
 export const metadata = {
     title: ' Statistics ',
@@ -13,7 +13,7 @@ export default async function StatisticsPage() {
     return (
         <div className="w-full">
             <Suspense fallback={<Loader size="sm" />}>
-                <StatisticsSunmary  />
+                <StatisticsSummary  />
             </Suspense>
         </div>
     );
