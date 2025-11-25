@@ -1,65 +1,78 @@
 "use client";
 
-import { Card, Stack, Skeleton, Text } from "@mantine/core";
 import StatisticHeader from "@/components/INS/Header/StatisticHeader";
 import AssignmentStatistics from "@/components/INS/INSStatistics/AssignmentStatistics";
 import RubricTable from "@/components/INS/INSStatistics/RubricTable";
-import { useFetchStatistics } from "@/hooks/Statistic/useFetchStatistics";
 import { useParams } from "next/navigation";
+import { Box, Stack, Skeleton, Flex } from "@mantine/core";
+import { useFetchStatistics } from "@/hooks/Statistic/useFetchStatistics";
 import { useAssignmentStatisticStore } from "@/store/statistic/useAssignmentStatisticStore";
-import Image from "next/image";
+import { NoSelectAssignment } from "@/components/INS/INSStatistics/NoSelectAssignment";
+import { ErrorStatistics } from "@/components/INS/INSStatistics/ErrorStatistics";
+import { NoRubricTable } from "@/components/INS/INSStatistics/NoRubricTable";
+import { NoStatistic } from "@/components/INS/INSStatistics/NoStatistic";
+import { useStatisticsStore } from "@/store/statistic/useStatisticsStore";
 
-function EmptyState({ message }: { message: string }) {
-  return (
-    <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-      <div style={{ textAlign: "center" }}>
-        <Image src="/Image/statistic/statistic.svg" alt="Statistics" width={400} height={400} style={{ width: 400, maxWidth: "60%", height: "auto", margin: "0 auto 12px" }} />
-        <Text c="dimmed">{message}</Text>
-      </div>
-    </div>
-  );
-}
-
-export default function StatisticsSunmary() {
-  const { data, isFetching, isError, error } = useFetchStatistics();
+export default function StatisticsSummary() {
   const params = useParams();
-  const assignmentIdFromParam = params?.assignment_id ? String(params.assignment_id) : null;
-  const selectedAssignmentId = useAssignmentStatisticStore((s) => s.selectedAssignmentId);
-  const noAssignmentChosen = !selectedAssignmentId && !assignmentIdFromParam;
+  const assignmentIDFromParam = params?.assignment_id as string;
+  const courseID = params?.course_id as string;
+  const selectedAssignmentID = useAssignmentStatisticStore((s) => s.selectedAssignmentID);
+  const assignmentID = selectedAssignmentID ?? (assignmentIDFromParam ?? null);
+  const { data, isFetching, isError } = useFetchStatistics(courseID, assignmentID);
+  const { statisticsData: stats } = useStatisticsStore();
+  const noSelectAssignment = !selectedAssignmentID && !assignmentIDFromParam;
+  const hasRubric = !!stats && Array.isArray(stats.questions_list) && stats.questions_list.length > 0;
+  const hasStatistics = !!stats && stats.statistics && ((stats.statistics.total_submission ?? 0) > 0 || (stats.statistics.questions_statistics?.length ?? 0) > 0);
 
-  if (noAssignmentChosen) {
+  if (noSelectAssignment) {
     return (
-      <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        <Stack gap="md" style={{ height: "100%", overflow: "hidden" }}>
+      <Flex h="100vh" direction="column" style={{ display: "flex", overflow: "hidden" }}>
+        <Stack gap="md" h="100%">
           <StatisticHeader title="Assignment Statistics" />
-          <EmptyState message="Select an assignment to view statistics." />
+          <NoSelectAssignment />
         </Stack>
-      </div>
+      </Flex>
     );
   }
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-      <Stack gap="md" style={{ height: "100%", overflow: "hidden" }}>
+    <Flex h="100vh" direction="column" gap="xl">
+      <Box>
         <StatisticHeader title="Assignment Statistics" />
-        <Card withBorder radius="md" p="md">
-          {isFetching ? <Skeleton height={220} /> : isError ? <Text c="red">Failed to load statistics: {(error as Error)?.message}</Text> : data ? <AssignmentStatistics stats={data.statistics} /> : <Text c="dimmed">Select assignment and sections to view statistics.</Text>}
-        </Card>
-        <Card withBorder radius="md" p={0} style={{ overflow: "hidden", flex: 1 }}>
-          {isFetching ? (
-            <div style={{ padding: 12 }}>
-              <Skeleton height={28} mb="sm" />
-              <Skeleton height={180} />
-            </div>
-          ) : isError ? (
-            <div style={{ padding: 12 }}>
-              <Text c="red">Failed to load questions: {(error as Error)?.message}</Text>
-            </div>
-          ) : data ? (
-            <RubricTable questions={data.questions_list} viewportBottomPadding={0} />
-          ) : null}
-        </Card>
-      </Stack>
-    </div>
+      </Box>
+
+      <Box 
+        style={{
+          flex: "0 0 230px",
+        }}
+      >
+        {/** Handler isFetching, isError, and data on Statistics */}
+        {isFetching ? (
+          <Skeleton h={400} /> 
+        ) : isError ? (
+          <ErrorStatistics />
+        ) : stats && hasStatistics ?  (
+          <AssignmentStatistics /> 
+        ) : <NoStatistic />
+        }
+      </Box>
+
+      <Box 
+        style={{ overflow: "hidden" }}
+      >
+        {/** Handler isFetching, isError, and data on RubricTable */}
+        {isFetching ? (
+          <Box>
+            <Skeleton height={28} mb="sm" />
+            <Skeleton height={450} />
+          </Box>
+        ) : isError ?  (
+          null
+        ) : hasRubric ? (
+          <RubricTable />
+        ) : <NoRubricTable />}
+      </Box>
+    </Flex>
   );
 }

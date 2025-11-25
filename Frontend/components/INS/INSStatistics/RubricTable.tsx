@@ -1,264 +1,215 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import {Table,Progress,Text,ScrollArea,Flex,Anchor,Box,Paper,} from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
+import React, { useMemo, useState } from "react";
+import { Table, Progress, Text, Flex, Anchor, Box, Paper, Title } from "@mantine/core";
+import { useDisclosure, useViewportSize } from "@mantine/hooks";
 import { VscListUnordered } from "react-icons/vsc";
-import RubricPieModal from "./RubricPieModal";
-import type {QuestionItem,SubQuestionStat,RubricBlock,} from "@/store/statistic/useStatisticsStore";
+import { useStatisticsStore } from "@/store/statistic/useStatisticsStore";
+import RubricPieModal from "@/components/INS/INSStatistics/RubricPieModal";
 
-type Props = {
-  questions: QuestionItem[];
-  viewportBottomPadding?: number;
+type FlatRow = {
+  key: string;
+  indent: number;
+  number: string;
+  title: string;
+  point: number | null;
+  mean: number | null;
+  percent_mean: number | null;
+  hasChildren: boolean;
+  question_id: string;
+  sub_question_id?: string | null;
 };
 
-export default function RubricTable({
-  questions,
-  viewportBottomPadding = 16,
-}: Props) {
-  const hasData = Array.isArray(questions) && questions.length > 0;
-
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [viewH, setViewH] = useState<number | undefined>(undefined);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const calc = () => {
-      const rect = containerRef.current!.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const available = Math.max(200, vh - rect.top - viewportBottomPadding);
-      setViewH(available);
-    };
-
-    const onResize = () => requestAnimationFrame(calc);
-    calc();
-
-    window.addEventListener("resize", onResize);
-    const ro = new ResizeObserver(onResize);
-    ro.observe(document.body);
-    ro.observe(containerRef.current!);
-
-    return () => {
-      window.removeEventListener("resize", onResize);
-      ro.disconnect();
-    };
-  }, [viewportBottomPadding]);
-
-  type FlatRow =
-    | {
-        kind: "q";
-        id: string;
-        number: string;
-        title?: string | null;
-        point?: number | null;
-        mean?: number | null;
-        percent_mean?: number | null;
-        rubric?: RubricBlock | null;
-        indent: number;
-        hasChildren: boolean; 
-      }
-    | {
-        kind: "sub";
-        id: string;
-        number: string;
-        title?: string | null;
-        point?: number | null;
-        mean?: number | null;
-        percent_mean?: number | null;
-        rubric?: RubricBlock | null;
-        indent: number;
-      };
-
-  const flatRows: FlatRow[] = useMemo(() => {
-    if (!hasData) return [];
-    const out: FlatRow[] = [];
-    for (const q of questions) {
-      out.push({
-        kind: "q",
-        id: q.question_id,
-        number: q.question_number,
-        title: q.question_title ?? null,
-        point: q.question_point ?? null,
-        mean: (q as any).mean ?? null,
-        percent_mean: q.percent_mean ?? null,
-        rubric: q.rubric ?? null,
-        indent: indentFromNumber(q.question_number),
-        hasChildren:
-          Array.isArray(q.sub_questions) && q.sub_questions.length > 0,
-      });
-      if (Array.isArray(q.sub_questions)) {
-        for (const s of q.sub_questions as SubQuestionStat[]) {
-          out.push({
-            kind: "sub",
-            id: s.sub_question_id,
-            number: s.question_number,
-            title: s.sub_question_title ?? null,
-            point: s.sub_question_point ?? null,
-            mean: (s as any).mean ?? null,
-            percent_mean: s.percent_mean ?? null,
-            rubric: s.rubric ?? null,
-            indent: indentFromNumber(s.question_number),
-          });
-        }
-      }
-    }
-    return out;
-  }, [hasData, questions]);
-
+export default function RubricTable() {
   const [opened, { open, close }] = useDisclosure(false);
-  const [selectedTitle, setSelectedTitle] = useState<string>("");
-  const [selectedRubric, setSelectedRubric] = useState<RubricBlock | null>(
-    null
-  );
+  const { statisticsData: stats } = useStatisticsStore();
+  const { height } = useViewportSize();
+  const [activeQuestionID, setActiveQuestionID] = useState<string | null>(null);
+  const [activeSubQuestionID, setActiveSubQuestionID] = useState<string | null>(null);
+  
+  const rows: FlatRow[] = useMemo(() => {
+    if (!stats) return [];
+    const out: FlatRow[] = [];
 
+    stats.questions_list.forEach((q) => {
+      const hasChildren = !!q.sub_questions && q.sub_questions.length > 0;
+      // main question
+      out.push({
+        key: q.question_id,
+        indent: 0,
+        number: q.question_number,
+        title: q.question_title ?? "",
+        point: q.question_point ?? null,
+        mean: q.mean ?? null,
+        percent_mean: q.percent_mean ?? null,
+        hasChildren,
+        question_id: q.question_id,
+        sub_question_id: null,
+      });
+      // sub-questions
+      q.sub_questions?.forEach((sq) => {
+        out.push({
+          key: sq.sub_question_id,
+          indent: 1,
+          number: sq.question_number,
+          title: sq.sub_question_title ?? "",
+          point: sq.sub_question_point ?? null,
+          mean: sq.mean ?? null,
+          percent_mean: sq.percent_mean ?? null,
+          hasChildren: false,
+          question_id: q.question_id,
+          sub_question_id: sq.sub_question_id,
+        });
+      });
+    });
+    return out;
+  }, [stats]);
+
+  
   const handleOpenModal = (row: FlatRow) => {
-    const isParentWithChildren =
-      row.kind === "q" && (row as any).hasChildren === true;
-    if (isParentWithChildren) return; 
-
-    setSelectedTitle(`Rubric for ${row.number} — ${row.title ?? "-"}`);
-    setSelectedRubric(row.rubric ?? null);
+    if (row.hasChildren) return;
+    setActiveQuestionID(row.question_id);
+    setActiveSubQuestionID(row.sub_question_id ?? null);
     open();
   };
 
-  if (!hasData) return null;
+  const handleCloseModal = () => {
+    close();
+    setActiveQuestionID(null);
+    setActiveSubQuestionID(null);
+  };
 
+  const tableMaxHeight = useMemo(() => {
+    if (!height) return 400;
+    const reservedTop = 585;
+    return Math.max(220, height - reservedTop);
+  }, [height]);
+
+
+  if (!rows.length) return null;
   return (
     <>
-      <div ref={containerRef}>
-        <ScrollArea h={viewH} type="always" scrollbarSize={8}>
-          <Paper withBorder radius="md" p={0}>
-            <Table highlightOnHover verticalSpacing="xs" horizontalSpacing="lg">
-              <Table.Thead className="bg-gray-100">
-                <Table.Tr>
-                  <Table.Th style={{ textAlign: "left", width: "40%" }}>
-                    Question
-                  </Table.Th>
-                  <Table.Th style={{ textAlign: "left", width: "20%" }}>
-                    Points / Full marks
-                  </Table.Th>
-                  <Table.Th style={{ textAlign: "left", width: "40%" }}>
-                    Mean %
-                  </Table.Th>
-                </Table.Tr>
-              </Table.Thead>
+      <Paper withBorder radius="md" p={0}>
+        <Table.ScrollContainer minWidth="auto" maxHeight={tableMaxHeight} className="no-scroll-padding">
+        <Table highlightOnHover verticalSpacing="xs" horizontalSpacing="lg">
+          <Table.Thead className="bg-gray-100" h="50px">
+            <Table.Tr>
+              <Table.Th ta="left" w="40%">
+                <Title order={6} lineClamp={1}>
+                  Question
+                </Title>
+              </Table.Th>
+              <Table.Th ta="left" w="20%">
+                <Title order={6} lineClamp={1}>
+                  Points / Full marks
+                </Title>
+              </Table.Th>
+              <Table.Th ta="left" w="40%">
+                <Title order={6} lineClamp={1}>
+                  Mean %
+                </Title>
+              </Table.Th>
+            </Table.Tr>
+          </Table.Thead>
 
-              <Table.Tbody>
-                {flatRows.map((row) => {
-                  const pct =
-                    typeof row.percent_mean === "number"
-                      ? Math.round(row.percent_mean)
-                      : null;
+          <Table.Tbody>
+            {rows.map((row) => {
+              const pct = typeof row.percent_mean === "number" && Number.isFinite(row.percent_mean) ? row.percent_mean : null;
+              const canOpen = !row.hasChildren;
 
-                  const isParentWithChildren =
-                    row.kind === "q" && (row as any).hasChildren === true;
-
-                  const canOpen = !isParentWithChildren;
-
-                  return (
-                    <Table.Tr
-                      key={`${row.kind}-${row.id}`}
-                      style={{
-                        cursor: canOpen ? "pointer" : "default",
-                      }}
-                      className="group"
-                      onClick={() => canOpen && handleOpenModal(row)}
+              return (
+                <Table.Tr
+                  key={row.key}
+                  style={{
+                    cursor: canOpen ? "pointer" : "default",
+                  }}
+                  className="group"
+                  onClick={canOpen ? () => handleOpenModal(row) : undefined}
+                >
+                  <Table.Td>
+                    <Flex
+                      gap="sm"
+                      align="flex-start"
+                      style={{ marginLeft: row.indent * 24 }}
                     >
-                      <Table.Td>
-                        <Flex
-                          gap="sm"
-                          align="flex-start"
-                          style={{ marginLeft: row.indent * 24 }}
-                        >
-                          <Text fw={row.indent === 0 ? 700 : 500}>
-                            {row.number}
-                          </Text>
-                          <Box className="relative w-fit flex items-center gap-1">
-                            <Text
-                              fw={row.indent === 0 ? 500 : 400}
-                              style={{
-                                wordBreak: "break-word",
-                                whiteSpace: "normal",
-                              }}
-                            >
-                              {row.title ?? "-"}
-                            </Text>
+                      <Text fw={500}>
+                        {row.number}
+                      </Text>
 
-                            {canOpen ? (
-                              <Anchor
-                                underline="hover"
-                                size="xs"
-                                ml="xs"
-                                className="invisible group-hover:visible"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleOpenModal(row);
-                                }}
-                              >
-                                <Flex align="center" gap={4}>
-                                  <VscListUnordered
-                                    size={12}
-                                    className="translate-y-[1px]"
-                                  />
-                                  <span>Rubric</span>
-                                </Flex>
-                              </Anchor>
-                            ) : null}
-                          </Box>
-                        </Flex>
-                      </Table.Td>
-
-                      <Table.Td>
-                        <Text>
-                          {typeof row.point === "number" &&
-                          typeof row.mean === "number"
-                            ? `${row.mean.toFixed(1)} / ${row.point}`
-                            : isParentWithChildren
-                            ? "" 
-                            : "-"}{" "}
+                      <Box className="relative w-fit flex items-center gap-1">
+                        <Text fw={400} lineClamp={1}>
+                          {row.title ?? "Without question title"}
                         </Text>
-                      </Table.Td>
 
-                      <Table.Td>
-                        {typeof pct === "number" ? (
-                          <Flex
-                            justify="space-between"
-                            align="center"
-                            style={{ width: "100%" }}
+                        {canOpen ? (
+                          <Anchor
+                            underline="hover"
+                            size="xs"
+                            ml="xs"
+                            className="invisible group-hover:visible"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenModal(row);
+                            }}
                           >
-                            <Progress
-                              value={pct}
-                              style={{ flex: 1, marginRight: 8 }}
-                              color="#6665AC"
-                            />
-                            <Text>{pct}%</Text>
-                          </Flex>
-                        ) : isParentWithChildren ? null : (
-                          <Text c="dimmed">-</Text>
-                        )}
-                      </Table.Td>
-                    </Table.Tr>
-                  );
-                })}
-              </Table.Tbody>
-            </Table>
-          </Paper>
-        </ScrollArea>
-      </div>
+                            <Flex align="center" gap={4}>
+                              <VscListUnordered
+                                size={12}
+                                className="translate-y-[1px]"
+                              />
+                              <span>Rubric</span>
+                            </Flex>
+                          </Anchor>
+                        ) : null}
+                      </Box>
+                    </Flex>
+                  </Table.Td>
+
+                  <Table.Td>
+                    {typeof row.point === "number" && typeof row.mean === "number" ? (
+                      <Text lineClamp={1}>
+                        {row.mean.toFixed(1)} / {row.point.toFixed(1)}
+                      </Text>
+                    ) : row.hasChildren ? null : (
+                      <Text c="dimmed" fs="italic" size="sm" lineClamp={1}>
+                        Not assign rubric points or Not has graded
+                      </Text>
+                    )}
+                  </Table.Td>
+
+                  <Table.Td>
+                    {typeof pct === "number" ? (
+                      <Flex
+                        justify="space-between"
+                        align="center"
+                        w="100%"
+                      >
+                        <Progress
+                          value={pct}
+                          style={{ flex: 1, marginRight: 8 }}
+                          size="lg"
+                          color="#6665AC"
+                        />
+                        <Text>{pct.toFixed(2)}%</Text>
+                      </Flex>
+                    ) : row.hasChildren ? null : (
+                      null
+                    )}
+                  </Table.Td>
+                </Table.Tr>
+              );
+            })}
+          </Table.Tbody>
+        </Table>
+        </Table.ScrollContainer>
+      </Paper>
 
       <RubricPieModal
         opened={opened}
-        onClose={close}
-        rubric={selectedRubric}
-        title={selectedTitle || "Rubric"}
+        onClose={handleCloseModal}
+        questionID={activeQuestionID}
+        subQuestionID={activeSubQuestionID}
       />
     </>
   );
-}
-
-function indentFromNumber(num?: string) {
-  if (!num) return 0;
-  const dots = num.split(".").length - 1;
-  return Math.max(0, dots);
 }

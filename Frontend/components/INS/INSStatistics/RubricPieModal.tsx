@@ -1,55 +1,86 @@
-"use client";
-
-import { useMemo, useState } from "react";
-import {Modal,Group,Stack,Text,Tooltip,ScrollArea,Box,Divider,rem,Center,} from "@mantine/core";
-import { PieChart } from "@mantine/charts";
 import type { PieProps, SectorProps } from "recharts";
+import type { PieChartCell } from "@mantine/charts";
+import { useMemo, useState } from "react";
+import { Modal, Group, Stack, Text, Tooltip, ScrollArea, Box, Divider, rem } from "@mantine/core";
+import { PieChart } from "@mantine/charts";
 import { Sector } from "recharts";
-import type { RubricBlock } from "@/store/statistic/useStatisticsStore";
-import Image from "next/image";
+import { useStatisticsStore } from "@/store/statistic/useStatisticsStore";
+import { NoRubricPieModal } from "@/components/INS/INSStatistics/NoRubricPieModal";
+import { RubricChartTooltip } from "@/components/INS/INSStatistics/RubricChartTooltip";
 
-export type RubricSlice = { id: string; label: string; value: number; color?: string };
+type RubricSlice = PieChartCell & {
+  id: string;
+  name: string;
+  label: string;
+  value: number;
+  color: string;
+};
+
+type RubricDetail = {
+  rubric_id: string;
+  description?: string | null;
+  totals_select: number;
+};
 
 type RubricPieModalProps = {
   opened: boolean;
   onClose: () => void;
-  title?: string;
-  rubric?: RubricBlock | null;
-  data?: RubricSlice[];
-  height?: number;
+  questionID: string | null;
+  subQuestionID?: string | null;
 };
 
 function darken(hex: string, amount = 0.15) {
   const n = (h: string) => parseInt(h, 16);
-  const c = (v: number) =>
-    Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0");
+  const c = (v: number) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0");
   const r = n(hex.slice(1, 3));
   const g = n(hex.slice(3, 5));
   const b = n(hex.slice(5, 7));
   return `#${c(r * (1 - amount))}${c(g * (1 - amount))}${c(b * (1 - amount))}`;
 }
 
-export default function RubricPieModal({
-  opened,
-  onClose,
-  rubric,
-  data,
-  title = "Rubric breakdown",
-  height = 340,
-}: RubricPieModalProps) {
+export default function RubricPieModal({ opened, onClose, questionID, subQuestionID }: RubricPieModalProps) {
+  const height = 300;
+  const { statisticsData: stats } = useStatisticsStore();
   const [hoverIndex, setHoverIndex] = useState<number | undefined>(undefined);
 
-  const storeSlices: RubricSlice[] | null = useMemo(() => {
-    if (!rubric || !Array.isArray(rubric.rubrics_detail)) return null;
-    return rubric.rubrics_detail.map((r) => ({
+  const { rubric, title } = useMemo(() => {
+    if (!stats || !questionID) {
+      return { rubric: null as any, title: "" };
+    }
+
+    const question = stats.questions_list.find(
+      (q) => q.question_id === questionID
+    );
+    
+    if (!question) return { rubric: null, title: "" };
+
+    if (subQuestionID) {
+      const sub = question.sub_questions?.find(
+        (sq) => sq.sub_question_id === subQuestionID
+      );
+      return {
+        rubric: sub?.rubric ?? null,
+        title: `${sub?.question_number ?? ""} ${sub?.sub_question_title ?? ""}`.trim(),
+      };
+    }
+
+    return {
+      rubric: question.rubric ?? null,
+      title: `${question.question_number} ${question.question_title ?? ""}`.trim(),
+    };
+  }, [stats, questionID, subQuestionID]);
+
+  const FALLBACK_LABEL = "Not assigned descriptions";
+  const sourceData: RubricSlice[] = useMemo(() => {
+    if (!rubric || !Array.isArray(rubric.rubrics_detail)) return [];
+    return (rubric.rubrics_detail as RubricDetail[]).map((r) => ({
       id: String(r.rubric_id),
-      label: String(r.description ?? "-"),
+      name: String(r.rubric_id),
+      label: r.description && r.description.trim().length > 0 ? r.description : FALLBACK_LABEL,
       value: Number(r.totals_select ?? 0),
+      color: "",
     }));
   }, [rubric]);
-
-  const sourceData: RubricSlice[] =
-    storeSlices && storeSlices.length > 0 ? storeSlices : data ?? [];
 
   const customPalette = useMemo(
     () => [
@@ -67,11 +98,10 @@ export default function RubricPieModal({
     []
   );
 
-  const chartData = useMemo(
+  const chartData: RubricSlice[] = useMemo(
     () =>
       sourceData.map((d, i) => ({
-        name: d.label,
-        value: d.value,
+        ...d,
         color: d.color || customPalette[i % customPalette.length],
       })),
     [sourceData, customPalette]
@@ -92,12 +122,8 @@ export default function RubricPieModal({
 
   const emphasisIndex = hoverIndex ?? maxIndex;
   const activeDelta = 6;
-  const paddingX = 24,
-    paddingY = 16;
-  const outerRadius = Math.max(
-    40,
-    Math.floor(height / 2 - Math.max(paddingX, paddingY) - activeDelta)
-  );
+  const paddingX = 24, paddingY = 16;
+  const outerRadius = Math.max(40, Math.floor(height / 2 - Math.max(paddingX, paddingY) - activeDelta));
   const innerRadius = Math.max(24, Math.floor(outerRadius * 0.45));
 
   const renderActive: PieProps["activeShape"] = (props: SectorProps) => {
@@ -114,7 +140,7 @@ export default function RubricPieModal({
           endAngle={endAngle}
           fill={fill}
           stroke={darken(fill, 0.2)}
-          strokeWidth={0}
+          strokeWidth={1.5}
         />
       </g>
     );
@@ -122,14 +148,15 @@ export default function RubricPieModal({
 
   const noRubric = !rubric || !Array.isArray(rubric.rubrics_detail) || rubric.rubrics_detail.length === 0;
   const noData = sourceData.length === 0 || total === 0;
-  const showEmpty = noRubric || noData;
+  const isNoData = noRubric || noData;
 
   return (
     <Modal
       opened={opened}
       onClose={onClose}
-      title={<Text fw={600}>{title}</Text>}
+      title={<Text fw={600}>{title || "Rubric distribution"}</Text>}
       size="60%"
+      miw="500px"
       centered
       styles={{
         content: { background: "#ffffff", color: "#1f2937", overflow: "visible" },
@@ -138,24 +165,12 @@ export default function RubricPieModal({
       }}
       overlayProps={{ backgroundOpacity: 0.35, blur: 0 }}
     >
-      {showEmpty ? (
-        <Center mih={height} style={{ textAlign: "center" }}>
-          <div>
-            <Image
-              src="/Image/statistic/rubric.svg"
-              alt="No rubric"
-              width={360}
-              height={360}
-              style={{ width: 320, maxWidth: "60%", height: "auto", margin: "0 auto 12px" }}
-            />
-            <Text c="dimmed">question does not have any rubrics created yet.</Text>
-          </div>
-        </Center>
+      {isNoData ? (
+        <NoRubricPieModal />
       ) : (
         <Group align="start" wrap="nowrap" gap="lg">
           <Box
-            w="65%"
-            style={{ minWidth: 360, overflow: "visible", padding: `${paddingY}px ${paddingX}px` }}
+            w="50%"
           >
             <PieChart
               data={chartData}
@@ -163,6 +178,7 @@ export default function RubricPieModal({
               withTooltip
               tooltipDataSource="segment"
               paddingAngle={2}
+              tooltipAnimationDuration={200}
               pieProps={{
                 cx: "50%",
                 cy: "50%",
@@ -175,14 +191,15 @@ export default function RubricPieModal({
                 isAnimationActive: false,
                 stroke: "none",
                 strokeWidth: 0,
-              }}
+              } as any}
               tooltipProps={{
-                labelFormatter: (label: string) => label,
-                formatter: (value: number, _name: string, payload: any) => {
-                  const v = Number(value);
-                  const pct = total ? ((v / total) * 100).toFixed(1) : "0.0";
-                  return [`${v} (${pct}%)`, payload?.payload?.name];
-                },
+                content: (props) => (
+                  <RubricChartTooltip
+                    label={props.label}
+                    payload={props.payload}
+                    total={total}
+                  />
+                ),
               }}
             />
             <Divider my="xs" color="#e9ecef" />
@@ -194,16 +211,16 @@ export default function RubricPieModal({
             </Text>
           </Box>
 
-          <Box w="35%">
+          <Box w="50%">
             <ScrollArea.Autosize mah={height} type="auto">
-              <Stack gap="xs">
+              <Stack gap="xs" p="sm" miw="400px">
                 {chartData.map((item, i) => {
                   const isMax = i === maxIndex;
                   const hovered = i === hoverIndex;
                   const bg = hovered ? "#f6f8fa" : isMax ? "#f9fafb" : "transparent";
                   return (
                     <Group
-                      key={i}
+                      key={item.id}
                       gap="sm"
                       onMouseEnter={() => setHoverIndex(i)}
                       onMouseLeave={() => setHoverIndex(undefined)}
@@ -212,7 +229,7 @@ export default function RubricPieModal({
                         borderRadius: rem(8),
                         padding: rem(8),
                         cursor: "pointer",
-                        outline: isMax && !hovered ? `2px dashed ${darken(item.color, 0.35)}` : "none",
+                        outline: isMax ? `2px dashed ${darken(item.color!, 0.35)}` : "none",
                       }}
                     >
                       <Box
@@ -220,14 +237,15 @@ export default function RubricPieModal({
                         h={12}
                         style={{
                           borderRadius: 3,
-                          background: hovered || isMax ? darken(item.color, 0.15) : item.color,
-                          outline: hovered ? `2px solid ${darken(item.color, 0.35)}` : "none",
+                          background: hovered || isMax ? darken(item.color!, 0.15) : item.color,
+                          outline: hovered ? `2px solid ${darken(item.color!, 0.35)}` : "none",
                         }}
                         title={item.name}
                       />
-                      <Tooltip label={item.name} withArrow withinPortal>
+                      <Tooltip label={item.label} withArrow withinPortal>
                         <Text
                           size="sm"
+                          lineClamp={1}
                           style={{
                             whiteSpace: "nowrap",
                             overflow: "hidden",
@@ -235,13 +253,15 @@ export default function RubricPieModal({
                             maxWidth: "18rem",
                             color: "#374151",
                             fontWeight: isMax ? 700 : 500,
+                            fontStyle: item.label === FALLBACK_LABEL ? "italic" : "normal",
+                            opacity: item.label === FALLBACK_LABEL ? 0.7 : 1,
                           }}
-                          title={item.name}
+                          title={item.label}
                         >
-                          {item.name}
+                          {item.label}
                         </Text>
                       </Tooltip>
-                      <Box style={{ marginLeft: "auto" }}>
+                      <Box ml="auto">
                         <Text size="sm" fw={700} c={isMax ? "dark" : undefined}>
                           {item.value}
                         </Text>

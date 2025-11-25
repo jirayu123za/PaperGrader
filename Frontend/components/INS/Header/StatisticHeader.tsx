@@ -1,153 +1,119 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Flex, Select, Title, MultiSelect, Skeleton, Text } from "@mantine/core";
+import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import { Flex, Select, Title, MultiSelect, Skeleton, Text } from "@mantine/core";
 import { useStatisticSectionsStore, type StatisticSection } from "@/store/statistic/useStatisticSectionsStore";
 import { useFetchStatisticSections } from "@/hooks/Statistic/useFetchStatisticSections";
-import { useFetchAssignments } from "@/hooks/Statistic/useFetchAssigmentStatistic";
+import { useFetchAssignments } from "@/hooks/Statistic/useFetchAssignmentStatistic";
 import { useAssignmentStatisticStore, type AssignmentOption } from "@/store/statistic/useAssignmentStatisticStore";
-import { useStatisticsStore } from "@/store/statistic/useStatisticsStore";
 
 const ALL_VALUE = "__ALL__";
 
 export default function StatisticHeader({ title = "Assignment Statistics" }: { title?: string }) {
-  const [sectionSearch, setSectionSearch] = useState("");
-
   const params = useParams();
   const course_id = params?.course_id as string;
-  const assignmentIdFromParam = params?.assignment_id ? String(params.assignment_id) : null;
+  const assignmentIDParam = params?.assignment_id as string;
+  const { data: assignmentsData, isLoading: isLoadingAssignments, error: errorAssignments } = useFetchAssignments(course_id);
 
-  const selectedAssignmentId = useAssignmentStatisticStore((s) => s.selectedAssignmentId);
-  const {
-    data: assignmentsRaw,
-    isLoading: isLoadingAssignments,
-    error: errorAssignments,
-  } = useFetchAssignments(course_id);
+  const {assignmentsList, selectedAssignmentID, setSelectedAssignmentID} = useAssignmentStatisticStore((s) => ({
+    assignmentsList: s.assignmentsList,
+    selectedAssignmentID: s.selectedAssignmentID,
+    setSelectedAssignmentID: s.setSelectedAssignmentID,
+  }));
 
-  const assignmentsList = useAssignmentStatisticStore((s) => s.assignmentsList);
-  const setAssignmentsList = useAssignmentStatisticStore((s) => s.setAssignmentsList);
-  const setSelectedAssignmentId = useAssignmentStatisticStore((s) => s.setSelectedAssignmentId);
+  const { sections, selectedSectionIDs, setSelectedSections } = useStatisticSectionsStore((s) => ({
+    sections: s.sections,
+    selectedSectionIDs: s.selectedSectionIDs,
+    setSelectedSections: s.setSelectedSections,
+  }));
 
-  useEffect(() => {
-    if (!assignmentsRaw) return;
-    const mapped: AssignmentOption[] = (assignmentsRaw as any[]).map((a) => ({
-      value: String(a.value ?? a.assignment_id ?? a.id),
-      label: String(a.label ?? a.assignment_name ?? a.name ?? a.title ?? a.id),
+  const assignments = useMemo<AssignmentOption[]>(() => {
+    if (!assignmentsList) return [];
+    return (assignmentsList as AssignmentOption[]).map((a) => ({
+      value: String(a.value),
+      label: String(a.label),
     }));
-    setAssignmentsList(mapped);
-  }, [assignmentsRaw, setAssignmentsList]);
+  }, [assignmentsList]);
+  
+  const hasAssignments = assignments.length > 0;
 
-  const hasAssignments = assignmentsList.length > 0;
-  const didInitFromParamRef = useRef(false);
-  const didClearForNoParamRef = useRef(false);
+  const currentAssignmentID = selectedAssignmentID ??
+    (assignments.some((opt) => 
+      opt.value === assignmentIDParam)
+      ? assignmentIDParam!
+      : null
+    );
 
-  useEffect(() => {
-    if (!hasAssignments) {
-      setSelectedAssignmentId(null);
-      didInitFromParamRef.current = false;
-      didClearForNoParamRef.current = false;
-      return;
-    }
-    if (assignmentIdFromParam && !didInitFromParamRef.current) {
-      const exists = assignmentsList.some((opt) => String(opt.value) === assignmentIdFromParam);
-      setSelectedAssignmentId(exists ? assignmentIdFromParam : null);
-      didInitFromParamRef.current = true;
-      didClearForNoParamRef.current = true;
-      return;
-    }
-    if (!assignmentIdFromParam && !didClearForNoParamRef.current) {
-      setSelectedAssignmentId(null);
-      didClearForNoParamRef.current = true;
-    }
-  }, [hasAssignments, assignmentsList, assignmentIdFromParam, setSelectedAssignmentId]);
+  const { data: sectionsData, isFetching: isFetchingSections, isError: isErrorSections } = useFetchStatisticSections(course_id, currentAssignmentID);
+  
+  const handleAssignmentChange = (value: string | null) => {
+    setSelectedAssignmentID(value);
+  };
 
-  const setCourseIdForSections = useStatisticSectionsStore((s) => s.setCourseId);
-  const setAssignmentIdForSections = useStatisticSectionsStore((s) => s.setAssignmentId);
-
-  useEffect(() => {
-    setCourseIdForSections(course_id ?? null);
-  }, [course_id, setCourseIdForSections]);
-
-  useEffect(() => {
-    if (selectedAssignmentId) setAssignmentIdForSections(selectedAssignmentId);
-    else if (assignmentIdFromParam) setAssignmentIdForSections(assignmentIdFromParam);
-    else setAssignmentIdForSections(null);
-  }, [selectedAssignmentId, assignmentIdFromParam, setAssignmentIdForSections]);
-
-  const { isFetching: isFetchingSections, isError: isErrorSections } = useFetchStatisticSections();
-
-  const sections = useStatisticSectionsStore((s) => s.sections);
-  const selectedSectionIds = useStatisticSectionsStore((s) => s.selectedSectionIds);
-  const setSelectedByRows = useStatisticSectionsStore((s) => s.setSelectedByRows);
-
-  const allRow = useMemo<StatisticSection | undefined>(() => sections.find((s) => s.is_all), [sections]);
-  const allIds = allRow?.section_id ?? [];
+  const [sectionSearch, setSectionSearch] = useState("");
   const hasSections = sections.length > 0;
+  const allSections = useMemo<StatisticSection | undefined>(() => sections.find((s) => s.is_all), [sections]);
+  const allSectionIDs = allSections?.section_id ?? [];
 
   const sectionOptionsBase = useMemo(
     () =>
       sections
         .filter((s) => !s.is_all)
-        .map((s) => ({ value: String(s.section_id[0]), label: String(s.section_name) })),
+        .map((s) => ({
+          value: String(s.section_id[0]),
+          label: String(s.section_name),
+        })),
     [sections]
   );
+
   const sectionOptions = useMemo(() => {
     if (!sections.length) return [];
-    return allRow ? [{ value: ALL_VALUE, label: "All section" }, ...sectionOptionsBase] : sectionOptionsBase;
-  }, [sections.length, allRow, sectionOptionsBase]);
-
+    return allSections
+      ? [{ value: ALL_VALUE, label: "All section" }, ...sectionOptionsBase]
+      : sectionOptionsBase;
+  }, [sections.length, allSections, sectionOptionsBase]);
+  
   const msValue = useMemo(() => {
     if (!hasSections) return [];
-    const a = new Set(selectedSectionIds);
-    const b = new Set(allIds);
-    const isAllSelected = allIds.length > 0 && a.size === b.size && [...a].every((x) => b.has(x));
+    if (!selectedSectionIDs.length && allSections) {
+      return [ALL_VALUE];
+    }
+    const a = new Set(selectedSectionIDs);
+    const b = new Set(allSectionIDs);
+    const isAllSelected = allSectionIDs.length > 0 && a.size === b.size && [...a].every((x) => b.has(x));
     if (isAllSelected) return [ALL_VALUE];
     const allowed = new Set(sectionOptionsBase.map((o) => o.value));
-    return selectedSectionIds.filter((id) => allowed.has(String(id)));
-  }, [hasSections, selectedSectionIds, allIds, sectionOptionsBase]);
 
-  useEffect(() => {
-    if (!hasSections) return;
-    if (!selectedSectionIds.length && allRow) setSelectedByRows([allRow]);
-  }, [hasSections, selectedSectionIds.length, allRow, setSelectedByRows]);
+    return selectedSectionIDs.filter((id) => allowed.has(String(id)));
+  }, [hasSections, selectedSectionIDs, allSectionIDs, allSections, sectionOptionsBase]);
 
-  const valuesToRows = (vals: string[]) =>
-    sections.filter(
-      (row) => !row.is_all && row.section_id.length === 1 && vals.includes(String(row.section_id[0]))
-    );
+  const valuesToSections = (vals: string[]) =>
+      sections.filter(
+        (row) =>
+          !row.is_all &&
+          row.section_id.length === 1 &&
+          vals.includes(String(row.section_id[0]))
+      );
 
   const handleSectionsChange = (next: string[]) => {
     if (!hasSections) return;
-    if (next.length === 1 && next[0] === ALL_VALUE && allRow) {
-      setSelectedByRows([allRow]);
+
+    if (next.length === 1 && next[0] === ALL_VALUE && allSections) {
+      setSelectedSections([allSections]);
       return;
     }
+
     if (next.includes(ALL_VALUE)) {
       const withoutAll = next.filter((v) => v !== ALL_VALUE);
-      const rows = valuesToRows(withoutAll);
-      setSelectedByRows(rows.length ? rows : allRow ? [allRow] : []);
+      const sections = valuesToSections(withoutAll);
+      setSelectedSections(sections.length ? sections : allSections ? [allSections] : []);
       return;
     }
-    const rows = valuesToRows(next);
-    setSelectedByRows(rows.length ? rows : allRow ? [allRow] : []);
+
+    const sections = valuesToSections(next);
+    setSelectedSections(sections.length ? sections : allSections ? [allSections] : []);
   };
-
-  const setStatsCourseId = useStatisticsStore((s) => s.setCourseId);
-  const setStatsAssignmentId = useStatisticsStore((s) => s.setAssignmentId);
-  const setStatsSectionIds = useStatisticsStore((s) => s.setSectionIds);
-
-  useEffect(() => {
-    setStatsCourseId(course_id ?? null);
-  }, [course_id, setStatsCourseId]);
-
-  useEffect(() => {
-    setStatsAssignmentId(selectedAssignmentId ?? assignmentIdFromParam ?? null);
-  }, [selectedAssignmentId, assignmentIdFromParam, setStatsAssignmentId]);
-
-  useEffect(() => {
-    setStatsSectionIds(selectedSectionIds);
-  }, [selectedSectionIds, setStatsSectionIds]);
 
   if (errorAssignments) {
     return (
@@ -157,7 +123,7 @@ export default function StatisticHeader({ title = "Assignment Statistics" }: { t
     );
   }
 
-  const showSelectAssignmentFirst = !selectedAssignmentId && !assignmentIdFromParam;
+  const showSelectAssignmentFirst = !currentAssignmentID;
 
   return (
     <div className="mt-3 pt-1">
@@ -167,15 +133,21 @@ export default function StatisticHeader({ title = "Assignment Statistics" }: { t
         <Flex gap="sm" wrap="wrap">
           <Select
             data={hasAssignments ? assignmentsList : []}
-            value={hasAssignments ? selectedAssignmentId : null}
-            onChange={(v) => setSelectedAssignmentId(v)}
+            value={hasAssignments ? currentAssignmentID : null}
+            onChange={handleAssignmentChange}
             checkIconPosition="right"
             size="sm"
             comboboxProps={{ withinPortal: true }}
             style={{ width: 320 }}
-            placeholder={hasAssignments ? "Select assignment" : "No assignments"}
+            placeholder={
+              hasAssignments
+                ? "Select assignment"
+                : isLoadingAssignments
+                ? "Loading..."
+                : "No assignments"
+            }
             aria-label="Select assignment"
-            disabled={!hasAssignments}
+            disabled={!hasAssignments || isLoadingAssignments || !!errorAssignments || assignmentsData?.length === 0}
             clearable={hasAssignments}
           />
 
