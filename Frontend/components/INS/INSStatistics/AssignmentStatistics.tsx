@@ -52,6 +52,8 @@ export default function AssignmentStatistics() {
           dataKey="question"
           tickLine="xy"
           gridAxis="xy"
+          xAxisLabel="Question"
+          yAxisLabel="Percent mean"
           unit="%"
           series={[{ name: "mean", label: "Mean (%)", color: "#845EF7" }]}
           tooltipAnimationDuration={200}
