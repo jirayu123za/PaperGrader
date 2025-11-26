@@ -12,24 +12,18 @@ import { useModalAssignmentSettingStore } from '@/store/modal/useAssignmentSetti
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { IconSettings, IconTrash } from '@tabler/icons-react';
 import { useExpandedAssignmentStore } from '@/store/table/useAssignmentsListStore';
-import ConfirmDeleteModal from '@/components/INS/INSAssignment/ConfirmDeleteModal';
-
-type SelectedAssignment = {
-  id: string;
-  name: string;
-} | null;
+import DeleteAssignmentModal from '@/components/INS/INSAssignment/DeleteAssignmentModal';
 
 const AssignmentTable: React.FC = () => {
   const router = useRouter();
   const { course_id } = useParams() as { course_id: string };
+  const [ opened, { open, close } ] = useDisclosure(false); 
   const { openModal } = useModalAssignmentSettingStore();
   const { isLoading: isLoadingAssignmentsList } = useFetchAssignmentsTable(course_id);
   const { assignmentList } = useAssignmentsListTableStore();
   const { expandedAssignmentIDs, toggleExpandedAssignmentID } = useExpandedAssignmentStore();
   const { height: viewportH } = useViewportSize();
-  const [deleteOpened, { open: openDelete, close: closeDelete }] = useDisclosure(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [selectedAssignment, setSelectedAssignment] = useState<SelectedAssignment>(null);
+  const [ selectedAssignment, setSelectedAssignment ] = useState<{ id: string; name: string } | null>(null);
 
   const rowsPerPage = useMemo(() => {
     if (viewportH < 700) return 4;
@@ -77,28 +71,16 @@ const AssignmentTable: React.FC = () => {
     );
   }
 
-  const handleAskDelete = (id: string, name: string) => {
-    setSelectedAssignment({ id, name });
-    openDelete();
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!selectedAssignment) return;
-    setDeleteLoading(true);
-    try {
-
-    } finally {
-      setDeleteLoading(false);
-      closeDelete();
-      setSelectedAssignment(null);
-    }
-  };
-
   const tableMaxHeight = useMemo(() => {
     if (viewportH < 700) return viewportH - 170;
     if (viewportH < 900) return viewportH - 210;
     return viewportH - 250;
   }, [viewportH]);
+
+  const handleCloseModal = () => {
+    close();
+    setSelectedAssignment(null);
+  };
 
   return (
     <Flex direction="column" gap="md">
@@ -135,7 +117,7 @@ const AssignmentTable: React.FC = () => {
                   </Table.Td>
                 </Table.Tr>
               ) : (
-                paginatedAssignmentsTable.map((assignment, idx) => (
+                paginatedAssignmentsTable.map((assignment) => (
                   <React.Fragment key={assignment.assignment_id}>
                     <Table.Tr>
                       <Table.Td>
@@ -198,13 +180,10 @@ const AssignmentTable: React.FC = () => {
                             <Menu.Item
                               color="red"
                               leftSection={<IconTrash size={14} />}
-                              onClick={() =>
-                                handleAskDelete(
-                                  assignment.assignment_id,
-                                  assignment.assignment_name.charAt(0).toUpperCase() +
-                                    assignment.assignment_name.slice(1)
-                                )
-                              }
+                              onClick={() => {
+                                setSelectedAssignment({ id: assignment.assignment_id, name: assignment.assignment_name });
+                                open();
+                              }}
                             >
                               Delete
                             </Menu.Item>
@@ -245,21 +224,15 @@ const AssignmentTable: React.FC = () => {
                 </Table.Td>
               </Table.Tr>
             </Table.Tfoot>
-          </Table></Table.ScrollContainer>
+          </Table>
+        </Table.ScrollContainer>
       </Paper>
 
-
-      <ConfirmDeleteModal
-        opened={deleteOpened}
-        onClose={() => {
-          closeDelete();
-          setSelectedAssignment(null);
-        }}
-        onConfirm={handleConfirmDelete}
-        itemName={selectedAssignment?.name}
-        loading={deleteLoading}
-        size="sm"
-        title="Delete confirmation"
+      <DeleteAssignmentModal
+        opened={opened}
+        onClose={handleCloseModal}
+        assignmentID={selectedAssignment?.id || null}
+        assignmentName={selectedAssignment?.name || undefined}
       />
 
       <AssignmentSetting />
