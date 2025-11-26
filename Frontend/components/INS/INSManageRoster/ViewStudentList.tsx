@@ -5,6 +5,7 @@ import { useRosterStore } from '@/store/useRosterStore';
 import { useModalStore } from '@/store/modal/useRosterModalStore';
 import { useParams } from 'next/navigation';
 import { usePagination } from '@mantine/hooks';
+import { NoStudentList } from '@/components/INS/INSManageRoster/NoStudentList';
 
 const ViewStudentLists: React.FC = () => {
     const params = useParams();
@@ -42,8 +43,10 @@ const ViewStudentLists: React.FC = () => {
             <Text size="sm" c="dimmed" mb="md">
                 Visit the <Text component="a" href="/roster" c="blue" inherit>roster page</Text> to make any edits to the students in this list.
             </Text>
-
-            {sectionUsersList && sectionUsersList.length > 0 ? (
+            
+            {error ? (
+                <NoStudentList />
+            ) : sectionUsersList && sectionUsersList.length > 0 ? (
                 <>
                     <Table striped highlightOnHover withRowBorders={false}>
                         <Table.Thead>
@@ -80,8 +83,6 @@ const ViewStudentLists: React.FC = () => {
                             </Table.Td>
                         </Table.Tr>
                     ))
-                    : error ?
-                        <Text ta="center" c="red">Error fetching student list</Text>
                     : paginatedData.map((student) => (
                         <Table.Tr key={student.personal_data_id}>
                             <Table.Td ta="left"><Text size='sm' lineClamp={1}>{student.student_code || 'N/A'}</Text></Table.Td>
