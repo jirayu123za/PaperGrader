@@ -1980,12 +1980,7 @@ func (s *InstructorServiceImpl) GetLatestExportList(courseID uuid.UUID) ([]respo
 
 // Part:1 Statistics data (sections)
 func (s *InstructorServiceImpl) GetAssignmentStatsAndQuestionsList(req response.GetAssignmentStatisticsRequest, courseID uuid.UUID) (response.AssignmentStatisticsResponse, response.QuestionsListStatsResponse, error) {
-	gradeIDs, err := s.repo.FindGradeIDsHasGradedBySectionIDs(req.AssignmentID, req.SectionIDs)
-	if err != nil {
-		return response.AssignmentStatisticsResponse{}, nil, err
-	}
-
-	core, err := s.repo.FindAssignmentStatsCore(req, courseID, gradeIDs)
+	core, err := s.repo.FindAssignmentStatsCore(req, courseID)
 	if err != nil {
 		return response.AssignmentStatisticsResponse{}, nil, err
 	}

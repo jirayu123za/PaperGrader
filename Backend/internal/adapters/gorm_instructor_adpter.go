@@ -3167,27 +3167,28 @@ func (r *GormInstructorRepository) FindGradeIDsHasGradedBySectionIDs(AssignmentI
 	return gradeIDs, err
 }
 
-func (r *GormInstructorRepository) FindAssignmentStatsCore(req response.GetAssignmentStatisticsRequest, courseID uuid.UUID, gradeIDs []uuid.UUID) (response.StatsCore, error) {
+func (r *GormInstructorRepository) FindAssignmentStatsCore(req response.GetAssignmentStatisticsRequest, courseID uuid.UUID) (response.StatsCore, error) {
 	out := response.StatsCore{
 		QMean:    map[uuid.UUID]float64{},
 		SQMean:   map[uuid.UUID]float64{},
 		QRubric:  map[uuid.UUID][]response.RubricDetailCount{},
 		SQRubric: map[uuid.UUID][]response.RubricDetailCount{},
 	}
-	if len(gradeIDs) == 0 {
-		return out, nil
-	}
 
-	if err := r.db.
+	base := r.db.
 		Table("grades g").
-		Joins("JOIN submissions s ON s.submission_id = g.submission_id").
-		Joins("JOIN assignments a ON a.assignment_id = s.assignment_id").
-		Where("g.grade_id IN ?", gradeIDs).
-		Where("a.assignment_id = ? AND a.course_id = ? AND g.deleted_at IS NULL", req.AssignmentID, courseID).
+		Joins("JOIN submissions s ON s.submission_id = g.submission_id AND s.deleted_at IS NULL").
+		Joins("JOIN assignments a ON a.assignment_id = s.assignment_id AND a.deleted_at IS NULL").
+		Joins("JOIN enrollment_lists el ON el.personal_data_id = s.belongs_to AND el.course_id = a.course_id AND el.deleted_at IS NULL").
+		Where("s.assignment_id = ? AND a.course_id = ? AND g.deleted_at IS NULL", req.AssignmentID, courseID).
+		Where("el.section_id IN ?", req.SectionIDs).
 		Where(`
-			jsonb_path_exists(g.grade_data, '$.questions_data[*].grades ? (@.has_graded == true)')
-			OR jsonb_path_exists(g.grade_data, '$.questions_data[*].sub_questions[*].grades ? (@.has_graded == true)')
-		`).
+            jsonb_path_exists(g.grade_data, '$.questions_data[*].grades ? (@.has_graded == true)')
+            OR jsonb_path_exists(g.grade_data, '$.questions_data[*].sub_questions[*].grades ? (@.has_graded == true)')
+        `)
+
+	if err := base.
+		Session(&gorm.Session{}).
 		Distinct("g.submission_id").
 		Count(&out.TotalSubmissions).Error; err != nil {
 		return out, err
@@ -3197,14 +3198,15 @@ func (r *GormInstructorRepository) FindAssignmentStatsCore(req response.GetAssig
 		GradeID   uuid.UUID
 		GradeData datatypes.JSON
 	}
+
 	var rows []row
-	if err := r.db.
-		Table("grades g").
+	if err := base.
+		Session(&gorm.Session{}).
 		Select("g.grade_id, g.grade_data").
-		Where("g.grade_id IN ? AND g.deleted_at IS NULL", gradeIDs).
 		Scan(&rows).Error; err != nil {
 		return out, err
 	}
+
 	if len(rows) == 0 {
 		return out, nil
 	}
