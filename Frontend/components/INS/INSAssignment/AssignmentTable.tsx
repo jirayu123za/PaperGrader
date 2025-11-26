@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import AssignmentSetting from '../../Customize/AssignmentSetting';
-import AssignmentSecTable from './AssignmentSecTable';
+import AssignmentSetting from '@/components/Customize/AssignmentSetting';
+import AssignmentSecTable from '@/components/INS/INSAssignment/AssignmentSecTable';
 import { useParams, useRouter } from 'next/navigation';
-import {Button,Menu,Anchor,Text,Flex,Table,Paper,Pagination,ActionIcon,Image,} from '@mantine/core';
+import { Button, Menu, Anchor, Text, Flex, Table, Paper, Pagination, ActionIcon, Image, Title, Tooltip } from '@mantine/core';
 import { usePagination, useViewportSize, useDisclosure } from '@mantine/hooks';
 import { useFetchAssignmentsTable } from '@/hooks/useFetchAssignments';
 import { useAssignmentsListTableStore } from '@/store/useAssignmentStore';
@@ -12,7 +12,7 @@ import { useModalAssignmentSettingStore } from '@/store/modal/useAssignmentSetti
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { IconSettings, IconTrash } from '@tabler/icons-react';
 import { useExpandedAssignmentStore } from '@/store/table/useAssignmentsListStore';
-import ConfirmDeleteModal from './ConfirmDeleteModal';
+import ConfirmDeleteModal from '@/components/INS/INSAssignment/ConfirmDeleteModal';
 
 type SelectedAssignment = {
   id: string;
@@ -77,12 +77,10 @@ const AssignmentTable: React.FC = () => {
     );
   }
 
-
   const handleAskDelete = (id: string, name: string) => {
     setSelectedAssignment({ id, name });
     openDelete();
   };
-
 
   const handleConfirmDelete = async () => {
     if (!selectedAssignment) return;
@@ -109,11 +107,23 @@ const AssignmentTable: React.FC = () => {
           <Table verticalSpacing="xs" horizontalSpacing="xl">
             <Table.Thead className="bg-gray-100 h-14" >
               <Table.Tr>
-                <Table.Th w={200}>Name</Table.Th>
-                <Table.Th w={120}>Regrades</Table.Th>
-                <Table.Th w={120}>Submitted by</Table.Th>
-                <Table.Th w={120}>Sections</Table.Th>
-                <Table.Th w={100}>Actions</Table.Th>
+                <Table.Th w={200}>
+                  <Title order={6} lineClamp={1}>Name</Title>
+                </Table.Th>
+                <Table.Th w={120}>
+                  <Title order={6} lineClamp={1}>Regrades</Title>
+                </Table.Th>
+                <Table.Th w={120}>
+                  <Tooltip label="User who submitted the assignment" withArrow>
+                    <Title order={6} lineClamp={1}>Submitted by</Title>
+                  </Tooltip>
+                </Table.Th>
+                <Table.Th w={120}>
+                  <Title order={6} lineClamp={1}>Sections</Title>
+                </Table.Th>
+                <Table.Th w={100}>
+                  <Title order={6} lineClamp={1}>Actions</Title>
+                </Table.Th>
               </Table.Tr>
             </Table.Thead>
 
@@ -148,6 +158,7 @@ const AssignmentTable: React.FC = () => {
                               assignment.assignment_name.slice(1)}
                           </Anchor>
                           <ActionIcon
+                            color='#4C6EF5'
                             variant="transparent"
                             onClick={() =>
                               toggleExpandedAssignmentID(assignment.assignment_id)
@@ -174,10 +185,11 @@ const AssignmentTable: React.FC = () => {
                       <Table.Td>
                         <Menu shadow="md">
                           <Menu.Target>
-                            <Button variant="transparent">•••</Button>
+                            <Button variant="subtle" color="#4C6EF5">•••</Button>
                           </Menu.Target>
                           <Menu.Dropdown>
                             <Menu.Item
+                              color="#4C6EF5"
                               leftSection={<IconSettings size={14} />}
                               onClick={() => openModal(assignment.assignment_id)}
                             >
@@ -226,8 +238,8 @@ const AssignmentTable: React.FC = () => {
                       boundaries={1}
                       value={pagination.active}
                       onChange={pagination.setPage}
-                      gap={0}
                       size="sm"
+                      color="#4C6EF5"
                     />
                   </Flex>
                 </Table.Td>

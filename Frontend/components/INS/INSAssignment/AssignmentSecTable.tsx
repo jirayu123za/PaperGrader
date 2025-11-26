@@ -273,10 +273,10 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
                 <Table.Td w={180} ta="center">
                   <Menu shadow="md">
                     <Menu.Target>
-                      <Button variant="transparent">•••</Button>
+                      <Button variant="subtle" color="#4C6EF5">•••</Button>
                     </Menu.Target>
                     <Menu.Dropdown>
-                      <Menu.Item leftSection={<IconSettings size={14} />} onClick={() => openModal(assignment.assignment_id)}>
+                      <Menu.Item color='#4C6EF5' leftSection={<IconSettings size={14} />} onClick={() => openModal(assignment.assignment_id)}>
                         Settings
                       </Menu.Item>
                       <Menu.Item color="red" leftSection={<IconTrash size={14} />}>
