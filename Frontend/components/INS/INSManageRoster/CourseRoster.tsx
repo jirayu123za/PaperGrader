@@ -11,7 +11,7 @@ import { useModalEditRosterMemberStore } from "@/store/modal/useRosterModalStore
 import { usePagination, useViewportSize, useDisclosure } from "@mantine/hooks";
 import { IoSearch } from "react-icons/io5";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
-import DeleteRosterModal from "./ConfirmDeleteModal";
+import DeleteRosterModal from "@/components/INS/INSManageRoster/DeleteRosterModal";
 
 const CourseRoster: React.FC = () => {
   const params = useParams();

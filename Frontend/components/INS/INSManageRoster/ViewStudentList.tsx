@@ -1,10 +1,8 @@
-"use client";
-
 import React from 'react';
-import { Modal, Pagination, Skeleton, Table, Text } from '@mantine/core';
-import { useFetchSectionUsersRoster } from '../../../hooks/Roster/useFetchUsersRoster';
-import { useRosterStore } from '../../../store/useRosterStore';
-import { useModalStore } from '../../../store/modal/useRosterModalStore';
+import { Modal, Pagination, Skeleton, Table, Text, Title } from '@mantine/core';
+import { useFetchSectionUsersRoster } from '@/hooks/Roster/useFetchUsersRoster';
+import { useRosterStore } from '@/store/useRosterStore';
+import { useModalStore } from '@/store/modal/useRosterModalStore';
 import { useParams } from 'next/navigation';
 import { usePagination } from '@mantine/hooks';
 
@@ -34,7 +32,7 @@ const ViewStudentLists: React.FC = () => {
             opened={isOpen}
             onClose={closeModal}
             title={`Students in ${selectedSection?.sectionName || 'N/A'}`}
-            size="lg"
+            size="auto"
             overlayProps={{
                 color: 'rgba(0, 0, 0, 0.5)',
                 blur: 3,
@@ -47,57 +45,66 @@ const ViewStudentLists: React.FC = () => {
 
             {sectionUsersList && sectionUsersList.length > 0 ? (
                 <>
-                <Table striped highlightOnHover withRowBorders={false}>
-                    <Table.Thead>
-                        <Table.Tr>
-                            <Table.Th style={{ textAlign: 'left' }}>Student No.</Table.Th>
-                            <Table.Th style={{ textAlign: 'left' }}>Name</Table.Th>
-                            <Table.Th style={{ textAlign: 'left' }}>Email</Table.Th>
-                            <Table.Th style={{ textAlign: 'center' }}>Submissions</Table.Th>
+                    <Table striped highlightOnHover withRowBorders={false}>
+                        <Table.Thead>
+                            <Table.Tr>
+                                <Table.Th ta="left" w="auto">
+                                    <Title order={6} lineClamp={1}>Student No.</Title>
+                                </Table.Th>
+                                <Table.Th ta="left" w="auto">
+                                    <Title order={6} lineClamp={1}>Name</Title>
+                                </Table.Th>
+                                <Table.Th ta="left" w="auto">
+                                    <Title order={6} lineClamp={1}>Email</Title>
+                                </Table.Th>
+                                <Table.Th ta="center" w="auto">
+                                    <Title order={6} lineClamp={1}>Submissions</Title>
+                                </Table.Th>
+                            </Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>
+                {isLoading
+                    ? Array.from({ length: 10 }).map((_, index) => (
+                        <Table.Tr key={`skeleton-row-${index}`}>
+                            <Table.Td>
+                                <Skeleton visible h={20} w={80} />
+                            </Table.Td>
+                            <Table.Td>
+                                <Skeleton visible h={20} w={80} />
+                            </Table.Td>
+                            <Table.Td>
+                                <Skeleton visible h={20} w={80} />
+                            </Table.Td>
+                            <Table.Td>
+                                <Skeleton visible h={20} w={80} />
+                            </Table.Td>
                         </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                        {isLoading
-                            ? Array.from({ length: 10 }).map((_, index) => (
-                                <Table.Tr key={`skeleton-row-${index}`}>
-                                    <Table.Td>
-                                        <Skeleton visible height={20} width="60%" />
-                                    </Table.Td>
-                                    <Table.Td>
-                                        <Skeleton visible height={20} width="80%" />
-                                    </Table.Td>
-                                    <Table.Td>
-                                        <Skeleton visible height={20} width="40%" />
-                                    </Table.Td>
-                                    <Table.Td>
-                                        <Skeleton visible height={20} width="40%" />
-                                    </Table.Td>
-                                </Table.Tr>
-                            ))
-                            : error ?
-                                <Text ta="center" c="red">Error fetching student list</Text>
-                                : paginatedData.map((student, index) => (
-                                    <Table.Tr key={index}>
-                                        <Table.Td style={{ textAlign: 'left' }}>{student.student_code || 'N/A'}</Table.Td>
-                                        <Table.Td style={{ textAlign: 'left' }}>{student.full_name || 'N/A'}</Table.Td>
-                                        <Table.Td style={{ textAlign: 'left' }}>{student.email || 'N/A'}</Table.Td>
-                                        <Table.Td style={{ textAlign: 'center' }}>{student.submissions_count ?? 0}</Table.Td>
-                                    </Table.Tr>
-                                ))}
-                    </Table.Tbody>
-                </Table>
-                <div className="flex justify-center mt-4">
-                    <Pagination
-                        total={totalPages}
-                        siblings={1}
-                        boundaries={1}
-                        value={pagination.active}
-                        onChange={pagination.setPage} 
-                    />
-                </div>
+                    ))
+                    : error ?
+                        <Text ta="center" c="red">Error fetching student list</Text>
+                    : paginatedData.map((student) => (
+                        <Table.Tr key={student.personal_data_id}>
+                            <Table.Td ta="left"><Text size='sm' lineClamp={1}>{student.student_code || 'N/A'}</Text></Table.Td>
+                            <Table.Td ta="left"><Text size='sm' lineClamp={1}>{student.full_name || 'N/A'}</Text></Table.Td>
+                            <Table.Td ta="left"><Text size='sm' lineClamp={1}>{student.email || 'N/A'}</Text></Table.Td>
+                            <Table.Td ta="center"><Text size='sm' lineClamp={1}>{student.submissions_count ?? 0}</Text></Table.Td>
+                        </Table.Tr>
+                    ))}
+                        </Table.Tbody>
+                    </Table>
+                    <div className="flex justify-center mt-4">
+                        <Pagination
+                            color="#4C6EF5"
+                            total={totalPages}
+                            siblings={1}
+                            boundaries={1}
+                            value={pagination.active}
+                            onChange={pagination.setPage} 
+                        />
+                    </div>
                 </>
-            ) : (
-                <Text ta="center" c="dimmed">
+                ) : (
+                <Text ta="center" c="dimmed" size="sm">
                     No students found in this section.
                 </Text>
             )}

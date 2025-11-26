@@ -1,22 +1,34 @@
 "use client";
 
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { Table, Text, Button, Paper, Pagination, Skeleton, Flex, Image, Title, Tooltip } from '@mantine/core';
 import { useParams } from 'next/navigation';
 import { useFetchSections } from '@/hooks/Roster/useFetchSections';
 import { useSectionDetailsStore } from '@/store/useRosterStore';
 import { useModalStore } from '@/store/modal/useRosterModalStore';
-import { usePagination, useViewportSize } from '@mantine/hooks';
+import { useDisclosure, usePagination, useViewportSize } from '@mantine/hooks';
 import ViewStudentLists from '@/components/INS/INSManageRoster/ViewStudentList';
 import CreateSection from '@/components/Create/CreateSection';
+import DeleteRosterSecModal from '@/components/INS/INSManageRoster/DeleteRosterSecModal';
 
 const ManageSection: React.FC = () => {
   const params = useParams();
   const course_id = params?.course_id as string;
+  const [ opened, { open, close } ] = useDisclosure(false);
   const { height: viewportH } = useViewportSize();
   const { isLoading } = useFetchSections(course_id as string);
   const { sectionDetails } = useSectionDetailsStore();
+  const [ selectedSectionID, setSelectedSectionID ] = useState<string | null>(null);
+  const [ selectedSectionName, setSelectedSectionName ] = useState<string | null>(null);
+  const [ totalStudents, setTotalStudents ] = useState<number | null>(null);
   const openModal = useModalStore((s) => s.openModal);
+
+  const handleCloseModal = () => {
+    close();
+    setSelectedSectionID(null);
+    setSelectedSectionName(null);
+    setTotalStudents(null);
+  };
 
   const rowsPerPage = useMemo(() => {
     if (viewportH < 700) return 4;
@@ -110,7 +122,12 @@ const ManageSection: React.FC = () => {
                           variant="outline"
                           color="red"
                           size="xs"
-                          onClick={() => console.log(`Remove Section ${section.section_id}`)}
+                          onClick={() => {
+                            setSelectedSectionID(section.section_id);
+                            setSelectedSectionName(section.section_name);
+                            setTotalStudents(section.total_students);
+                            open();
+                          }}
                         >
                           Remove
                         </Button>
@@ -150,6 +167,15 @@ const ManageSection: React.FC = () => {
       )}
 
       <ViewStudentLists />
+
+      <DeleteRosterSecModal 
+        opened={opened}
+        onClose={handleCloseModal}
+        sectionID={selectedSectionID}
+        sectionName={selectedSectionName}
+        totalStudents={totalStudents}
+      />
+
     </>
   );
 };
