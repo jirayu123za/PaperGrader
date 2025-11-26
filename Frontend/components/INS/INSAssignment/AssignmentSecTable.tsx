@@ -13,7 +13,9 @@ import { useUpdateAssignmentPublishedGrade } from '@/hooks/AssignmentSetting/use
 import { TimeSetting } from '@/components/Customize/TimeSetting';
 import { notifications } from '@mantine/notifications';
 import { useParams } from 'next/navigation';
+import { useDisclosure } from '@mantine/hooks';
 import { useUpdateAssignmentPublishedAssignment } from '@/hooks/AssignmentSetting/useUpdateAssignmentPublishedAssignment';
+import DeleteAssignmentSecModal from './DeleteAssignmentSecModal';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -45,6 +47,9 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
   const { mutate: updateAssignmentPublishedGrade, isPending: isPendingUpdateAssignmentPublishedGrade } = useUpdateAssignmentPublishedGrade();
   const { mutate: updateAssignmentPublishedAssignment, isPending: isPendingUpdateAssignmentPublishedAssignment } = useUpdateAssignmentPublishedAssignment();
   const [ isLoading, setIsLoading ] = React.useState(true);
+  const [ opened, { open, close } ] = useDisclosure(false); 
+  const [ selectedAssignmentID, setSelectedAssignmentID ] = React.useState<string | null>(null);
+  const [ selectedSectionNames, setSelectedSectionNames ] = React.useState<string[]>([]);
 
   React.useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
@@ -113,6 +118,14 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
       }
     );
   };
+
+  const handleCloseDeleteAssignmentSecModal = () => {
+    setSelectedAssignmentID(null);
+    setSelectedSectionNames([]);
+    setSectionIDs([]);
+    removeAssignmentSectionIDs([]);
+    close();
+  }
 
   if (isLoading) {
     return (
@@ -279,7 +292,18 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
                       <Menu.Item color='#4C6EF5' leftSection={<IconSettings size={14} />} onClick={() => openModal(assignment.assignment_id)}>
                         Settings
                       </Menu.Item>
-                      <Menu.Item color="red" leftSection={<IconTrash size={14} />}>
+                      <Menu.Item color="red" leftSection={<IconTrash size={14} />} onClick={() => {
+                        const baseIDs = selectedAssignmentSectionIDs.length > 0
+                          ? selectedAssignmentSectionIDs
+                          : [section.assignment_section_id];
+
+                        const sectionsToDelete = assignment.assignment_sections.filter(s =>
+                          baseIDs.includes(s.assignment_section_id)
+                        );
+                        setSelectedAssignmentID(assignment.assignment_id);
+                        setSelectedSectionNames(sectionsToDelete.map(s => s.section_name));
+                        open();
+                      }}>
                         Delete
                       </Menu.Item>
                     </Menu.Dropdown>
@@ -290,7 +314,17 @@ const AssignmentSecTable: React.FC<Props> = ({ assignment }) => {
           })}
         </Table.Tbody>
       </Table>
+
       <TimeSetting />
+
+      <DeleteAssignmentSecModal
+        opened={opened}
+        onClose={handleCloseDeleteAssignmentSecModal}
+        assignmentID={selectedAssignmentID}
+        assignmentSectionIDs={selectedAssignmentSectionIDs}
+        sectionIDs={selectedSectionIDs}
+        sectionNames={selectedSectionNames}
+      />
     </Table.ScrollContainer>
   );
 };
