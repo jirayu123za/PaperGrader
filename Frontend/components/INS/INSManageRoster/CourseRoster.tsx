@@ -11,7 +11,7 @@ import { useModalEditRosterMemberStore } from "@/store/modal/useRosterModalStore
 import { usePagination, useViewportSize, useDisclosure } from "@mantine/hooks";
 import { IoSearch } from "react-icons/io5";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
-import ConfirmDeleteModal from "@/components/INS/INSManageRoster/ConfirmDeleteModal";
+import DeleteRosterModal from "./ConfirmDeleteModal";
 
 const CourseRoster: React.FC = () => {
   const params = useParams();
@@ -20,25 +20,15 @@ const CourseRoster: React.FC = () => {
   const { isLoading } = useFetchUsersRoster(course_id as string);
   const { usersList, searchTerm, setSearchTerm, roleFilter, setRoleFilter } =useRosterStore();
   const { openModal } = useModalEditRosterMemberStore();
-  const [confirmOpened, { open: openConfirm, close: closeConfirm }] = useDisclosure(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
-
-  const handleRemoveClick = (personal_data_id: string) => {
-    setSelectedId(personal_data_id);
-    openConfirm();
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!selectedId) return;
-    try {
-      setDeleting(true);
-    } finally {
-      setDeleting(false);
-      closeConfirm();
-      setSelectedId(null);
-    }
-  };
+  const [ opened, { open, close } ] = useDisclosure(false);
+  const [ selectedPersonalDataID, setSelectedPersonalDataID ] = useState<string | null>(null);
+  const [ selectedEmail, setSelectedEmail ] = useState<string | null>(null);
+  
+  const handleCloseModal = () => {
+    close();
+    setSelectedPersonalDataID(null);
+    setSelectedEmail(null);
+  }
 
   const handleEditClick = (personal_data_id: string) => {
     openModal(personal_data_id);
@@ -228,7 +218,11 @@ const CourseRoster: React.FC = () => {
                         <Menu.Item
                           color="red"
                           leftSection={<IconTrash size={14} />}
-                          onClick={() => handleRemoveClick(member.personal_data_id)}
+                          onClick={() => {
+                            setSelectedPersonalDataID(member.personal_data_id);
+                            setSelectedEmail(member.email);
+                            open();
+                          }}
                         >
                           Remove
                         </Menu.Item>
@@ -267,12 +261,11 @@ const CourseRoster: React.FC = () => {
 
       <EditCourseMember />
 
-      <ConfirmDeleteModal
-        opened={confirmOpened}
-        onClose={closeConfirm}
-        onConfirm={handleConfirmDelete}
-        loading={deleting}
-        title="Confirm Deletion"
+      <DeleteRosterModal
+        opened={opened}
+        onClose={handleCloseModal}
+        personalDataID={selectedPersonalDataID}
+        email={selectedEmail}
       />
     </>
   );

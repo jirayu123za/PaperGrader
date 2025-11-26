@@ -1,64 +1,36 @@
-"use client";
-
 import React from "react";
-import { Modal, Text, Group, Button, Stack, Box } from "@mantine/core";
+import { Modal, Text, Group, Button, Stack, Box, Highlight } from "@mantine/core";
 import { FiAlertTriangle, FiTrash2, FiX } from "react-icons/fi";
 
-type ConfirmDeleteModalProps = {
+type DeleteRosterModalProps = {
   opened: boolean;
   onClose: () => void;
-  onConfirm: () => Promise<void> | void;
-  title?: string;
-  loading?: boolean;
-  size?: string | number;
+  personalDataID: string | null;
+  email: string | null;
 };
 
-export default function ConfirmDeleteModal({
-  opened,
-  onClose,
-  onConfirm,
-  title = "Confirm Deletion",
-  loading = false,
-  size = 440,
-}: ConfirmDeleteModalProps) {
+export default function DeleteRosterModal({ opened, onClose, personalDataID, email }: DeleteRosterModalProps) {
+  const highlights = [...(email ? [email] : []), "this roster", "cannot be undone."];
+  const confirmMessage = `Are you sure you want to delete ${email ?? "this roster"}? This action cannot be undone.`;
+  
   return (
     <Modal
       opened={opened}
       onClose={onClose}
-      size={size}
       centered
-      withCloseButton
+      size="md"
+      radius="md"
+      withCloseButton={false}
       overlayProps={{ backgroundOpacity: 0.55, blur: 3 }}
-      title={
-        <Text fw={700} c="#fff">
-          {title}
-        </Text>
-      }
-      styles={{
-        header: {
-          background: "#ff6b6b",
-          borderTopLeftRadius: 12,
-          borderTopRightRadius: 12,
-          padding: "12px 16px",
-          marginBottom: 0,
-        },
-        title: { color: "#fff" },
-        close: { color: "#fff" },
-        content: {
-          borderRadius: 12,
-          paddingTop: 0,
-          backgroundColor: "#fff",
-        },
-        body: { paddingTop: 20, paddingBottom: 16 },
-      }}
     >
       <Stack align="center" gap="md">
         <Box
+          w="64px"
+          h="64px"
+          mt="md"
+          bdrs="999px"
+          display="grid"
           style={{
-            width: 64,
-            height: 64,
-            borderRadius: 999,
-            display: "grid",
             placeItems: "center",
             background: "rgba(255, 107, 107, 0.15)",
           }}
@@ -66,31 +38,44 @@ export default function ConfirmDeleteModal({
           <FiAlertTriangle size={32} color="#ff6b6b" />
         </Box>
 
-        <Stack gap={0} align="center">
-          <Text ta="center" fz="sm" c="dimmed">
-            Are you sure you want to delete?
+        <Stack align="center" gap={4}>
+          <Text fw={600} fz="lg">
+            Delete roster?
           </Text>
-          <Text ta="center" fz="sm" c="dimmed">
-            This action cannot be undone.
-          </Text>
+
+          <Highlight
+            ta="center"
+            fz="sm"
+            c="dimmed"
+            highlight={highlights}
+            highlightStyles={(theme) => ({
+              backgroundColor: theme.colors.red[0],
+              color: theme.colors.red[7],
+              borderRadius: theme.radius.sm,
+              padding: "0 4px",
+              fontWeight: 600,
+            })}
+          >
+            {confirmMessage}
+          </Highlight>
         </Stack>
 
         {/* Actions */}
         <Group justify="center" mt="xs" gap="sm">
           <Button
-            variant="default"
+            variant="outline"
+            color="gray"
             leftSection={<FiX size={16} />}
             onClick={onClose}
-            disabled={loading}
           >
             Cancel
           </Button>
           <Button
             color="red"
+            variant="filled"
             leftSection={<FiTrash2 size={16} />}
-            loading={loading}
-            onClick={async () => {
-              await onConfirm();
+            onClick={() => {
+              // TODO: Add delete roster logic here (use rosterID)
             }}
           >
             Delete
