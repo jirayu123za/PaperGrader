@@ -3,12 +3,10 @@
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { Flex, Select, Title, MultiSelect, Skeleton, Text } from "@mantine/core";
-import { useStatisticSectionsStore, type StatisticSection } from "@/store/statistic/useStatisticSectionsStore";
+import { useStatisticSectionsStore } from "@/store/statistic/useStatisticSectionsStore";
 import { useFetchStatisticSections } from "@/hooks/Statistic/useFetchStatisticSections";
 import { useFetchAssignments } from "@/hooks/Statistic/useFetchAssignmentStatistic";
 import { useAssignmentStatisticStore, type AssignmentOption } from "@/store/statistic/useAssignmentStatisticStore";
-
-const ALL_VALUE = "__ALL__";
 
 export default function StatisticHeader({ title = "Assignment Statistics" }: { title?: string }) {
   const params = useParams();
@@ -45,7 +43,7 @@ export default function StatisticHeader({ title = "Assignment Statistics" }: { t
       : null
     );
 
-  const { data: sectionsData, isFetching: isFetchingSections, isError: isErrorSections } = useFetchStatisticSections(course_id, currentAssignmentID);
+  const { isFetching: isFetchingSections, isError: isErrorSections } = useFetchStatisticSections(course_id, currentAssignmentID);
   
   const handleAssignmentChange = (value: string | null) => {
     setSelectedAssignmentID(value);
@@ -53,10 +51,8 @@ export default function StatisticHeader({ title = "Assignment Statistics" }: { t
 
   const [sectionSearch, setSectionSearch] = useState("");
   const hasSections = sections.length > 0;
-  const allSections = useMemo<StatisticSection | undefined>(() => sections.find((s) => s.is_all), [sections]);
-  const allSectionIDs = allSections?.section_id ?? [];
-
-  const sectionOptionsBase = useMemo(
+ 
+  const sectionOptions = useMemo(
     () =>
       sections
         .filter((s) => !s.is_all)
@@ -67,52 +63,29 @@ export default function StatisticHeader({ title = "Assignment Statistics" }: { t
     [sections]
   );
 
-  const sectionOptions = useMemo(() => {
-    if (!sections.length) return [];
-    return allSections
-      ? [{ value: ALL_VALUE, label: "All section" }, ...sectionOptionsBase]
-      : sectionOptionsBase;
-  }, [sections.length, allSections, sectionOptionsBase]);
-  
-  const msValue = useMemo(() => {
-    if (!hasSections) return [];
-    if (!selectedSectionIDs.length && allSections) {
-      return [ALL_VALUE];
-    }
-    const a = new Set(selectedSectionIDs);
-    const b = new Set(allSectionIDs);
-    const isAllSelected = allSectionIDs.length > 0 && a.size === b.size && [...a].every((x) => b.has(x));
-    if (isAllSelected) return [ALL_VALUE];
-    const allowed = new Set(sectionOptionsBase.map((o) => o.value));
+  const msValue = useMemo(
+    () => selectedSectionIDs.map(String),
+    [selectedSectionIDs]
+  );
 
-    return selectedSectionIDs.filter((id) => allowed.has(String(id)));
-  }, [hasSections, selectedSectionIDs, allSectionIDs, allSections, sectionOptionsBase]);
+  const handleSectionsChange = (values: string[]) => {
+    const selectedRows = sections.filter(
+      (row) =>
+        !row.is_all &&
+        row.section_id.length === 1 &&
+        values.includes(String(row.section_id[0]))
+    );
 
-  const valuesToSections = (vals: string[]) =>
-      sections.filter(
-        (row) =>
-          !row.is_all &&
-          row.section_id.length === 1 &&
-          vals.includes(String(row.section_id[0]))
-      );
+    setSelectedSections(selectedRows);
+  };
 
-  const handleSectionsChange = (next: string[]) => {
-    if (!hasSections) return;
-
-    if (next.length === 1 && next[0] === ALL_VALUE && allSections) {
-      setSelectedSections([allSections]);
-      return;
-    }
-
-    if (next.includes(ALL_VALUE)) {
-      const withoutAll = next.filter((v) => v !== ALL_VALUE);
-      const sections = valuesToSections(withoutAll);
-      setSelectedSections(sections.length ? sections : allSections ? [allSections] : []);
-      return;
-    }
-
-    const sections = valuesToSections(next);
-    setSelectedSections(sections.length ? sections : allSections ? [allSections] : []);
+  const handleSelectAllSections = () => {
+    const allValues = sections.filter((s) => 
+      !s.is_all && s.section_id.length === 1).map((s) => String(s.section_id[0]));
+    const selectedRows = sections.filter((row) => 
+      !row.is_all && row.section_id.length === 1 && allValues.includes(String(row.section_id[0]))
+    );
+    setSelectedSections(selectedRows);
   };
 
   if (errorAssignments) {
@@ -166,30 +139,32 @@ export default function StatisticHeader({ title = "Assignment Statistics" }: { t
               Error fetching sections
             </Text>
           ) : (
+            <Flex gap="xs" wrap="wrap">
             <MultiSelect
+              w={360}
               data={sectionOptions}
               value={hasSections ? msValue : []}
               onChange={handleSectionsChange}
-              placeholder=""
+              placeholder={hasSections ? "Select sections" : "No sections"}
               disabled={!hasSections}
               maxDropdownHeight={160}
               comboboxProps={{ shadow: "md" }}
-              searchable
               searchValue={sectionSearch}
               onSearchChange={setSectionSearch}
-              style={{ width: 360 }}
+              nothingFoundMessage="Nothing found..."
               clearable
-              styles={{
-                pillsList: {
-                  display: "flex",
-                  flexWrap: "nowrap",
-                  overflowX: "auto",
-                  gap: 1,
-                },
-                pill: { whiteSpace: "nowrap", maxWidth: "unset" },
-                input: { minWidth: 0 },
-              }}
+              searchable
             />
+
+            <Text
+              size="xs"
+              c="blue"
+              style={{ cursor: "pointer", alignSelf: "center", whiteSpace: "nowrap" }}
+              onClick={handleSelectAllSections}
+            >
+              Select all
+            </Text>
+          </Flex>
           )}
         </Flex>
       </Flex>
