@@ -1,7 +1,7 @@
 import type { PieProps, SectorProps } from "recharts";
 import type { PieChartCell } from "@mantine/charts";
 import { useMemo, useState } from "react";
-import { Modal, Group, Stack, Text, Tooltip, ScrollArea, Box, Divider, rem } from "@mantine/core";
+import { Modal, Group, Stack, Text, Tooltip, ScrollArea, Box, Divider, rem, Image, Flex } from "@mantine/core";
 import { PieChart } from "@mantine/charts";
 import { Sector } from "recharts";
 import { useStatisticsStore } from "@/store/statistic/useStatisticsStore";
@@ -39,7 +39,7 @@ function darken(hex: string, amount = 0.15) {
 }
 
 export default function RubricPieModal({ opened, onClose, questionID, subQuestionID }: RubricPieModalProps) {
-  const height = 300;
+  const height = 315;
   const { statisticsData: stats } = useStatisticsStore();
   const [hoverIndex, setHoverIndex] = useState<number | undefined>(undefined);
 
@@ -147,8 +147,7 @@ export default function RubricPieModal({ opened, onClose, questionID, subQuestio
   };
 
   const noRubric = !rubric || !Array.isArray(rubric.rubrics_detail) || rubric.rubrics_detail.length === 0;
-  const noData = sourceData.length === 0 || total === 0;
-  const isNoData = noRubric || noData;
+  const hasResponses = total > 0;
 
   return (
     <Modal
@@ -165,59 +164,92 @@ export default function RubricPieModal({ opened, onClose, questionID, subQuestio
       }}
       overlayProps={{ backgroundOpacity: 0.35, blur: 0 }}
     >
-      {isNoData ? (
+      {noRubric ? (
         <NoRubricPieModal />
       ) : (
         <Group align="start" wrap="nowrap" gap="lg">
-          <Box
-            w="50%"
-          >
-            <PieChart
-              data={chartData}
-              size={height}
-              withTooltip
-              tooltipDataSource="segment"
-              paddingAngle={2}
-              tooltipAnimationDuration={200}
-              pieProps={{
-                cx: "50%",
-                cy: "50%",
-                innerRadius,
-                outerRadius,
-                onMouseEnter: (_: any, idx: number) => setHoverIndex(idx),
-                onMouseLeave: () => setHoverIndex(undefined),
-                activeIndex: emphasisIndex,
-                activeShape: renderActive,
-                isAnimationActive: false,
-                stroke: "none",
-                strokeWidth: 0,
-              } as any}
-              tooltipProps={{
-                content: (props) => (
-                  <RubricChartTooltip
-                    label={props.label}
-                    payload={props.payload}
-                    total={total}
-                  />
-                ),
-              }}
-            />
-            <Divider my="xs" color="#e9ecef" />
-            <Text size="sm" c="dimmed">
-              Total students:{" "}
-              <Text span fw={600} c="dark">
-                {total}
-              </Text>{" "}
-            </Text>
+          <Box w="50%">
+            {hasResponses ? (
+              <>
+              <Flex direction="column" align="center">
+                <PieChart
+                  data={chartData}
+                  size={height}
+                  withTooltip
+                  tooltipDataSource="segment"
+                  paddingAngle={2}
+                  tooltipAnimationDuration={200}
+                  pieProps={{
+                    cx: "50%",
+                    cy: "50%",
+                    innerRadius,
+                    outerRadius,
+                    onMouseEnter: (_: any, idx: number) => setHoverIndex(idx),
+                    onMouseLeave: () => setHoverIndex(undefined),
+                    activeIndex: emphasisIndex,
+                    activeShape: renderActive,
+                    isAnimationActive: false,
+                    stroke: "none",
+                    strokeWidth: 0,
+                  } as any}
+                  tooltipProps={{
+                    content: (props) => (
+                      <RubricChartTooltip
+                        label={props.label}
+                        payload={props.payload}
+                        total={total}
+                      />
+                    ),
+                  }}
+                />
+              </Flex>
+                <Divider my="xs" color="#e9ecef" />
+                
+                <Text size="sm" c="dimmed">
+                  Total students:{" "}
+                  <Text span fw={600} c="dark">
+                    {total}
+                  </Text>{" "}
+                </Text>
+              </>
+            ) : (
+              <>
+                <Box
+                  h={height}
+                  display="flex"
+                  style={{ alignItems: "center", justifyContent: "center" }}
+                >
+                  <Flex direction="column" align="center" justify="center" gap="xs" py="xl" w='100%'>
+                    <Image
+                      w="auto"
+                      h={200}
+                      src="/Image/statistic/graph_pie.svg"
+                      alt="No data"
+                    />
+                    <Text size="sm" c="dimmed">
+                      No responses for this question yet
+                    </Text>
+                  </Flex>
+                </Box>
+
+                  <Divider my="xs" color="#e9ecef" />
+                  <Text size="sm" c="dimmed">
+                    Total students:{" "}
+                    <Text span fw={600} c="dark">
+                      {total}
+                    </Text>
+                  </Text>
+              </>
+            )}
           </Box>
 
-          <Box w="50%">
+          <Box w="auto" style={{flex: 1}}>
             <ScrollArea.Autosize mah={height} type="auto">
-              <Stack gap="xs" p="sm" miw="400px">
+              <Stack gap="xs" p="sm">
                 {chartData.map((item, i) => {
-                  const isMax = i === maxIndex;
+                  const isMax = hasResponses && i === maxIndex;
                   const hovered = i === hoverIndex;
-                  const bg = hovered ? "#f6f8fa" : isMax ? "#f9fafb" : "transparent";
+                  const bg = hovered ? "#f6f8fa" : isMax ? "#f3f0ff" : "transparent";
                   return (
                     <Group
                       key={item.id}
@@ -226,43 +258,70 @@ export default function RubricPieModal({ opened, onClose, questionID, subQuestio
                       onMouseLeave={() => setHoverIndex(undefined)}
                       style={{
                         background: bg,
-                        borderRadius: rem(8),
-                        padding: rem(8),
+                        borderRadius: rem(10),
+                        padding: rem(10),
                         cursor: "pointer",
-                        outline: isMax ? `2px dashed ${darken(item.color!, 0.35)}` : "none",
+                        border: isMax
+                          ? `1px solid ${darken(item.color!, 0.25)}`
+                          : "1px solid #e9ecef",
+                        boxShadow: isMax
+                          ? "0 4px 10px rgba(15, 23, 42, 0.10)"
+                          : "none",
+                        transition: "background 120ms ease, box-shadow 120ms ease, transform 120ms ease",
+                        transform: hovered || isMax ? "translateY(-1px)" : "none",
                       }}
-                    >
+                    >                      
                       <Box
-                        w={12}
-                        h={12}
                         style={{
-                          borderRadius: 3,
-                          background: hovered || isMax ? darken(item.color!, 0.15) : item.color,
-                          outline: hovered ? `2px solid ${darken(item.color!, 0.35)}` : "none",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          width: "100%",
+                          minWidth: 0,
                         }}
-                        title={item.name}
-                      />
-                      <Tooltip label={item.label} withArrow withinPortal>
+                      >
+                        <Box
+                          w={12}
+                          h={12}
+                          style={{
+                            borderRadius: 999,
+                            background: isMax ? darken(item.color!, 0.1) : item.color,
+                            boxShadow: isMax
+                              ? `0 0 0 3px ${item.color}33`
+                              : "none",
+                            flexShrink: 0,
+                          }}
+                        />
+                        <Tooltip label={item.label} withArrow withinPortal>
+                          <Box maw="80%">
+                            <Text
+                              size="sm"
+                              lineClamp={1}
+                              style={{
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                flex: 1,
+                                color: "#374151",
+                                fontWeight: isMax ? 600 : 500,
+                                fontStyle:
+                                  item.label === FALLBACK_LABEL ? "italic" : "normal",
+                                opacity: item.label === FALLBACK_LABEL ? 0.8 : 1,
+                              }}
+                            >
+                              {item.label}
+                            </Text>
+                          </Box>
+                        </Tooltip>
                         <Text
                           size="sm"
-                          lineClamp={1}
+                          ml="auto"
+                          mr="md"
+                          fw={isMax ? 800 : 600}
                           style={{
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            maxWidth: "18rem",
-                            color: "#374151",
-                            fontWeight: isMax ? 700 : 500,
-                            fontStyle: item.label === FALLBACK_LABEL ? "italic" : "normal",
-                            opacity: item.label === FALLBACK_LABEL ? 0.7 : 1,
+                            color: isMax ? "#111827" : "#374151",
                           }}
-                          title={item.label}
                         >
-                          {item.label}
-                        </Text>
-                      </Tooltip>
-                      <Box ml="auto">
-                        <Text size="sm" fw={700} c={isMax ? "dark" : undefined}>
                           {item.value}
                         </Text>
                       </Box>
