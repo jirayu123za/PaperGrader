@@ -234,7 +234,7 @@ export default function RubricPieModal({ opened, onClose, questionID, subQuestio
 
                   <Divider my="xs" color="#e9ecef" />
                   <Text size="sm" c="dimmed">
-                    Total students:{" "}
+                    Total rubrics selected:{" "}
                     <Text span fw={600} c="dark">
                       {total}
                     </Text>
