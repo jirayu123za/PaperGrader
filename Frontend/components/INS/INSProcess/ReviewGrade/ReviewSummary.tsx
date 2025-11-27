@@ -1,118 +1,87 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { NumberInput, Group, Text, Title, Flex, Card, Center, Image, Popover, ActionIcon, } from "@mantine/core";
-import GradeStatistics from "./GradeStatistics";
-import StudentTable from "./StudentTable";
+import { NumberInput, Group, Text, Title, Flex, Center, Popover, ActionIcon, Box, Skeleton } from "@mantine/core";
 import { useFetchReviewGrade } from "@/hooks/ReviewGrade/useFetchReviewGrade";
-import { useReviewGradeStore } from "@/store/reviewgrade/useReviewGradeStore";
+import { useReviewGradeStore } from "@/store/reviewGrade/useReviewGradeStore";
+import { ErrorReviewStatistics } from "@/components/INS/INSProcess/ReviewGrade/ErrorReviewStatistics";
+import { NoReviewStatistic } from "@/components/INS/INSProcess/ReviewGrade/NoReviewStatistic";
+import { NoGradeStudentTable } from "@/components/INS/INSProcess/ReviewGrade/NoGradeStudentTable";
+import GradeStatistics from "@/components/INS/INSProcess/ReviewGrade/GradeStatistics";
+import GradeStudentTable from "@/components/INS/INSProcess/ReviewGrade/GradeStudentTable";
 
 export default function ReviewSummary() {
+  const { bin, setBin, gradeStatistics } = useReviewGradeStore();
   const { course_id, assignment_id } = useParams() as { course_id?: string; assignment_id?: string; };
-  const bin = useReviewGradeStore((s) => s.bin);
-  const setBin = useReviewGradeStore((s) => s.setBin);
-  const { data, isLoading, error, isFetching } = useFetchReviewGrade(course_id ?? null, assignment_id ?? null, bin);
-
-  const stats = data?.statistics;
-  const rows = stats?.table ?? [];
-  const isZero = (n: number | null | undefined) => n === null || n === 0;
-  const gradesAllZero = (stats?.grades_data ?? []).every((b) => (b?.count ?? 0) === 0);
-  const noScores = (stats?.submission_scores?.length ?? 0) === 0;
-  const noRows = rows.length === 0;
-
-  const allZeroAndEmpty =
-    !!stats &&
-    isZero(stats.minimum) &&
-    isZero(stats.median) &&
-    isZero(stats.maximum) &&
-    isZero(stats.mean) &&
-    isZero(stats.sd) &&
-    gradesAllZero &&
-    noScores &&
-    noRows;
-
+  const { isLoading, isError, isFetching } = useFetchReviewGrade(course_id ?? null, assignment_id ?? null, bin);
+  const statisticNoData = !gradeStatistics || (gradeStatistics.grades_data.length === 0) || (gradeStatistics.maximum === 0 && gradeStatistics.minimum === 0 && gradeStatistics.mean === 0 && gradeStatistics.sd === 0 && gradeStatistics.median === 0) || (gradeStatistics.submission_scores.length === 0);
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] px-4 md:px-6 lg:px-8 pt-4 overflow-hidden">
-      <Flex
-        className="shrink-0 "
-        align="center"
-        justify="space-between"
-        mb="xs"
-      >
-        <Title order={3}>Review Grades</Title>
-
-        <Group justify="flex-end" align="center" gap="xs">
-          <Text size="sm" c="dimmed" fw={600}>
-          No. of Bin
-          </Text>
-          <NumberInput
-            defaultValue={bin}
-            min={1}
-            max={25}
-            size="xs"
-            maw={80}
-            hideControls
-            clampBehavior="strict"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                const raw = (e.currentTarget as HTMLInputElement).value;
-                const n = Number.parseInt(raw, 10);
-                const safe = Number.isFinite(n) ? n : 10;
-                setBin(Math.min(Math.max(safe, 1), 25));
-              }
-            }}
-          />
-          <Popover width={280} withArrow shadow="md" position="right-start">
-            <Popover.Target>
-              <ActionIcon size="sm" variant="subtle" aria-label="Bin help">
-                <Text fw={700}>?</Text>
-              </ActionIcon>
-            </Popover.Target>
-            <Popover.Dropdown>
-              <Text size="sm">
-                You can set the bin range to 1–25. Press Enter to apply. “Bin” is the number of
-                buckets used to group scores for the histogram.
-              </Text>
-            </Popover.Dropdown>
-          </Popover>
-
-          <Text size="xs" c="dimmed">
-            {isFetching ? "Updating…" : null}
-          </Text>
-        </Group>
-      </Flex>
-
-      {allZeroAndEmpty ? (
-        <Card withBorder radius="md" className="flex-1 flex flex-col">
-          <Center className="flex-1 flex flex-col gap-4 py-10">
-            <Image
-              src="/Image/statistic/statistic.svg"
-              alt="No grading activity"
-              w={240}
-              mah={260}
-              fit="contain"
-            />
-            <Text c="dimmed" size="lg" ta="center">
-              There is no grading activity for this assignment yet.
+    <Flex direction="column" gap="md" className="h-full" px="lg" pt="md">
+      <Box>
+        <Flex justify="space-between" align="center">
+          <Title order={3}>Review Grades</Title>
+          <Group justify="flex-end" align="center" gap="xs">
+            <Text size="sm" c="dimmed" fw={600}>
+              No. of Bin
             </Text>
-          </Center>
-        </Card>
-      ) : (
-        <>
-          <div className="shrink-0">
-            <GradeStatistics statistics={stats} />
-          </div>
-
-          <div className="flex-1 min-h-0">
-            <StudentTable
-              loading={isLoading}
-              errorMessage={(error as Error)?.message}
-              rows={rows}
-              totalScore={stats?.total_assignment_score}
+            <NumberInput
+              defaultValue={bin}
+              min={1}
+              max={25}
+              size="xs"
+              maw={80}
+              disabled={isLoading || isFetching}
+              allowDecimal={false}
+              clampBehavior="strict"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  const raw = (e.currentTarget as HTMLInputElement).value;
+                  const n = Number.parseInt(raw, 10);
+                  const safe = Number.isFinite(n) ? n : 10;
+                  setBin(Math.min(Math.max(safe, 1), 25));
+                }
+              }}
             />
-          </div>
-        </>
-      )}
-    </div>
+            <Popover width={280} withArrow shadow="md" position="right-start">
+              <Popover.Target>
+                <ActionIcon size="sm" variant="subtle" aria-label="Bin help">
+                  <Text fw={700}>?</Text>
+                </ActionIcon>
+              </Popover.Target>
+              <Popover.Dropdown>
+                <Text size="sm">
+                  You can set the bin range to 1–25. Press Enter to apply. “Bin” is the number of
+                  buckets used to group scores for the histogram.
+                </Text>
+              </Popover.Dropdown>
+            </Popover>
+          </Group>
+        </Flex>
+      </Box>
+
+      <Box>
+        { isFetching ? (
+            <Skeleton h={400}/>
+          ) : isError ? (
+            <ErrorReviewStatistics />
+          ) : statisticNoData ? (
+            <NoReviewStatistic />
+          ) : gradeStatistics ? (
+            <GradeStatistics />
+          ) : <NoReviewStatistic />
+        }
+      </Box>
+
+      <Box className="flex-1 min-h-0">
+        {isFetching ? (
+            <Skeleton h={400} />
+          ) : isError ? (
+            null
+          ) : gradeStatistics ? (
+            <GradeStudentTable />
+          ) : <NoGradeStudentTable />
+        }
+      </Box>
+    </Flex>
   );
 }

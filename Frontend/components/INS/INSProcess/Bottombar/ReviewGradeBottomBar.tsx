@@ -4,10 +4,7 @@ import { IconDownload, IconUpload } from "@tabler/icons-react";
 
 export default function ReviewGradeBottomBar() {
   return (
-    <Box
-      p={0}
-      className="w-full h-full flex justify-end items-center gap-1 pl-2 pr-4 md:pr-6"
-    >
+    <Box className="flex justify-end gap-2 w-full">
       <Button
         leftSection={<IconDownload size={12} />}
         variant="default"
