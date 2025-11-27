@@ -1919,7 +1919,7 @@ func (s *InstructorServiceImpl) GetSubmissionDetailsFromGradeSubmission(courseID
 	}
 	utils.ClearAllSelections(&questions)
 
-	gradeMap, err := s.repo.FindGradeData(assignmentID, submissionID)
+	gradeMap, err := s.repo.FindGradeDataForReview(assignmentID, submissionID)
 	if err != nil {
 		return response.SubmissionsFromGradeSubmissionResponse{}, err
 	}

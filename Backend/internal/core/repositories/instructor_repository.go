@@ -121,6 +121,7 @@ type InstructorRepository interface {
 	AddGradeData(assignmentID uuid.UUID, submissionID uuid.UUID, gradeData json.RawMessage) error
 	FindExistingGradeData(assignmentID uuid.UUID, submissionID uuid.UUID) (bool, error)
 	FindGradeData(assignmentID uuid.UUID, submissionID uuid.UUID) (map[string]interface{}, error)
+	FindGradeDataForReview(assignmentID uuid.UUID, submissionID uuid.UUID) (map[string]interface{}, error)
 	ModifyGradeData(assignmentID uuid.UUID, submissionID uuid.UUID, updateGradeData json.RawMessage) error
 	// Second: Grade
 	// First: main Question

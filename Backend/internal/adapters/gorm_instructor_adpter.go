@@ -2803,6 +2803,26 @@ func (r *GormInstructorRepository) FindGradeData(assignmentID uuid.UUID, submiss
 	return data, nil
 }
 
+func (r *GormInstructorRepository) FindGradeDataForReview(assignmentID uuid.UUID, submissionID uuid.UUID) (map[string]interface{}, error) {
+	var grade models.Grade
+	err := r.db.
+		Where("submission_id = ?", submissionID).
+		First(&grade).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	var data map[string]interface{}
+	if err := json.Unmarshal(grade.GradeData, &data); err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
 func (r *GormInstructorRepository) ModifyGradeData(assignmentID uuid.UUID, submissionID uuid.UUID, gradeData json.RawMessage) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		var grade models.Grade

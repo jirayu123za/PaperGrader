@@ -2293,8 +2293,7 @@ func (h *HttpInstructorHandler) GetLatestExportList(c *fiber.Ctx) error {
 }
 
 // Statistics Handlers
-// ! Need to change use section to calculate statistics
-// Case 1: With assignment_id request
+// Case 1: With assignment_id request (sections)
 func (h *HttpInstructorHandler) GetStatisticsDataByAssignmentAndSections(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
