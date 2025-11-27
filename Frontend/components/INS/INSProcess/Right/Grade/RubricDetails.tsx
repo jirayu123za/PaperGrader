@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Box, Flex, Group, Text } from '@mantine/core';
+import { Box, Flex, Text } from '@mantine/core';
 import { FaCheck } from 'react-icons/fa';
 
 interface RubricDetailItem {
@@ -26,70 +26,110 @@ export const RubricDetails: React.FC<Props> = ({ rubric }) => {
   const noRubric = !rubric || !Array.isArray(rubric.rubric_details) || rubric.rubric_details.length === 0;
   const allUnselected = rubric?.rubric_details.every((d) => !d.has_selected);
   
-  return (
-    <Flex pl="52px" mt={2} direction="column" gap="xs">
-      {noRubric ? (
-        <Group align="center" gap="sm" wrap="nowrap" ml="sm">
-          <Box w={12} />
-          <Text size="sm" fw={400} c="red" fs="italic">
+  if (noRubric) {
+    return (
+      <Flex pl="52px" mt="xs">
+        <Box
+          px="sm"
+          py={8}
+          bg="#FFF5F5"
+          style={{ borderRadius: 8, border: '1px dashed #FFA8A8' }}
+        >
+          <Text size="xs" fw={500} c="#E03131" fs="italic">
             This question has no rubric
           </Text>
-        </Group>
-      ) : (
-        rubric?.rubric_details.map((detail) => {
-          const pointColor = detail.rubric_point >= 0 ? 'green' : 'red';
-          const pointText = detail.rubric_point >= 0 ? `+ ${detail.rubric_point}` : `– ${Math.abs(detail.rubric_point)}`;
+        </Box>
+      </Flex>
+    );
+  }
 
-          return allUnselected ? (
-            <Group
-              key={detail.rubric_detail_id}
-              align="center"
-              gap="sm"
-              wrap="nowrap"
-            >
-              <Text size="sm" fw={600} c={pointColor}>
-                {pointText} pts
-              </Text>
-              <Text size="sm" fw={400} c="#495057">
-                {detail.rubric_description}
-              </Text>
-            </Group>
-          ) : detail.has_selected ? (
+  return (
+      <Flex direction="column" gap="xs" pt="xs" pb="xs">
+        {rubric!.rubric_details.map((detail) => {
+          const isSelected = detail.has_selected;
+          const pointIsPositive = detail.rubric_point >= 0;
+          const pointColor = pointIsPositive ? '#12B886' : '#FA5252';
+          const pointText = pointIsPositive? `+ ${detail.rubric_point}`  : `– ${Math.abs(detail.rubric_point)}`;
+          const variant: 'idle' | 'selected' | 'unselected' = allUnselected ? 'idle' : isSelected ? 'selected' : 'unselected';
+          const colorStyle = variant === 'selected' ? '#F7F7FF' : 'white';
+          const borderStyle = variant === 'selected' ? '2px solid #ADB5FF' : '2px solid #E0E4FF';
+          const shadowStyle = variant === 'selected' ? '0 2px 6px rgba(15, 23, 42, 0.06)' : 'none';
+          const descColor = variant === 'selected' ? '#212529' : variant === 'unselected' ? '#868E96' : '#495057';
+          const pointWeight = variant === 'selected' ? 700 : 500;
+          const descWeight = variant === 'selected' ? 500 : 400;
+          const hasDescription = detail.rubric_description.trim() !== '';
+
+          return (
             <Box
               key={detail.rubric_detail_id}
-              p="sm"
-              bd="1px solid #CED4DA"
-              bg="white"
+              px="xs"
+              py="xs"
+              bg={colorStyle}
+              bd={borderStyle}
+              bdrs="md"
+              style={{ boxShadow: shadowStyle }}
             >
-              <Group align="center" gap="sm">
-                <FaCheck size={10} color="#495057" />
-                <Text size="sm" fw={600} c={pointColor}>
+            <Flex justify="space-between" align="flex-start" gap="xs">
+              <Box
+                mt={2}
+                style={{
+                  flex: '0 0 10%',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  justifyContent: 'flex-start',
+                }}
+              >
+                {variant === 'selected' && (
+                  <Box
+                    w={18}
+                    h={18}
+                    bdrs={999}
+                    bg="#EDF2FF"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <FaCheck size={10} color="#364FC7" />
+                  </Box>
+                )}
+              </Box>
+
+              <Box
+                style={{
+                  flex: '1 1 0',
+                  minWidth: 0,
+                }}
+              >
+                <Text
+                  size="sm"
+                  fw={descWeight}
+                  c={hasDescription ? descColor : 'dimmed'}
+                  fs={hasDescription ? undefined : 'italic'}
+                  lh={1.4}
+                  style={{ wordBreak: 'break-word' }}
+                >
+                  {hasDescription
+                    ? detail.rubric_description
+                    : 'No rubric description provided'}
+                </Text>
+              </Box>
+              <Box
+                mt={2}
+                style={{
+                  flex: '0 0 20%',
+                  textAlign: 'right',
+                }}
+              >
+                <Text size="sm" fw={pointWeight} c={pointColor}>
                   {pointText} pts
                 </Text>
-                <Text size="sm" fw={400} c="#495057">
-                  {detail.rubric_description}
-                </Text>
-              </Group>
+              </Box>
+            </Flex>
             </Box>
-          ) : (
-            <Group
-              key={detail.rubric_detail_id}
-              align="center"
-              gap="sm"
-              wrap="nowrap"
-              ml="sm"
-            >
-              <Box w={12} />
-              <Text size="sm" fw={600} c={pointColor}>
-                {pointText} pts
-              </Text>
-              <Text size="sm" fw={400} c="#495057">
-                {detail.rubric_description}
-              </Text>
-            </Group>
           );
-        })
-      )}
-    </Flex>
+        })}
+      </Flex>
   );
 };
