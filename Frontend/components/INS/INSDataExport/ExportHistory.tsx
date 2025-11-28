@@ -1,25 +1,27 @@
 'use client';
 
-import React, { useMemo, useRef, useState, useLayoutEffect } from 'react';
 import ExportModal from '@/components/INS/INSDataExport/ExportModal';
-import { RingProgressReady } from "@/components/INS/INSDataExport/RingProgressReady";
-import { RingProgressProcess } from "@/components/INS/INSDataExport/RingProgressProcess";
 import { RingProgressExpired } from "@/components/INS/INSDataExport/RingProgressExpired";
-import { Button, Table, Text, ActionIcon, Flex, Title, Checkbox, Paper, Pagination } from '@mantine/core';
-import { IconTrash, IconDownload } from '@tabler/icons-react';
-import { FaFileExport } from "react-icons/fa6";
-import { usePagination, useViewportSize } from '@mantine/hooks';
-import { useExportModalStore } from '@/store/modal/useExportModalStore';
-import { useParams } from 'next/navigation';
+import { RingProgressProcess } from "@/components/INS/INSDataExport/RingProgressProcess";
+import { RingProgressReady } from "@/components/INS/INSDataExport/RingProgressReady";
 import { useFetchLatestExport } from '@/hooks/ExportGrade/useExportGrades';
 import { useExportGradeStore } from '@/store/ExportGrade/useExportGradeStore';
+import { useExportModalStore } from '@/store/modal/useExportModalStore';
+import { ActionIcon, Button, Checkbox, Flex, Pagination, Paper, Skeleton, Table, Text, Title } from '@mantine/core';
+import { usePagination, useViewportSize } from '@mantine/hooks';
+import { IconDownload, IconTrash } from '@tabler/icons-react';
+import { useParams } from 'next/navigation';
+import { useMemo, useState } from 'react';
+import { FaFileExport } from "react-icons/fa6";
+import { NoExportHistory }  from '@/components/INS/INSDataExport/NoExportHistory';
+import { ErrorExportHistory } from '@/components/INS/INSDataExport/ErrorExportHistory';
 
 export default function ExportHistory() {
   const params = useParams();
   const course_id = params.course_id as string;
   const openModal = useExportModalStore((s) => s.openModal);
-  const { data, isLoading, error } = useFetchLatestExport(course_id);
   const exportList = useExportGradeStore((s) => s.exportList);
+  const { isLoading, isError } = useFetchLatestExport(course_id);
   const [selected, setSelected] = useState<string[]>([]);
   const allSelected = exportList.length > 0 && selected.length === exportList.length;
   const indeterminate = selected.length > 0 && selected.length < exportList.length;
@@ -27,28 +29,13 @@ export default function ExportHistory() {
   const toggleRow = (id: string) =>
     setSelected((current) => current.includes(id) ? current.filter((i) => i !== id) : [...current, id]
   );
-  const { height: viewportH } = useViewportSize();
-  const sectionRef = useRef<HTMLDivElement | null>(null);
-  const headerRef = useRef<HTMLDivElement | null>(null);   
-  const theadRef = useRef<HTMLTableSectionElement | null>(null);
-  const tfootRef = useRef<HTMLTableSectionElement | null>(null);
-  const sampleRowRef = useRef<HTMLTableRowElement | null>(null);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(10);
 
-  useLayoutEffect(() => {
-    const sectionTop = sectionRef.current?.getBoundingClientRect().top ?? 0;
-    const bottomPadding = 12;
-    const availableViewport = Math.max(0, viewportH - sectionTop - bottomPadding);
-    const headerH = headerRef.current?.getBoundingClientRect().height ?? 0;
-    const theadH = theadRef.current?.getBoundingClientRect().height ?? 0;
-    const tfootH = tfootRef.current?.getBoundingClientRect().height ?? 0;
-    const rowH   = sampleRowRef.current?.getBoundingClientRect().height ?? 48;
-    const dividerH = 1;
-    const paperVerticalPadding = 50; 
-    const availableForRows = availableViewport - headerH - dividerH - theadH - tfootH - paperVerticalPadding;
-    const fit = Math.max(1, Math.floor(availableForRows / rowH));
-    setRowsPerPage(fit);
-  }, [viewportH, exportList.length]);
+  const { height: viewportH } = useViewportSize();
+  const rowsPerPage = useMemo(() => {
+    if (viewportH < 700) return 4;
+    if (viewportH < 900) return 6;
+    return 10;
+  }, [viewportH]);
 
   const totalPages = useMemo(() => {
     return exportList ? Math.ceil(exportList.length / rowsPerPage) : 1;
@@ -65,22 +52,28 @@ export default function ExportHistory() {
 
   return (
     <div className="pl-5 pr-5">
-      <div ref={sectionRef}>
+      <div className="flex justify-between items-center mb-6">
+        <Title order={2}>Export History</Title>
+        <Button
+          onClick={() => openModal(course_id)}
+          disabled={isLoading || !!isError}
+          color="#4C6EF5"
+          leftSection={<FaFileExport />}
+        >
+          Export
+        </Button>
+      </div>
 
-        <div ref={headerRef} className="flex justify-between items-center mb-6">
-          <Title order={2}>Export History</Title>
-          <Button
-            onClick={() => openModal(course_id)}
-            color="#4C6EF5"
-            leftSection={<FaFileExport />}
-          >
-            Export
-          </Button>
-        </div>
-
+      {isLoading ? (
+        <Skeleton h={400} />
+      ) : isError ? (
+        <ErrorExportHistory />
+      ) : !exportList || exportList.length === 0 ? (
+        <NoExportHistory />
+      ) : (
         <Paper withBorder mb="md" style={{ overflow: 'hidden' }}>
           <Table highlightOnHover verticalSpacing="sm">
-            <Table.Thead className="bg-gray-100" ref={theadRef}>
+            <Table.Thead className="bg-gray-100">
               <Table.Tr>
                 <Table.Th>
                   <Checkbox
@@ -98,15 +91,9 @@ export default function ExportHistory() {
             </Table.Thead>
 
             <Table.Tbody>
-              {exportList.length === 0 ? (
-                <Table.Tr>
-                  <Table.Td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>
-                    <Text c="dimmed">No export history available.</Text>
-                  </Table.Td>
-                </Table.Tr>
-              ) : (
-                paginatedExportTable.map((item, idx) => (
-                  <Table.Tr key={item.export_grade_id} ref={idx === 0 ? sampleRowRef : undefined}>
+              {
+                paginatedExportTable.map((item) => (
+                  <Table.Tr key={item.export_grade_id}>
                     <Table.Td>
                       <Checkbox
                         checked={selected.includes(item.export_grade_id)}
@@ -146,10 +133,10 @@ export default function ExportHistory() {
                     </Table.Td>
                   </Table.Tr>
                 ))
-              )}
+              }
             </Table.Tbody>
 
-            <Table.Tfoot ref={tfootRef}>
+            <Table.Tfoot>
               <Table.Tr>
                 <Table.Td colSpan={7} className="border-t border-gray-300">
                   <Flex align="center" w="100%" justify="space-between">
@@ -172,8 +159,7 @@ export default function ExportHistory() {
             </Table.Tfoot>
           </Table>
         </Paper>
-      </div>
-
+      )}
       <ExportModal />
     </div>
   );
