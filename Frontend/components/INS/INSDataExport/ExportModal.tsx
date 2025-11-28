@@ -1,16 +1,15 @@
 'use client';
 
 import React from 'react';
-import { Modal, MultiSelect, Button, Flex } from '@mantine/core';
+import { useExportGrades } from '@/hooks/ExportGrade/useExportGrades';
+import { useFetchAssignments } from '@/hooks/useFetchExportModal';
+import { useExportModalStore } from '@/store/modal/useExportModalStore';
+import { Button, Flex, Modal, MultiSelect } from '@mantine/core';
+import { useForm } from '@mantine/form';
 import { showNotification } from '@mantine/notifications';
 import { BsFiletypeXlsx } from "react-icons/bs";
-import { useForm } from '@mantine/form';
-import { useQueryClient } from '@tanstack/react-query';
-import { useExportModalStore } from '@/store/modal/useExportModalStore';
-import { useFetchAssignments } from '@/hooks/useFetchExportModal';
-import { useExportGrades } from '@/hooks/ExportGrade/useExportGrades';
 
-const ExportModal: React.FC = () => {
+export const ExportModal: React.FC = () => {
   const opened = useExportModalStore((s) => s.opened);
   const closeModal = useExportModalStore((s) => s.closeModal);
   const course_id = useExportModalStore((s) => s.course_id);

@@ -1,6 +1,8 @@
 'use client';
 
-import ExportModal from '@/components/INS/INSDataExport/ExportModal';
+import { ErrorExportHistory } from '@/components/INS/INSDataExport/ErrorExportHistory';
+import { ExportModal } from '@/components/INS/INSDataExport/ExportModal';
+import { NoExportHistory } from '@/components/INS/INSDataExport/NoExportHistory';
 import { RingProgressExpired } from "@/components/INS/INSDataExport/RingProgressExpired";
 import { RingProgressProcess } from "@/components/INS/INSDataExport/RingProgressProcess";
 import { RingProgressReady } from "@/components/INS/INSDataExport/RingProgressReady";
@@ -13,8 +15,6 @@ import { IconDownload, IconTrash } from '@tabler/icons-react';
 import { useParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { FaFileExport } from "react-icons/fa6";
-import { NoExportHistory }  from '@/components/INS/INSDataExport/NoExportHistory';
-import { ErrorExportHistory } from '@/components/INS/INSDataExport/ErrorExportHistory';
 
 export default function ExportHistory() {
   const params = useParams();
@@ -50,6 +50,12 @@ export default function ExportHistory() {
   const endIndex = startIndex + rowsPerPage;
   const paginatedExportTable = exportList.slice(startIndex, endIndex);
 
+  const formatExportDate = (dateString: string | null) => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    return date.toLocaleString();
+  }
+
   return (
     <div className="pl-5 pr-5">
       <div className="flex justify-between items-center mb-6">
@@ -82,10 +88,18 @@ export default function ExportHistory() {
                     onChange={toggleAll}
                   />
                 </Table.Th>
-                <Table.Th>File name</Table.Th>
-                <Table.Th>Export at</Table.Th>
-                <Table.Th>Export status</Table.Th>
-                <Table.Th>Export by</Table.Th>
+                <Table.Th>
+                  <Title order={6} lineClamp={1}>File name</Title>
+                </Table.Th>
+                <Table.Th>
+                  <Title order={6} lineClamp={1}>Export at</Title>
+                </Table.Th>
+                <Table.Th>
+                  <Title order={6} lineClamp={1}>Export status</Title>
+                </Table.Th>
+                <Table.Th>
+                  <Title order={6} lineClamp={1}>Export by</Title>
+                </Table.Th>
                 <Table.Th></Table.Th>
               </Table.Tr>
             </Table.Thead>
@@ -100,14 +114,26 @@ export default function ExportHistory() {
                         onChange={() => toggleRow(item.export_grade_id)}
                       />
                     </Table.Td>
-                    <Table.Td>{item.file_name}</Table.Td>
-                    <Table.Td>{item.processed_at}</Table.Td>
+                    <Table.Td>
+                      <Text size='sm' lineClamp={1}>{item.file_name}</Text>
+                    </Table.Td>
+                    <Table.Td>
+                      {
+                        item.processed_at === null ? (
+                          <Text size='sm' c='dimmed' fs="italic">This file is being processed</Text>
+                        ) : (
+                          <Text size='sm' lineClamp={1}>{formatExportDate(item.processed_at ?? null)}</Text>
+                        )
+                      }
+                    </Table.Td>
                     <Table.Td style={{ paddingLeft: 38 }}>
                       {item.file_status === 'pending' && <RingProgressProcess />}
                       {item.file_status === 'completed' && <RingProgressReady />}
                       {item.file_status === 'failed' && <RingProgressExpired />}
                     </Table.Td>
-                    <Table.Td>{item.requested_by}</Table.Td>
+                    <Table.Td>
+                      <Text size='sm' lineClamp={1}>{item.requested_by}</Text>
+                    </Table.Td>
                     <Table.Td>
                       <Flex align="center" gap="xs">
                         {item.file_status === 'completed' && item.file_url && (
