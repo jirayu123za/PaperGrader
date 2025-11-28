@@ -109,7 +109,6 @@ func (h *HttpInstructorHandler) CreateAssignmentWithFiles(c *fiber.Ctx) error {
 	})
 }
 
-// ! new version: update assignment
 func (h *HttpInstructorHandler) UpdateAssignmentSetting(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
@@ -361,7 +360,6 @@ func (h *HttpInstructorHandler) GetPDFTemplateWithURL(c *fiber.Ctx) error {
 	})
 }
 
-// !
 func (h *HttpInstructorHandler) GetFileFormSubmission(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
@@ -2206,6 +2204,7 @@ func (h *HttpInstructorHandler) CreateGrade(c *fiber.Ctx) error {
 }
 
 // Export Handlers
+// Part: 1 List of assignments for export
 func (h *HttpInstructorHandler) GetAssignmentsListForExport(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
@@ -2230,6 +2229,7 @@ func (h *HttpInstructorHandler) GetAssignmentsListForExport(c *fiber.Ctx) error 
 	})
 }
 
+// Part: 2 Export grades to Excel
 func (h *HttpInstructorHandler) ExportGradesToExcel(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)
@@ -2268,6 +2268,7 @@ func (h *HttpInstructorHandler) ExportGradesToExcel(c *fiber.Ctx) error {
 	})
 }
 
+// Part: 3 Get latest export list
 func (h *HttpInstructorHandler) GetLatestExportList(c *fiber.Ctx) error {
 	courseIDParam := c.Query("course_id")
 	courseID, err := uuid.Parse(courseIDParam)

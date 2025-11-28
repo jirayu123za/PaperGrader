@@ -211,11 +211,11 @@ type questionCol struct {
 
 // =====================================================
 // 4) Transform rubric_data → columns in Excel
-//    ดึง rubric JSONB from table rubrics (rename/convert to questionCol)
+//    Get rubric JSONB from table rubrics (rename/convert to questionCol)
 // =====================================================
 
 func (w *ExportGradesWorker) getAssignmentColumns(assignmentID uuid.UUID) ([]questionCol, float64, error) {
-	// อ่าน JSONB จากตาราง rubrics (สมมติ: rubrics.rubric_data)
+	// Get rubric JSONB from table rubrics (assume: rubrics.rubric_data)
 	var row struct {
 		Data []byte `gorm:"column:rubric_data"`
 	}
@@ -255,7 +255,7 @@ func (w *ExportGradesWorker) getAssignmentColumns(assignmentID uuid.UUID) ([]que
 				maxPointsSum += sq.SubQuestionPoint
 			}
 		} else {
-			// ไม่มี sub → ใช้ข้อใหญ่เป็นคอลัมน์
+			// No sub → use main question as column
 			cols = append(cols, questionCol{
 				Key:        "q:" + q.QuestionID.String(),
 				Number:     qNum,
@@ -339,7 +339,7 @@ func (w *ExportGradesWorker) getScoresBySubmission(assignmentID uuid.UUID, cols 
 		}
 	}
 
-	// Query grade_data every submission ใต้ assignment นี้
+	// Query grade_data every submission under this assignment
 	type gdRow struct {
 		SubmissionID uuid.UUID
 		GradeDataRaw []byte `gorm:"column:grade_data"`
@@ -373,7 +373,7 @@ func (w *ExportGradesWorker) getScoresBySubmission(assignmentID uuid.UUID, cols 
 			scoreMap[r.SubmissionID] = map[string]float64{}
 		}
 
-		// loop question ใน grade_data
+		// loop question in grade_data
 		for _, q := range gd.Questions {
 			// case: has sub-questions
 			if len(q.SubQuestions) > 0 {
@@ -435,9 +435,9 @@ func anySelected(ds []gradeRubricDetail) bool {
 	return false
 }
 
-// กติกาคิดคะแนน:
-// - "negative scoring": เริ่มจาก max แล้วลบผลรวม abs(point) ของรายการที่เลือก → clamp [0, max]
-// - อื่น ๆ: ผลรวม point ของรายการที่เลือก → clamp [0, max]
+// Scoring rules:
+// - "negative scoring": start from max then subtract the sum of abs(point) of selected items → clamp [0, max]
+// - Others: sum of points of selected items → clamp [0, max]
 func scoreFromRubricSelection(setting string, max float64, ds []gradeRubricDetail) float64 {
 	switch setting {
 	case "negative scoring":
@@ -484,6 +484,7 @@ func (w *ExportGradesWorker) buildExcelFile(fileName string, assignmentName stri
 	_ = f.SetSheetName(first, sheet)
 
 	baseHeaders := []string{
+		"No",
 		"Name",
 		"SID",
 		"Email",
@@ -503,6 +504,7 @@ func (w *ExportGradesWorker) buildExcelFile(fileName string, assignmentName stri
 	}
 
 	for i, s := range subs {
+		seq := i + 1
 		row := make([]any, 0, len(baseHeaders))
 		name := strings.TrimSpace(strings.Join([]string{s.FirstName, s.LastName}, " "))
 		if name == "" {
@@ -523,6 +525,7 @@ func (w *ExportGradesWorker) buildExcelFile(fileName string, assignmentName stri
 		}
 
 		row = append(row,
+			seq,
 			name,
 			s.StudentCode,
 			s.Email,
@@ -547,8 +550,18 @@ func (w *ExportGradesWorker) buildExcelFile(fileName string, assignmentName stri
 		}
 	}
 
-	_ = f.SetColWidth(sheet, "A", "D", 20)
-	_ = f.SetColWidth(sheet, "E", "I", 16)
+	err := f.SetColWidth(sheet, "A", "A", 6)
+	if err != nil {
+		return "", err
+	}
+	err = f.SetColWidth(sheet, "B", "E", 20)
+	if err != nil {
+		return "", err
+	}
+	err = f.SetColWidth(sheet, "F", "J", 16)
+	if err != nil {
+		return "", err
+	}
 
 	tmpPath := filepath.Join(os.TempDir(), fileName)
 	if err := f.SaveAs(tmpPath); err != nil {
