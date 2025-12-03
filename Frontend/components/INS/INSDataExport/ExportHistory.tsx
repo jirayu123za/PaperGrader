@@ -9,7 +9,7 @@ import { RingProgressReady } from "@/components/INS/INSDataExport/RingProgressRe
 import { useFetchLatestExport } from '@/hooks/ExportGrade/useExportGrades';
 import { useExportGradeStore } from '@/store/ExportGrade/useExportGradeStore';
 import { useExportModalStore } from '@/store/modal/useExportModalStore';
-import { ActionIcon, Button, Checkbox, Flex, Pagination, Paper, Skeleton, Table, Text, Title } from '@mantine/core';
+import { ActionIcon, Button, Checkbox, Flex, Pagination, Paper, Skeleton, Table, Text, Title, Tooltip } from '@mantine/core';
 import { usePagination, useViewportSize } from '@mantine/hooks';
 import { IconDownload, IconTrash } from '@tabler/icons-react';
 import { useParams } from 'next/navigation';
@@ -56,6 +56,18 @@ export default function ExportHistory() {
     return date.toLocaleString();
   }
 
+  const formatFullName = (fullName: string) => {
+    if (!fullName) return "";
+    const parts = fullName.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return "";
+    if (parts.length === 1) {
+      return parts[0].charAt(0).toUpperCase();
+    }
+    const firstInitial = parts[0].charAt(0).toUpperCase();
+    const lastInitial = parts[parts.length - 1].charAt(0).toUpperCase();
+    return `${firstInitial}${lastInitial}.`;
+  };
+
   return (
     <div className="pl-5 pr-5">
       <div className="flex justify-between items-center mb-6">
@@ -94,13 +106,15 @@ export default function ExportHistory() {
                 <Table.Th>
                   <Title order={6} lineClamp={1}>Export at</Title>
                 </Table.Th>
-                <Table.Th>
+                <Table.Th ta="center">
                   <Title order={6} lineClamp={1}>Export status</Title>
                 </Table.Th>
-                <Table.Th>
+                <Table.Th ta="center">
                   <Title order={6} lineClamp={1}>Export by</Title>
                 </Table.Th>
-                <Table.Th></Table.Th>
+                <Table.Th ta="center">
+                  <Title order={6} lineClamp={1}>Actions</Title>
+                </Table.Th>
               </Table.Tr>
             </Table.Thead>
 
@@ -126,16 +140,18 @@ export default function ExportHistory() {
                         )
                       }
                     </Table.Td>
-                    <Table.Td style={{ paddingLeft: 38 }}>
+                    <Table.Td ta="center">
                       {item.file_status === 'pending' && <RingProgressProcess />}
                       {item.file_status === 'completed' && <RingProgressReady />}
                       {item.file_status === 'failed' && <RingProgressExpired />}
                     </Table.Td>
-                    <Table.Td>
-                      <Text size='sm' lineClamp={1}>{item.requested_by}</Text>
+                    <Table.Td style={{cursor: 'help'}} ta="center">
+                      <Tooltip label={item.requested_by} withArrow>
+                        <Text size='sm' lineClamp={1}>{formatFullName(item.requested_by)}</Text>
+                      </Tooltip>
                     </Table.Td>
                     <Table.Td>
-                      <Flex align="center" gap="xs">
+                      <Flex align="center" gap="xs" justify="center">
                         {item.file_status === 'completed' && item.file_url && (
                           <ActionIcon
                             component="a"

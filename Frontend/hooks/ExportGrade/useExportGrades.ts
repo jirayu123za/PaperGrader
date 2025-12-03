@@ -30,10 +30,6 @@ type ExportGradesInput = {
     body: RequestBody;
 };
 
-// type FetchLatestExportInput = {
-//     params: ExportGradesParams;
-// };
-
 const postQueueExport = async function ({ params, body }: ExportGradesInput) {
     const response = await axios.post(`${API_BASE}/instructor/assignment/export`,
         {
@@ -49,8 +45,8 @@ export const useExportGrades = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: postQueueExport,
-        onSuccess: (data, variables) => {
-            // queryClient.invalidateQueries(['export-grades', variables.params.course_id]);
+        onSuccess: (_data, variables) => {
+            queryClient.invalidateQueries({ queryKey: ['export-grades', variables.params.course_id] });
         },
         onError: (error: any) => {
         }
@@ -96,5 +92,11 @@ export const useFetchLatestExport = (course_id: string | null) => {
             return exportList ?? [];
         },
         refetchOnWindowFocus: false,
+        refetchInterval(query) {
+            const data = query.state.data as ExportGradeItem[] | undefined;
+            if (!data) return false;
+            const hasPending = data.some((item) => item.file_status === "pending");
+            return hasPending ? 60_000 : false;
+        },
     });
 };

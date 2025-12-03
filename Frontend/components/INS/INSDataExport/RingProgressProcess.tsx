@@ -1,21 +1,36 @@
 "use client";
-import React from "react";
-import { ActionIcon, Center, RingProgress } from "@mantine/core";
-import { TbAlertSmall } from "react-icons/tb";
 
-export const RingProgressProcess = () => {
-  return (
-    <RingProgress
-      size={26}
-      thickness={2}
-      sections={[{ value: 100, color: "yellow" }]}
-      label={
-        <Center>
-          <ActionIcon color="yellow" variant="light" radius="xl" size="xs">
-            <TbAlertSmall size={24} />
-          </ActionIcon>
-        </Center>
+import { Progress } from "@mantine/core";
+import React, { useEffect, useState } from "react";
+
+type RingProgressProcessProps = {
+  durationMs?: number;
+};
+
+export const RingProgressProcess: React.FC<RingProgressProcessProps> = ({durationMs = 60_000}) => {
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    const start = Date.now();
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - start;
+      const percent = Math.min((elapsed / durationMs) * 100, 100);
+      setValue(percent);
+      if (percent >= 100) {
+        clearInterval(interval);
       }
+    }, 200);
+    return () => clearInterval(interval);
+  }, [durationMs]);
+
+  return (
+    <Progress
+      value={value}
+      radius="xl"
+      size="lg"
+      color="yellow"
+      striped
+      animated
     />
   );
 };
