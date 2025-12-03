@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
-import { FaHome, FaBook, FaCog, FaUser, FaRegArrowAltCircleRight } from "react-icons/fa";
+import { useRouter, usePathname } from "next/navigation";
+import { FaHome, FaBook, FaUser, FaRegArrowAltCircleRight } from "react-icons/fa";
 import { useDisclosure } from "@mantine/hooks";
 import { Button, Divider, Flex, Image, Stack } from "@mantine/core";
 import AccountMenu from "@/components/Account";
@@ -17,7 +16,6 @@ export default function LeftMain() {
   const icons = {
     home: <FaHome />,
     book: <FaBook />,
-    cog: <FaCog />,
     user: <FaUser />,
   };
 
@@ -34,18 +32,11 @@ export default function LeftMain() {
       icon: icons.book,
       href: `/student/overview/course`,
     },
-    {
-      key: "settings",
-      label: "Settings",
-      icon: icons.cog,
-      href: `/student/settings`,
-    },
   ];
 
   useEffect(() => {
     if (pathname.includes("course")) setActiveOption("courses");
-    else if (pathname.includes("overview")) setActiveOption("dashboard");
-    else if (pathname.includes("settings")) setActiveOption("settings");
+    else setActiveOption("dashboard");
   }, [pathname]);
 
   return (
@@ -71,11 +62,10 @@ export default function LeftMain() {
             h={60}
             p={2}
             style={{ cursor: "pointer" }}
-            onClick={() => {
-              router.push(`/student/overview`);
-            }}
+            onClick={() => router.push(`/student/overview`)}
           />
         )}
+
         <Button
           onClick={toggleCollapse}
           variant="transparent"
@@ -90,9 +80,7 @@ export default function LeftMain() {
         >
           <FaRegArrowAltCircleRight
             size={24}
-            style={{
-              color: "#f1f3f8",
-            }}
+            style={{ color: "#f1f3f8" }}
             className={`transition-transform duration-300 ${
               isCollapsed ? "" : "transform rotate-180"
             }`}
@@ -100,7 +88,7 @@ export default function LeftMain() {
         </Button>
       </Flex>
 
-      <Divider c="#E9E9E9" size="xs"/>
+      <Divider c="#E9E9E9" size="xs" />
 
       {/* Main Menu */}
       <Stack
@@ -119,10 +107,11 @@ export default function LeftMain() {
             styles={{
               root: {
                 display: "flex",
-                alignItems: 'center',
+                alignItems: "center",
                 justifyContent: isCollapsed ? "center" : "flex-start",
                 color: activeOption === item.key ? "#424242" : "#FFFFFF",
-                backgroundColor: activeOption === item.key ? "#f8f9fa" : "transparent",
+                backgroundColor:
+                  activeOption === item.key ? "#f8f9fa" : "transparent",
                 borderRadius: "8px",
                 transition: "background-color 0.3s, color 0.3s",
                 paddingLeft: isCollapsed ? 0 : 16,
@@ -134,9 +123,7 @@ export default function LeftMain() {
             }}
             onClick={() => {
               setActiveOption(item.key);
-              if (item.key !== "settings") {
-                router.push(item.href);
-              }
+              router.push(item.href);
             }}
           >
             {!isCollapsed && <span>{item.label}</span>}
