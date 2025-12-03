@@ -23,22 +23,6 @@ export default function ActiveAssignments({ isLoading }: { isLoading: boolean })
         page={activePage}
         setPage={setActivePage}
       />
-
-      {completed.length > 0 && (
-        <div className="mt-6">
-          <Button variant="subtle" onClick={() => setShowCompleted(p => !p)}>
-            {showCompleted ? "Hide Completed Assignments" : `Show ${completed.length} Completed Assignments`}
-          </Button>
-          <Collapse in={showCompleted} className="mt-4">
-            <AssignmentList
-              assignments={completed}
-              isLoading={isLoading}
-              page={completedPage}
-              setPage={setCompletedPage}
-            />
-          </Collapse>
-        </div>
-      )}
     </ScrollArea>
   );
 }
