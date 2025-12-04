@@ -479,7 +479,7 @@ func clamp(v, lo, hi float64) float64 {
 
 func (w *ExportGradesWorker) buildExcelFile(fileName string, assignmentName string, cols []questionCol, maxPoints float64, subs []submissionRow, scoreMap map[uuid.UUID]map[string]float64, gradedSet map[uuid.UUID]bool) (string, error) {
 	f := excelize.NewFile()
-	sheet := "Assignment Grades"
+	sheet := makeSheetName(assignmentName)
 	first := f.GetSheetName(0)
 	_ = f.SetSheetName(first, sheet)
 
@@ -625,4 +625,21 @@ func slug(s string) string {
 		return "export"
 	}
 	return b.String()
+}
+
+func makeSheetName(name string) string {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return "Assignment Grades"
+	}
+
+	forbidden := []string{":", "\\", "/", "?", "*", "[", "]"}
+	for _, ch := range forbidden {
+		name = strings.ReplaceAll(name, ch, " ")
+	}
+
+	if len(name) > 31 {
+		name = name[:31]
+	}
+	return name
 }

@@ -3058,7 +3058,7 @@ func (r *GormInstructorRepository) FindAssignmentNameForExcelFile(courseID uuid.
 	return assignmentName, nil
 }
 
-func (r *GormInstructorRepository) AddGradesToExcelFile(request response.CreateGradeToExcelFileRequest, courseID uuid.UUID, userID uuid.UUID, fileName string) error {
+func (r *GormInstructorRepository) AddGradesToExcelFile(assignmentID uuid.UUID, courseID uuid.UUID, userID uuid.UUID, fileName string) error {
 	// 1) query users
 	var u struct{ Email string }
 	if err := r.db.
@@ -3103,7 +3103,7 @@ func (r *GormInstructorRepository) AddGradesToExcelFile(request response.CreateG
 	// 3) Create export_grades row with status pending
 	export := models.ExportGrade{
 		CourseID:       courseID,
-		AssignmentID:   request.AssignmentID,
+		AssignmentID:   assignmentID,
 		PersonalDataID: pd.PersonalDataID, // ← linked to actual personal_data
 		FileName:       fileName,
 		FileStatus:     models.FileStatusPending,

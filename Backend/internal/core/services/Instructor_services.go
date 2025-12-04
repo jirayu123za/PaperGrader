@@ -1958,16 +1958,22 @@ func (s *InstructorServiceImpl) GetAssignmentsListForExport(CourseID uuid.UUID) 
 }
 
 func (s *InstructorServiceImpl) CreateGradesToExcelFile(request response.CreateGradeToExcelFileRequest, courseID uuid.UUID, userID uuid.UUID) error {
-	name, err := s.repo.FindAssignmentNameForExcelFile(courseID, request.AssignmentID)
-	if err != nil {
-		return err
-	}
-	if name == "" {
-		return fmt.Errorf("assignment not found in this course")
-	}
+	for _, assignmentID := range request.AssignmentIDs {
+		name, err := s.repo.FindAssignmentNameForExcelFile(courseID, assignmentID)
+		if err != nil {
+			return err
+		}
 
-	fileName := fmt.Sprintf("%s-score.xlsx", utils.Slugify(name))
-	return s.repo.AddGradesToExcelFile(request, courseID, userID, fileName)
+		if name == "" {
+			return fmt.Errorf("assignment not found in this course")
+		}
+
+		fileName := fmt.Sprintf("%s-score.xlsx", utils.Slugify(name))
+		if err := s.repo.AddGradesToExcelFile(assignmentID, courseID, userID, fileName); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *InstructorServiceImpl) GetLatestExportList(courseID uuid.UUID) ([]response.LatestExportListResponse, error) {

@@ -702,7 +702,7 @@ type RubricDetailItem struct {
 // Part:1 Export data
 // ---- JSON structs for export data ----
 type CreateGradeToExcelFileRequest struct {
-	AssignmentID uuid.UUID `json:"assignment_id"`
+	AssignmentIDs []uuid.UUID `json:"assignment_ids"`
 }
 
 type LatestExportListResponse struct {

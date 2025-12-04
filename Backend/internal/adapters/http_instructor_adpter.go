@@ -2256,6 +2256,12 @@ func (h *HttpInstructorHandler) ExportGradesToExcel(c *fiber.Ctx) error {
 		})
 	}
 
+	if len(request.AssignmentIDs) == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "assignment_ids is required",
+		})
+	}
+
 	if err := h.services.CreateGradesToExcelFile(request, courseID, userID); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to queue export job",
