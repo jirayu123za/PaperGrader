@@ -13,7 +13,7 @@ export const ExportModal: React.FC = () => {
   const opened = useExportModalStore((s) => s.opened);
   const closeModal = useExportModalStore((s) => s.closeModal);
   const course_id = useExportModalStore((s) => s.course_id);
-  const { data: assignments = [], isLoading: isLoadingAssignments, error: fetchError } = useFetchAssignments(course_id);
+  const { data: assignments = [], isLoading: isLoadingAssignments, error: isFetchAssignmentsError } = useFetchAssignments(course_id);
   // Hook for exporting grades
   const postQueueExport = useExportGrades();
 
@@ -29,7 +29,7 @@ export const ExportModal: React.FC = () => {
     postQueueExport.mutate(
       {
         params: { course_id },
-        body: { assignment_id: values.assignments.join(',') },
+        body: { assignment_ids: values.assignments },
       },
       {
         onSuccess: () => {

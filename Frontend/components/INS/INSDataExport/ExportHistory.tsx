@@ -133,8 +133,10 @@ export default function ExportHistory() {
                     </Table.Td>
                     <Table.Td>
                       {
-                        item.processed_at === null ? (
+                        item.processed_at === null && item.file_status === 'pending' ? (
                           <Text size='sm' c='dimmed' fs="italic">This file is being processed</Text>
+                        ) : item.processed_at === null && item.file_status === 'failed' ? (
+                          <Text size='sm' c='dimmed' fs="italic">This file failed to process</Text>
                         ) : (
                           <Text size='sm' lineClamp={1}>{formatExportDate(item.processed_at ?? null)}</Text>
                         )

@@ -22,7 +22,7 @@ interface ExportGradesParams {
 }
 
 interface RequestBody {
-    assignment_id: string;
+    assignment_ids: string[];
 }
 
 type ExportGradesInput = {
