@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useFetchInstructorFile } from "@/hooks/Student/useFetchInstructorFile";
-import { useUploadStudentFile } from "@/hooks/Student/useUploadStudentFile";
+import { useDownloadStudentFile, useUploadStudentFile } from "@/hooks/Student/useUploadStudentFile";
 import { useReceiveFileStore } from "@/store/Student/useReceiveFileStore";
 import { useSubmitAndDownloadModalStore } from "@/store/modal/useSubmitAndDownloadModal";
 import { Alert, Button, FileInput, Flex, Loader, Modal, Text } from "@mantine/core";
@@ -13,7 +13,8 @@ import { FaInfoCircle } from "react-icons/fa";
 export const AssignmentFilesModal: React.FC = () => {
   const { assignment_id, course_id, opened, closeModal, files, fileNames } = useSubmitAndDownloadModalStore();
   const { isLoading } = useFetchInstructorFile();
-  const { mutate: uploadStudentFile } = useUploadStudentFile();
+  const { mutate: uploadStudentFile, isPending: isUploading } = useUploadStudentFile();
+  const { mutate: downloadStudentFile, isPending: isDownloading } = useDownloadStudentFile();
   const { studentFile, setStudentFile } = useReceiveFileStore();
   const hasFiles = files.length > 0 && fileNames.length > 0;
   const templateFileText = "TemplateFile";
@@ -25,15 +26,6 @@ export const AssignmentFilesModal: React.FC = () => {
       file: (value) => (value ? null : "You must upload a PDF"),
     },
   });
-
-  const downloadFile = (url: string, fileName: string) => {
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   const handleSubmit = () => {
     if (!studentFile) {
@@ -89,38 +81,20 @@ export const AssignmentFilesModal: React.FC = () => {
           )}
 
           {hasFiles && (
-            <div className="my-4 space-y-3">
-              {files[0] && fileNames[0] && (
+            <div className="my-4 flex flex-wrap gap-2">
+              {files.map((fileUrl, index) => (
                 <Button
-                  variant="light"
-                  color="orange"
+                  key={index}
+                  variant="outline"
+                  color={index === 0 ? "orange" : "green"}
                   leftSection={<IconFileText size={18} />}
-                  onClick={() => downloadFile(files[0], fileNames[0])}
+                  disabled={isDownloading}
+                  loading={isDownloading}
+                  onClick={() => downloadStudentFile({ fileUrl, fileName: fileNames[index] })}
                 >
-                  {fileNames[0]}
+                  {fileNames[index]}
                 </Button>
-              )}
-
-              {files.length > 1 && (
-                <div className="space-y-1">
-                  <Text size="xs" c="dimmed">
-                    Additional files
-                  </Text>
-                  <div className="space-y-2">
-                    {files.slice(1).map((fileUrl, index) => (
-                      <Button
-                        key={index}
-                        variant="outline"
-                        color="green"
-                        leftSection={<IconFileText size={18} />}
-                        onClick={() => downloadFile(fileUrl, fileNames[index + 1])}
-                      >
-                        {fileNames[index + 1]}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              )}
+              ))}
             </div>
           )}
 
@@ -132,12 +106,15 @@ export const AssignmentFilesModal: React.FC = () => {
           >
             <div className="my-4">
               <FileInput
-                placeholder="Select PDF"
+                placeholder="Select PDF file"
                 label="Upload a PDF containing your responses to the assignment."
+                accept="application/pdf"
+                leftSection={<IconFileText size={18} />}
+                clearable
+                required
+                disabled={isUploading}
                 value={studentFile}
                 onChange={setStudentFile}
-                accept="application/pdf"
-                required
               />
             </div>
             {studentFile && (
