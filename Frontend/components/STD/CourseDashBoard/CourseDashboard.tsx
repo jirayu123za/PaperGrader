@@ -20,12 +20,11 @@ export const CourseDashboard: React.FC = () => {
   const router = useRouter();
   const params = useParams();
   const { course_id } = params as { course_id: string };
-
   const { course: courseData } = useStdCourseDashboardStore();
   const { isLoading: isLoadingAssignments, error: errorLoadingAssignments } = useFetchAssignments(course_id as string);
   const { assignments: assignmentList } = useAssignmentStore();
   const { isLoading: isLoadingCourse, error: errorLoadingCourse } = useFetchStdCourse(course_id as string);
-
+  
   if (errorLoadingAssignments || errorLoadingCourse) return <ErrorsAssignmentsList />;
 
   return (
@@ -52,7 +51,7 @@ export const CourseDashboard: React.FC = () => {
 
       <Divider my="md" />
 
-      {isLoadingAssignments ? (
+      {isLoadingAssignments || isLoadingCourse? (
         <Paper withBorder>
           <Table verticalSpacing="md" horizontalSpacing="lg">
             <Table.Thead className="bg-gray-100">
@@ -82,7 +81,7 @@ export const CourseDashboard: React.FC = () => {
         <NoAssignmentList />
       ) : (
         <Paper withBorder>
-          <Table verticalSpacing="md" horizontalSpacing="lg">
+          <Table verticalSpacing="md" horizontalSpacing="lg" highlightOnHover>
             <Table.Thead className="bg-gray-100">
               <Table.Tr>
                 <Table.Th>Name</Table.Th>
@@ -96,16 +95,19 @@ export const CourseDashboard: React.FC = () => {
             </Table.Thead>
 
             <Table.Tbody>
-              {assignmentList.map((assignment) =>
+              {assignmentList.map((assignment) => {
+                const isSubmitted = assignment.has_submitted;
+                return (
                   <React.Fragment key={assignment.assignment_id}>
                     <Table.Tr>
                       <Table.Td
-                        className="py-2 px-4 cursor-pointer hover:underline"
+                        className={`py-2 px-4 ${isSubmitted ? "cursor-pointer hover:underline" : "cursor-default"}`}
                         onClick={() => {
+                          if (!isSubmitted) return;
                           router.push(`/student/course/${course_id}/assignment/${assignment.assignment_id}/submission/${assignment.submission_id}`);
                         }}
                       >
-                        <Text size="sm" lineClamp={1}>{assignment.assignment_name}</Text>
+                        <Text size="sm" lineClamp={1}>{assignment.assignment_name.charAt(0).toUpperCase() + assignment.assignment_name.slice(1)}</Text>
                       </Table.Td>
 
                       <Table.Td ta="center">
@@ -155,7 +157,8 @@ export const CourseDashboard: React.FC = () => {
                       </Table.Td>
                     </Table.Tr>
                   </React.Fragment>
-              )}
+                );
+              })}
             </Table.Tbody>
           </Table>
         </Paper>
