@@ -59,7 +59,6 @@ export default function AssignmentList({ assignments, isLoading, page, setPage, 
             const cutoffPassed = a.cut_off_date
               ? dayjs(a.cut_off_date).isBefore(dayjs())
               : isLate;
-
             return (
               <Card
                 key={a.assignment_id}
@@ -92,16 +91,17 @@ export default function AssignmentList({ assignments, isLoading, page, setPage, 
 
                       <Text
                         fw={500}
-                        className="cursor-pointer hover:underline"
+                        className={`py-2 px-4 ${isSubmitted ? "cursor-pointer hover:underline" : "cursor-default"}`}
                         lineClamp={1}
-                        onClick={() =>
+                        onClick={() => {
                           //! Need submission_id to view specific submission
+                          if (!isSubmitted) return;
                           router.push(
                             `/student/course/${a.course_id}/assignment/${a.assignment_id}/submission/${a.submission_id}`
                           )
-                        }
+                        }}
                       >
-                        {a.assignment_name}
+                        {a.assignment_name.charAt(0).toUpperCase() + a.assignment_name.slice(1)}
                       </Text>
                     </div>
 

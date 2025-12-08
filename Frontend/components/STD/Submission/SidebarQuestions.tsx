@@ -31,7 +31,7 @@ export const SidebarSubmissionDetails = () => {
           ) : isErrorLoadingSubmissionDetails ? (
             <NoSubmissionDetails />
           ) : (
-            <Flex direction="column" h="100%" style={{ minHeight: 0 }}>
+            <Flex direction="column" h="100%" gap="xs" style={{ minHeight: 0 }}>
               <Box px="md" pt="md">
                 <Paper withBorder radius="xs" p="md" shadow="xs">
                   <Group justify="space-between" align="center" mb="xs">
@@ -60,61 +60,143 @@ export const SidebarSubmissionDetails = () => {
                 </Paper>
               </Box>
 
-              <Divider my="xs" mx="md" />
-
-              <Box px="lg" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
-                <ScrollArea type="hover" scrollbarSize={8} scrollbars="y" offsetScrollbars style={{ flex: 1, height: "100%" }}>
-                  {submissionDetails?.questions_details.map((q, idx) => (
-                    <Box key={q.question_id} mb="lg">
-                      <Text size="sm" fw="500">Question {idx + 1}</Text>
-                      <Group justify="space-between" className="group">
-                        {q.question_title && (
-                          <Title order={5} size="md" fw={400} lineClamp={1} 
-                            className={
-                              !q.sub_questions
-                                ? "text-[#495057] group-hover:text-[#3B5BDB] group-hover:underline transition-colors duration-200 cursor-pointer"
-                                : "text-[#495057]"
-                            }
+              <Divider mx="md" />
+              
+              {/* QUESTION LIST */}
+              <Box
+                px="md"
+                style={{
+                  flex: 1,
+                  minHeight: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <ScrollArea
+                  type="hover"
+                  scrollbarSize={8}
+                  scrollbars="y"
+                  offsetScrollbars
+                  style={{ flex: 1, height: "100%" }}
+                >
+                  {submissionDetails?.questions_details.map((q, idx) => {
+                    const isQuestionSelected = selectedRubricID === q.question_id;
+                    return (
+                      <Box key={q.question_id} mb="sm" mt="1px">
+                        <Paper
+                          withBorder
+                          radius="md"
+                          p="sm"
+                          shadow={isQuestionSelected ? "sm" : "xs"}
+                          className={`bg-white transition-all duration-150 hover:shadow-sm hover:-translate-y-[1px]`}
+                        >
+                          {/* HEADER QUESTION ROW */}
+                          <Box
+                            className="cursor-pointer"
                             onClick={() => {
-                              if (q.sub_questions && q.sub_questions.length > 0) return;
+                              if (q.sub_questions && q.sub_questions.length > 0)
+                                return;
                               toggleSelectedRubricID(q.question_id);
                             }}
                           >
-                            {q.question_title}
-                          </Title>
-                        )}
-                        <Text size="sm" c="#495057">{q.question_point} pts</Text>
-                      </Group>
-
-                      {selectedRubricID === q.question_id && (
-                        <RubricDetails rubric={q.rubrics} />
-                      )}
-
-                      {q.sub_questions?.map((sub, subIdx) => (
-                        <Box key={sub.sub_question_id} pl="md" mt="xs" className="group">
-                          <Group justify="space-between" w="100%" wrap="nowrap">
-                            <Flex gap="md">
-                              <Text size="sm" c="#495057">
-                                {`${idx + 1}.${subIdx + 1}`}
-                              </Text>
-                              <Title order={6} size="sm" fw={400} lineClamp={1} className="text-[#495057] group-hover:text-[#3B5BDB] group-hover:underline transition-colors duration-200 cursor-pointer" 
-                                onClick={() => toggleSelectedRubricID(sub.sub_question_id)}
+                            <Group
+                              justify="space-between"
+                              align="flex-start"
+                              wrap="nowrap"
+                            >
+                              <Box style={{ flex: 1, minWidth: 0 }}>
+                                <Text
+                                  size="xs"
+                                  c="dimmed"
+                                  fw={600}
+                                  tt="uppercase"
+                                  mb={2}
+                                >
+                                  Question {idx + 1}
+                                </Text>
+                                {q.question_title && (
+                                  <Text
+                                    size="sm"
+                                    fw={500}
+                                    lineClamp={1}
+                                    className="text-[#343a40] group-hover:text-[#3B5BDB] transition-colors duration-200"
+                                  >
+                                    {q.question_title}
+                                  </Text>
+                                )}
+                              </Box>
+                              <Badge
+                                variant="light"
+                                size="sm"
+                                radius="xl"
+                                color="gray"
                               >
-                                {sub.sub_question_title}
-                              </Title>
-                            </Flex>
-                            <Text size="sm" w={60} c="#495057" ta="right">
-                              {sub.sub_question_point} pts
-                            </Text>
-                          </Group>
+                                {q.question_point} pts
+                              </Badge>
+                            </Group>
+                          </Box>
 
-                          {selectedRubricID === sub.sub_question_id && (
-                            <RubricDetails rubric={sub.rubrics} />
+                          {isQuestionSelected && q.rubrics && (
+                            <RubricDetails rubric={q.rubrics} />
                           )}
-                        </Box>
-                      ))}
-                    </Box>
-                  ))}
+
+                          {/* SUB QUESTIONS */}
+                          {q.sub_questions && q.sub_questions.length > 0 && (
+                            <Box mt="sm" pt="sm" className="border-t border-[#f1f3f5]">
+                              {q.sub_questions.map((sub, subIdx) => {
+                                const isSubSelected = selectedRubricID === sub.sub_question_id;
+                                return (
+                                  <Box
+                                    key={sub.sub_question_id}
+                                    py={4}
+                                    className={`group rounded-md px-1 cursor-pointer transition-colors duration-150 bg-white`}
+                                    onClick={() => toggleSelectedRubricID(sub.sub_question_id)}
+                                  >
+                                    <Group
+                                      justify="space-between"
+                                      wrap="nowrap"
+                                      align="flex-start"
+                                    >
+                                      <Flex gap="sm" align="flex-start">
+                                        <Text
+                                          size="xs"
+                                          c="dimmed"
+                                          mt={2}
+                                          w={26}
+                                        >
+                                          {`${idx + 1}.${subIdx + 1}`}
+                                        </Text>
+                                        <Text
+                                          size="sm"
+                                          fw={400}
+                                          lineClamp={1}
+                                        >
+                                          {sub.sub_question_title}
+                                        </Text>
+                                      </Flex>
+
+                                      <Text
+                                        size="xs"
+                                        c="dimmed"
+                                        ta="right"
+                                        w={70}
+                                      >
+                                        {sub.sub_question_point} pts
+                                      </Text>
+                                    </Group>
+
+                                    {isSubSelected && sub.rubrics && (
+                                      <RubricDetails rubric={sub.rubrics} />
+                                    )}
+                                  </Box>
+                                );
+                              })}
+                            </Box>
+                          )}
+                        </Paper>
+                      </Box>
+                    );
+                  })}
                 </ScrollArea>
               </Box>
             </Flex>
