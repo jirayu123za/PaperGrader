@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { useSubmitAndDownloadModalStore } from '../../store/modal/useSubmitAndDownloadModal';
-import { API_BASE, api, qf } from '@/src/lib/api';
+import { API_BASE } from '@/src/lib/api';
 
 export const useFetchInstructorFile = () => {
   const { assignment_id, course_id, setFiles } = useSubmitAndDownloadModalStore();

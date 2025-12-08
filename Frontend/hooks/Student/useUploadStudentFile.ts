@@ -28,27 +28,23 @@ const uploadStudentFile = async ({ assignment_id, course_id, file }: UploadFileP
 };
 
 export const useUploadStudentFile = () => {
-  const { updateAssignment } = useAssignmentStore(); // ✅ ดึงฟังก์ชันจาก store
+  const { updateAssignment } = useAssignmentStore();
 
   return useMutation({
     mutationFn: uploadStudentFile,
     onSuccess: (_data, variables) => {
-      // ✅ อัปเดตใน Zustand store
       updateAssignment(variables.assignment_id, { has_submitted: true });
-
-      // ✅ แจ้งเตือนสำเร็จ
       notifications.show({
-        title: '✅ File uploaded successfully!',
-        message: `📄 Submission File name: ${variables.file.name}`,
+        title: 'File uploaded successfully!',
+        message: `Submission File name: ${variables.file.name}`,
         color: 'green',
         autoClose: 5000,
         position: 'bottom-right',
       });
     },
     onError: () => {
-      // ❌ แจ้งเตือนล้มเหลว
       notifications.show({
-        title: '❌ Upload failed',
+        title: 'Upload failed',
         message: 'Failed to upload the file. Please try again.',
         color: 'red',
         autoClose: 5000,
