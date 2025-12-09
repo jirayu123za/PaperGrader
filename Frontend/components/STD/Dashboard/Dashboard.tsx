@@ -1,39 +1,27 @@
 "use client";
 
-import { Tabs, Flex, Badge } from "@mantine/core";
+import ActiveAssignments from "@/components/STD/Dashboard/ActiveAssignments";
+import OverdueAssignments from "@/components/STD/Dashboard/OverdueAssignments";
+import SubmitAssignments from "@/components/STD/Dashboard/SubmitAssignments";
 import LeftMain from "@/components/STD/SideBar/LeftMain";
-import STDSubmit from "@/components/STD/STD_submit";
-import ActiveAssignments from "./ActiveAssignments";
-import OverdueAssignments from "./OverdueAssignments";
-import SubmitAssignments from "./SubmitAssignments";
-import { useFetchStdAssignments } from "@/hooks/Student/useFetchSTD_Assignment";
-import { useAssignmentStore } from "@/store/Student/useSTD_AssignmentStore";
+import { AssignmentFilesModal } from "@/components/STD/AssignmentFilesModal";
+import { useFetchStdAssignments } from "@/hooks/Student/useFetchAssignment";
+import { useAssignmentStore } from "@/store/Student/useAssignmentStore";
+import { Badge, Flex, Tabs } from "@mantine/core";
 
 export default function Dashboard() {
-  const { isLoading, error } = useFetchStdAssignments();
-  const { assignments } = useAssignmentStore();
-
-  if (error) return <div>Error loading assignments: {error.message}</div>;
-
-  // Count badges
-  const activeCount = assignments.filter(
-    a => a.has_submitted === false && new Date(a.due_date) > new Date()
-  ).length;
-
-  const overdueCount = assignments.filter(
-    a => a.has_submitted === false && new Date(a.due_date) < new Date()
-  ).length;
-
-  const submittedCount = assignments.filter(a => a.has_submitted).length;
-
+  const { isLoading, isError } = useFetchStdAssignments();
+  const { active, over_due, submitted } = useAssignmentStore();
+  const activeCount = active.length;
+  const overdueCount = over_due.length;
+  const submittedCount = submitted.length;
+  
   return (
     <Flex>
       <LeftMain />
       <Flex direction="column" className="flex-1 px-6 py-6">
-
         <Tabs defaultValue="active">
           <Tabs.List>
-
             {/* ---- ACTIVE TAB ---- */}
             <Tabs.Tab value="active" className="relative">
               Active Assignments
@@ -85,20 +73,20 @@ export default function Dashboard() {
           </Tabs.List>
 
           <Tabs.Panel value="active" pt="md">
-            <ActiveAssignments isLoading={isLoading} />
+            <ActiveAssignments isLoading={isLoading} isError={isError} />
           </Tabs.Panel>
 
           <Tabs.Panel value="overdue" pt="md">
-            <OverdueAssignments isLoading={isLoading} />
+            <OverdueAssignments isLoading={isLoading} isError={isError} />
           </Tabs.Panel>
 
           <Tabs.Panel value="submitted" pt="md">
-            <SubmitAssignments isLoading={isLoading} />
+            <SubmitAssignments isLoading={isLoading} isError={isError} />
           </Tabs.Panel>
         </Tabs>
       </Flex>
 
-      <STDSubmit />
+      <AssignmentFilesModal />
     </Flex>
   );
 }

@@ -1,28 +1,27 @@
 "use client";
 
-import React, { useState } from "react";
-import { ScrollArea, Button, Collapse } from "@mantine/core";
-import AssignmentList from "./AssignmentList";
-import { useAssignmentStore } from "@/store/Student/useSTD_AssignmentStore";
-import dayjs from "dayjs";
+import React from "react";
+import AssignmentList from "@/components/STD/Dashboard/AssignmentList";
+import { ScrollArea } from "@mantine/core";
+import { useAssignmentStore } from "@/store/Student/useAssignmentStore";
+import { NoActiveAssignment } from "@/components/STD/Dashboard/NoActiveAssignment";
+import { LoadingAssignmentList } from "@/components/STD/Dashboard/LoadingAssignmentList";
+import { ErrorDashboard } from "@/components/STD/Dashboard/ErrorDashboard";
 
-export default function ActiveAssignments({ isLoading }: { isLoading: boolean }) {
-  const { assignments } = useAssignmentStore();
-  const [activePage, setActivePage] = useState(1);
-  const [completedPage, setCompletedPage] = useState(1);
-  const [showCompleted, setShowCompleted] = useState(false);
-
-  const active = assignments.filter(a => dayjs(a.due_date).isAfter(dayjs()) && !a.has_submitted);
-  const completed = assignments.filter(a => a.has_submitted);
+export default function ActiveAssignments({ isLoading, isError }: { isLoading: boolean; isError: boolean }) {
+  const { active } = useAssignmentStore();
 
   return (
     <ScrollArea style={{ height: "calc(100vh - 128px)" }}>
-      <AssignmentList
-        assignments={active}
-        isLoading={isLoading}
-        page={activePage}
-        setPage={setActivePage}
-      />
+      {active.length === 0 ? (
+        <NoActiveAssignment />
+      ) : isLoading ? (
+        <LoadingAssignmentList />
+      ) : isError ? (
+        <ErrorDashboard />
+      ) : (
+      <AssignmentList assignments={active} />
+      )}
     </ScrollArea>
   );
 }

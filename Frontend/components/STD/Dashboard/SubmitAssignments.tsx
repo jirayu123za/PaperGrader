@@ -1,32 +1,27 @@
 "use client";
 
-import React, { useState } from "react";
-import { ScrollArea, Button, Collapse, Text } from "@mantine/core";
-import { useAssignmentStore } from "@/store/Student/useSTD_AssignmentStore";
-import AssignmentList from "./AssignmentList";
+import React from "react";
+import AssignmentList from "@/components/STD/Dashboard/AssignmentList";
+import { ScrollArea } from "@mantine/core";
+import { useAssignmentStore } from "@/store/Student/useAssignmentStore";
+import { NoSubmittedAssignment } from "@/components/STD/Dashboard/NoSubmittedAssignment";
+import { LoadingAssignmentList } from "@/components/STD/Dashboard/LoadingAssignmentList";
+import { ErrorDashboard } from "@/components/STD/Dashboard/ErrorDashboard";
 
-export default function SubmitAssignments({ isLoading }: { isLoading: boolean }) {
-  const { assignments } = useAssignmentStore();
-  const completed = assignments.filter(a => a.has_submitted);
-
-  const [page, setPage] = useState(1);
-
-  if (completed.length === 0) {
-    return (
-      <Text ta="center" c="dimmed" py="lg">
-        No submitted assignments yet
-      </Text>
-    );
-  }
+export default function SubmitAssignments({ isLoading, isError }: { isLoading: boolean; isError: boolean }) {
+  const { submitted } = useAssignmentStore();
 
   return (
     <ScrollArea style={{ height: "calc(100vh - 128px)" }}>
-      <AssignmentList
-        assignments={completed}
-        isLoading={isLoading}
-        page={page}
-        setPage={setPage}
-      />
+      {submitted.length === 0 ? (
+        <NoSubmittedAssignment />
+      ) : isLoading ? (
+        <LoadingAssignmentList />
+      ) : isError ? (
+        <ErrorDashboard />
+      ) : (
+      <AssignmentList assignments={submitted} />
+      )}
     </ScrollArea>
   );
 }

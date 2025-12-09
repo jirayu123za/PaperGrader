@@ -1,36 +1,26 @@
 "use client";
 
-import React, { useState } from "react";
-import { ScrollArea, Text } from "@mantine/core";
-import dayjs from "dayjs";
-import "dayjs/locale/th";
-import AssignmentList from "./AssignmentList";
-import { useAssignmentStore } from "@/store/Student/useSTD_AssignmentStore";
+import React from "react";
+import AssignmentList from "@/components/STD/Dashboard/AssignmentList";
+import { ScrollArea } from "@mantine/core";
+import { useAssignmentStore } from "@/store/Student/useAssignmentStore";
+import { NoDueAssignment } from "@/components/STD/Dashboard/NoDueAssignment";
+import { LoadingAssignmentList } from "@/components/STD/Dashboard/LoadingAssignmentList";
+import { ErrorDashboard } from "@/components/STD/Dashboard/ErrorDashboard";
 
-dayjs.locale("en");
-
-export default function OverdueAssignments({ isLoading }: { isLoading: boolean }) {
-  const { assignments } = useAssignmentStore();
-  const [page, setPage] = useState(1);
-
-  const overdue = assignments.filter(
-    (a) => dayjs(a.due_date).isBefore(dayjs()) && !a.has_submitted
-  );
+export default function OverdueAssignments({ isLoading, isError }: { isLoading: boolean; isError: boolean }) {
+  const { over_due } = useAssignmentStore();
 
   return (
     <ScrollArea style={{ height: "calc(100vh - 128px)" }}>
-      {overdue.length === 0 ? (
-        <Text ta="center" c="dimmed" py="lg">
-          No overdue assignments at the moment
-        </Text>
+      {over_due.length === 0 ? (
+        <NoDueAssignment />
+      ) : isLoading ? (
+        <LoadingAssignmentList />
+      ) : isError ? (
+        <ErrorDashboard />
       ) : (
-        <AssignmentList
-          assignments={overdue}
-          isLoading={isLoading}
-          page={page}
-          setPage={setPage}
-          isOverdue={true}
-        />
+        <AssignmentList assignments={over_due} />
       )}
     </ScrollArea>
   );
