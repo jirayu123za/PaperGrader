@@ -5,6 +5,8 @@ import (
 	"paperGrader/internal/core/repositories"
 	"paperGrader/internal/core/utils"
 	"paperGrader/internal/models"
+	"sort"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -14,7 +16,7 @@ type StudentService interface {
 	GetPersonalDataIDByUserID(UserID uuid.UUID) (uuid.UUID, error)
 	CreateSubmissionFile(submission *models.Submission) error
 
-	GetCoursesAndAssignments(UserID uuid.UUID) ([]map[string]interface{}, error)
+	GetCoursesAndAssignments(UserID uuid.UUID) (map[string][]map[string]interface{}, error)
 	GetAssignmentNamesWithCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, err error)
 	GetPDFFileNamesAndURLs(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, fileURLs []string, err error)
 	GetCoursesByUserID(UserID uuid.UUID) ([]map[string]interface{}, error)
@@ -51,12 +53,48 @@ func (s *StudentServiceImpl) CreateSubmissionFile(submission *models.Submission)
 	return nil
 }
 
-func (s *StudentServiceImpl) GetCoursesAndAssignments(UserID uuid.UUID) ([]map[string]interface{}, error) {
-	courses, err := s.repo.FindCoursesAndAssignments(UserID)
+func (s *StudentServiceImpl) GetCoursesAndAssignments(UserID uuid.UUID) (map[string][]map[string]interface{}, error) {
+	rows, err := s.repo.FindCoursesAndAssignments(UserID)
 	if err != nil {
 		return nil, err
 	}
-	return courses, nil
+
+	result := map[string][]map[string]interface{}{
+		"active":    {},
+		"over_due":  {},
+		"submitted": {},
+	}
+
+	now := time.Now()
+	sort.Slice(rows, func(i, j int) bool {
+		di, _ := rows[i]["due_date"].(time.Time)
+		dj, _ := rows[j]["due_date"].(time.Time)
+		if di.IsZero() {
+			return false
+		}
+		if dj.IsZero() {
+			return true
+		}
+		return di.Before(dj)
+	})
+
+	for _, row := range rows {
+		hasSubmitted, _ := row["has_submitted"].(bool)
+		due, _ := row["due_date"].(time.Time)
+
+		if hasSubmitted {
+			result["submitted"] = append(result["submitted"], row)
+			continue
+		}
+
+		if !due.IsZero() && now.After(due) {
+			result["over_due"] = append(result["over_due"], row)
+		} else {
+			result["active"] = append(result["active"], row)
+		}
+	}
+
+	return result, nil
 }
 
 func (s *StudentServiceImpl) GetAssignmentNamesWithCourseIDAndAssignmentID(CourseID uuid.UUID, AssignmentID uuid.UUID) (fileNames []string, err error) {

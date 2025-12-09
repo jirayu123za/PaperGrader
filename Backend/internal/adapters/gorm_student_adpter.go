@@ -66,7 +66,16 @@ func (r *GormStudentRepository) FindCoursesAndAssignments(UserID uuid.UUID) ([]m
 				WHERE s.assignment_id = assignments.assignment_id
 				  AND s.submitted_by = users.user_id
 				  AND s.deleted_at IS NULL
-			) AS has_submitted
+			) AS has_submitted,
+            (
+                SELECT s.submission_id
+                FROM submissions s
+                WHERE s.assignment_id = assignments.assignment_id
+                  AND s.submitted_by = users.user_id
+                  AND s.deleted_at IS NULL
+                ORDER BY s.submitted_at DESC
+                LIMIT 1
+            ) AS submission_id
 		`).
 		Joins("JOIN enrollment_lists ON enrollment_lists.course_id = courses.course_id").
 		Joins("JOIN sections ON sections.section_id = enrollment_lists.section_id").
