@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useMutation } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
 import { API_BASE } from '@/src/lib/api';
-import { useAssignmentStore } from '@/store/Student/useSTD_AssignmentStore';
+import { useAssignmentStore } from '@/store/Student/useAssignmentStore';
 
 interface UploadFileParams {
   assignment_id: string;
