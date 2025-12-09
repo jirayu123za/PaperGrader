@@ -1,8 +1,13 @@
 import { create } from 'zustand';
 
+interface University {
+  university_id: string;
+  university_name: string;
+}
+
 interface universityState {
-  universities: any[];
-  setUniversities: (universities: any[]) => void;
+  universities: University[];
+  setUniversities: (universities: University[]) => void;
 }
 
 export const useUniversityStore = create<universityState>((set) => ({

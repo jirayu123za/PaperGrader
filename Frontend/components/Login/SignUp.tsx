@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
-import { useUserStore } from '../../store/useUserStore';
-import { useUniversityStore } from '../../store/useUniversityStore';
-import { Modal, Button, TextInput, Select, Title, Flex, NumberInput } from '@mantine/core';
-import { useFetchUniversity } from '../../hooks/useFetchUniversities';
-import { useCreateUser } from '../../hooks/useCreate/useCreateUser';
+import { useUserStore } from '@/store/useUserStore';
+import { useUniversityStore } from '@/store/useUniversityStore';
+import { Modal, Button, TextInput, Select, Title, Flex } from '@mantine/core';
+import { useFetchUniversity } from '@/hooks/useFetchUniversities';
+import { useCreateUser } from '@/hooks/useCreate/useCreateUser';
 import { jwtDecode } from 'jwt-decode';
 import { useRouter } from 'next/navigation';
 import { useForm } from '@mantine/form';
@@ -19,10 +19,10 @@ interface SignUpProps {
 
 export default function SignUp({ opened, onClose }: SignUpProps) {
   const router = useRouter();
-  const { setGoogleId, google_id } = useUserStore();
-  const { universities, setUniversities } = useUniversityStore();
-  const { data: universityData, isSuccess: universitySuccess } = useFetchUniversity();
   const createUserMutation = useCreateUser();
+  const { setGoogleId, google_id } = useUserStore();
+  const { universities } = useUniversityStore();
+  const { isLoading, isError } = useFetchUniversity();
 
   const form = useForm({
     initialValues: {
@@ -39,6 +39,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
       first_name: (value) => (value.length < 2 ? 'First name must have at least 2 characters' : null),
       last_name: (value) => (value.length < 2 ? 'Last name must have at least 2 characters' : null),
       selectedUniversity: (value) => (value ? null : 'University is required'),
+      birth_date: (value) => (value ? null : 'Birth date is required'),
     },
   });
 
@@ -52,28 +53,22 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get("token");
-
     if (token) {
       try {
         const decodedUser = jwtDecode(token);
         if (!form.values.email) {
           form.setFieldValue('email', (decodedUser as { email?: string }).email || '');
         }
-
         if (!form.values.first_name) {
           form.setFieldValue('first_name', normalizeName((decodedUser as { firstName?: string }).firstName || ''));
         }
-
         if (!form.values.last_name) {
           form.setFieldValue('last_name', normalizeName((decodedUser as { lastName?: string }).lastName || ''));
         }
-
         if (!form.values.student_id) {
           form.setFieldValue('student_id', (decodedUser as { studentID?: string }).studentID || '');
         }
-
         setGoogleId((decodedUser as { googleID?: string }).googleID || '');
-        console.log("Decoded User:", decodedUser);
       } catch (error) {
         notifications.show({
           title: 'Error',
@@ -85,20 +80,6 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
     }
   }, [setGoogleId]);
 
-  useEffect(() => {
-    if (universitySuccess && universityData) {
-      setUniversities(universityData);
-    }
-  }, [universityData, universitySuccess, setUniversities]);
-
-  const handleRoleBasedRedirect = (group_id: number) => {
-    if (group_id === 1) {
-      router.push("/INSCourseOverview");
-    } else if (group_id === 2) {
-      router.push("/student/overview");
-    }
-  };
-
   const handleSubmit = (values: typeof form.values) => {
     const formData = {
       google_id: google_id ?? null,
@@ -106,29 +87,33 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
       first_name: values.first_name,
       last_name: values.last_name,
       email: values.email,
-      birth_date: values.birth_date ? dayjs(values.birth_date, "YYYY-MM-DD").format("DD-MM-YYYY") : '',
+      birth_date: dayjs(values.birth_date).format("DD-MM-YYYY"),
       student_id: values.role === 'Student' ? values.student_id : null,
       university: values.selectedUniversity,
     };
 
     createUserMutation.mutate(formData, {
-      onSuccess: () => {
-        onClose();
-        handleRoleBasedRedirect(formData.group_id);
+      onSuccess: (data, variables) => {
         notifications.show({
-          title: 'Success',
-          message: 'Account created successfully!',
+          title: 'User created successfully!',
+          message: `Welcome, ${variables.first_name} ${variables.last_name}`,
           color: 'green',
         });
+
+        if (data?.redirect_to) {
+          router.push(data.redirect_to);
+        }
+        onClose();
       },
-      onError: (error) => {
+      onError: () => {
         notifications.show({
-          title: 'Error',
-          message: 'Failed to create account. Please try again.',
+          title: 'User creation failed',
+          message: 'Failed to create the user. Please try again.',
           color: 'red',
         });
       },
     });
+    onClose();
   };
 
   return (
@@ -215,8 +200,7 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
           </div>
 
           {form.values.role === 'Student' && (
-            <NumberInput
-              hideControls
+            <TextInput
               required
               label="Student ID"
               placeholder="Enter your Student ID"
@@ -249,6 +233,8 @@ export default function SignUp({ opened, onClose }: SignUpProps) {
             })) || []}
             searchable
             required
+            disabled={isLoading || isError}
+            error={isError ? 'Failed to load universities' : undefined}
             className="mb-2"
             {...form.getInputProps('selectedUniversity')}
           />

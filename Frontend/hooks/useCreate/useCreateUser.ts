@@ -1,7 +1,6 @@
-import { useMutation, UseMutationOptions } from '@tanstack/react-query';
-import { useUserStore } from '../../store/usecreatestore';
 import axios from 'axios';
-import { API_BASE, api, qf } from '@/src/lib/api';
+import { useMutation } from '@tanstack/react-query';
+import { API_BASE } from '@/src/lib/api';
 
 interface CreateUserParams {
   google_id: string | null;
@@ -14,31 +13,15 @@ interface CreateUserParams {
   university: string;
 }
 
-const createUser = async (userData: CreateUserParams): Promise<any> => {
-  const response = await axios.post(`${API_BASE}/user`, userData);
-  return response.data;
+const createUser = async (userData: CreateUserParams) => {
+  const { data } = await axios.post(`${API_BASE}/user`, {
+    ...userData,
+  });
+  return data;
 };
 
-export const useCreateUser = (
-  options?: UseMutationOptions<any, Error, CreateUserParams, unknown>
-) => {
-  const setUser = useUserStore((state) => state.setUser);
-  const setError = useUserStore((state) => state.setError);
-  const setLoading = useUserStore((state) => state.setIsLoading);
-
-  return useMutation<any, Error, CreateUserParams, unknown>({
+export const useCreateUser = () => {
+  return useMutation({
     mutationFn: createUser,
-    onMutate: () => {
-      setLoading(true);
-      setError(null);
-    },
-    onSuccess: (data: any) => {
-      setUser(data);
-      setLoading(false);
-    },
-    onError: (error: Error) => {
-      setError(error.message);
-      setLoading(false);
-    },
   });
 };
