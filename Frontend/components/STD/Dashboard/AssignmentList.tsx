@@ -60,103 +60,124 @@ export default function AssignmentList({ assignments }: AssignmentsProps) {
   const endIndex = startIndex + rowsPerPage;
   const paginatedAssignments = assignments.slice(startIndex, endIndex) ?? [];
 
+  const groupedByDueDate = useMemo(() => {
+    return paginatedAssignments.reduce<Record<string, AssignmentsList[]>>(
+      (acc, assignment) => {
+        const key = assignment.due_date
+          ? dayjs(assignment.due_date).format("dddd, MMMM D, YYYY")
+          : "No due date";
+
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(assignment);
+        return acc;
+      },
+      {}
+    );
+  }, [paginatedAssignments]);
+
   return (
     <div className="space-y-6">
-      {paginatedAssignments.map((assignment) => {
-        const progress = calculateProgress(assignment.release_date, assignment.due_date);
-        const isSubmitted = assignment.has_submitted;
-        const isLate = dayjs(assignment.due_date).isBefore(dayjs());
-        const cutoffPassed = assignment.cut_off_date ? dayjs(assignment.cut_off_date).isBefore(dayjs()) : isLate;
-        return (
-          <Card
-            key={assignment.assignment_id}
-            shadow="sm"
-            padding="lg"
-            radius="md"
-            withBorder
-          >
-            <div className="flex justify-between items-center">
-              <div className="w-2/6">
-                <div className="flex items-center gap-2">
-                  <IconUpload
-                    size={18}
-                    className={`${
-                      cutoffPassed
-                        ? "text-gray-400 cursor-not-allowed"
-                        : "text-blue-600 hover:text-blue-800 cursor-pointer"
-                    }`}
-                    onClick={() => {
-                      if (!cutoffPassed) {
-                        openModal(assignment.assignment_id, assignment.course_id);
+      {Object.entries(groupedByDueDate).map(([dateLabel, items]) => (
+        <div key={dateLabel} className="space-y-2">
+          <Text fw={600} size="sm">
+            {dateLabel}
+          </Text>
+        {items.map((assignment) => {
+          const progress = calculateProgress(assignment.release_date, assignment.due_date);
+          const isSubmitted = assignment.has_submitted;
+          const isLate = dayjs(assignment.due_date).isBefore(dayjs());
+          const cutoffPassed = assignment.cut_off_date ? dayjs(assignment.cut_off_date).isBefore(dayjs()) : isLate;
+          return (
+            <Card
+              key={assignment.assignment_id}
+              shadow="sm"
+              padding="lg"
+              radius="md"
+              withBorder
+            >
+              <div className="flex justify-between items-center">
+                <div className="w-2/6">
+                  <div className="flex items-center gap-2">
+                    <IconUpload
+                      size={18}
+                      className={`${
+                        cutoffPassed
+                          ? "text-gray-400 cursor-not-allowed"
+                          : "text-blue-600 hover:text-blue-800 cursor-pointer"
+                      }`}
+                      onClick={() => {
+                        if (!cutoffPassed) {
+                          openModal(assignment.assignment_id, assignment.course_id);
+                        }
+                      }}
+                      title={
+                        cutoffPassed
+                          ? "Upload closed (cut-off date passed)"
+                          : "Upload your submission"
                       }
-                    }}
-                    title={
-                      cutoffPassed
-                        ? "Upload closed (cut-off date passed)"
-                        : "Upload your submission"
-                    }
-                  />
+                    />
 
-                  <Text
-                    fw={500}
-                    className={`py-2 px-4 ${isSubmitted ? "cursor-pointer hover:underline" : "cursor-default"}`}
-                    lineClamp={1}
-                    onClick={() => {
-                      if (!isSubmitted) return;
-                      router.push(
-                        `/student/course/${assignment.course_id}/assignment/${assignment.assignment_id}/submission/${assignment.submission_id}`
-                      )
-                    }}
-                  >
-                    {assignment.assignment_name.charAt(0).toUpperCase() + assignment.assignment_name.slice(1)}
-                  </Text>
+                    <Text
+                      fw={500}
+                      className={`py-2 px-4 ${isSubmitted ? "cursor-pointer hover:underline" : "cursor-default"}`}
+                      lineClamp={1}
+                      onClick={() => {
+                        if (!isSubmitted) return;
+                        router.push(
+                          `/student/course/${assignment.course_id}/assignment/${assignment.assignment_id}/submission/${assignment.submission_id}`
+                        )
+                      }}
+                    >
+                      {assignment.assignment_name.charAt(0).toUpperCase() + assignment.assignment_name.slice(1)}
+                    </Text>
+                  </div>
+
+                  <Link href={`/student/course/${assignment.course_id}/dashboard`}>
+                    <Text
+                      size="sm"
+                      c="dimmed"
+                      lineClamp={1}
+                      className="cursor-pointer hover:underline"
+                    >
+                      {assignment.course_code} - {assignment.course_name}
+                    </Text>
+                  </Link>
                 </div>
 
-                <Link href={`/student/course/${assignment.course_id}/dashboard`}>
-                  <Text
-                    size="sm"
-                    c="dimmed"
-                    lineClamp={1}
-                    className="cursor-pointer hover:underline"
-                  >
-                    {assignment.course_code} - {assignment.course_name}
-                  </Text>
-                </Link>
-              </div>
-
-              <div className="w-2/6 text-center">
-                {isSubmitted ? (
-                  <Text fw={600} c="green">
-                    Submitted
-                  </Text>
-                ) : cutoffPassed ? (
-                  <Text c="red" fw={600}>
-                    Upload Closed
-                  </Text>
-                ) : isLate ? (
-                  <Text c="red" fw={600}>
-                    DUE:{" "}
-                    {dayjs(assignment.due_date).format("dddd, MMMM D, YYYY HH:mm")}
-                  </Text>
-                ) : (
-                  <>
-                    <Text size="sm">
-                      {getRemainingTimeText(assignment.due_date)}
+                <div className="w-2/6 text-center">
+                  {isSubmitted ? (
+                    <Text fw={600} c="green">
+                      Submitted
                     </Text>
-                    <Progress
-                      color={getProgressColor(assignment.release_date, assignment.due_date)}
-                      value={progress}
-                      size="md"
-                      radius="lg"
-                    />
-                  </>
-                )}
+                  ) : cutoffPassed ? (
+                    <Text c="red" fw={600}>
+                      Upload Closed
+                    </Text>
+                  ) : isLate ? (
+                    <Text c="red" fw={600}>
+                      DUE:{" "}
+                      {dayjs(assignment.due_date).format("dddd, MMMM D, YYYY HH:mm")}
+                    </Text>
+                  ) : (
+                    <>
+                      <Text size="sm">
+                        {getRemainingTimeText(assignment.due_date)}
+                      </Text>
+                      <Progress
+                        color={getProgressColor(assignment.release_date, assignment.due_date)}
+                        value={progress}
+                        size="md"
+                        radius="lg"
+                      />
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          </Card>
-        );
-      })}
-
+            </Card>
+          );
+        })}
+        </div>
+      ))}
       {assignments.length > rowsPerPage && (
         <div className="flex justify-center py-4">
           <Pagination
