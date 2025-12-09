@@ -845,6 +845,18 @@ type SectionListForStatisticsResponse struct {
 	IsAll       bool        `json:"is_all,omitempty"`
 }
 
+// Part: 1 Sign-up
+type CreateUserRequest struct {
+	GoogleID   *string `json:"google_id"`
+	GroupID    uint    `json:"group_id"`
+	FirstName  string  `json:"first_name"`
+	LastName   string  `json:"last_name"`
+	Email      string  `json:"email"`
+	BirthDate  string  `json:"birth_date"`
+	StudentID  *string `json:"student_id"`
+	University string  `json:"university"`
+}
+
 // Part: 1 CMU OAuth
 type CMUTokenResponse struct {
 	AccessToken  string `json:"access_token"`

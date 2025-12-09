@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/config"
 	"paperGrader/internal/core/services"
 	"paperGrader/internal/core/utils"
@@ -28,19 +29,43 @@ func NewHttpUserHandler(services services.UserService, oauthService services.OAu
 }
 
 func (h *HttpUserHandler) CreateUser(c *fiber.Ctx) error {
-	var user models.User
-	if err := c.BodyParser(&user); err != nil {
+	var req response.CreateUserRequest
+	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Invalid request payload",
-			"error":   err,
+			"error":   err.Error(),
 		})
 	}
 
-	if user.GoogleID != nil && strings.TrimSpace(*user.GoogleID) == "" {
-		user.GoogleID = nil
+	if req.GoogleID != nil && strings.TrimSpace(*req.GoogleID) == "" {
+		req.GoogleID = nil
 	}
 
-	err := h.services.CreateUser(&user)
+	if strings.TrimSpace(req.BirthDate) == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "birth_date is required",
+		})
+	}
+
+	parsedDate, err := time.Parse("02-01-2006", req.BirthDate)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid birth_date format, expected DD-MM-YYYY",
+		})
+	}
+
+	user := models.User{
+		GoogleID:   req.GoogleID,
+		GroupID:    req.GroupID,
+		FirstName:  req.FirstName,
+		LastName:   req.LastName,
+		Email:      req.Email,
+		BirthDate:  parsedDate,
+		StudentID:  req.StudentID,
+		University: req.University,
+	}
+
+	err = h.services.CreateUser(&user)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to create user",
@@ -64,7 +89,36 @@ func (h *HttpUserHandler) CreateUser(c *fiber.Ctx) error {
 		Secure:   true,
 	})
 
-	return c.Status(fiber.StatusCreated).JSON(user)
+	config.LoadEnv()
+	frontendInstructorURL := os.Getenv("FRONTEND_INSTRUCTOR_URL")
+	if frontendInstructorURL == "" {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "FRONTEND_INSTRUCTOR_URL not set",
+		})
+	}
+	frontendStudentURL := os.Getenv("FRONTEND_STUDENT_URL")
+	if frontendStudentURL == "" {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "FRONTEND_STUDENT_URL not set",
+		})
+	}
+	frontendOrigin := os.Getenv("FRONTEND_ORIGIN")
+	if frontendOrigin == "" {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "FRONTEND_ORIGIN not set",
+		})
+	}
+	redirectPath := frontendOrigin
+	if user.GroupID == 1 {
+		redirectPath = frontendInstructorURL
+	} else if user.GroupID == 2 {
+		redirectPath = frontendStudentURL
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"user":        user,
+		"redirect_to": redirectPath,
+	})
 }
 
 func (h *HttpUserHandler) GetUserByID(c *fiber.Ctx) error {
