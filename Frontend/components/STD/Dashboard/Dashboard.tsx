@@ -19,8 +19,8 @@ export default function Dashboard() {
   return (
     <Flex>
       <LeftMain />
-      <Flex direction="column" className="flex-1 px-6 py-6">
-        <Tabs defaultValue="active">
+      <Flex direction="column" className="flex-1 px-6 py-6 min-h-screen bg-slate-50/70">
+        <Tabs defaultValue="active" keepMounted={false} color="#4C6EF5">
           <Tabs.List>
             {/* ---- ACTIVE TAB ---- */}
             <Tabs.Tab value="active" className="relative">

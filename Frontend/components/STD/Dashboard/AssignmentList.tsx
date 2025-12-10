@@ -4,7 +4,7 @@ import React, { useEffect, useMemo } from "react";
 import Link from "next/link";
 import dayjs from "dayjs";
 import "dayjs/locale/th";
-import { Card, Progress, Text, Pagination } from "@mantine/core";
+import { Card, Progress, Text, Pagination, Divider } from "@mantine/core";
 import { IconUpload } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useSubmitAndDownloadModalStore } from "@/store/modal/useSubmitAndDownloadModal";
@@ -79,9 +79,7 @@ export default function AssignmentList({ assignments }: AssignmentsProps) {
     <div className="space-y-6">
       {Object.entries(groupedByDueDate).map(([dateLabel, items]) => (
         <div key={dateLabel} className="space-y-2">
-          <Text fw={600} size="sm">
-            {dateLabel}
-          </Text>
+        <Divider my="xs" label={dateLabel} labelPosition="center" fw="bold" />
         {items.map((assignment) => {
           const progress = calculateProgress(assignment.release_date, assignment.due_date);
           const isSubmitted = assignment.has_submitted;
@@ -94,8 +92,10 @@ export default function AssignmentList({ assignments }: AssignmentsProps) {
               padding="lg"
               radius="md"
               withBorder
+              className="border-slate-100 bg-white hover:shadow-md hover:-translate-y-[1px] transition-all duration-200"
             >
-              <div className="flex justify-between items-center">
+              <div className="absolute inset-y-0 left-0 w-1 bg-indigo-500" />
+              <div className="flex justify-between items-center pl-3">
                 <div className="w-2/6">
                   <div className="flex items-center gap-2">
                     <IconUpload
