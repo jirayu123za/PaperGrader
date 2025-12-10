@@ -2,6 +2,7 @@ package adapters
 
 import (
 	"encoding/json"
+	"errors"
 	"paperGrader/internal/adapters/response"
 	"paperGrader/internal/models"
 	"time"
@@ -347,7 +348,13 @@ func (r *GormStudentRepository) FindRubricDataByAssignmentID(AssignmentID uuid.U
 
 func (r *GormStudentRepository) FindGradeData(assignmentID uuid.UUID, submissionID uuid.UUID) (map[string]interface{}, error) {
 	var grade models.Grade
-	if err := r.db.Where("submission_id = ?", submissionID).First(&grade).Error; err != nil {
+	err := r.db.
+		Where("submission_id = ? AND deleted_at IS NULL", submissionID).
+		First(&grade).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -355,6 +362,5 @@ func (r *GormStudentRepository) FindGradeData(assignmentID uuid.UUID, submission
 	if err := json.Unmarshal(grade.GradeData, &data); err != nil {
 		return nil, err
 	}
-
 	return data, nil
 }

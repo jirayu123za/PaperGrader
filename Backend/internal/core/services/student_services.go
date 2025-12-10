@@ -187,14 +187,18 @@ func (s *StudentServiceImpl) GetSubmissionDetailsFromGradeSubmission(courseID uu
 		return response.SubmissionsFromGradeSubmissionResponse{}, err
 	}
 
+	var gradeStatus bool
 	if gradeMap != nil {
 		selected := utils.CollectSelectedIDs(gradeMap)
 		utils.ApplySelections(&questions, selected)
+		gradeStatus = utils.IsFullyGraded(questions)
+	} else {
+		utils.HideRubrics(&questions)
+		gradeStatus = false
 	}
 
 	totalAssignmentPoint := utils.SumAssignmentPoints(questions)
 	totalSubmissionPoint := utils.SumSelectedPoints(questions)
-	gradeStatus := utils.IsFullyGraded(questions)
 
 	resp := response.SubmissionsFromGradeSubmissionResponse{
 		QuestionsDetails: questions,

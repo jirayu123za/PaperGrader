@@ -325,3 +325,15 @@ func IsFullyGraded(questions []response.QuestionDetails) bool {
 	_ = hasAnyRubric
 	return true
 }
+
+func HideRubrics(questions *[]response.QuestionDetails) {
+	for i := range *questions {
+		q := &(*questions)[i]
+		q.Rubrics = nil
+
+		for j := range q.SubQuestions {
+			sq := &q.SubQuestions[j]
+			sq.Rubrics = nil
+		}
+	}
+}
