@@ -1,53 +1,56 @@
+// app/page.tsx
 "use client";
 
 import { useEffect } from "react";
-import { AppShell } from "@mantine/core";
+import { Box, ScrollArea } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { Header } from "../components/landingPage/Header";
-import { HeroSection } from "../components/landingPage/HeroSection";
-import { Footer } from "../components/landingPage/Footer";
-import SignUp from "../components/Login/SignUp";
+import { Header } from "@/components/landing/Header";
+import { Footer } from "@/components/landing/Footer";
+import { HeroSection } from "@/components/landing/HeroSection";
+import { FeaturesSection } from "@/components/landing/FeaturesSection";
+import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
+import SignIn from "@/components/Login/SignIn";
+import SignUp from "@/components/Login/SignUp";
 
 export default function LandingPage() {
-  const [SignUpOpened, { open: openSignUp, close: closeSignUp }] = useDisclosure(false);
-
+  const [signInOpened, { open: openSignIn, close: closeSignIn }] = useDisclosure(false);
+  const [signUpOpened, { open: openSignUp, close: closeSignUp }] = useDisclosure(false);
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get("token");
-    if (token) { openSignUp(); }
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("token")) {
+      openSignUp();
+    }
   }, [openSignUp]);
 
   return (
-    <AppShell
-      header={{ height: 80 }}
-      footer={{ height: "auto", offset: false }}
-      styles={{
-        main: { backgroundColor: "#ffffff" },
-        header: { backgroundColor: "#f8f9fa" },
-        footer: { backgroundColor: "#141414" },
-      }}
-    >
-      <AppShell.Header>
-        <Header />
-      </AppShell.Header>
+    <>
+      <Box className="h-screen overflow-hidden bg-[#F7F7FF] text-slate-900">
+        <ScrollArea
+          type="auto"
+          h="100vh"
+          scrollbarSize={8}
+          scrollHideDelay={600}
+          styles={{
+            viewport: { scrollBehavior: "smooth" },
+          }}
+        >
+          <Header onSignInClick={openSignIn} />
 
-      <AppShell.Main 
-        style={{
-          flexGrow: 1,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-        }}>
-        <HeroSection />
-      </AppShell.Main>
-        
-      <footer className="w-full pl-16 pr-16 pt-8 justify-center display-flex bg-slate-100">
-        <Footer />
-      </footer>
+          <main>
+            <HeroSection
+              onSecondaryCtaClick={openSignIn}
+            />
+            <FeaturesSection />
+            <HowItWorksSection />
+          </main>
 
-      <SignUp opened={SignUpOpened} onClose={closeSignUp} />
-    </AppShell>
+          <Footer />
+        </ScrollArea>
+      </Box>
+
+      {/* Modals */}
+      <SignIn opened={signInOpened} onClose={closeSignIn} />
+      <SignUp opened={signUpOpened} onClose={closeSignUp} />
+    </>
   );
 }
