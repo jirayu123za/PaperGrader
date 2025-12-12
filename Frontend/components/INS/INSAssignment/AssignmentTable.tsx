@@ -45,11 +45,22 @@ const AssignmentTable: React.FC = () => {
       pagination.setPage(totalPages);
     }
   }, [totalPages, pagination.active]);
-    
+  
+  const tableMaxHeight = useMemo(() => {
+    if (viewportH < 700) return viewportH - 170;
+    if (viewportH < 900) return viewportH - 210;
+    return viewportH - 250;
+  }, [viewportH]);
+
   const startIndex = (pagination.active - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const paginatedAssignmentsTable = assignmentList?.slice(startIndex, endIndex) ?? [];
 
+  const handleCloseModal = () => {
+    close();
+    setSelectedAssignment(null);
+  };
+  
   if (!isLoadingAssignmentsList && assignmentList.length === 0) {
     return (
       <Flex direction="column" align="center" justify="center" gap="sm" py="xl">
@@ -70,17 +81,6 @@ const AssignmentTable: React.FC = () => {
       </Flex>
     );
   }
-
-  const tableMaxHeight = useMemo(() => {
-    if (viewportH < 700) return viewportH - 170;
-    if (viewportH < 900) return viewportH - 210;
-    return viewportH - 250;
-  }, [viewportH]);
-
-  const handleCloseModal = () => {
-    close();
-    setSelectedAssignment(null);
-  };
 
   return (
     <Flex direction="column" gap="md">
