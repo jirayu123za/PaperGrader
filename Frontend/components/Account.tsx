@@ -1,7 +1,7 @@
 import { FaUserCircle, FaQuestionCircle, FaEdit, FaSignOutAlt } from 'react-icons/fa';
 import { RiArrowUpSFill, RiArrowDownSFill } from "react-icons/ri";
 import { useFetchLogout } from '../hooks/useFetchLogout';
-import { Button, Text, Popover } from '@mantine/core';
+import { Button, Text, Popover, NavLink, Tooltip } from '@mantine/core';
 import { useDisclosure } from "@mantine/hooks";
 
 interface AccountMenuProps {
@@ -28,27 +28,27 @@ export default function AccountMenu({ isCollapsed }: AccountMenuProps) {
       onChange={(o) => (o ? open() : close())}
     >
       <Popover.Target>
-        <Button
-          h={40}
-          variant="default"
-          fullWidth
-          radius="0"
-          color="black"
-          onClick={toggle}
-          leftSection={iconFaUserCircle}
-          rightSection={!isCollapsed ? (opened ? iconRiArrowUpSFill : iconRiArrowDownSFill) : undefined}
-          styles={{
-            root: {
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: "space-between",
-              textAlign: 'left',
-              paddingLeft: isCollapsed ? '20px' : '20px',
-            },
-          }}
-        >
-          {!isCollapsed && <Text size="sm" fw={600}>Account</Text>}
-        </Button>
+        <Tooltip label="Account" withArrow position="right" disabled={!isCollapsed}>
+          <NavLink
+            label={!isCollapsed ? <Text size="sm" fw={600}>Account</Text> : undefined}
+            leftSection={iconFaUserCircle}
+            rightSection={
+              !isCollapsed ? (opened ? iconRiArrowUpSFill : iconRiArrowDownSFill) : undefined
+            }
+            onClick={toggle}
+            styles={{
+              root: {
+                height: 40,
+                borderRadius: 0,
+                paddingLeft: 20,
+                paddingRight: 12,
+              },
+              body: {
+                alignItems: "center",
+              },
+            }}
+          />
+        </Tooltip>
       </Popover.Target>
 
       <Popover.Dropdown p={2}>
