@@ -1,13 +1,30 @@
 import React from 'react'
 import LeftMain from '@/components/STD/SideBar/LeftMain'
+import { Box, Flex, ScrollArea } from '@mantine/core'
+import { Header } from '@/components/STD/CourseOverView/Header'
 
 export default function StudentCourse({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen">
-        <LeftMain />
-        <main className="flex-1">
-          {children}
-        </main>
-    </div>
+    <Flex h="100dvh">
+      <LeftMain />
+
+      <Flex direction="column" flex={1} miw={0} mih={0}>
+        <Box
+          style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 10,
+          }}
+        >
+          <Header />
+        </Box>
+
+        <ScrollArea>
+          <Box px="xl" py="xl" style={{ minHeight: "100%" }}>
+            {children}
+          </Box>
+        </ScrollArea>
+      </Flex>
+    </Flex>
   )
 }
