@@ -2,14 +2,16 @@ import { create } from 'zustand';
 
 interface Course {
   course_id: string;
-  course_description: string;
   course_name: string;
   course_code: string;
-  semester: string;
-  academic_year: string;
+  course_description: string;
+  semester: number;
+  academic_year: number;
   entry_code: boolean;
-  total_assignments: string;
-}
+  total_assignments: number;
+  term_key: number;
+  term_label: string;
+};
 
 interface CourseStore {
   courses: Course[];

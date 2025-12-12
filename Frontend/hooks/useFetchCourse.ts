@@ -1,18 +1,20 @@
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { useCourseStore, useInsCourseStore, useStdCourseDashboardStore } from '../store/useCourseStore';
-import { API_BASE, api, qf } from '@/src/lib/api';
+import { API_BASE } from '@/src/lib/api';
 
 interface FetchInsCoursesResponse {
   course_id: string;
   course_name: string;
   course_code: string;
   course_description: string;
-  semester: string;
-  academic_year: string;
+  semester: number;
+  academic_year: number;
   entry_code: boolean;
-  total_assignments: string;
-}
+  total_assignments: number;
+  term_key: number;
+  term_label: string;
+};
 
 export const useFetchInsCourses = () => {
   const setCourses = useCourseStore((state) => state.setCourses);
