@@ -14,6 +14,7 @@ export default function StudentCourse({ children }: { children: React.ReactNode 
             position: "sticky",
             top: 0,
             zIndex: 10,
+            backgroundColor: "#f9f9f7",
           }}
         >
           <Header />
