@@ -125,20 +125,22 @@ type CourseResponse struct {
 
 // Struct for GetCoursesByUserID(one structs)
 type CoursesResponse struct {
-	CourseID          uuid.UUID  `json:"course_id"`
-	CourseName        string     `json:"course_name"`
-	CourseCode        string     `json:"course_code"`
-	CourseDescription *string    `json:"course_description"`
-	Semester          string     `json:"semester"`
-	AcademicYear      string     `json:"academic_year"`
-	EntryCode         bool       `json:"entry_code"`
-	TotalAssignments  int        `json:"total_assignments"`
-	Assignments       *string    `json:"assignments"`
-	EnrollmentList    *string    `json:"enrollment_list"`
-	Sections          *string    `json:"sections"`
-	CreatedAt         time.Time  `json:"created_at"`
-	UpdatedAt         time.Time  `json:"updated_at"`
-	DeletedAt         *time.Time `json:"deleted_at"`
+	CourseID          uuid.UUID `json:"course_id"`
+	CourseName        string    `json:"course_name"`
+	CourseCode        string    `json:"course_code"`
+	CourseDescription *string   `json:"course_description"`
+	Semester          int       `json:"semester"`
+	AcademicYear      int       `json:"academic_year"`
+	EntryCode         bool      `json:"entry_code"`
+	TotalAssignments  int       `json:"total_assignments"`
+	TermKey           int       `json:"term_key"`
+	TermLabel         string    `json:"term_label"`
+	// Assignments       *string    `json:"assignments"`
+	// EnrollmentList    *string    `json:"enrollment_list"`
+	// Sections          *string    `json:"sections"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at"`
 }
 
 // Struct for Get InstructorsNameByCourseID(one structs)

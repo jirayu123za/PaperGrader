@@ -742,16 +742,32 @@ func (r *GormInstructorRepository) FindCoursesByUserID(UserID uuid.UUID) ([]resp
 
 	if err := r.db.
 		Table("courses").
-		Select("courses.course_id, courses.course_name, courses.course_code, courses.course_description, courses.semester, courses.academic_year, courses.entry_code, COUNT(assignments.assignment_id) AS total_assignments").
+		Select(`
+			courses.course_id,
+			courses.course_name,
+			courses.course_code,
+			courses.course_description,
+			CAST(courses.semester AS int) AS semester,
+			CAST(courses.academic_year AS int) AS academic_year,
+			(CAST(courses.academic_year AS int) + CAST(courses.semester AS int)) AS term_key,
+			courses.entry_code,
+			COUNT(DISTINCT assignments.assignment_id) AS total_assignments
+		`).
 		Joins("JOIN enrollment_lists ON enrollment_lists.course_id = courses.course_id").
 		Joins("JOIN personal_data ON personal_data.personal_data_id = enrollment_lists.personal_data_id").
 		Joins("JOIN users ON users.email = personal_data.email").
-		Joins("LEFT JOIN assignments ON assignments.course_id = courses.course_id").
+		Joins("LEFT JOIN assignments ON assignments.course_id = courses.course_id AND assignments.deleted_at IS NULL").
 		Where("users.user_id = ?", UserID).
 		Where("courses.deleted_at IS NULL").
 		Group("courses.course_id").
+		Order("term_key DESC, courses.course_code ASC").
 		Find(&courses).Error; err != nil {
 		return nil, err
+	}
+
+	for i := range courses {
+		beYear := courses[i].AcademicYear + 543
+		courses[i].TermLabel = fmt.Sprintf("%d / %d", courses[i].Semester, beYear)
 	}
 	return courses, nil
 }
