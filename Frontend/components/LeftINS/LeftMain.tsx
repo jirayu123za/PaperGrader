@@ -1,30 +1,33 @@
-"use client";
+"use client"
 
-import React, { useEffect } from 'react';
-import { FaUser, FaCog, FaFileAlt, FaUsers, FaHome, FaRegArrowAltCircleRight } from 'react-icons/fa';
-import { IoStatsChart } from 'react-icons/io5';
-import { FaFileExport } from "react-icons/fa";
-import { Button, Divider, Flex, Skeleton, Image, Stack, Title, Text } from '@mantine/core';
-import { useInsCourseStore } from '../../store/useCourseStore';
-import { useFetchInstructorList } from '../../hooks/useFetchInstructorList';
-import { useInstructorListStore } from '../../store/useInstructorListStore';
-import { useLeftMainStore } from '@/store/useLeftMainStore';
-import { useRouter, useParams, usePathname } from 'next/navigation';
+import React from 'react';
+import AccountMenu from '@/components/Account';
+import { useFetchInstructorList } from '@/hooks/useFetchInstructorList';
+import { useInsCourseStore } from '@/store/useCourseStore';
+import { useInstructorListStore } from '@/store/useInstructorListStore';
+import { ActionIcon, Avatar, Badge, Box, Collapse, Divider, Flex, Group, Image, NavLink, Paper, Skeleton, Stack, Text, Title, Tooltip, Transition } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import AccountMenu from '../Account';
+import { useParams, usePathname, useRouter } from 'next/navigation';
+import { FaCog, FaFileAlt, FaFileExport, FaHome, FaInfo, FaUser, FaUsers } from 'react-icons/fa';
+import { GoSidebarCollapse, GoSidebarExpand } from 'react-icons/go';
+import { IoStatsChart } from 'react-icons/io5';
+import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
 
-export default function LeftMain() {
+interface InstructorList {
+  personalData_id: string;
+  instructor_name: string;
+}
+
+export const LeftMain = () => {
   const router = useRouter();
   const params = useParams();
   const pathname = usePathname();
   const course_id = params?.course_id as string;
-  const [isCollapsed, { toggle: toggleCollapse }] = useDisclosure(false);
-  const { activeOption, setActiveOption } = useLeftMainStore();
   const { course } = useInsCourseStore();
-  const { isLoading, error } = useFetchInstructorList(course_id as string);
-  const instructorList = useInstructorListStore((state) => state.instructorList);
-  const [expandedCode, { toggle: toggleExpandCode }] = useDisclosure(false);
-  const [expandedName, { toggle: toggleExpandName }] = useDisclosure(false);
+  const { isLoading: isLoadingInstructor, isError: isErrorInstructor } = useFetchInstructorList(course_id as string);
+  const { instructorList } = useInstructorListStore();
+  const [isCollapsed, { toggle: toggleCollapse }] = useDisclosure(false);
+  const [expandedName, { toggle: toggleExpandName }] = useDisclosure(true);
   
   const icons = {
     home: <FaHome />,
@@ -35,7 +38,7 @@ export default function LeftMain() {
     export: <FaFileExport />,
     cog: <FaCog />,
   };
-
+  
   const menuItems = [
     { key: 'dashboard', label: 'Dashboard', icon: icons.home, href: `/instructor/course/${course?.course_id}/dashboard` },
     { key: 'assignment', label: 'Assignments', icon: icons.fileAlt, href: `/instructor/course/${course?.course_id}/assignment` },
@@ -45,202 +48,241 @@ export default function LeftMain() {
     { key: 'coursesettings', label: 'Course Settings', icon: icons.cog, href: '#' },
   ];
 
-  useEffect(() => {
-    if (pathname.includes('dashboard')) setActiveOption('dashboard');
-    else if (pathname.includes('assignment')) setActiveOption('assignment');
-    else if (pathname.includes('manageroster')) setActiveOption('manageroster');
-    else if (pathname.includes('statistics')) setActiveOption('statistics');
-    else if (pathname.includes('dataexports')) setActiveOption('dataexports');
-    else if (pathname.includes('coursesettings')) setActiveOption('coursesettings');
-  }, [pathname]);
-
-
   return (
-    <div className={`relative flex flex-col justify-between border-r transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} h-screen`}>
-      <Flex justify="space-between" align="center" p={12}
-        style={{
-          backgroundColor: '#6665AC',
-        }}
-      >
-        {/* Header and Course Name */}
-        {!isCollapsed && (
-          <Image
-            src="/Image/logo-ppgd2.png"
-            alt="logo" w={200} h={60} p={2}
-            style={{ cursor: 'pointer' }}
-            onClick={() => router.push('/INSCourseOverview')}
-          />
-        )}
-        <Button
-          onClick={toggleCollapse}
-          variant="transparent"
-          radius="md"
-          styles={() => ({
-            root: {
-              border: 'none',
-              padding: isCollapsed ? "0 0 0 8px" : "0",
-              height: 'auto',
-            },
-          })}
-        >
-          <FaRegArrowAltCircleRight
-            size={24}
-            style={{
-              color: isCollapsed ? '#f1f3f8' : '#f1f3f8',
-            }}
-            className={`transition-transform duration-300 ${isCollapsed ? '' : 'transform rotate-180'
-              }`}
-          />
-        </Button>
-      </Flex>
+    <Box
+      className={`relative flex flex-col justify-between border-r transition-all duration-300 ${isCollapsed ? "w-16" : "w-64"}`}
+      h="100dvh"
+    >
+      <Flex justify={isCollapsed ? "center" : "space-between"} align="center" p={12} bg="#6665AC" mih={84}>
+        <Transition mounted={!isCollapsed} transition="fade-left" duration={160}>
+          {(styles) => (
+            <Box style={styles}>
+              <Image src="/Image/logo-ppgd2.png" alt="logo" w={200} h={60} p={2} />
+            </Box>
+          )}
+        </Transition>
 
-
-      <Flex direction="column" align="start" p={16}
-        style={{
-          backgroundColor: '#6665AC',
-        }}>
-        {course ? (
-          !isCollapsed && (
-            <>
-              <Title
-                textWrap="balance"
-                order={2}
-                size={20} 
-                px="xs"
-                style={{ color: "#F9F9F9", cursor: "pointer" }}
-                lineClamp={expandedCode ? undefined : 1}
-                onClick={toggleExpandCode}
-              >
-                {`${course.course_code} (${course.semester}/${Number(course.academic_year) + 543})`}
-              </Title>
-              <Text
-                size="sm"
-                px="xs"
-                style={{ color: "#E9E9E9", cursor: "pointer" }}
-                lineClamp={expandedName ? undefined : 1}
-                onClick={toggleExpandName}
-              >
-                {course.course_name}
-              </Text>
-            </>
-          )
-        ) : (
-          <>
-            <Title
-              order={2}
-              style={{ color: '#F9F9F9' }}
-              className={`${isCollapsed ? 'hidden' : 'block'}`}
-            >
-              No Course Selected
-            </Title>
-            <Text
-              size="sm"
-              style={{ color: '#E9E9E9' }}
-              className={`${isCollapsed ? 'hidden' : 'block'}`}
-            >
-              Please select a course
-            </Text>
-          </>
-        )}
-      </Flex>
-
-      {/* Main Menu */}
-      <Stack
-        p={16} gap="xs"
-        className='grow'
-        style={() => ({
-          backgroundColor: '#6665AC',
-        })}
-      >
-        <Divider
-          style={{
-            backgroundColor: '#E9E9E9',
-            display: isCollapsed ? 'none' : 'block'
-          }}
-          size="xs"
-          pl={16} pr={16}
-        />
-
-        {menuItems.map((item) => (
-          <Button
-            key={item.key}
-            disabled={!course}
-            leftSection={item.icon}
+        <Tooltip label={isCollapsed ? "Expand" : "Collapse"} withArrow position="right">
+          <ActionIcon
+            onClick={toggleCollapse}
             variant="subtle"
-            fullWidth
-            styles={{
-              root: {
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: isCollapsed ? 'center' : 'flex-start',
-                color: activeOption === item.key ? '#424242' : '#FFFFFF',
-                backgroundColor: activeOption === item.key ? '#f8f9fa' : 'transparent',
-                borderRadius: '8px',
-                transition: 'background-color 0.3s, color 0.3s',
-                paddingLeft: isCollapsed ? 0 : 16,
-                paddingRight: isCollapsed ? 0 : 16,
-              },
-              section: {
-                marginRight: isCollapsed ? 0 : 8,
-              },
-            }}
-            onClick={() => {
-              setActiveOption(item.key);
-              if (item.href && item.href !== '#') {
-                router.push(item.href);
-              }
-            }}
+            radius="md"
+            aria-label="Toggle sidebar"
+            color="white"
           >
+            <Transition mounted={isCollapsed} transition="fade-left" duration={140}>
+              {(styles) => (
+                <Box style={{ ...styles, display: "inline-flex" }}>
+                  <GoSidebarExpand size={24} />
+                </Box>
+              )}
+            </Transition>
 
-            {!isCollapsed && (
-              <Text size="sm" fw={500}>
-                {item.label}
-              </Text>
-            )}
+            <Transition mounted={!isCollapsed} transition="fade-left" duration={140}>
+              {(styles) => (
+                <Box style={{ ...styles, display: "inline-flex" }}>
+                  <GoSidebarCollapse size={24} />
+                </Box>
+              )}
+            </Transition>
+          </ActionIcon>
+        </Tooltip>
+      </Flex>
 
-          </Button>
-        ))}
+      <Flex direction="column" bg="#6665AC" className="flex-grow">
+        <Divider color="rgba(255,255,255,0.18)" mx="md"/>
+          <Box p="md">
+            <Collapse in={!isCollapsed} transitionDuration={160}>
+              <Paper
+                radius="md"
+                py="md"
+                px="sm"
+                style={{
+                  background: "rgba(255,255,255,0.10)",
+                  border: "1px solid rgba(255,255,255,0.16)",
+                  backdropFilter: "blur(6px)",
+                }}
+              >
+                <Group justify="space-between" align="center" gap="xs" wrap="nowrap">
+                  <Group gap="xs" wrap="nowrap">
+                    <Title order={4} c="#fff" style={{ letterSpacing: 0.2 }} lineClamp={1}>
+                      {course?.course_code}
+                    </Title>
 
-        <Divider
-          style={{
-            backgroundColor: '#E9E9E9',
-            display: isCollapsed ? 'none' : 'block'
-          }}
-          size="xs"
-        />
+                    <Badge
+                      variant="light"
+                      color="gray"
+                      styles={{
+                        root: {
+                          background: "rgba(255,255,255,0.16)",
+                          color: "rgba(255,255,255,0.92)",
+                        },
+                      }}
+                    >
+                      {course ? `${course.semester}/${Number(course.academic_year) + 543}` : ""}
+                    </Badge>
+                  </Group>
 
-        {!isCollapsed && (
-          <>
-            <Title order={4} pt={16} style={{ color: "#F9F9F9" }}>
-              INSTRUCTOR
-            </Title>
-
-            <div className="flex flex-col">
-              {isLoading
-                ? Array.from({ length: 10 }).map((_, index) => (
-                  <Skeleton key={index} visible height={3} width="100%" />
-                ))
-                : instructorList &&
-                instructorList.map((instructor) => (
-                  <Button
-                    variant="transparent"
-                    leftSection={icons.user}
-                    display="flex"
-                    key={instructor.personalData_id}
-                    style={{ color: "#F9F9F9" }}
+                  <ActionIcon
+                    variant="subtle"
+                    onClick={toggleExpandName}
+                    styles={{ root: { color: "rgba(255,255,255,0.9)" } }}
                   >
-                    <span>{instructor.instructor_name}</span>
-                  </Button>
-                ))}
-            </div>
-          </>
-        )}
-      </Stack>
+                    {expandedName ? <IconChevronUp size={18} /> : <IconChevronDown size={18} />}
+                  </ActionIcon>
+                </Group>
 
-      {/* Account Section */}
+                <Collapse in={expandedName} transitionDuration={160}>
+                  <Text mt={6} size="sm" style={{ color: "rgba(255,255,255,0.85)", lineHeight: 1.35 }}>
+                    {course?.course_name}
+                  </Text>
+                </Collapse>
+              </Paper>
+            </Collapse>
+
+            <Collapse in={isCollapsed} transitionDuration={160}>
+              <Flex align="center" justify="center" mt="xs">
+                <Tooltip
+                  withArrow
+                  position="right"
+                  label={
+                    <Box>
+                      <Box>{course?.course_code}</Box>
+                      <Box style={{ opacity: 0.85 }}>{course?.course_name}</Box>
+                    </Box>
+                  }
+                >
+                  <ActionIcon
+                    variant="light"
+                    radius="md"
+                    size="lg"
+                    style={{ background: "rgba(255,255,255,0.12)", color: "white" }}
+                  >
+                    <FaInfo size={18} />
+                  </ActionIcon>
+                </Tooltip>
+              </Flex>
+            </Collapse>
+          </Box>
+        
+        <Divider color="rgba(255,255,255,0.18)" mx="md" />   
+        <Stack gap={6} px="md" py="md">
+          {menuItems.map((item) => {
+            const active = pathname?.startsWith(item.href);
+            return (
+              <Tooltip
+                key={item.key}
+                label={isCollapsed ? item.label : undefined}
+                withArrow
+                position='right'
+                disabled={!isCollapsed}
+              >
+                <NavLink
+                  unstyled
+                  active={active}
+                  onClick={() => item.href !== "#" && router.push(item.href)}
+                  leftSection={<span className="text-white/90 text-lg flex items-center">{item.icon}</span>}
+                  label={
+                    isCollapsed ? null : (
+                      <span className="text-white/90 font-semibold text-sm">{item.label}</span>
+                    )
+                  }
+                  className={[
+                    "w-full rounded-xl border transition-all duration-150",
+                    "cursor-pointer",
+                    active
+                      ? "bg-white/25 border-white/25"
+                      : "bg-transparent border-transparent hover:bg-white/15 hover:border-white/15 hover:-translate-y-0.5",
+                    isCollapsed ? "px-0 py-3 flex justify-center" : "px-3 py-3 flex items-center",
+                  ].join(" ")}
+                  styles={{
+                    section: {
+                      marginRight: isCollapsed ? 0 : 10,
+                      width: isCollapsed ? "100%" : undefined,
+                      display: "flex",
+                      justifyContent: isCollapsed ? "center" : undefined,
+                    },
+                  }}
+                />
+              </Tooltip>
+            );
+          })}
+        </Stack>
+
+        <Divider color="rgba(255,255,255,0.18)" mx="md" />
+
+        <Box px="md" py="md">
+          {!isCollapsed ? (
+            <Stack gap={8}>
+              <Title order={4} c="rgba(255,255,255,0.85)">
+                Instructors
+              </Title>
+              {isLoadingInstructor ? (
+                <Stack gap={8}>
+                  <Skeleton height={22} radius="sm" visible />
+                  <Skeleton height={22} radius="sm" visible />
+                  <Skeleton height={22} radius="sm" visible />
+                </Stack>
+              ) : isErrorInstructor ? (
+                <Text size="xs" c="rgba(255,255,255,0.75)">
+                  Failed to load instructors
+                </Text>
+              ) : (
+                <Stack gap={6}>
+                  {(instructorList ?? []).slice(0, 4).map((ins: InstructorList) => (
+                    <Group key={ins.personalData_id} gap="xs" wrap="nowrap" px="sm">
+                      <Avatar radius="xl" size={22} variant='white' color="#6665AC">
+                        {ins.instructor_name?.trim()?.[0]?.toUpperCase() ?? "I"}
+                      </Avatar>
+                      <Text
+                        size="sm"
+                        lineClamp={1}
+                        c="rgba(255,255,255,0.92)"
+                      >
+                        {ins.instructor_name}
+                      </Text>
+                    </Group>
+                  ))}
+                  {(instructorList?.length ?? 0) > 4 && (
+                    <Text size="xs" c="rgba(255,255,255,0.65)">
+                      +{(instructorList?.length ?? 0) - 4} more
+                    </Text>
+                  )}
+                </Stack>
+              )}
+            </Stack>
+          ) : (
+            <Tooltip
+              withArrow
+              position="right"
+              label={
+                <Box>
+                  <Text fw={700} size="sm">Instructors</Text>
+                  <Box mt={6}>
+                    {(instructorList ?? []).slice(0, 10).map((ins: InstructorList) => (
+                      <Text key={ins.personalData_id} size="xs" style={{ opacity: 0.9 }}>
+                        • {ins.instructor_name}
+                      </Text>
+                    ))}
+                  </Box>
+                </Box>
+              }
+            >
+              <Group justify="center" gap={-6}>
+                {(instructorList ?? []).slice(0, 3).map((ins: InstructorList) => (
+                  <Avatar key={ins.personalData_id} radius="xl" size={26} variant='white' color="#6665AC">
+                    {ins.instructor_name?.trim()?.[0]?.toUpperCase() ?? "I"}
+                  </Avatar>
+                ))}
+              </Group>
+            </Tooltip>
+          )}
+        </Box>
+      </Flex>
+
       <Stack>
         <AccountMenu isCollapsed={isCollapsed} />
       </Stack>
-    </div>
-  );
+    </Box>
+  )
 }

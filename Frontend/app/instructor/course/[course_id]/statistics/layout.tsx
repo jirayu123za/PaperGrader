@@ -1,4 +1,4 @@
-import LeftMain from '@/components/LeftINS/LeftMain';
+import { LeftMain } from '@/components/LeftINS/LeftMain';
 
 export default function StatisticsLayout({ children }: { children: React.ReactNode }) {
   return (

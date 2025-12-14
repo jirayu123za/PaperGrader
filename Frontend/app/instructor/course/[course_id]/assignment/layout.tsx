@@ -1,5 +1,5 @@
-import LeftMain from '@/components/LeftINS/LeftMain';
 import HeaderCourse from '@/components/INS/Header/HeaderCourse';
+import { LeftMain } from '@/components/LeftINS/LeftMain';
 
 export default function ProcessLayout({ children }: { children: React.ReactNode }) {
   return (

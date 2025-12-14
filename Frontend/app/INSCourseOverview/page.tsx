@@ -1,10 +1,13 @@
 "use client";
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { CourseOverView } from '@/components/INS/CourseOverView/CourseOverView';
+import { Loader } from '@mantine/core';
 
 export default function INSCourseOverview() {
   return (
-    <CourseOverView />
+    <Suspense fallback={<Loader size="sm" />}>
+      <CourseOverView />
+    </Suspense>
   );
 };
