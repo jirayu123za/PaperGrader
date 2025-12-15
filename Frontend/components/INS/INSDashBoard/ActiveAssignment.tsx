@@ -5,13 +5,14 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { useRouter , useParams } from 'next/navigation';
-import { Progress, Table, Paper, Button, Pagination, Flex, Text } from '@mantine/core';
+import { Progress, Table, Paper, Button, Pagination, Flex, Text, Accordion, Stack, Group, Divider, Title } from '@mantine/core';
 import { MdOutlineAssignmentTurnedIn } from "react-icons/md";
 import { useActiveAssignmentStore } from '@/store/useActiveAssignmentStore';
 import { useFetchActiveAssignments } from '@/hooks/useFetchActiveAssignment';
-import { useDisclosure, usePagination } from '@mantine/hooks';
+import { useDisclosure, useMediaQuery, usePagination } from '@mantine/hooks';
 import { IoMdCheckmark, IoMdClose } from 'react-icons/io';
 import { CreateAssignmentModal } from '@/components/INS/INSDashBoard/CreateAssignment';
+import { ErrorActiveAssignment } from '@/components/INS/INSDashBoard/ErrorActiveAssignment';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.tz.setDefault("Asia/Bangkok"); 
@@ -61,133 +62,278 @@ export const ActiveAssignments: React.FC = () => {
     return 'red';
   };
 
+  const isMobile = useMediaQuery("(max-width: 48em)");
+  
   if (error) {
-    return <div>Error loading assignments: {error.message}</div>;
+    return <ErrorActiveAssignment />;
   }
   
-  return (
+ return (
     <>
-      <Paper shadow="sm" radius="md" withBorder p="xl">
+      <Paper shadow="sm" radius="md" withBorder p={{ base: "md", sm: "xl" }}>
         <Flex
-          direction={{ base: 'column', sm: 'row' }}
+          direction={{ base: "column", sm: "row" }}
           justify="space-between"
-          align={{ base: 'stretch', sm: 'center' }}
+          align={{ base: "stretch", sm: "center" }}
           gap="sm"
           mb="md"
         >
-          <h2 className="text-2xl font-semibold">Active Assignments</h2>
+          <Text fw={700} fz={{ base: 18, sm: 22 }}>
+            Active Assignments
+          </Text>
+
           <Button
             variant="filled"
-            color='#4C6EF5'
+            color="#4C6EF5"
             size="md"
             radius="sm"
             className="shadow-md"
             leftSection={iconAssignmentTurnedIn}
             onClick={open}
+            fullWidth={isMobile}
           >
             Create Assignment
           </Button>
         </Flex>
 
-        {activeAssignments.length > 0 ? (
-          <Table striped highlightOnHover verticalSpacing="sm">
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Name</Table.Th>
-                <Table.Th ta="center">Released</Table.Th>
-                <Table.Th ta="center">Time remain</Table.Th>
-                <Table.Th ta="center">Due</Table.Th>
-                <Table.Th ta="center">Late</Table.Th>
-                <Table.Th ta="center">Section</Table.Th>
-                <Table.Th ta="center">% Submission</Table.Th>
-                <Table.Th ta="center">% Graded</Table.Th>
-                <Table.Th ta="center">Regrades</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {isLoading
-                ? Array.from({ length: 10 }).map((_, index) => (
-                  <Table.Tr key={`skeleton-row-${index}`}>
-                    {/* Skeleton loaders */}
-                  </Table.Tr>
-                ))
-                : paginatedData.map((assignment) => (
-                  <Table.Tr key={assignment.assignment_id}>
-                    <Table.Td
-                      className="cursor-pointer hover:underline"
-                      onClick={() =>
-                        router.push(`/instructor/course/${course_id}/process/${assignment.assignment_id}/create-outline`)
-                      }
-                    >
-                      <Text lineClamp={1}>
-                        {assignment.assignment_name.charAt(0).toUpperCase() + assignment.assignment_name.slice(1)}
-                      </Text>
-                    </Table.Td>
-                    <Table.Td ta="center">
-                      {assignment.assignment_release_date
-                        ? dayjs(assignment.assignment_release_date).format('MMM D, YYYY h:mm A')
-                        : <Text c="dimmed" fs="italic" lineClamp={1}>Not assigned release date</Text>
-                      }
-                    </Table.Td>
-                    <Table.Td ta="center">
-                      {assignment.assignment_release_date && assignment.assignment_due_date ? (
-                        <Progress
-                          value={calculateTimeRemaining(
-                            assignment.assignment_release_date,
-                            assignment.assignment_due_date
-                          )}
-                          color={getProgressColor(
-                            assignment.assignment_release_date,
-                            assignment.assignment_due_date
-                          )}
-                          size="md"
-                          radius="lg"
-                        />
-                      ) : (
-                        <Text c="dimmed" fs="italic" lineClamp={1}>Not assigned time</Text>
-                      )}
-                    </Table.Td>
-                    <Table.Td ta="center">
-                      {assignment.assignment_due_date
-                        ? dayjs(assignment.assignment_due_date).format('MMM D, YYYY h:mm A')
-                        : <Text c="dimmed" fs="italic" lineClamp={1}>Not assigned due date</Text>}
-                    </Table.Td>
-                    <Table.Td ta="center">
-                      {assignment.assignment_cut_off_date
-                        ? dayjs(assignment.assignment_cut_off_date).format('MMM D, YYYY h:mm A')
-                        : <Text c="dimmed" fs="italic" lineClamp={1}>Not assigned cut-off date</Text>}
-                    </Table.Td>
-                    <Table.Td ta="center">
-                      <Text lineClamp={1}>{assignment.section_name} </Text>
-                    </Table.Td>
-                    <Table.Td ta="center">0</Table.Td>
-                    <Table.Td ta="center">0%</Table.Td>
-                    <Table.Td>
-                      <Flex justify="center" align="center">
-                        {iconsRegrade[String(assignment.regrades) as "true" | "false"]}
-                      </Flex>
-                    </Table.Td>
-                  </Table.Tr>
-                ))}
-            </Table.Tbody>
-          </Table>
-        ) : (
-          <div className="text-gray-500">
+        {activeAssignments.length === 0 ? (
+          <Text c="dimmed">
             You currently have no active assignments. Create an assignment to get started.
-          </div>
+          </Text>
+        ) : isMobile ? (
+          <Accordion variant="contained" chevronPosition="right">
+            {isLoading
+              ? null
+              : paginatedData.map((a) => (
+                  <Accordion.Item key={a.assignment_id} value={a.assignment_id}>
+                    <Accordion.Control>
+                      <Stack gap={2}>
+                        <Text fw={600} lineClamp={1}>
+                          {a.assignment_name.charAt(0).toUpperCase() + a.assignment_name.slice(1)}
+                        </Text>
+                        <Text size="xs" c="dimmed" lineClamp={1}>
+                          Section: {a.section_name}
+                        </Text>
+                      </Stack>
+                    </Accordion.Control>
+
+                    <Accordion.Panel>
+                      <Stack gap="xs">
+                        <Group justify="space-between" gap="sm" wrap="nowrap">
+                          <Text size="sm" c="dimmed">Released</Text>
+                          <Text size="sm" ta="right">
+                            {a.assignment_release_date
+                              ? dayjs(a.assignment_release_date).format("MMM D, YYYY HH:mm")
+                              : "Not assigned"}
+                          </Text>
+                        </Group>
+
+                        <Group justify="space-between" gap="sm" wrap="nowrap">
+                          <Text size="sm" c="dimmed">Due</Text>
+                          <Text size="sm" ta="right">
+                            {a.assignment_due_date
+                              ? dayjs(a.assignment_due_date).format("MMM D, YYYY HH:mm")
+                              : "Not assigned"}
+                          </Text>
+                        </Group>
+
+                        <Divider />
+
+                        {a.assignment_release_date && a.assignment_due_date ? (
+                          <Progress
+                            value={calculateTimeRemaining(a.assignment_release_date, a.assignment_due_date)}
+                            color={getProgressColor(a.assignment_release_date, a.assignment_due_date)}
+                            size="md"
+                            radius="lg"
+                          />
+                        ) : (
+                          <Text size="sm" c="dimmed" fs="italic">
+                            Not assigned time
+                          </Text>
+                        )}
+
+                        <Group justify="space-between" align="center">
+                          <Text size="sm" c="dimmed">Regrades</Text>
+                          {iconsRegrade[String(a.regrades) as "true" | "false"]}
+                        </Group>
+
+                        <Button
+                          variant="light"
+                          color="#4C6EF5"
+                          fullWidth
+                          onClick={() =>
+                            router.push(
+                              `/instructor/course/${course_id}/process/${a.assignment_id}/create-outline`
+                            )
+                          }
+                        >
+                          Open
+                        </Button>
+                      </Stack>
+                    </Accordion.Panel>
+                  </Accordion.Item>
+                ))}
+          </Accordion>
+        ) : (
+          <Table.ScrollContainer minWidth={1000}>
+            <Table striped highlightOnHover verticalSpacing="sm">
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>
+                    <Title order={6} lineClamp={1}>
+                      Name
+                    </Title>
+                  </Table.Th>
+                  <Table.Th ta="center">
+                    <Title order={6} lineClamp={1}>
+                      Released
+                    </Title>
+                  </Table.Th>
+                  <Table.Th ta="center">
+                    <Title order={6} lineClamp={1}>
+                      Time remain
+                    </Title>
+                  </Table.Th>
+                  <Table.Th ta="center">
+                    <Title order={6} lineClamp={1}>
+                      Due
+                    </Title>
+                  </Table.Th>
+                  <Table.Th ta="center">
+                    <Title order={6} lineClamp={1}>
+                      Late
+                    </Title>
+                  </Table.Th>
+                  <Table.Th ta="center">
+                    <Title order={6} lineClamp={1}>
+                      Section
+                    </Title>
+                  </Table.Th>
+                  <Table.Th ta="center">
+                    <Title order={6} lineClamp={1}>
+                      % Submission
+                    </Title>
+                  </Table.Th>
+                  <Table.Th ta="center">
+                    <Title order={6} lineClamp={1}>
+                      % Graded
+                    </Title>
+                  </Table.Th>
+                  <Table.Th ta="center">
+                    <Title order={6} lineClamp={1}>
+                      Regrades
+                    </Title>
+                  </Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+
+              <Table.Tbody>
+                {isLoading
+                  ? null
+                  : paginatedData.map((assignment) => (
+                      <Table.Tr key={assignment.assignment_id}>
+                        <Table.Td
+                          className="cursor-pointer hover:underline"
+                          onClick={() =>
+                            router.push(
+                              `/instructor/course/${course_id}/process/${assignment.assignment_id}/create-outline`
+                            )
+                          }
+                        >
+                          <Text size="sm" lineClamp={1}>
+                            {assignment.assignment_name.charAt(0).toUpperCase() +
+                              assignment.assignment_name.slice(1)}
+                          </Text>
+                        </Table.Td>
+
+                        <Table.Td ta="center">
+                          {assignment.assignment_release_date ? (
+                            <Text size="sm" lineClamp={1}>
+                              {dayjs(assignment.assignment_release_date).format("MMM D, YYYY h:mm A")}
+                            </Text>
+                          ) : (
+                            <Text c="dimmed" fs="italic" lineClamp={1}>
+                              Not assigned release date
+                            </Text>
+                          )}
+                        </Table.Td>
+
+                        <Table.Td ta="center">
+                          {assignment.assignment_release_date && assignment.assignment_due_date ? (
+                            <Progress
+                              value={calculateTimeRemaining(
+                                assignment.assignment_release_date,
+                                assignment.assignment_due_date
+                              )}
+                              color={getProgressColor(
+                                assignment.assignment_release_date,
+                                assignment.assignment_due_date
+                              )}
+                              size="md"
+                              radius="lg"
+                            />
+                          ) : (
+                            <Text c="dimmed" fs="italic" lineClamp={1}>
+                              Not assigned time
+                            </Text>
+                          )}
+                        </Table.Td>
+
+                        <Table.Td ta="center">
+                          {assignment.assignment_due_date ? (
+                            <Text size="sm" lineClamp={1}>
+                              {dayjs(assignment.assignment_due_date).format("MMM D, YYYY h:mm A")}
+                            </Text>
+                          ) : (
+                            <Text c="dimmed" fs="italic" lineClamp={1}>
+                              Not assigned due date
+                            </Text>
+                          )}
+                        </Table.Td>
+
+                        <Table.Td ta="center">
+                          {assignment.assignment_cut_off_date ? (
+                            <Text size="sm" lineClamp={1}>
+                              {dayjs(assignment.assignment_cut_off_date).format("MMM D, YYYY h:mm A")}
+                            </Text>
+                          ) : (
+                            <Text c="dimmed" fs="italic" lineClamp={1}>
+                              Not assigned cut-off date
+                            </Text>
+                          )}
+                        </Table.Td>
+
+                        <Table.Td ta="center">
+                          <Text size='sm' lineClamp={1}>{assignment.section_name}</Text>
+                        </Table.Td>
+
+                        <Table.Td ta="center">0</Table.Td>
+                        <Table.Td ta="center">0%</Table.Td>
+
+                        <Table.Td>
+                          <Flex justify="center" align="center">
+                            {iconsRegrade[String(assignment.regrades) as "true" | "false"]}
+                          </Flex>
+                        </Table.Td>
+                      </Table.Tr>
+                    ))}
+              </Table.Tbody>
+            </Table>
+          </Table.ScrollContainer>
         )}
 
         {activeAssignments.length > 0 && (
-          <div className="flex justify-center mt-4">
+          <Flex justify="center" mt="md">
             <Pagination
-              color='#4C6EF5'
+              color="#4C6EF5"
               total={totalPages}
-              siblings={1}
-              boundaries={1}
+              siblings={isMobile ? 0 : 1}
+              boundaries={isMobile ? 0 : 1}
               value={pagination.active}
               onChange={pagination.setPage}
+              size={isMobile ? "sm" : "md"}
             />
-          </div>
+          </Flex>
         )}
       </Paper>
 
