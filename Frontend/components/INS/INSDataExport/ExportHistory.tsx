@@ -70,8 +70,7 @@ export default function ExportHistory() {
 
   return (
     <div className="pl-5 pr-5">
-      <div className="flex justify-between items-center mb-6">
-        <Title order={2}>Export History</Title>
+      <div className="flex justify-end items-center mb-6">
         <Button
           onClick={() => openModal(course_id)}
           disabled={isLoading || !!isError}
@@ -136,7 +135,7 @@ export default function ExportHistory() {
                         item.processed_at === null && item.file_status === 'pending' ? (
                           <Text size='sm' c='dimmed' fs="italic">This file is being processed</Text>
                         ) : item.processed_at === null && item.file_status === 'failed' ? (
-                          <Text size='sm' c='dimmed' fs="italic">This file failed to process</Text>
+                          <Text size='sm' c='dimmed' fs="italic" lineClamp={1}>This file failed to process</Text>
                         ) : (
                           <Text size='sm' lineClamp={1}>{formatExportDate(item.processed_at ?? null)}</Text>
                         )

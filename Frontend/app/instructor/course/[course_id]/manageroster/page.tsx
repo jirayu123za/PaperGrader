@@ -1,6 +1,7 @@
 
-import React from 'react';
+import React, { Suspense }  from 'react';
 import { ManageRosterClient } from '@/components/client/ManageRosterClient';
+import { Loader } from '@mantine/core';
 
 export const metadata = {
   title: 'Manage Roster',
@@ -9,7 +10,9 @@ export const metadata = {
 
 const ManageRoster: React.FC = () => {
   return (
-    <ManageRosterClient/>
+    <Suspense fallback={<Loader size="sm" />}>
+      <ManageRosterClient/>
+    </Suspense>
   );
 };
 

@@ -7,7 +7,6 @@ import ManageSection from '@/components/INS/INSManageRoster/ManageSection'
 
 export const ManageRosterClient = () => {
   return (
-    <div className="grow p-4">
       <Tabs defaultValue="roster">
         <Tabs.List>
           <Tabs.Tab value="roster">Manage roster</Tabs.Tab>
@@ -20,6 +19,5 @@ export const ManageRosterClient = () => {
           <ManageSection />
         </Tabs.Panel>
       </Tabs>
-    </div>
   )
 }
