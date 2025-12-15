@@ -1,15 +1,14 @@
-"use client";
 
 import React from 'react';
-import SectionSelector from '../Create/Sections/SectionSelector';
-import UploadFile from '../UploadFile';
+import SectionSelector from '@/components/Create/Sections/SectionSelector';
+import UploadFile from '@/components/UploadFile';
 import { Modal, Button, TextInput, RadioGroup, Radio, Text } from '@mantine/core';
-import { useCreateAssignment } from '../../hooks/useCreate/useCreateAssignment';
+import { useCreateAssignment } from '@/hooks/useCreate/useCreateAssignment';
 import { useParams } from 'next/navigation';
-import { useFileStore } from '../../store/useFileStore';
+import { useFileStore } from '@/store/useFileStore';
 import { useForm } from '@mantine/form';
-import { Editor } from './Editor.tsx/Editor';
-import { useSelectSectionStore } from '../../store/useSectionStore';
+import { Editor } from '@/components/Create/Editor/Editor';
+import { useSelectSectionStore } from '@/store/useSectionStore';
 import { notifications } from '@mantine/notifications';
 
 interface CreateAssignmentModalProps {
@@ -17,7 +16,7 @@ interface CreateAssignmentModalProps {
   onClose: () => void;
 }
 
-const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, onClose }) => {
+export const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, onClose }) => {
   const params = useParams();
   const course_id = params?.course_id as string;
   const { files, templateFile, clearFiles } = useFileStore();
@@ -152,5 +151,3 @@ const CreateAssignmentModal: React.FC<CreateAssignmentModalProps> = ({ isOpen, o
     </Modal>
   );
 };
-
-export default CreateAssignmentModal;

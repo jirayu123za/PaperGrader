@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { TextInput, Flex, Text, Loader, Box, Tooltip, ActionIcon } from '@mantine/core';
-import { Editor } from '../../Create/Editor.tsx/AssignmentEditor';
+import { Editor } from '../../Create/Editor/AssignmentEditor';
 import { useAssignmentSettingFormStore, useAssignmentSettingStore } from '@/store/modal/useAssignmentSettingModal';
 import { FaSlidersH } from 'react-icons/fa';
 
