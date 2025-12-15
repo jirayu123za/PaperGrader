@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { useMutation } from '@tanstack/react-query';
-import { useAssignmentStore } from '../../store/useCreateAssignmentStore';
-import { API_BASE, api, qf } from '@/src/lib/api';
+import { API_BASE } from '@/src/lib/api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAssignmentStore } from '@/store/useCreateAssignmentStore';
 
 const createAssignment = async ({ formData, course_id }: { formData: FormData; course_id: string }) => {
   const { data: assignmentResponse } = await axios.post(`${API_BASE}/instructor/assignment/files`,
@@ -15,12 +15,14 @@ const createAssignment = async ({ formData, course_id }: { formData: FormData; c
 };
 
 export const useCreateAssignment = () => {
+  const queryClient = useQueryClient();
   const reset = useAssignmentStore((state) => state.reset);
 
   return useMutation({
     mutationFn: createAssignment,
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       reset();
+      queryClient.invalidateQueries({ queryKey: ['assignments', variables.course_id] });
     },
     onError: (error: any) => {
     },
