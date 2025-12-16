@@ -35,7 +35,7 @@ export default function AssignmentStatistics() {
           <Text span c="dimmed" fw={600}>
             Review Grades for{" "}
           </Text>
-          <Text span fw={800} c="violet.6">
+          <Text span fw={800} c="#6665AC">
             {assignmentTitle.charAt(0).toUpperCase() + assignmentTitle.slice(1)}
           </Text>
         </Title>
