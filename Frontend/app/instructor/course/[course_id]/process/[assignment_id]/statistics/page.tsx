@@ -8,13 +8,10 @@ export const metadata = {
     description: ' Statistics ',
 };
 
-
 export default async function StatisticsPage() {
     return (
-        <div className="w-full">
-            <Suspense fallback={<Loader size="sm" />}>
-                <StatisticsSummary />
-            </Suspense>
-        </div>
+        <Suspense fallback={<Loader size="sm" />}>
+            <StatisticsSummary />
+        </Suspense>
     );
 }

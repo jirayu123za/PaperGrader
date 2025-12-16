@@ -1,268 +1,376 @@
 "use client";
 
-import React, { useEffect } from 'react';
-import AccountMenu from '../Account';
-import { FaArrowLeft, FaRegArrowAltCircleRight } from 'react-icons/fa';
-import { GiClockwiseRotation } from 'react-icons/gi';
-import { IoStatsChart } from 'react-icons/io5';
-import { IoMdSettings, IoIosListBox } from 'react-icons/io';
-import { RiFolderUploadFill } from "react-icons/ri";
-import { MdRateReview, MdEditSquare } from "react-icons/md";
-import { Button, Container, Divider, Flex, Stack, Title, Transition, Text, Image } from '@mantine/core';
-import { useRouter, usePathname, useParams } from 'next/navigation';
-import { useFetchAssignmentLeft } from '../../hooks/SideBar/useFetchAssignmentLeft';
-import { useAssignmentLeftProcessStore, useLeftProcessStore } from '../../store/useLeftProcessStore';
+import AccountMenu from '@/components/Account';
+import { useEffect, useMemo } from 'react';
+import { useFetchAssignmentLeft } from '@/hooks/SideBar/useFetchAssignmentLeft';
 import { useLeftProcessSidebarStore } from '@/store/process-outline/leftProcessSidebarStore';
+import { useAssignmentLeftProcessStore, useLeftProcessStore } from '@/store/useLeftProcessStore';
+import { ActionIcon, Badge, Box, Collapse, Divider, Flex, Group, Image, NavLink, Paper, Skeleton, Stack, Text, Title, Tooltip, Transition } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
+import { useParams, usePathname, useRouter } from 'next/navigation';
+import { FaInfo } from 'react-icons/fa';
+import { GiClockwiseRotation } from 'react-icons/gi';
+import { GoSidebarCollapse, GoSidebarExpand } from 'react-icons/go';
+import { IoIosArrowBack, IoIosListBox, IoMdSettings } from 'react-icons/io';
+import { IoStatsChart } from 'react-icons/io5';
+import { MdEditSquare, MdRateReview } from "react-icons/md";
+import { RiFolderUploadFill } from "react-icons/ri";
 
-type Option = {
+type MenuItem = {
   key: string;
   label: string;
   href: string;
-  group: 'main' | 'footer';
+  icon: JSX.Element;
 };
 
 export default function LeftProcess() {
   const pathname = usePathname();
   const router = useRouter();
   const params = useParams();
-  const course_id = params.course_id as string;
-  const assignment_id = params.assignment_id as string;
-
-  const faArrowLeft = <FaArrowLeft size={18} />;
-  const giClockwiseRotation = <GiClockwiseRotation size={18} />;
-  const ioStatsChart = <IoStatsChart size={18} />;
-  const ioMdSettings = <IoMdSettings size={18} />;
-  const iconEditOutline = <MdEditSquare size={18} />;
-  const iconManageSubmissions = <RiFolderUploadFill size={18} />;
-  const iconGradeSubmissions = <IoIosListBox size={18} />;
-  const iconReviewGrade = <MdRateReview size={18} />;
-
-  const isCollapsed: boolean = useLeftProcessSidebarStore((state: { isCollapsed: boolean }) => state.isCollapsed);
-  const toggle: () => void = useLeftProcessSidebarStore((state: { toggle: () => void }) => state.toggle);
-
-  useFetchAssignmentLeft(course_id as string, assignment_id as string);
+  const course_id = params?.course_id as string;
+  const assignment_id = params?.assignment_id as string;
+  const { isCollapsed, toggle } = useLeftProcessSidebarStore((s) => ({isCollapsed: s.isCollapsed, toggle: s.toggle }));
+  const { setActiveOption } = useLeftProcessStore();
+  const [ expandedInfo, { toggle: toggleExpandedInfo }] = useDisclosure(true);
+  const { isLoading: isLoadingAssignment, isError: isErrorAssignment } = useFetchAssignmentLeft(course_id as string, assignment_id as string);
   const { assignmentLeftProcess } = useAssignmentLeftProcessStore();
-  const { activeOption, setActiveOption } = useLeftProcessStore();
 
-  const options: Option[] = [
-    { key: 'editOutline', label: 'Edit Outline and Rubric', href: `/instructor/course/${course_id}/process/${assignment_id}/create-outline`, group: 'main' },
-    { key: 'manageSubmissions', label: 'Manage Submissions', href: `/instructor/course/${course_id}/process/${assignment_id}/manage-submissions`, group: 'main' },
-    { key: 'gradeSubmissions', label: 'Grade Submissions', href: `/instructor/course/${course_id}/process/${assignment_id}/grade-submissions`, group: 'main' },
-    { key: 'ReviewGrade', label: 'Review Grade', href: `/instructor/course/${course_id}/process/${assignment_id}/review-grade`, group: 'main' },
-    { key: 'statistics', label: 'Statistics', href: `/instructor/course/${course_id}/process/${assignment_id}/statistics`, group: 'footer' },
-  ];
-
-  const icons: Record<string, JSX.Element> = {
-    editOutline: iconEditOutline,
-    manageSubmissions: iconManageSubmissions,
-    gradeSubmissions: iconGradeSubmissions,
-    ReviewGrade: iconReviewGrade,
-    statistics: ioStatsChart,
-  };
-
-  useEffect(() => {
-    const activeKey = options.find((opt) => pathname.startsWith(opt.href))?.key || '';
-    setActiveOption(activeKey);
-  }, [pathname]);
-
-  const renderOptionButton = (option: Option) => (
-    <Button
-      key={option.key}
-      leftSection={icons[option.key]}
-      variant="subtle"
-      fullWidth
-      onClick={() => {
-        setActiveOption(option.key);
-        router.push(option.href);
-      }}
-      styles={{
-        root: {
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: isCollapsed ? "center" : "flex-start",
-          color: activeOption === option.key ? '#424242' : '#FFFFFF',
-          backgroundColor: activeOption === option.key ? '#f8f9fa' : 'transparent',
-          borderRadius: '8px',
-          transition: 'background-color 0.3s, color 0.3s',
-          paddingLeft: isCollapsed ? 0 : 16,
-          paddingRight: isCollapsed ? 0 : 16,
-        },
-        section: {
-          marginRight: isCollapsed ? 0 : 8,
-        },
-      }}
-    >
-      <Transition mounted={!isCollapsed} transition="fade" duration={300} timingFunction="ease">
-        {(styles) => <Text size="sm" fw={500} style={{ ...styles }}>{option.label}</Text>}
-      </Transition>
-    </Button>
+  const menuItems: MenuItem[] = useMemo(
+    () => [
+      {
+        key: "editOutline",
+        label: "Edit Outline and Rubric",
+        href: `/instructor/course/${course_id}/process/${assignment_id}/create-outline`,
+        icon: <MdEditSquare />,
+      },
+      {
+        key: "manageSubmissions",
+        label: "Manage Submissions",
+        href: `/instructor/course/${course_id}/process/${assignment_id}/manage-submissions`,
+        icon: <RiFolderUploadFill />,
+      },
+      {
+        key: "gradeSubmissions",
+        label: "Grade Submissions",
+        href: `/instructor/course/${course_id}/process/${assignment_id}/grade-submissions`,
+        icon: <IoIosListBox />,
+      },
+      {
+        key: "reviewGrade",
+        label: "Review Grade",
+        href: `/instructor/course/${course_id}/process/${assignment_id}/review-grade`,
+        icon: <MdRateReview />,
+      },
+    ],
+    [course_id, assignment_id]
   );
 
-  return (
-    <Container className={`relative flex flex-col justify-between border-r transition-all duration-300 ease-in-out ${isCollapsed ? 'w-[64px] min-w-[64px]' : 'w-[256px] min-w-[256px]'} flex-shrink-0 h-screen p-0`}>
+  const footerItems: MenuItem[] = useMemo(
+    () => [
+      {
+        key: "regrade",
+        label: "Regrade Requests",
+        href: "#",
+        icon: <GiClockwiseRotation />,
+      },
+      {
+        key: "statistics",
+        label: "Statistics",
+        href: `/instructor/course/${course_id}/process/${assignment_id}/statistics`,
+        icon: <IoStatsChart />,
+      },
+      {
+        key: "settings",
+        label: "Settings",
+        href: "#",
+        icon: <IoMdSettings />,
+      },
+    ],
+    [course_id, assignment_id]
+  );
 
-      <Flex justify="space-between" align="center" p={12}
-        style={{ backgroundColor: '#6665AC' }}
+  useEffect(() => {
+    const all = [...menuItems, ...footerItems].filter((x) => x.href !== "#");
+    const activeKey = all.find((opt) => pathname?.startsWith(opt.href))?.key ?? "";
+    setActiveOption(activeKey);
+  }, [pathname, menuItems, footerItems, setActiveOption]);
+
+  
+  const renderNavItem = (item: MenuItem) => {
+    const active = item.href !== "#" && pathname?.startsWith(item.href);
+    return (
+      <Tooltip
+        key={item.key}
+        label={isCollapsed ? item.label : undefined}
+        withArrow
+        position="right"
+        disabled={!isCollapsed}
       >
-        {!isCollapsed && (
-          <Image
-            src="/Image/logo-ppgd2.png"
-            alt="logo" w={200} h={60} p={2}
-            style={{ cursor: 'pointer' }}
-            onClick={() => router.push('/INSCourseOverview')}
-          />
-        )}
-
-        <Button
-          onClick={toggle}
-          variant="transparent"
-          radius="md"
-          styles={() => ({
-            root: {
-              border: 'none',
-              padding: isCollapsed ? "0 0 0 8px" : "0",
-              height: 'auto',
+        <NavLink
+          unstyled
+          active={!!active}
+          onClick={() => item.href !== "#" && router.push(item.href)}
+          leftSection={<span className="text-white/90 text-lg flex items-center">{item.icon}</span>}
+          label={
+            isCollapsed ? null : (
+              <span className="text-white/90 font-semibold text-sm">{item.label}</span>
+            )
+          }
+          className={[
+            "w-full rounded-xl border transition-all duration-150",
+            "cursor-pointer",
+            active
+              ? "bg-white/25 border-white/25"
+              : "bg-transparent border-transparent hover:bg-white/15 hover:border-white/15 hover:-translate-y-0.5",
+            isCollapsed ? "px-0 py-3 flex justify-center" : "px-3 py-3 flex items-center",
+          ].join(" ")}
+          styles={{
+            section: {
+              marginRight: isCollapsed ? 0 : 10,
+              width: isCollapsed ? "100%" : undefined,
+              display: "flex",
+              justifyContent: isCollapsed ? "center" : undefined,
             },
-          })}
-        >
-          <FaRegArrowAltCircleRight
-            size={24}
-            style={{ color: '#f1f3f8' }}
-            className={`transition-transform duration-300 ${isCollapsed ? '' : 'transform rotate-180'}`}
-          />
-        </Button>
+          }}
+        />
+      </Tooltip>
+    );
+  };
+
+  return (
+    <Box
+      className={`relative flex flex-col justify-between border-r transition-all duration-300 ${
+        isCollapsed ? "w-16" : "w-64"
+      }`}
+      h="100dvh"
+    >
+      {/* Header */}
+      <Flex
+        justify={isCollapsed ? "center" : "space-between"}
+        align="center"
+        p={12}
+        bg="#6665AC"
+        mih={84}
+      >
+        <Transition mounted={!isCollapsed} transition="fade-left" duration={160}>
+          {(styles) => (
+            <Box style={styles}>
+              <Image
+                src="/Image/logo-ppgd2.png"
+                alt="logo"
+                w={200}
+                h={60}
+                p={2}
+                style={{ cursor: "pointer" }}
+                onClick={() => router.push("/INSCourseOverview")}
+              />
+            </Box>
+          )}
+        </Transition>
+
+        <Tooltip label={isCollapsed ? "Expand" : "Collapse"} withArrow position="right">
+          <ActionIcon
+            onClick={toggle}
+            variant="subtle"
+            radius="md"
+            aria-label="Toggle sidebar"
+            color="white"
+          >
+            <Transition mounted={isCollapsed} transition="fade-left" duration={140}>
+              {(styles) => (
+                <Box style={{ ...styles, display: "inline-flex" }}>
+                  <GoSidebarExpand size={24} />
+                </Box>
+              )}
+            </Transition>
+            <Transition mounted={!isCollapsed} transition="fade-left" duration={140}>
+              {(styles) => (
+                <Box style={{ ...styles, display: "inline-flex" }}>
+                  <GoSidebarCollapse size={24} />
+                </Box>
+              )}
+            </Transition>
+          </ActionIcon>
+        </Tooltip>
       </Flex>
 
-      <Stack
-        p={16} gap="xs"
-        className='grow'
-        style={{ backgroundColor: '#6665AC' }}
-      >
+      {/* Body */}
+      <Flex direction="column" bg="#6665AC" className="flex-grow">
+        <Divider color="rgba(255,255,255,0.18)" mx="md" />
 
-        <Button
-          variant="transparent"
-          leftSection={faArrowLeft}
-          styles={{
-            root: {
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: isCollapsed ? 'center' : 'flex-start',
-              color: '#F9F9F9',
-              paddingLeft: isCollapsed ? 0 : 16,
-              paddingRight: isCollapsed ? 0 : 16,
-            },
-            section: { marginRight: isCollapsed ? 0 : 8 }
-          }}
-          onClick={() => {
-            if (course_id) router.push(`/instructor/course/${course_id}/assignment`);
-          }}
-        >
-          {!isCollapsed && (
-            <Title size="md" style={{ color: '#F9F9F9' }}>
-              Back to this course
-            </Title>
-          )}
-        </Button>
-
-        {!isCollapsed && (
-          <>
-            <Title
-              order={5}
-              className="pl-2 mb-0"
-              lineClamp={1}
-              style={{ paddingLeft: 16, color: '#E9E9E9', cursor: 'default' }}
+        <Box p="md">
+          <Collapse in={!isCollapsed} transitionDuration={160}>
+            <Paper
+              radius="md"
+              py="md"
+              px="sm"
+              style={{
+                background: "rgba(255,255,255,0.10)",
+                border: "1px solid rgba(255,255,255,0.16)",
+                backdropFilter: "blur(6px)",
+              }}
             >
-              {`${assignmentLeftProcess.course_code} (${assignmentLeftProcess.semester}/${Number(assignmentLeftProcess.academic_year) + 543})`}
-            </Title>
-          </>
-        )}
+              {isLoadingAssignment ? (
+                <Stack gap={8}>
+                  <Group justify="space-between" wrap="nowrap">
+                    <Skeleton height={18} width="55%" radius="sm" />
+                    <Skeleton height={18} width={64} radius="sm" />
+                  </Group>
+                  <Skeleton height={14} width="85%" radius="sm" />
+                </Stack>
+              ) : isErrorAssignment ? (
+                <Stack gap={6}>
+                  <Text size="sm" c="rgba(255,255,255,0.9)" fw={700}>
+                    Failed to load assignment
+                  </Text>
+                  <Text size="xs" c="rgba(255,255,255,0.75)">
+                    Please refresh or try again.
+                  </Text>
+                </Stack>
+              ) : (
+                <>
+                  <Group justify="space-between" align="center" gap="xs" wrap="nowrap">
+                    <Group gap="xs" wrap="nowrap">
+                      <Title order={5} c="#fff" lineClamp={1}>
+                        {assignmentLeftProcess?.course_code ?? "Course"}
+                      </Title>
 
+                      <Badge
+                        variant="light"
+                        color="gray"
+                        styles={{
+                          root: {
+                            background: "rgba(255,255,255,0.16)",
+                            color: "rgba(255,255,255,0.92)",
+                          },
+                        }}
+                      >
+                        {assignmentLeftProcess?.semester
+                          ? `${assignmentLeftProcess.semester}/${Number(assignmentLeftProcess.academic_year) + 543}`
+                          : ""}
+                      </Badge>
+                    </Group>
 
-        <Title
-          size="h4"
-          className="pl-2 mb-4"
-          lineClamp={1}
-          style={{
-            paddingLeft: 16,
-            opacity: isCollapsed ? 0 : 1,
-            visibility: isCollapsed ? 'hidden' : 'visible',
-            transition: 'opacity 0.3s ease, visibility 0.3s ease',
-            color: '#F9F9F9',
-          }}
-        >
-          {assignmentLeftProcess.assignment_name}
-        </Title>
+                    <ActionIcon
+                      variant="subtle"
+                      onClick={toggleExpandedInfo}
+                      styles={{ root: { color: "rgba(255,255,255,0.9)" } }}
+                    >
+                      {expandedInfo ? <IconChevronUp size={18} /> : <IconChevronDown size={18} />}
+                    </ActionIcon>
+                  </Group>
 
-        <Divider style={{ backgroundColor: '#E9E9E9' }} size="xs" mt={16} mb={16} />
-
-
-        {options.filter(o => o.group === 'main').map(renderOptionButton)}
-
-        <Divider style={{ backgroundColor: '#E9E9E9' }} size="xs" mt={16} mb={16} />
-
-
-        <Button
-          variant="subtle"
-          leftSection={giClockwiseRotation}
-          fullWidth
-          styles={{
-            root: {
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: isCollapsed ? 'center' : 'flex-start',
-              color: '#F9F9F9',
-              paddingLeft: isCollapsed ? 0 : 16,
-              paddingRight: isCollapsed ? 0 : 16,
-            },
-            section: { marginRight: isCollapsed ? 0 : 8 }
-          }}
-        >
-          {!isCollapsed && (
-            <Transition mounted transition="fade" duration={300} timingFunction="ease">
-              {(styles) => (
-                <Text size="sm" fw={500} style={{ ...styles }}>
-                  Regrade Requests
-                </Text>
+                  <Collapse in={expandedInfo} transitionDuration={160}>
+                    <Text mt={6} size="sm" style={{ color: "rgba(255,255,255,0.85)", lineHeight: 1.35 }}>
+                      {assignmentLeftProcess?.assignment_name ?? ""}
+                    </Text>
+                  </Collapse>
+                </>
               )}
-            </Transition>
-          )}
-        </Button>
+            </Paper>
+          </Collapse>
 
+          {/* collapsed tooltip */}
+          <Collapse in={isCollapsed} transitionDuration={160}>
+            <Flex align="center" justify="center" mt="xs">
+              <Tooltip
+                withArrow
+                position="right"
+                label={
+                  isLoadingAssignment ? (
+                    <Text size="sm">Loading...</Text>
+                  ) : isErrorAssignment ? (
+                    <Text size="sm">Failed to load</Text>
+                  ) : (
+                    <Box>
+                      <Box>{assignmentLeftProcess?.course_code}</Box>
+                      <Box style={{ opacity: 0.85 }}>{assignmentLeftProcess?.assignment_name}</Box>
+                    </Box>
+                  )
+                }
+              >
+                <ActionIcon
+                  variant="light"
+                  radius="md"
+                  size="lg"
+                  style={{ background: "rgba(255,255,255,0.12)", color: "white" }}
+                >
+                  <FaInfo size={18} />
+                </ActionIcon>
+              </Tooltip>
+            </Flex>
+          </Collapse>
+        </Box>
 
-        {options.filter(o => o.group === 'footer').map(renderOptionButton)}
+        <Divider color="rgba(255,255,255,0.18)" mx="md" />
+        {/* Back to course */}
+        <Stack gap={6} px="md" py="md">
+          <Tooltip
+            withArrow
+            position="right"
+            disabled={!isCollapsed}
+            label="Course › Assignments"
+          >
+            <Box
+              onClick={() => router.push(`/instructor/course/${course_id}/assignment`)}
+              className={[
+                "w-full rounded-xl border transition-all duration-150 cursor-pointer",
+                "bg-white/12 border-white/18 hover:bg-white/18 hover:border-white/25",
+                isCollapsed ? "px-0 py-3 flex justify-center" : "px-3 py-3",
+              ].join(" ")}
+            >
+              <Group gap={10} wrap="nowrap" justify={isCollapsed ? "center" : "flex-start"}>
+                <span className="text-white/90 text-lg flex items-center">
+                  <IoIosArrowBack />
+                </span>
 
-        <Button
-          variant="subtle"
-          leftSection={ioMdSettings}
-          fullWidth
-          styles={{
-            root: {
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: isCollapsed ? 'center' : 'flex-start',
-              color: '#F9F9F9',
-              paddingLeft: isCollapsed ? 0 : 16,
-              paddingRight: isCollapsed ? 0 : 16,
-            },
-            section: { marginRight: isCollapsed ? 0 : 8 }
-          }}
-        >
-          {!isCollapsed && (
-            <Transition mounted transition="fade" duration={300} timingFunction="ease">
-              {(styles) => (
-                <Text size="sm" fw={500} style={{ ...styles }}>
-                  Settings
-                </Text>
-              )}
-            </Transition>
-          )}
-        </Button>
-      </Stack>
+                {!isCollapsed && (
+                  <>
+                    {isLoadingAssignment ? (
+                      <Skeleton height={14} width="70%" radius="sm" />
+                    ) : isErrorAssignment ? (
+                      <Text size="sm" c="rgba(255,255,255,0.85)">
+                        Course <Text style={{ opacity: 0.7 }}>›</Text> Assignments
+                      </Text>
+                    ) : (
+                      <Group gap={6} wrap="nowrap">
+                        <Text size="sm" fw={600} c="rgba(255,255,255,0.75)" lineClamp={1}>
+                          {assignmentLeftProcess?.course_code ?? "Course"}
+                        </Text>
+                        <Text size="sm" c="rgba(255,255,255,0.55)">
+                          ›
+                        </Text>
+                        <Text size="sm" fw={700} c="rgba(255,255,255,0.95)" lineClamp={1}>
+                          Assignments
+                        </Text>
+                      </Group>
+                    )}
+                  </>
+                )}
+              </Group>
+            </Box>
+          </Tooltip>
+        </Stack>
 
+        <Divider color="rgba(255,255,255,0.18)" mx="md" />
+
+        {/* Main menu */}
+        <Stack gap={6} px="md" py="md">
+          {menuItems.map(renderNavItem)}
+        </Stack>
+
+        <Divider color="rgba(255,255,255,0.18)" mx="md" />
+
+        {/* Footer menu */}
+        <Stack gap={6} px="md" py="md">
+          {footerItems.map(renderNavItem)}
+        </Stack>
+      </Flex>
 
       <Stack>
         <AccountMenu isCollapsed={isCollapsed} />
       </Stack>
-    </Container>
+    </Box>
   );
 }
