@@ -19,7 +19,7 @@ export default function StatisticsSummary() {
   const courseID = params?.course_id as string;
   const selectedAssignmentID = useAssignmentStatisticStore((s) => s.selectedAssignmentID);
   const assignmentID = selectedAssignmentID ?? (assignmentIDFromParam ?? null);
-  const { data, isFetching, isError } = useFetchStatistics(courseID, assignmentID);
+  const { isFetching, isError } = useFetchStatistics(courseID, assignmentID);
   const { statisticsData: stats } = useStatisticsStore();
   const noSelectAssignment = !selectedAssignmentID && !assignmentIDFromParam;
   const hasRubric = !!stats && Array.isArray(stats.questions_list) && stats.questions_list.length > 0;
@@ -29,7 +29,7 @@ export default function StatisticsSummary() {
     return (
       <Flex h="100vh" direction="column" style={{ display: "flex", overflow: "hidden" }}>
         <Stack gap="md" h="100%">
-          <StatisticHeader title="Assignment Statistics" />
+          <StatisticHeader />
           <NoSelectAssignment />
         </Stack>
       </Flex>
@@ -37,19 +37,15 @@ export default function StatisticsSummary() {
   }
 
   return (
-    <Flex h="100vh" direction="column" gap="xl">
+    <Stack gap="xl">
       <Box>
-        <StatisticHeader title="Assignment Statistics" />
+        <StatisticHeader />
       </Box>
 
-      <Box 
-        style={{
-          flex: "0 0 230px",
-        }}
-      >
+      <Box>
         {/** Handler isFetching, isError, and data on Statistics */}
         {isFetching ? (
-          <Skeleton h={400} /> 
+          <Skeleton h={420} /> 
         ) : isError ? (
           <ErrorStatistics />
         ) : stats && hasStatistics ?  (
@@ -58,21 +54,21 @@ export default function StatisticsSummary() {
         }
       </Box>
 
-      <Box 
-        style={{ overflow: "hidden" }}
-      >
+      <Box>
         {/** Handler isFetching, isError, and data on RubricTable */}
-        {isFetching ? (
-          <Box>
-            <Skeleton height={28} mb="sm" />
-            <Skeleton height={450} />
-          </Box>
-        ) : isError ?  (
-          null
-        ) : hasRubric ? (
-          <RubricTable />
-        ) : <NoRubricTable />}
+        {isFetching ? 
+          (
+            <Box>
+              <Skeleton height={28} mb="sm" />
+              <Skeleton height={450} />
+            </Box>
+          ) : isError ?  (
+            null
+          ) : hasRubric ? (
+            <RubricTable />
+          ) : <NoRubricTable />
+        }
       </Box>
-    </Flex>
+    </Stack>
   );
 }

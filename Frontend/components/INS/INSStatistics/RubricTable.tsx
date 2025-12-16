@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { Table, Progress, Text, Flex, Anchor, Box, Paper, Title } from "@mantine/core";
-import { useDisclosure, useViewportSize } from "@mantine/hooks";
+import { Table, Progress, Text, Flex, Anchor, Box, Paper, Title, Group } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import { VscListUnordered } from "react-icons/vsc";
 import { useStatisticsStore } from "@/store/statistic/useStatisticsStore";
 import RubricPieModal from "@/components/INS/INSStatistics/RubricPieModal";
@@ -23,7 +23,6 @@ type FlatRow = {
 export default function RubricTable() {
   const [opened, { open, close }] = useDisclosure(false);
   const { statisticsData: stats } = useStatisticsStore();
-  const { height } = useViewportSize();
   const [activeQuestionID, setActiveQuestionID] = useState<string | null>(null);
   const [activeSubQuestionID, setActiveSubQuestionID] = useState<string | null>(null);
   
@@ -79,18 +78,11 @@ export default function RubricTable() {
     setActiveSubQuestionID(null);
   };
 
-  const tableMaxHeight = useMemo(() => {
-    if (!height) return 400;
-    const reservedTop = 585;
-    return Math.max(220, height - reservedTop);
-  }, [height]);
-
-
   if (!rows.length) return null;
   return (
-    <>
-      <Paper withBorder radius="md" p={0}>
-        <Table.ScrollContainer minWidth="auto" maxHeight={tableMaxHeight} className="no-scroll-padding">
+    <Box>
+      <Paper withBorder radius="sm" shadow="xs">
+        <Table.ScrollContainer minWidth={840} className="no-scroll-padding">
         <Table highlightOnHover verticalSpacing="xs" horizontalSpacing="lg">
           <Table.Thead className="bg-gray-100" h="50px">
             <Table.Tr>
@@ -210,6 +202,6 @@ export default function RubricTable() {
         questionID={activeQuestionID}
         subQuestionID={activeSubQuestionID}
       />
-    </>
+    </Box>
   );
 }

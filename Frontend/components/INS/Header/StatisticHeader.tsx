@@ -2,13 +2,13 @@
 
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import { Flex, Select, Title, MultiSelect, Skeleton, Text } from "@mantine/core";
+import { Flex, Select, MultiSelect, Skeleton, Text, Box, Group, Button } from "@mantine/core";
 import { useStatisticSectionsStore } from "@/store/statistic/useStatisticSectionsStore";
 import { useFetchStatisticSections } from "@/hooks/Statistic/useFetchStatisticSections";
 import { useFetchAssignments } from "@/hooks/Statistic/useFetchAssignmentStatistic";
 import { useAssignmentStatisticStore, type AssignmentOption } from "@/store/statistic/useAssignmentStatisticStore";
 
-export default function StatisticHeader({ title = "Assignment Statistics" }: { title?: string }) {
+export default function StatisticHeader() {
   const params = useParams();
   const course_id = params?.course_id as string;
   const assignmentIDParam = params?.assignment_id as string;
@@ -99,49 +99,36 @@ export default function StatisticHeader({ title = "Assignment Statistics" }: { t
   const showSelectAssignmentFirst = !currentAssignmentID;
 
   return (
-    <div className="mt-3 pt-1">
-      <Flex justify="space-between" align="center" gap="md" wrap="wrap">
-        <Title order={3}>{title}</Title>
+    <Box>
+      <Flex justify="end" align="center" gap="md" wrap="wrap">
+        <Select
+          data={hasAssignments ? assignmentsList : []}
+          value={hasAssignments ? currentAssignmentID : null}
+          onChange={handleAssignmentChange}
+          checkIconPosition="right"
+          size="sm"
+          aria-label="Select assignment"
+          comboboxProps={{ withinPortal: true }}
+          w={{ base: "100%", sm: 320 }}
+          placeholder={
+            hasAssignments ? "Select assignment" : isLoadingAssignments ? "Loading..." : "No assignments"
+          }
+          disabled={!hasAssignments || isLoadingAssignments || !!errorAssignments || assignmentsData?.length === 0}
+          clearable={hasAssignments}
+        />
 
-        <Flex gap="sm" wrap="wrap">
-          <Select
-            data={hasAssignments ? assignmentsList : []}
-            value={hasAssignments ? currentAssignmentID : null}
-            onChange={handleAssignmentChange}
-            checkIconPosition="right"
-            size="sm"
-            comboboxProps={{ withinPortal: true }}
-            style={{ width: 320 }}
-            placeholder={
-              hasAssignments
-                ? "Select assignment"
-                : isLoadingAssignments
-                ? "Loading..."
-                : "No assignments"
-            }
-            aria-label="Select assignment"
-            disabled={!hasAssignments || isLoadingAssignments || !!errorAssignments || assignmentsData?.length === 0}
-            clearable={hasAssignments}
-          />
-
-          {showSelectAssignmentFirst ? (
+        {showSelectAssignmentFirst ? (
+          <MultiSelect data={[]} value={[]} placeholder="Select assignment first" disabled w={{ base: "100%", sm: 360 }} />
+        ) : isFetchingSections ? (
+          <Skeleton height={36} w={{ base: "100%", sm: 360 }} radius="md" />
+        ) : isErrorSections ? (
+          <Text c="red" style={{ lineHeight: "36px" }} w={{ base: "100%", sm: 360 }}>
+            Error fetching sections
+          </Text>
+        ) : (
+          <Group gap="xs" align="flex-end" wrap="wrap" w={{ base: "100%", sm: "auto" }}>
             <MultiSelect
-              data={[]}
-              value={[]}
-              placeholder="Select assignment first"
-              disabled
-              style={{ width: 360 }}
-            />
-          ) : isFetchingSections ? (
-            <Skeleton height={36} width={360} radius="md" />
-          ) : isErrorSections ? (
-            <Text c="red" style={{ width: 360, lineHeight: "36px" }}>
-              Error fetching sections
-            </Text>
-          ) : (
-            <Flex gap="xs" wrap="wrap">
-            <MultiSelect
-              w={360}
+              w={{ base: "100%", sm: 360 }}
               data={sectionOptions}
               value={hasSections ? msValue : []}
               onChange={handleSectionsChange}
@@ -155,19 +142,12 @@ export default function StatisticHeader({ title = "Assignment Statistics" }: { t
               clearable
               searchable
             />
-
-            <Text
-              size="xs"
-              c="blue"
-              style={{ cursor: "pointer", alignSelf: "center", whiteSpace: "nowrap" }}
-              onClick={handleSelectAllSections}
-            >
+            <Button variant="subtle" size="xs" onClick={handleSelectAllSections}>
               Select all
-            </Text>
-          </Flex>
-          )}
-        </Flex>
+            </Button>
+          </Group>
+        )}
       </Flex>
-    </div>
+    </Box>
   );
 }

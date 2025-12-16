@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, Title, Text, SimpleGrid, Group } from "@mantine/core";
+import { Card, Title, Text, SimpleGrid, Group, Box } from "@mantine/core";
 import { BarChart } from "@mantine/charts";
 import { statisticsData, useStatisticsStore } from "@/store/statistic/useStatisticsStore";
 import { useAssignmentStatisticStore } from "@/store/statistic/useAssignmentStatisticStore";
@@ -21,9 +21,9 @@ export default function AssignmentStatistics() {
   return (
     <Card
       withBorder
-      radius="lg"
+      radius="sm"
       p="lg"
-      shadow="sm"
+      shadow="xs"
       style={{
         display: "flex",
         flexDirection: "column",
@@ -31,7 +31,14 @@ export default function AssignmentStatistics() {
       }}
     >
       <Group justify="space-between" align="flex-start">
-        <Title order={4}>Review Grades for {assignmentTitle}</Title>
+        <Title order={4} fw={700}>
+          <Text span c="dimmed" fw={600}>
+            Review Grades for{" "}
+          </Text>
+          <Text span fw={800} c="violet.6">
+            {assignmentTitle.charAt(0).toUpperCase() + assignmentTitle.slice(1)}
+          </Text>
+        </Title>
         <Text size="md" c="dimmed">Submissions: {stats?.statistics.total_submission} | Max Score: {stats?.statistics.total_assignment_score}</Text>
       </Group>
 
@@ -44,9 +51,9 @@ export default function AssignmentStatistics() {
         <StatBox label="Score" value={stats?.statistics.total_assignment_score} />
       </SimpleGrid>
 
-      <Card withBorder radius="md" p="md">
+      <Box px={{ sm:"md", md:"lg" }} pb="md">
         <BarChart
-          h={220}
+          h={300}
           data={chartData}
           withLegend
           dataKey="question"
@@ -63,7 +70,7 @@ export default function AssignmentStatistics() {
             ),
           }}
         />
-      </Card>
+      </Box>
     </Card>
   );
 }
@@ -71,7 +78,7 @@ export default function AssignmentStatistics() {
 function StatBox({ label, value, suffix }: { label: string; value?: number; suffix?: string }) {
   const formattedValue = typeof value === "number" && !isNaN(value) ? value.toFixed(2) : "-";
   return (
-    <Card withBorder radius="md" p="sm">
+    <Card withBorder radius="sm" p="sm">
       <Text size="xs" c="dimmed">
         {label}
       </Text>
